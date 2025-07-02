@@ -2,9 +2,10 @@ FROM golang:alpine AS builder
 
 WORKDIR /app
 
-COPY ../internal/api ./api
 COPY ../cmd/api ./cmd/api
 COPY ../config ./config
+COPY ../internal/api ./internal/api
+COPY ../internal/adapters ./internal/adapters
 COPY ../internal/dao ./internal/dao
 COPY ../internal/lib ./internal/lib
 COPY ../internal/services ./internal/services
@@ -21,7 +22,7 @@ FROM gcr.io/distroless/base:latest
 
 WORKDIR /
 
-COPY --from=builder /internal/api /api
+COPY --from=builder /api /api
 
 ENV HOST="0.0.0.0"
 
