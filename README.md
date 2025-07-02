@@ -74,7 +74,7 @@ services:
       - json-keys-postgres
     ports:
       # Expose the service on port 4001 on the local machine.
-      - "4021:8080"
+      - "4001:8080"
     environment:
       PORT: 8080
       ENV: local

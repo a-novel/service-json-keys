@@ -1,6 +1,6 @@
 # App.
-export PORT=4021
-export PORT_TEST=5021
+export PORT=4001
+export PORT_TEST=5001
 export ENV="local"
 export APP_NAME="json-keys"
 export DEBUG=true
@@ -9,8 +9,8 @@ export DEBUG=true
 export POSTGRES_USER="postgres"
 export POSTGRES_PASSWORD="postgres"
 export POSTGRES_DB="json-keys"
-export POSTGRES_PORT=4022
-export POSTGRES_TEST_PORT=5022
+export POSTGRES_PORT=4002
+export POSTGRES_TEST_PORT=5002
 export POSTGRES_HOST="0.0.0.0"
 
 # Tracing.
