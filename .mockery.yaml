@@ -9,5 +9,5 @@ packages:
     config:
       all: true
       pkgname: apimocks
-      dir: api/mocks
+      dir: internal/api/mocks
       filename: mocks.go
