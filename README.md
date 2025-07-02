@@ -83,13 +83,6 @@ services:
       # Dummy key used only for local environment. Consider using a secure, private key in production.
       # Note it MUST match the one used in the json-keys keys rotation job.
       MASTER_KEY: fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca
-      # In sandbox mode, mails are logged in the server logs rather than being sent. Alternatively, you need to provide
-      # a valid SMTP server configuration.
-      SMTP_SANDBOX: true
-      # SMTP_PASSWORD: your_smtp_password
-      # SMTP_SENDER: noreply@agoradesecrivains.com
-      # SMTP_DOMAIN: smtp-relay.gmail.com
-      # SMTP_ADDRESS: smtp-relay.gmail.com:587
       AUTH_PLATFORM_URL_UPDATE_EMAIL: http://localhost:4001/update-email
       AUTH_PLATFORM_URL_UPDATE_PASSWORD: http://localhost:4001/update-password
       AUTH_PLATFORM_URL_REGISTER: http://localhost:4001/register
@@ -130,13 +123,13 @@ Available tags includes:
 - [Podman](https://podman.io/docs/installation)
   - Install [podman-compose](https://github.com/containers/podman-compose)
 
-    ```bash
-    # Pipx
-    pipx install podman-compose
+  ```bash
+  # Pipx
+  pipx install podman-compose
 
-    # Brew
-    brew install podman-compose
-    ```
+  # Brew
+  brew install podman-compose
+  ```
 
 - Make
 
@@ -252,7 +245,7 @@ type CustomClaims struct {
 signer := jkPkg.NewClaimsSigner(client)
 
 token, err := signer.SignClaims(ctx, usage, &CustomClaims{)
-    UserID: "1234",
+	UserID: "1234",
 })
 ```
 
