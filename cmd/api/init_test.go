@@ -12,7 +12,8 @@ import (
 	"github.com/a-novel-kit/configurator/chans"
 	"github.com/a-novel-kit/configurator/utilstest"
 
-	"github.com/a-novel/service-json-keys/internal/api/apiclient/testapiclient"
+	"github.com/a-novel/service-json-keys/config"
+	"github.com/a-novel/service-json-keys/pkg"
 )
 
 var logs *chans.MultiChan[string]
@@ -62,7 +63,7 @@ func init() {
 		main()
 	}()
 
-	_, err := testapiclient.GetServerClient()
+	_, err := pkg.NewAPIClient(context.Background(), fmt.Sprintf("http://127.0.0.1:%v/v1", config.API.Port))
 	if err != nil {
 		panic(err)
 	}

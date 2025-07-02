@@ -8,17 +8,24 @@ import (
 	"github.com/a-novel/service-json-keys/internal/api/codegen"
 )
 
-func NewAPIClient(url string) (*codegen.Client, error) {
+const (
+	defaultPingInterval = 500 * time.Millisecond
+	defaultPingTimeout  = 16 * time.Second
+)
+
+func NewAPIClient(ctx context.Context, url string) (*codegen.Client, error) {
 	client, err := codegen.NewClient(url)
 	if err != nil {
 		return nil, fmt.Errorf("create client: %w", err)
 	}
 
 	start := time.Now()
-	_, err = client.Ping(context.Background())
+	_, err = client.Ping(ctx)
 
-	for time.Since(start) < 16*time.Second && err != nil {
-		_, err = client.Ping(context.Background())
+	for time.Since(start) < defaultPingTimeout && err != nil {
+		time.Sleep(defaultPingInterval)
+
+		_, err = client.Ping(ctx)
 	}
 
 	if err != nil {
