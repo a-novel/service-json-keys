@@ -17,7 +17,7 @@ type testClaims struct {
 }
 
 func TestSignAndVerifyClaims(t *testing.T) {
-	client, err := pkg.NewAPIClient(fmt.Sprintf("http://127.0.0.1:%v/v1", config.API.Port))
+	client, err := pkg.NewAPIClient(t.Context(), fmt.Sprintf("http://127.0.0.1:%v/v1", config.API.Port))
 	require.NoError(t, err)
 
 	signer := pkg.NewClaimsSigner(client)
