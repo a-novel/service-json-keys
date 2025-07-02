@@ -1,0 +1,243 @@
+name: main
+
+on:
+  push:
+    branches:
+
+jobs:
+  generated-go:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - name: go generate
+        shell: bash
+        run: go generate ./...
+      - uses: a-novel-kit/workflows/generic-actions/check-changes@master
+        id: changes
+      - name: Check go generate diff
+        if: steps.changes.outputs.diff == '1'
+        run: echo "go generate changes are not up-to-date, please run 'go generate ./...' and commit the changes" && exit 1
+
+  generated-mockery:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - name: mockery
+        shell: bash
+        run: make mocks
+      - uses: a-novel-kit/workflows/generic-actions/check-changes@master
+        id: changes
+      - name: Check mockery diff
+        if: steps.changes.outputs.diff == '1'
+        run: echo "mockery definitions are not up-to-date, please run 'make mocks' and commit the changes" && exit 1
+
+  generated-mjml:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: latest
+      - name: mjml
+        shell: bash
+        run: make mjml-generate
+      - uses: a-novel-kit/workflows/generic-actions/check-changes@master
+        id: changes
+      - name: Check mjml diff
+        if: steps.changes.outputs.diff == '1'
+        run: echo "mjml definitions are not up-to-date, please run 'make mjml-generate' and commit the changes" && exit 1
+
+  lint-go:
+    needs:
+      - generated-go
+      - generated-mockery
+      - generated-mjml
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: a-novel-kit/workflows/go-actions/lint-go@master
+
+  lint-postgresql:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: a-novel-kit/workflows/postgres-actions/lint-postgres@master
+
+  lint-open-api:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: a-novel-kit/workflows/open-api-actions/lint-open-api@master
+
+  lint-prettier:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: a-novel-kit/workflows/node-actions/prettier@master
+        with:
+          pat: ${{ secrets.ACTION_PAT }}
+
+  test:
+    needs:
+      - generated-go
+      - generated-mockery
+      - generated-mjml
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    services:
+      postgres:
+        ports:
+          - "5431:5432"
+        image: docker.io/library/postgres:17
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+          POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+          POSTGRES_INITDB_ARGS: --auth=scram-sha-256
+
+      postgres-integration:
+        image: docker.io/library/postgres:17
+        ports:
+          - "5433:5432"
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+          POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+          POSTGRES_INITDB_ARGS: --auth=scram-sha-256
+    env:
+      DAO_DSN: postgres://postgres:postgres@localhost:5431/postgres?sslmode=disable
+      DSN: postgres://postgres:postgres@localhost:5433/postgres?sslmode=disable
+      MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
+      PORT: 8080
+    steps:
+      - uses: a-novel-kit/workflows/go-actions/test-go@master
+
+  publish-open-api:
+    runs-on: ubuntu-latest
+    needs: [lint-open-api]
+    if: github.ref == 'refs/heads/master' && success()
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      contents: read
+      pages: write # to deploy to Pages
+      id-token: write # to verify the deployment originates from an appropriate source
+    steps:
+      - id: deployment
+        uses: a-novel-kit/workflows/github-pages-actions/publish-static@master
+
+  report-codecov:
+    runs-on: ubuntu-latest
+    needs: [test, lint-go]
+    permissions:
+      contents: read
+    steps:
+      - uses: a-novel-kit/workflows/generic-actions/codecov@master
+        with:
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+  report-grc:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' && success()
+    needs: [test, lint-go]
+    permissions:
+      contents: read
+    steps:
+      - uses: a-novel-kit/workflows/go-actions/go-report-card@master
+        if: github.ref == 'refs/heads/master' && success()
+
+  api-build:
+    needs: [test]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    services:
+      postgres:
+        image: postgres:17-alpine
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+    env:
+      DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
+      MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
+    steps:
+      - uses: a-novel-kit/workflows/build-actions/docker-rest-api@master
+        with:
+          file: build/api.Dockerfile
+          image_name: ${{ github.repository }}/api
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          run_args: -e DSN="${DSN}" -e MASTER_KEY="${MASTER_KEY}"
+
+  rotate-keys-build:
+    needs: [test]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    services:
+      postgres:
+        image: postgres:17-alpine
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+    env:
+      DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
+      MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
+    steps:
+      - uses: a-novel-kit/workflows/build-actions/docker-job@master
+        with:
+          file: build/rotatekeys.Dockerfile
+          image_name: ${{ github.repository }}/jobs/rotatekeys
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          run_args: -e DSN="${DSN}" -e MASTER_KEY="${MASTER_KEY}"

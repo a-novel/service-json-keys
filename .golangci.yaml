@@ -1,0 +1,65 @@
+version: "2"
+
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+  settings:
+    gci:
+      sections:
+        - standard # Standard section: captures all standard packages.
+        - default # Default section: contains all imports that could not be matched to another section type.
+        - prefix(github.com/a-novel-kit)
+        - prefix(github.com/a-novel)
+        - localmodule
+
+linters:
+  default: all
+  disable:
+    - depguard
+    - dupl
+    - revive
+    - exhaustruct
+    - varnamelen
+    - ireturn
+    - gochecknoinits
+    - gochecknoglobals
+    - funlen
+    - iface
+    - err113
+    - exhaustive
+    - wrapcheck
+    - contextcheck # Conflicts with Sentry context propagation.
+
+  settings:
+    cyclop:
+      max-complexity: 15
+    tagliatelle:
+      case:
+        rules:
+          json: goCamel
+          yaml: goCamel
+
+  exclusions:
+    paths:
+      - mocks
+    rules:
+      - path: (.+)_test.go
+        linters:
+          - forcetypeassert
+          - maintidx
+          - gocognit
+          - tagliatelle
+          - cyclop
+          - err113
+          - gosec
+      # DAO behaves poorly in parallel testing, mainly because each test is done concurrently using its own transaction.
+      - path: dao/(.+)_test.go
+        linters:
+          - tparallel
+          - paralleltest
+      - path: cmd/api/(.+)_test.go
+        linters:
+          - tparallel
+          - paralleltest

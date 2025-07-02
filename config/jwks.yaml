@@ -1,0 +1,24 @@
+auth:
+  alg: EdDSA
+  key:
+    ttl: 168h # 7 days
+    rotation: 24h
+    cache: 30m
+  token:
+    ttl: 24h
+    issuer: "anovel-authentication"
+    audience: "anovel-client"
+    subject: "user-access"
+    leeway: 5m
+refresh:
+  alg: EdDSA
+  key:
+    ttl: 720h # 30 days
+    rotation: 168h # 7 days
+    cache: 30m
+  token:
+    ttl: 168h
+    issuer: "anovel-authentication"
+    audience: "anovel-client"
+    subject: "user-refresh"
+    leeway: 5m

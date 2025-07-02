@@ -1,0 +1,13 @@
+packages:
+  github.com/a-novel/service-json-keys/internal/services:
+    config:
+      all: true
+      pkgname: servicesmocks
+      dir: internal/services/mocks
+      filename: mocks.go
+  github.com/a-novel/service-json-keys/internal/api:
+    config:
+      all: true
+      pkgname: apimocks
+      dir: api/mocks
+      filename: mocks.go
