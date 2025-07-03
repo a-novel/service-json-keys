@@ -24,6 +24,8 @@ WORKDIR /
 
 COPY --from=builder /api /api
 
+RUN apk --update add curl
+
 ENV HOST="0.0.0.0"
 
 ENV PORT=8080
