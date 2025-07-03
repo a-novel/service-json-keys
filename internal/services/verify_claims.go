@@ -69,10 +69,11 @@ func (service *VerifyClaimsService[Out]) VerifyClaims(ctx context.Context, reque
 		)
 	}
 
-	recipient := jwt.NewRecipient(jwt.RecipientConfig{
-		Plugins:      recipientPlugins,
-		Deserializer: deserializer.Unmarshal,
-	})
+	recipient := jwt.NewRecipient(
+		jwt.RecipientConfig{
+			Plugins:      recipientPlugins,
+			Deserializer: deserializer.Unmarshal,
+		})
 
 	err := recipient.Consume(span.Context(), request.Token, &claims)
 	if err != nil {
