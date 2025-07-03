@@ -44,6 +44,9 @@ services:
       - json-keys-postgres-data:/var/lib/postgresql/data/
 
   json-keys-service:
+    # The standalone image runs all necessary jobs automatically, before starting the service.
+    # It is not suited for production use. In this case, use the api and jobs/rotatekeys
+    # images instead.
     image: ghcr.io/a-novel/service-json-keys/standalone:v0
     depends_on:
       - json-keys-postgres
@@ -62,7 +65,6 @@ services:
       # SENTRY_DSN: [your_sentry_dsn]
       # SERVER_NAME: json-keys-service-prod
       # RELEASE: v0.1.2
-      # ENV: production
       # Set the following if you want to debug the service locally.
       # DEBUG: true
     networks:
@@ -168,7 +170,7 @@ make run-rotate-keys
 make run-api
 ```
 
-# Use in other services
+# Import in your project
 
 The exported methods are available under the `/pkg` component.
 
@@ -185,7 +187,8 @@ package main
 
 import jkPkg "github.com/a-novel/service-json-keys/pkg"
 
-client, err := jkPkg.NewClient(serverURL)
+// serverURL := "http://localhost:4001/v1"
+client, err := jkPkg.NewAPIClient(serverURL)
 ```
 
 ## Sign / Verify claims
