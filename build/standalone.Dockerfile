@@ -20,16 +20,14 @@ RUN go mod download
 RUN go build -o /api cmd/api/main.go
 RUN go build -o /rotatekeys cmd/rotatekeys/main.go
 
-FROM busybox:1.35.0-uclibc as busybox
-
-FROM gcr.io/distroless/base:latest
+FROM alpine:latest
 
 WORKDIR /
 
 COPY --from=builder /api /api
 COPY --from=builder /rotatekeys /rotatekeys
 
-COPY --from=busybox /bin/sh /bin/sh
+RUN apk --update add curl
 
 ENV HOST="0.0.0.0"
 
@@ -37,5 +35,8 @@ ENV PORT=8080
 
 EXPOSE 8080
 
+HEALTHCHECK --interval=1s --timeout=5s --retries=20 --start-period=1s \
+  CMD curl -f http://localhost:8080/v1/ping || exit 1
+
 # Run
-CMD /rotatekeys && /api
+CMD ["sh", "-c", "/rotatekeys && /api"]
