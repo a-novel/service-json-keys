@@ -11,7 +11,7 @@ import (
 type masterKeyContext struct{}
 
 const (
-	MasterKeyEnv = "MASTER_KEY"
+	MasterKeyEnv = "JSON_KEYS_MASTER"
 )
 
 var (

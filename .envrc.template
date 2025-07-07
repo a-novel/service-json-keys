@@ -13,6 +13,10 @@ export POSTGRES_PORT=4002
 export POSTGRES_TEST_PORT=5002
 export POSTGRES_HOST="0.0.0.0"
 
+export DSN="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable"
+export DSN_DAO_TEST="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_TEST_PORT}/pg0?sslmode=disable"
+export DSN_INTEGRATION_TEST="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_TEST_PORT}/pg1?sslmode=disable"
+
 # Tracing.
 # Used for tracing purposes, can be omitted.
 #export SENTRY_DSN=[your_sentry_dsn]
@@ -21,7 +25,7 @@ export POSTGRES_HOST="0.0.0.0"
 #export ENV=production
 
 # Secrets.
-export MASTER_KEY='fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca'
+export JSON_KEYS_MASTER='fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca'
 
 # Other.
 export PODMAN_IGNORE_CGROUPSV1_WARNING="true"
