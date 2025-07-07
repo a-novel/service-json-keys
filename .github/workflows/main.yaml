@@ -136,7 +136,7 @@ jobs:
     env:
       DAO_DSN: postgres://postgres:postgres@localhost:5431/postgres?sslmode=disable
       DSN: postgres://postgres:postgres@localhost:5433/postgres?sslmode=disable
-      MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
+      JSON_KEYS_MASTER: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
       PORT: 8080
     steps:
       - uses: a-novel-kit/workflows/go-actions/test-go@master
@@ -200,14 +200,14 @@ jobs:
           POSTGRES_DB: postgres
     env:
       DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
-      MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
+      JSON_KEYS_MASTER: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
     steps:
       - uses: a-novel-kit/workflows/build-actions/docker-rest-api@master
         with:
           file: build/api.Dockerfile
           image_name: ${{ github.repository }}/api
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          run_args: -e DSN="${DSN}" -e MASTER_KEY="${MASTER_KEY}"
+          run_args: -e DSN="${DSN}" -e JSON_KEYS_MASTER="${JSON_KEYS_MASTER}"
 
   rotate-keys-build:
     needs: [test]
@@ -233,14 +233,14 @@ jobs:
           POSTGRES_DB: postgres
     env:
       DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
-      MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
+      JSON_KEYS_MASTER: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
     steps:
       - uses: a-novel-kit/workflows/build-actions/docker-job@master
         with:
           file: build/rotatekeys.Dockerfile
           image_name: ${{ github.repository }}/jobs/rotatekeys
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          run_args: -e DSN="${DSN}" -e MASTER_KEY="${MASTER_KEY}"
+          run_args: -e DSN="${DSN}" -e JSON_KEYS_MASTER="${JSON_KEYS_MASTER}"
 
   standalone-build:
     needs: [test]
@@ -266,11 +266,11 @@ jobs:
           POSTGRES_DB: postgres
     env:
       DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
-      MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
+      JSON_KEYS_MASTER: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
     steps:
       - uses: a-novel-kit/workflows/build-actions/docker-rest-api@master
         with:
           file: build/standalone.Dockerfile
           image_name: ${{ github.repository }}/standalone
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          run_args: -e DSN="${DSN}" -e MASTER_KEY="${MASTER_KEY}"
+          run_args: -e DSN="${DSN}" -e JSON_KEYS_MASTER="${JSON_KEYS_MASTER}"

@@ -60,7 +60,7 @@ services:
       DSN: postgres://postgres:postgres@json-keys-postgres:5432/json-keys?sslmode=disable
       # Dummy key used only for local environment. Consider using a secure, private key in production.
       # Note it MUST match the one used in the json-keys keys rotation job.
-      MASTER_KEY: fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca
+      JSON_KEYS_MASTER: fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca
       # Used for tracing purposes, can be omitted.
       # SENTRY_DSN: [your_sentry_dsn]
       # SERVER_NAME: json-keys-service-prod
