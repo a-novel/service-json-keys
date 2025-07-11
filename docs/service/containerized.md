@@ -226,11 +226,11 @@ You must provide the following variables for the service to run correctly.
 
 Generic configuration.
 
-| Variable   | Description                                     | Default             | Images                                 |
-| ---------- | ----------------------------------------------- | ------------------- | -------------------------------------- |
-| `APP_NAME` | Name of the application, used for tracing.      | `json-keys-service` | `standalone`, `api`, `jobs/rotatekeys` |
-| `ENV`      | Provide information on the current environment. |                     | `standalone`, `api`, `jobs/rotatekeys` |
-| `DEBUG`    | Activate debug mode for logs.                   | `false`             | `standalone`, `api`, `jobs/rotatekeys` |
+| Variable   | Description                                     | Default                                                     | Images                                 |
+| ---------- | ----------------------------------------------- | ----------------------------------------------------------- | -------------------------------------- |
+| `APP_NAME` | Name of the application, used for tracing.      | `json-keys-service`<br/>`service-json-keys-job-rotate-keys` | `standalone`, `api`, `jobs/rotatekeys` |
+| `ENV`      | Provide information on the current environment. |                                                             | `standalone`, `api`, `jobs/rotatekeys` |
+| `DEBUG`    | Activate debug mode for logs.                   | `false`                                                     | `standalone`, `api`, `jobs/rotatekeys` |
 
 API configuration.
 

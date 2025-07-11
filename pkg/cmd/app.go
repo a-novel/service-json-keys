@@ -31,25 +31,25 @@ type AppAppConfig struct {
 }
 
 type AppApiTimeoutsConfig struct {
-	Read       time.Duration `yaml:"read"`
-	ReadHeader time.Duration `yaml:"readHeader"`
-	Write      time.Duration `yaml:"write"`
-	Idle       time.Duration `yaml:"idle"`
-	Request    time.Duration `yaml:"request"`
+	Read       time.Duration `json:"read"       yaml:"read"`
+	ReadHeader time.Duration `json:"readHeader" yaml:"readHeader"`
+	Write      time.Duration `json:"write"      yaml:"write"`
+	Idle       time.Duration `json:"idle"       yaml:"idle"`
+	Request    time.Duration `json:"request"    yaml:"request"`
 }
 
 type AppCorsConfig struct {
-	AllowedOrigins   []string `yaml:"allowedOrigins"`
-	AllowedHeaders   []string `yaml:"allowedHeaders"`
-	AllowCredentials bool     `yaml:"allowCredentials"`
-	MaxAge           int      `yaml:"maxAge"`
+	AllowedOrigins   []string `json:"allowedOrigins"   yaml:"allowedOrigins"`
+	AllowedHeaders   []string `json:"allowedHeaders"   yaml:"allowedHeaders"`
+	AllowCredentials bool     `json:"allowCredentials" yaml:"allowCredentials"`
+	MaxAge           int      `json:"maxAge"           yaml:"maxAge"`
 }
 
 type AppAPIConfig struct {
-	Port           int                  `yaml:"port"`
-	Timeouts       AppApiTimeoutsConfig `yaml:"timeouts"`
+	Port           int                  `json:"port"           yaml:"port"`
+	Timeouts       AppApiTimeoutsConfig `json:"timeouts"       yaml:"timeouts"`
 	MaxRequestSize int64                `json:"maxRequestSize" yaml:"maxRequestSize"`
-	Cors           AppCorsConfig        `yaml:"cors"`
+	Cors           AppCorsConfig        `json:"cors"           yaml:"cors"`
 }
 
 type AppConfig[Otel otel.Config, Pg postgres.Config] struct {

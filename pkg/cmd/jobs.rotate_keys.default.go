@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	JobsRotateKeysName = "job-rotate-keys"
+	JobsRotateKeysName = "service-json-keys-job-rotate-keys"
 )
 
 var JobRotateKeysDefault = JobRotateKeysConfig[*otelpresets.SentryOtelConfig, postgres.Config]{
