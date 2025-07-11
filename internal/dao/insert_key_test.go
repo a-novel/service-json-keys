@@ -1,7 +1,7 @@
 package dao_test
 
 import (
-	"database/sql"
+	"context"
 	"testing"
 	"time"
 
@@ -10,11 +10,13 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/a-novel/service-json-keys/internal/dao"
-	"github.com/a-novel/service-json-keys/internal/lib"
+	testutils "github.com/a-novel/service-json-keys/internal/test"
 	"github.com/a-novel/service-json-keys/models"
 )
 
 func TestInsertKey(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		name       string
 		insertData dao.InsertKeyData
@@ -47,15 +49,10 @@ func TestInsertKey(t *testing.T) {
 	repository := dao.NewInsertKeyRepository()
 
 	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			tx, commit, err := lib.PostgresContextTx(ctx, &sql.TxOptions{Isolation: sql.LevelRepeatableRead})
-			require.NoError(t, err)
+		testutils.TransactionalTest(t, testCase.name, func(ctx context.Context, t *testing.T) {
+			t.Helper()
 
-			t.Cleanup(func() {
-				_ = commit(false)
-			})
-
-			key, err := repository.InsertKey(tx, testCase.insertData)
+			key, err := repository.InsertKey(ctx, testCase.insertData)
 			require.NoError(t, err)
 			require.NotNil(t, key)
 		})

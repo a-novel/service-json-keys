@@ -2,22 +2,21 @@ package dao
 
 import (
 	"context"
-	"errors"
+	_ "embed"
 	"fmt"
 	"time"
 
-	"github.com/getsentry/sentry-go"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel/attribute"
 
-	"github.com/a-novel/service-json-keys/internal/lib"
+	"github.com/a-novel/golib/otel"
+	"github.com/a-novel/golib/postgres"
+
 	"github.com/a-novel/service-json-keys/models"
 )
 
-var ErrInsertKeyRepository = errors.New("InsertKeyRepository.InsertKey")
-
-func NewErrInsertKeyRepository(err error) error {
-	return errors.Join(err, ErrInsertKeyRepository)
-}
+//go:embed insert_key.sql
+var insertKeyQuery string
 
 // InsertKeyData is the input used to perform the InsertKeyRepository.InsertKey action.
 type InsertKeyData struct {
@@ -58,20 +57,20 @@ func NewInsertKeyRepository() *InsertKeyRepository {
 // A given key pair is REQUIRED to have an expiration date, as it must be rotated on a regular basis. Only public keys
 // may be exposed to the application.
 func (repository *InsertKeyRepository) InsertKey(ctx context.Context, data InsertKeyData) (*KeyEntity, error) {
-	span := sentry.StartSpan(ctx, "InsertKeyRepository.InsertKey")
-	defer span.Finish()
+	ctx, span := otel.Tracer().Start(ctx, "dao.InsertKey")
+	defer span.End()
 
-	span.SetData("key.id", data.ID.String())
-	span.SetData("key.usage", data.Usage)
-	span.SetData("key.createdAt", data.Now.String())
-	span.SetData("key.expiresAt", data.Expiration.String())
+	span.SetAttributes(
+		attribute.String("key.id", data.ID.String()),
+		attribute.String("key.usage", data.Usage.String()),
+		attribute.Int64("key.created_at", data.Now.Unix()),
+		attribute.Int64("key.expires_at", data.Expiration.Unix()),
+	)
 
 	// Retrieve a connection to postgres from the context.
-	tx, err := lib.PostgresContext(span.Context())
+	tx, err := postgres.GetContext(ctx)
 	if err != nil {
-		span.SetData("postgres.context.error", err.Error())
-
-		return nil, NewErrInsertKeyRepository(fmt.Errorf("get postgres client: %w", err))
+		return nil, otel.ReportError(span, fmt.Errorf("get postgres client: %w", err))
 	}
 
 	entity := &KeyEntity{
@@ -84,13 +83,20 @@ func (repository *InsertKeyRepository) InsertKey(ctx context.Context, data Inser
 	}
 
 	// Execute query.
-	_, err = tx.NewInsert().Model(entity).Exec(span.Context())
+	err = tx.
+		NewRaw(
+			insertKeyQuery,
+			entity.ID,
+			entity.PrivateKey,
+			entity.PublicKey,
+			entity.Usage,
+			entity.CreatedAt,
+			entity.ExpiresAt,
+		).
+		Scan(ctx, entity)
 	if err != nil {
-		span.SetData("insert.error", err.Error())
-		// Don't check for collision errors: this is useless, as randomly generated UUIDs have a negligible chance of
-		// colliding.
-		return nil, NewErrInsertKeyRepository(fmt.Errorf("insert entity: %w", err))
+		return nil, otel.ReportError(span, fmt.Errorf("insert entity: %w", err))
 	}
 
-	return entity, nil
+	return otel.ReportSuccess(span, entity), nil
 }

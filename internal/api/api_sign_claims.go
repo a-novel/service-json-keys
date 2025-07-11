@@ -2,8 +2,9 @@ package api
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/getsentry/sentry-go"
+	"github.com/a-novel/golib/otel"
 
 	"github.com/a-novel/service-json-keys/internal/api/codegen"
 	"github.com/a-novel/service-json-keys/internal/services"
@@ -17,20 +18,16 @@ type SignClaimsService interface {
 func (api *API) SignClaims(
 	ctx context.Context, req codegen.SignClaimsReq, params codegen.SignClaimsParams,
 ) (codegen.SignClaimsRes, error) {
-	span := sentry.StartSpan(ctx, "API.SignClaims")
-	defer span.Finish()
+	ctx, span := otel.Tracer().Start(ctx, "api.SignClaims")
+	defer span.End()
 
-	span.SetData("usage", params.Usage)
-
-	token, err := api.SignClaimsService.SignClaims(span.Context(), services.SignClaimsRequest{
+	token, err := api.SignClaimsService.SignClaims(ctx, services.SignClaimsRequest{
 		Claims: req,
 		Usage:  models.KeyUsage(params.Usage),
 	})
 	if err != nil {
-		return nil, err
+		return nil, otel.ReportError(span, fmt.Errorf("sign claims: %w", err))
 	}
 
-	span.SetData("token", token)
-
-	return &codegen.Token{Token: token}, nil
+	return otel.ReportSuccess(span, &codegen.Token{Token: token}), nil
 }

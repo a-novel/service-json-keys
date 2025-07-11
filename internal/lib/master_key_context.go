@@ -5,36 +5,28 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"os"
+
+	"github.com/a-novel/golib/otel"
 )
 
 type masterKeyContext struct{}
 
-const (
-	MasterKeyEnv = "JSON_KEYS_MASTER"
-)
+var ErrInvalidMasterKey = errors.New("invalid master key")
 
-var (
-	ErrInvalidMasterKey = errors.New("invalid master key")
-	ErrNoMasterKey      = errors.New("missing master key")
-)
-
-func NewMasterKeyContext(ctx context.Context) (context.Context, error) {
-	masterKeyRaw := os.Getenv(MasterKeyEnv)
-	if masterKeyRaw == "" {
-		return ctx, ErrNoMasterKey
-	}
+func NewMasterKeyContext(ctx context.Context, masterKeyRaw string) (context.Context, error) {
+	ctx, span := otel.Tracer().Start(ctx, "lib.NewMasterKeyContext")
+	defer span.End()
 
 	masterKeyBytes, err := hex.DecodeString(masterKeyRaw)
 	if err != nil {
-		return ctx, fmt.Errorf("(NewMasterKeyContext) decode master key: %w", err)
+		return ctx, otel.ReportError(span, fmt.Errorf("decode master key: %w", err))
 	}
 
 	var masterKey [32]byte
 
 	copy(masterKey[:], masterKeyBytes)
 
-	return context.WithValue(ctx, masterKeyContext{}, masterKey), nil
+	return otel.ReportSuccess(span, context.WithValue(ctx, masterKeyContext{}, masterKey)), nil
 }
 
 func MasterKeyContext(ctx context.Context) ([32]byte, error) {
@@ -42,7 +34,7 @@ func MasterKeyContext(ctx context.Context) ([32]byte, error) {
 
 	if !ok {
 		return [32]byte{}, fmt.Errorf(
-			"(MasterKeyContext) extract master key: %w: got type %T, expected %T",
+			"extract master key: %w: got type %T, expected %T",
 			ErrInvalidMasterKey,
 			ctx.Value(masterKeyContext{}), [32]byte{},
 		)

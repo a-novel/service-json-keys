@@ -12,7 +12,6 @@ import (
 	"github.com/a-novel-kit/jwt/jwk"
 	"github.com/a-novel-kit/jwt/jws"
 
-	"github.com/a-novel/service-json-keys/config"
 	"github.com/a-novel/service-json-keys/models"
 )
 
@@ -159,7 +158,10 @@ type PrivateKeyGenericSource interface {
 	SearchKeys(ctx context.Context, usage models.KeyUsage) ([]*jwa.JWK, error)
 }
 
-func NewPrivateKeySources(source PrivateKeyGenericSource) (*PrivateKeysSourceType, error) {
+func NewPrivateKeySources(
+	source PrivateKeyGenericSource,
+	keys map[models.KeyUsage]*models.JSONKeyConfig,
+) (*PrivateKeysSourceType, error) {
 	output := &PrivateKeysSourceType{
 		EdDSA: make(map[models.KeyUsage]*jwk.Source[ed25519.PrivateKey]),
 		HMAC:  make(map[models.KeyUsage]*jwk.Source[[]byte]),
@@ -167,7 +169,7 @@ func NewPrivateKeySources(source PrivateKeyGenericSource) (*PrivateKeysSourceTyp
 		RSA:   make(map[models.KeyUsage]*jwk.Source[*rsa.PrivateKey]),
 	}
 
-	for usage, keyConfig := range config.Keys {
+	for usage, keyConfig := range keys {
 		fetch := func(ctx context.Context) ([]*jwa.JWK, error) {
 			return source.SearchKeys(ctx, usage)
 		}
@@ -204,7 +206,10 @@ type PublicKeyGenericSource interface {
 	SearchKeys(ctx context.Context, usage models.KeyUsage) ([]*jwa.JWK, error)
 }
 
-func NewPublicKeySource(source PublicKeyGenericSource) (*PublicKeySourceType, error) {
+func NewPublicKeySource(
+	source PublicKeyGenericSource,
+	keys map[models.KeyUsage]*models.JSONKeyConfig,
+) (*PublicKeySourceType, error) {
 	output := &PublicKeySourceType{
 		EdDSA: make(map[models.KeyUsage]*jwk.Source[ed25519.PublicKey]),
 		HMAC:  make(map[models.KeyUsage]*jwk.Source[[]byte]),
@@ -212,7 +217,7 @@ func NewPublicKeySource(source PublicKeyGenericSource) (*PublicKeySourceType, er
 		RSA:   make(map[models.KeyUsage]*jwk.Source[*rsa.PublicKey]),
 	}
 
-	for usage, keyConfig := range config.Keys {
+	for usage, keyConfig := range keys {
 		fetch := func(ctx context.Context) ([]*jwa.JWK, error) {
 			return source.SearchKeys(ctx, usage)
 		}
@@ -240,7 +245,10 @@ func NewPublicKeySource(source PublicKeyGenericSource) (*PublicKeySourceType, er
 
 type Producers map[models.KeyUsage][]jwt.ProducerPlugin
 
-func NewProducers(sources *PrivateKeysSourceType) (Producers, error) {
+func NewProducers(
+	sources *PrivateKeysSourceType,
+	keys map[models.KeyUsage]*models.JSONKeyConfig,
+) (Producers, error) {
 	output := make(Producers)
 
 	for usage, usageConfig := range sources.EdDSA {
@@ -249,20 +257,20 @@ func NewProducers(sources *PrivateKeysSourceType) (Producers, error) {
 	}
 
 	for usage, usageConfig := range sources.HMAC {
-		signer := jws.NewSourcedHMACSigner(usageConfig, HMACPresetsJWS[config.Keys[usage].Alg])
+		signer := jws.NewSourcedHMACSigner(usageConfig, HMACPresetsJWS[keys[usage].Alg])
 		output[usage] = append(output[usage], signer)
 	}
 
 	for usage, usageConfig := range sources.ES {
-		signer := jws.NewSourcedECDSASigner(usageConfig, ECDSAPresetsJWS[config.Keys[usage].Alg])
+		signer := jws.NewSourcedECDSASigner(usageConfig, ECDSAPresetsJWS[keys[usage].Alg])
 		output[usage] = append(output[usage], signer)
 	}
 
 	for usage, usageConfig := range sources.RSA {
-		if rsaPreset, ok := RSAPresetsJWS[config.Keys[usage].Alg]; ok {
+		if rsaPreset, ok := RSAPresetsJWS[keys[usage].Alg]; ok {
 			signer := jws.NewSourcedRSASigner(usageConfig, rsaPreset)
 			output[usage] = append(output[usage], signer)
-		} else if rsapssPreset, ok := RSAPSSPresetsJWS[config.Keys[usage].Alg]; ok {
+		} else if rsapssPreset, ok := RSAPSSPresetsJWS[keys[usage].Alg]; ok {
 			signer := jws.NewSourcedRSAPSSSigner(usageConfig, rsapssPreset)
 			output[usage] = append(output[usage], signer)
 		} else {
@@ -275,7 +283,10 @@ func NewProducers(sources *PrivateKeysSourceType) (Producers, error) {
 
 type Recipients map[models.KeyUsage][]jwt.RecipientPlugin
 
-func NewRecipients(sources *PublicKeySourceType) (Recipients, error) {
+func NewRecipients(
+	sources *PublicKeySourceType,
+	keys map[models.KeyUsage]*models.JSONKeyConfig,
+) (Recipients, error) {
 	output := make(Recipients)
 
 	for usage, usageConfig := range sources.EdDSA {
@@ -284,20 +295,20 @@ func NewRecipients(sources *PublicKeySourceType) (Recipients, error) {
 	}
 
 	for usage, usageConfig := range sources.HMAC {
-		recipient := jws.NewSourcedHMACVerifier(usageConfig, HMACPresetsJWS[config.Keys[usage].Alg])
+		recipient := jws.NewSourcedHMACVerifier(usageConfig, HMACPresetsJWS[keys[usage].Alg])
 		output[usage] = append(output[usage], recipient)
 	}
 
 	for usage, usageConfig := range sources.ES {
-		recipient := jws.NewSourcedECDSAVerifier(usageConfig, ECDSAPresetsJWS[config.Keys[usage].Alg])
+		recipient := jws.NewSourcedECDSAVerifier(usageConfig, ECDSAPresetsJWS[keys[usage].Alg])
 		output[usage] = append(output[usage], recipient)
 	}
 
 	for usage, usageConfig := range sources.RSA {
-		if rsaPreset, ok := RSAPresetsJWS[config.Keys[usage].Alg]; ok {
+		if rsaPreset, ok := RSAPresetsJWS[keys[usage].Alg]; ok {
 			recipient := jws.NewSourcedRSAVerifier(usageConfig, rsaPreset)
 			output[usage] = append(output[usage], recipient)
-		} else if rsapssPreset, ok := RSAPSSPresetsJWS[config.Keys[usage].Alg]; ok {
+		} else if rsapssPreset, ok := RSAPSSPresetsJWS[keys[usage].Alg]; ok {
 			recipient := jws.NewSourcedRSAPSSVerifier(usageConfig, rsapssPreset)
 			output[usage] = append(output[usage], recipient)
 		} else {

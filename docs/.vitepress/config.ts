@@ -1,0 +1,36 @@
+import { defineConfig } from "vitepress";
+import yamlLoader from "../plugins/yaml";
+
+// https://vitepress.dev/reference/site-config
+export default defineConfig({
+  title: "Service JSON Keys",
+  titleTemplate: "A-Novel",
+  themeConfig: {
+    // https://vitepress.dev/reference/default-theme-config
+    nav: [
+      { text: "Reference", link: "/service/containerized" },
+      { text: "API Reference", link: "/api.html", target: "_blank" },
+    ],
+
+    sidebar: [
+      {
+        text: "Run As a Service",
+        items: [{ text: "Containerized", link: "/service/containerized" }],
+      },
+      {
+        text: "Package",
+        items: [{ text: "Go module", link: "/package/go" }],
+      },
+    ],
+
+    socialLinks: [{ icon: "github", link: "https://github.com/a-novel/service-json-keys" }],
+  },
+
+  head: [["link", { rel: "icon", href: "/icon.png" }]],
+
+  base: "/service-json-keys/",
+
+  vite: {
+    plugins: [yamlLoader],
+  },
+});

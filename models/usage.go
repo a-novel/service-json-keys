@@ -4,6 +4,10 @@ package models
 // when retrieved.
 type KeyUsage string
 
+func (usage KeyUsage) String() string {
+	return string(usage)
+}
+
 const (
 	// KeyUsageAuth is used to issue signed authentication tokens.
 	KeyUsageAuth KeyUsage = "auth"

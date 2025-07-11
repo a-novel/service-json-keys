@@ -2,22 +2,17 @@ package services
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
-	"github.com/getsentry/sentry-go"
+	"go.opentelemetry.io/otel/attribute"
+
+	"github.com/a-novel/golib/otel"
 
 	"github.com/a-novel-kit/jwt/jwa"
 
 	"github.com/a-novel/service-json-keys/internal/dao"
 	"github.com/a-novel/service-json-keys/models"
 )
-
-var ErrSearchKeysService = errors.New("SearchKeysService.SearchKeys")
-
-func NewErrSearchKeysService(err error) error {
-	return errors.Join(err, ErrSearchKeysService)
-}
 
 // SearchKeysSource is the source used to perform the SearchKeysService.SearchKeys action.
 type SearchKeysSource interface {
@@ -46,37 +41,29 @@ func NewSearchKeysService(source SearchKeysSource) *SearchKeysService {
 // SearchKeys retrieves a batch of keys from the source. All keys are serialized, and match the usage required
 // by the request.
 func (service *SearchKeysService) SearchKeys(ctx context.Context, request SearchKeysRequest) ([]*jwa.JWK, error) {
-	span := sentry.StartSpan(ctx, "SearchKeysService.SearchKeys")
-	defer span.Finish()
+	ctx, span := otel.Tracer().Start(ctx, "service.SearchKeys")
+	defer span.End()
 
-	span.SetData("request.usage", request.Usage)
-	span.SetData("request.private", request.Private)
+	span.SetAttributes(
+		attribute.String("key.usage", request.Usage.String()),
+		attribute.Bool("key.private", request.Private),
+	)
 
-	keys, err := service.source.SearchKeys(span.Context(), request.Usage)
+	keys, err := service.source.SearchKeys(ctx, request.Usage)
 	if err != nil {
-		span.SetData("dao.error", err.Error())
-
-		return nil, NewErrSearchKeysService(fmt.Errorf("search keys: %w", err))
+		return nil, otel.ReportError(span, fmt.Errorf("search keys: %w", err))
 	}
 
-	span.SetData("keys.count", len(keys))
+	span.SetAttributes(attribute.Int("keys.count", len(keys)))
 
 	deserialized := make([]*jwa.JWK, len(keys))
 
 	for i, key := range keys {
-		subSpan := sentry.StartSpan(span.Context(), "deserializeKey")
-		subSpan.SetData("key.id", key.ID)
-
-		deserialized[i], err = dao.ConsumeKey(subSpan.Context(), key, request.Private)
+		deserialized[i], err = dao.ConsumeKey(ctx, key, request.Private)
 		if err != nil {
-			subSpan.SetData("deserializeKey.error", err.Error())
-			subSpan.Finish()
-
-			return nil, NewErrSearchKeysService(fmt.Errorf("consume DAO key (kid %s): %w", key.ID, err))
+			return nil, otel.ReportError(span, fmt.Errorf("consume DAO key (kid %s): %w", key.ID, err))
 		}
-
-		subSpan.Finish()
 	}
 
-	return deserialized, nil
+	return otel.ReportSuccess(span, deserialized), nil
 }

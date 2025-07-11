@@ -4,23 +4,10 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"os"
 	"testing"
 
 	"github.com/a-novel/service-json-keys/internal/lib"
 )
-
-var ctx context.Context
-
-func init() {
-	var err error
-
-	//nolint:fatcontext
-	ctx, err = lib.NewPostgresContext(context.Background(), os.Getenv("DAO_DSN"))
-	if err != nil {
-		panic(err)
-	}
-}
 
 func mustEncryptValue(ctx context.Context, t *testing.T, data any) []byte {
 	t.Helper()

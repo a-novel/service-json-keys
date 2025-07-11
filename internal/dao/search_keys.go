@@ -2,20 +2,19 @@ package dao
 
 import (
 	"context"
-	"errors"
+	_ "embed"
 	"fmt"
 
-	"github.com/getsentry/sentry-go"
+	"go.opentelemetry.io/otel/attribute"
 
-	"github.com/a-novel/service-json-keys/internal/lib"
+	"github.com/a-novel/golib/otel"
+	"github.com/a-novel/golib/postgres"
+
 	"github.com/a-novel/service-json-keys/models"
 )
 
-var ErrSearchKeysRepository = errors.New("SearchKeysRepository.SearchKeys")
-
-func NewErrSearchKeysRepository(err error) error {
-	return errors.Join(err, ErrSearchKeysRepository)
-}
+//go:embed search_keys.sql
+var searchKeysQuery string
 
 // KeysMaxBatchSize is a security used to limit the number of keys retrieved by a search operation.
 //
@@ -43,46 +42,42 @@ func NewSearchKeysRepository() *SearchKeysRepository {
 // potential overhead of the response when too much active keys coexist. This limit is set to KeysMaxBatchSize. If
 // a batch happens to contain more keys, an error is logged, and only the first KeysMaxBatchSize keys are returned.
 func (repository *SearchKeysRepository) SearchKeys(ctx context.Context, usage models.KeyUsage) ([]*KeyEntity, error) {
-	span := sentry.StartSpan(ctx, "SearchKeysRepository.SearchKeys")
-	defer span.Finish()
+	ctx, span := otel.Tracer().Start(ctx, "dao.SearchKeys")
+	defer span.End()
 
-	span.SetData("usage", usage)
+	span.SetAttributes(attribute.String("key.usage", usage.String()))
 
 	// Retrieve a connection to postgres from the context.
-	tx, err := lib.PostgresContext(span.Context())
+	tx, err := postgres.GetContext(ctx)
 	if err != nil {
-		span.SetData("postgres.context.error", err.Error())
-
-		return nil, NewErrSearchKeysRepository(fmt.Errorf("get postgres client: %w", err))
+		return nil, otel.ReportError(span, fmt.Errorf("get postgres client: %w", err))
 	}
 
 	var entities []*KeyEntity
 
-	// Execute query.
-	err = tx.NewSelect().
-		Model(&entities).
-		Where("usage = ?", usage).
-		Order("created_at DESC").
-		// Adda +1 to the limit, so we can differentiate between limit reached (which is OK) and limit exceeded
-		// (which is not).
-		Limit(KeysMaxBatchSize + 1).
-		Scan(span.Context())
+	// Adda +1 to the limit, so we can differentiate between limit reached (which is OK) and limit exceeded
+	// (which is not).
+	err = tx.NewRaw(searchKeysQuery, usage, KeysMaxBatchSize+1).Scan(ctx, &entities)
 	if err != nil {
-		span.SetData("scan.error", err.Error())
-
-		return nil, NewErrSearchKeysRepository(fmt.Errorf("list keys: %w", err))
+		return nil, otel.ReportError(span, fmt.Errorf("list keys: %w", err))
 	}
 
-	span.SetData("keys.count", len(entities))
+	span.SetAttributes(
+		attribute.Int("keys.count", len(entities)),
+		attribute.Int("keys.max_batch_size", KeysMaxBatchSize),
+	)
 
 	// Log an error when too many keys are found. This indicates a potential misconfiguration.
 	if len(entities) > KeysMaxBatchSize {
-		logger := sentry.NewLogger(span.Context())
-		logger.Errorf(ctx, "more than %d keys found for usage %s", KeysMaxBatchSize, usage)
+		err = fmt.Errorf("more than %d keys found for usage %s", KeysMaxBatchSize, usage)
+
+		logger := otel.Logger()
+		logger.ErrorContext(ctx, err.Error())
+		span.RecordError(err)
 
 		// Truncate the list to the maximum allowed size.
 		entities = entities[:KeysMaxBatchSize]
 	}
 
-	return entities, nil
+	return otel.ReportSuccess(span, entities), nil
 }

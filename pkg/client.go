@@ -13,6 +13,7 @@ const (
 	defaultPingTimeout  = 16 * time.Second
 )
 
+// NewAPIClient creates a new client to interact with a JSON keys server.
 func NewAPIClient(ctx context.Context, url string) (*codegen.Client, error) {
 	client, err := codegen.NewClient(url)
 	if err != nil {

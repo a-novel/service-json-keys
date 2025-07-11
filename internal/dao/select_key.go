@@ -3,20 +3,19 @@ package dao
 import (
 	"context"
 	"database/sql"
+	_ "embed"
 	"errors"
 	"fmt"
 
-	"github.com/getsentry/sentry-go"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel/attribute"
 
-	"github.com/a-novel/service-json-keys/internal/lib"
+	"github.com/a-novel/golib/otel"
+	"github.com/a-novel/golib/postgres"
 )
 
-var ErrSelectKeyRepository = errors.New("SelectKeyRepository.SelectKey")
-
-func NewErrSelectKeyRepository(err error) error {
-	return errors.Join(err, ErrSelectKeyRepository)
-}
+//go:embed select_key.sql
+var selectKeyQuery string
 
 // SelectKeyRepository is the repository used to perform the SelectKeyRepository.SelectKey action.
 //
@@ -33,33 +32,28 @@ func NewSelectKeyRepository() *SelectKeyRepository {
 // This allows to retrieve the exact key when performing reverse operations (signature verification or token
 // decryption).
 func (repository *SelectKeyRepository) SelectKey(ctx context.Context, id uuid.UUID) (*KeyEntity, error) {
-	span := sentry.StartSpan(ctx, "SelectKeyRepository.SelectKey")
-	defer span.Finish()
+	ctx, span := otel.Tracer().Start(ctx, "dao.SelectKey")
+	defer span.End()
 
-	span.SetData("key.id", id.String())
+	span.SetAttributes(attribute.String("key.id", id.String()))
 
 	// Retrieve a connection to postgres from the context.
-	tx, err := lib.PostgresContext(span.Context())
+	tx, err := postgres.GetContext(ctx)
 	if err != nil {
-		span.SetData("postgres.context.error", err.Error())
-
-		return nil, NewErrSelectKeyRepository(fmt.Errorf("get postgres client: %w", err))
+		return nil, otel.ReportError(span, fmt.Errorf("get postgres client: %w", err))
 	}
 
 	var entity KeyEntity
 
-	// Execute query.
-	err = tx.NewSelect().Model(&entity).Where("id = ?", id).Order("id DESC").Scan(span.Context())
+	err = tx.NewRaw(selectKeyQuery, id).Scan(ctx, &entity)
 	if err != nil {
-		span.SetData("scan.error", err.Error())
-
 		// Parse not found error as a managed error.
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, NewErrSelectKeyRepository(ErrKeyNotFound)
+			return nil, otel.ReportError(span, ErrKeyNotFound)
 		}
 
-		return nil, NewErrSelectKeyRepository(fmt.Errorf("select key: %w", err))
+		return nil, otel.ReportError(span, fmt.Errorf("select key: %w", err))
 	}
 
-	return &entity, nil
+	return otel.ReportSuccess(span, &entity), nil
 }
