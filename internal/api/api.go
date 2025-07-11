@@ -2,9 +2,10 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
-	"github.com/getsentry/sentry-go"
+	"github.com/a-novel/golib/otel"
 
 	"github.com/a-novel/service-json-keys/internal/api/codegen"
 )
@@ -28,8 +29,8 @@ func (api *API) NewError(ctx context.Context, err error) *codegen.UnexpectedErro
 		return nil
 	}
 
-	logger := sentry.NewLogger(ctx)
-	logger.Errorf(ctx, "security error: %v", err)
+	logger := otel.Logger()
+	logger.ErrorContext(ctx, fmt.Sprintf("security error: %v", err))
 
 	return ErrInternalServerError
 }
