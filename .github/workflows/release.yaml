@@ -26,8 +26,6 @@ jobs:
     services:
       postgres:
         image: postgres:17-alpine
-        ports:
-          - "5432:5432"
         options: >-
           --health-cmd pg_isready
           --health-interval 500ms
@@ -38,15 +36,16 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_DB: postgres
     env:
-      POSTGRES_DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
+      POSTGRES_DSN: postgres://postgres:postgres@postgres:5432/postgres?sslmode=disable
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
+      DEBUG: true
     steps:
       - uses: a-novel-kit/workflows/build-actions/docker-rest-api@master
         with:
           file: build/api.Dockerfile
           image_name: ${{ github.repository }}/api
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          run_args: -e POSTGRES_DSN="${POSTGRES_DSN}" -e APP_MASTER_KEY="${APP_MASTER_KEY}"
+          run_args: -e POSTGRES_DSN="${POSTGRES_DSN}" -e APP_MASTER_KEY="${APP_MASTER_KEY}" -e DEBUG="${DEBUG}"
 
   rotate-keys-build:
     needs: [release]
@@ -59,8 +58,6 @@ jobs:
     services:
       postgres:
         image: postgres:17-alpine
-        ports:
-          - "5432:5432"
         options: >-
           --health-cmd pg_isready
           --health-interval 500ms
@@ -71,15 +68,16 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_DB: postgres
     env:
-      POSTGRES_DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
+      POSTGRES_DSN: postgres://postgres:postgres@postgres:5432/postgres?sslmode=disable
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
+      DEBUG: true
     steps:
       - uses: a-novel-kit/workflows/build-actions/docker-job@master
         with:
           file: build/rotatekeys.Dockerfile
           image_name: ${{ github.repository }}/jobs/rotatekeys
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          run_args: -e POSTGRES_DSN="${POSTGRES_DSN}" -e APP_MASTER_KEY="${APP_MASTER_KEY}"
+          run_args: -e POSTGRES_DSN="${POSTGRES_DSN}" -e APP_MASTER_KEY="${APP_MASTER_KEY}" -e DEBUG="${DEBUG}"
 
   standalone-build:
     needs: [release]
@@ -92,8 +90,6 @@ jobs:
     services:
       postgres:
         image: postgres:17-alpine
-        ports:
-          - "5432:5432"
         options: >-
           --health-cmd pg_isready
           --health-interval 500ms
@@ -104,12 +100,13 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_DB: postgres
     env:
-      POSTGRES_DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
+      POSTGRES_DSN: postgres://postgres:postgres@postgres:5432/postgres?sslmode=disable
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
+      DEBUG: true
     steps:
       - uses: a-novel-kit/workflows/build-actions/docker-rest-api@master
         with:
           file: build/standalone.Dockerfile
           image_name: ${{ github.repository }}/standalone
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          run_args: -e POSTGRES_DSN="${POSTGRES_DSN}" -e APP_MASTER_KEY="${APP_MASTER_KEY}"
+          run_args: -e POSTGRES_DSN="${POSTGRES_DSN}" -e APP_MASTER_KEY="${APP_MASTER_KEY}" -e DEBUG="${DEBUG}"
