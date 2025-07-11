@@ -1,5 +1,6 @@
 import { defineConfig } from "vitepress";
 import yamlLoader from "../plugins/yaml";
+import { viteStaticCopy } from "vite-plugin-static-copy";
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -26,11 +27,21 @@ export default defineConfig({
     socialLinks: [{ icon: "github", link: "https://github.com/a-novel/service-json-keys" }],
   },
 
-  head: [["link", { rel: "icon", href: "/icon.png" }]],
+  head: [["link", { rel: "icon", href: "./icon.png" }]],
 
   base: "/service-json-keys/",
 
   vite: {
-    plugins: [yamlLoader],
+    plugins: [
+      yamlLoader,
+      viteStaticCopy({
+        targets: [
+          {
+            src: "api.yaml",
+            dest: "./",
+          },
+        ],
+      }),
+    ],
   },
 });
