@@ -28,16 +28,6 @@ openapi-lint:
 openapi-generate:
 	go generate ./...
 
-mjml-lint:
-	for i in `find ./config/mails -name "*.mjml" -type f`; do \
-		npx --yes --package=mjml@next mjml --validate $$i; \
-	done
-
-mjml-generate:
-	for i in `find ./config/mails -name "*.mjml" -type f`; do \
-		npx --yes --package=mjml@next mjml $$i -o $${i%.*}.html; \
-	done
-
 run-infra:
 	podman compose -p "${APP_NAME}" -f "${PWD}/build/podman-compose.yaml" up -d
 
@@ -54,3 +44,4 @@ run-api:
 
 install:
 	pipx install sqlfluff
+	bash -c "cd ./docs && pnpm i"

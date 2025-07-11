@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/getsentry/sentry-go"
 	"github.com/samber/lo"
+
+	"github.com/a-novel/golib/otel"
 
 	"github.com/a-novel-kit/jwt/jwa"
 
@@ -21,29 +22,21 @@ type SearchKeysService interface {
 func (api *API) ListPublicKeys(
 	ctx context.Context, params codegen.ListPublicKeysParams,
 ) (codegen.ListPublicKeysRes, error) {
-	span := sentry.StartSpan(ctx, "API.ListPublicKeys")
-	defer span.Finish()
+	ctx, span := otel.Tracer().Start(ctx, "api.ListPublicKeys")
+	defer span.End()
 
-	span.SetData("request.usage", params.Usage)
-
-	keys, err := api.SearchKeysService.SearchKeys(span.Context(), services.SearchKeysRequest{
+	keys, err := api.SearchKeysService.SearchKeys(ctx, services.SearchKeysRequest{
 		Usage:   models.KeyUsage(params.Usage),
 		Private: false,
 	})
 	if err != nil {
-		span.SetData("service.err", err.Error())
-
-		return nil, fmt.Errorf("search keys: %w", err)
+		return nil, otel.ReportError(span, fmt.Errorf("search keys: %w", err))
 	}
 
 	keysModels, err := api.jwksToModels(keys...)
 	if err != nil {
-		span.SetData("conversion.err", err.Error())
-
-		return nil, fmt.Errorf("convert keys to models: %w", err)
+		return nil, otel.ReportError(span, fmt.Errorf("convert keys to models: %w", err))
 	}
 
-	span.SetData("service.keys.count", len(keysModels))
-
-	return lo.ToPtr(codegen.ListPublicKeysOKApplicationJSON(keysModels)), nil
+	return otel.ReportSuccess(span, lo.ToPtr(codegen.ListPublicKeysOKApplicationJSON(keysModels))), nil
 }

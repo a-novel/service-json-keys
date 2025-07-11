@@ -16,20 +16,23 @@ type ClaimsVerifier[Out any] struct {
 	service *services.VerifyClaimsService[Out]
 }
 
-func NewClaimsVerifier[Out any](client *codegen.Client) (*ClaimsVerifier[Out], error) {
+func NewClaimsVerifier[Out any](
+	client *codegen.Client,
+	keys map[models.KeyUsage]*models.JSONKeyConfig,
+) (*ClaimsVerifier[Out], error) {
 	adapter := adapters.NewPublicKeySourcesAPI(client)
 
-	source, err := services.NewPublicKeySource(adapter)
+	source, err := services.NewPublicKeySource(adapter, keys)
 	if err != nil {
 		return nil, fmt.Errorf("NewPublicKeySourcesAPI: %w", err)
 	}
 
-	recipients, err := services.NewRecipients(source)
+	recipients, err := services.NewRecipients(source, keys)
 	if err != nil {
 		return nil, fmt.Errorf("NewRecipients: %w", err)
 	}
 
-	service := services.NewVerifyClaimsService[Out](recipients)
+	service := services.NewVerifyClaimsService[Out](recipients, keys)
 
 	return &ClaimsVerifier[Out]{service: service}, nil
 }

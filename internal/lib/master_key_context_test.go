@@ -9,6 +9,8 @@ import (
 )
 
 func TestMasterKeyContext(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		name string
 
@@ -38,9 +40,9 @@ func TestMasterKeyContext(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			t.Setenv(lib.MasterKeyEnv, testCase.envValue)
+			t.Parallel()
 
-			ctx, err := lib.NewMasterKeyContext(t.Context())
+			ctx, err := lib.NewMasterKeyContext(t.Context(), testCase.envValue)
 
 			if testCase.expectErr {
 				require.Error(t, err)

@@ -12,12 +12,13 @@ import (
 
 	"github.com/a-novel/service-json-keys/internal/dao"
 	"github.com/a-novel/service-json-keys/internal/lib"
+	testutils "github.com/a-novel/service-json-keys/internal/test"
 )
 
 func TestConsumeDAOKey(t *testing.T) {
 	t.Parallel()
 
-	ctx, err := lib.NewMasterKeyContext(t.Context())
+	ctx, err := lib.NewMasterKeyContext(t.Context(), testutils.TestMasterKey)
 	require.NoError(t, err)
 
 	testCases := []struct {

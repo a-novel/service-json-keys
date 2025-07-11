@@ -2,23 +2,17 @@ package services
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
-	"github.com/getsentry/sentry-go"
+	"go.opentelemetry.io/otel/attribute"
+
+	"github.com/a-novel/golib/otel"
 
 	"github.com/a-novel-kit/jwt"
 	"github.com/a-novel-kit/jwt/jwp"
 
-	"github.com/a-novel/service-json-keys/config"
 	"github.com/a-novel/service-json-keys/models"
 )
-
-var ErrVerifyClaimsService = errors.New("VerifyClaimsService.VerifyClaims")
-
-func NewErrVerifyClaimsService(err error) error {
-	return errors.Join(err, ErrVerifyClaimsService)
-}
 
 type VerifyClaimsRequest struct {
 	Token         string
@@ -28,21 +22,25 @@ type VerifyClaimsRequest struct {
 
 type VerifyClaimsService[Out any] struct {
 	recipients map[models.KeyUsage][]jwt.RecipientPlugin
+	keys       map[models.KeyUsage]*models.JSONKeyConfig
 }
 
-func NewVerifyClaimsService[Out any](recipients map[models.KeyUsage][]jwt.RecipientPlugin) *VerifyClaimsService[Out] {
-	return &VerifyClaimsService[Out]{recipients: recipients}
+func NewVerifyClaimsService[Out any](
+	recipients map[models.KeyUsage][]jwt.RecipientPlugin,
+	keys map[models.KeyUsage]*models.JSONKeyConfig,
+) *VerifyClaimsService[Out] {
+	return &VerifyClaimsService[Out]{recipients: recipients, keys: keys}
 }
 
 func (service *VerifyClaimsService[Out]) VerifyClaims(ctx context.Context, request VerifyClaimsRequest) (*Out, error) {
-	span := sentry.StartSpan(ctx, "VerifyClaimsService.VerifyClaims")
-	defer span.Finish()
+	ctx, span := otel.Tracer().Start(ctx, "service.VerifyClaims")
+	defer span.End()
 
-	span.SetData("usage", request.Usage)
+	span.SetAttributes(attribute.String("usage", request.Usage.String()))
 
-	keyConfig, ok := config.Keys[request.Usage]
+	keyConfig, ok := service.keys[request.Usage]
 	if !ok {
-		return nil, NewErrVerifyClaimsService(ErrConfigNotFound)
+		return nil, otel.ReportError(span, ErrConfigNotFound)
 	}
 
 	var claims Out
@@ -64,7 +62,7 @@ func (service *VerifyClaimsService[Out]) VerifyClaims(ctx context.Context, reque
 
 	recipientPlugins, ok := service.recipients[request.Usage]
 	if !ok {
-		return nil, NewErrVerifyClaimsService(
+		return nil, otel.ReportError(span,
 			fmt.Errorf("%w: no recipients found for usage %s", ErrConfigNotFound, request.Usage),
 		)
 	}
@@ -75,12 +73,10 @@ func (service *VerifyClaimsService[Out]) VerifyClaims(ctx context.Context, reque
 			Deserializer: deserializer.Unmarshal,
 		})
 
-	err := recipient.Consume(span.Context(), request.Token, &claims)
+	err := recipient.Consume(ctx, request.Token, &claims)
 	if err != nil {
-		span.SetData("error", err.Error())
-
-		return nil, NewErrVerifyClaimsService(err)
+		return nil, otel.ReportError(span, err)
 	}
 
-	return &claims, nil
+	return otel.ReportSuccess(span, &claims), nil
 }

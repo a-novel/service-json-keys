@@ -2,14 +2,15 @@ FROM golang:alpine AS builder
 
 WORKDIR /app
 
-COPY ../cmd/rotatekeys ./cmd/rotatekeys
-COPY ../config ./config
+COPY "../cmd/rotatekeys" "./cmd/rotatekeys"
 COPY ../internal/adapters ./internal/adapters
 COPY ../internal/dao ./internal/dao
 COPY ../internal/lib ./internal/lib
+COPY ../internal/api ./internal/api
 COPY ../internal/services ./internal/services
 COPY ../migrations ./migrations
 COPY ../models ./models
+COPY "../pkg/cmd" "./pkg/cmd"
 COPY ../go.mod ./go.mod
 COPY ../go.sum ./go.sum
 

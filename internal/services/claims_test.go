@@ -61,7 +61,7 @@ func TestSignAndVerifyClaims(t *testing.T) {
 				HMAC: make(map[models.KeyUsage]*jwk.Source[[]byte]),
 				ES:   make(map[models.KeyUsage]*jwk.Source[*ecdsa.PrivateKey]),
 				RSA:  make(map[models.KeyUsage]*jwk.Source[*rsa.PrivateKey]),
-			})
+			}, models.DefaultJWKSConfig)
 			require.NoError(t, err)
 
 			recipients, err := services.NewRecipients(&services.PublicKeySourceType{
@@ -75,11 +75,11 @@ func TestSignAndVerifyClaims(t *testing.T) {
 				HMAC: make(map[models.KeyUsage]*jwk.Source[[]byte]),
 				ES:   make(map[models.KeyUsage]*jwk.Source[*ecdsa.PublicKey]),
 				RSA:  make(map[models.KeyUsage]*jwk.Source[*rsa.PublicKey]),
-			})
+			}, models.DefaultJWKSConfig)
 			require.NoError(t, err)
 
-			signer := services.NewSignClaimsService(producers)
-			verifier := services.NewVerifyClaimsService[testClaims](recipients)
+			signer := services.NewSignClaimsService(producers, models.DefaultJWKSConfig)
+			verifier := services.NewVerifyClaimsService[testClaims](recipients, models.DefaultJWKSConfig)
 
 			ctx := context.Background()
 

@@ -1,12 +1,12 @@
-package main
+package cmdpkg_test
 
 import (
-	"fmt"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/a-novel/service-json-keys/config"
+	"github.com/a-novel/service-json-keys/internal/api/codegen"
 	"github.com/a-novel/service-json-keys/models"
 	"github.com/a-novel/service-json-keys/pkg"
 )
@@ -16,12 +16,11 @@ type testClaims struct {
 	Email    string `json:"email"`
 }
 
-func TestSignAndVerifyClaims(t *testing.T) {
-	client, err := pkg.NewAPIClient(t.Context(), fmt.Sprintf("http://127.0.0.1:%v/v1", config.API.Port))
-	require.NoError(t, err)
+func testAppSignAndVerify(_ context.Context, t *testing.T, client *codegen.Client) {
+	t.Helper()
 
 	signer := pkg.NewClaimsSigner(client)
-	verifier, err := pkg.NewClaimsVerifier[testClaims](client)
+	verifier, err := pkg.NewClaimsVerifier[testClaims](client, models.DefaultJWKSConfig)
 	require.NoError(t, err)
 
 	claims := testClaims{

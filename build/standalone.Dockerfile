@@ -3,8 +3,7 @@ FROM golang:alpine AS builder
 
 WORKDIR /app
 
-COPY ../cmd ./cmd
-COPY ../config ./config
+COPY "../cmd" "./cmd"
 COPY ../internal/api ./internal/api
 COPY ../internal/adapters ./internal/adapters
 COPY ../internal/dao ./internal/dao
@@ -12,6 +11,7 @@ COPY ../internal/lib ./internal/lib
 COPY ../internal/services ./internal/services
 COPY ../migrations ./migrations
 COPY ../models ./models
+COPY "../pkg/cmd" "./pkg/cmd"
 COPY ../go.mod ./go.mod
 COPY ../go.sum ./go.sum
 

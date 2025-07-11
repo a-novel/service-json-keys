@@ -17,9 +17,7 @@ func NewClaimsSigner(client *codegen.Client) *ClaimsSigner {
 	return &ClaimsSigner{client: client}
 }
 
-func (pkg *ClaimsSigner) SignClaims(
-	ctx context.Context, usage models.KeyUsage, claims any,
-) (string, error) {
+func (pkg *ClaimsSigner) SignClaims(ctx context.Context, usage models.KeyUsage, claims any) (string, error) {
 	serialized, err := json.Marshal(claims)
 	if err != nil {
 		return "", fmt.Errorf("json.Marshal: %w", err)

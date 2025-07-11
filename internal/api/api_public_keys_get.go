@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/getsentry/sentry-go"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel/codes"
+
+	"github.com/a-novel/golib/otel"
 
 	"github.com/a-novel-kit/jwt/jwa"
 
@@ -20,28 +22,31 @@ type SelectKeyService interface {
 }
 
 func (api *API) GetPublicKey(ctx context.Context, params codegen.GetPublicKeyParams) (codegen.GetPublicKeyRes, error) {
-	span := sentry.StartSpan(ctx, "API.GetPublicKey")
-	defer span.Finish()
+	ctx, span := otel.Tracer().Start(ctx, "api.GetPublicKey")
+	defer span.End()
 
-	span.SetData("request.kid", params.Kid)
-
-	key, err := api.SelectKeyService.SelectKey(span.Context(), services.SelectKeyRequest{
+	key, err := api.SelectKeyService.SelectKey(ctx, services.SelectKeyRequest{
 		ID:      uuid.UUID(params.Kid),
 		Private: false,
 	})
 
 	switch {
 	case errors.Is(err, dao.ErrKeyNotFound):
-		span.SetData("service.err", err.Error())
+		span.RecordError(err)
+		span.SetStatus(codes.Error, "")
 
 		return &codegen.NotFoundError{Error: "key not found"}, nil
 	case err != nil:
-		span.SetData("service.err", err.Error())
+		span.RecordError(err)
+		span.SetStatus(codes.Error, "")
 
 		return nil, fmt.Errorf("select key: %w", err)
 	}
 
-	span.SetData("service.key", key.JWKCommon)
+	resp, err := api.jwkToModel(key)
+	if err != nil {
+		return nil, otel.ReportError(span, fmt.Errorf("convert key to model: %w", err))
+	}
 
-	return api.jwkToModel(key)
+	return otel.ReportSuccess(span, resp), nil
 }

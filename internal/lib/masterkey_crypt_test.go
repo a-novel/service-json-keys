@@ -13,12 +13,10 @@ func TestMasterKeyCrypt(t *testing.T) { //nolint:tparallel
 	masterKey := hex.EncodeToString([]byte("secret-master-key"))
 	fakeMasterKey := hex.EncodeToString([]byte("fake-master-key"))
 
-	t.Setenv(lib.MasterKeyEnv, masterKey)
-	ctxReal, err := lib.NewMasterKeyContext(t.Context())
+	ctxReal, err := lib.NewMasterKeyContext(t.Context(), masterKey)
 	require.NoError(t, err)
 
-	t.Setenv(lib.MasterKeyEnv, fakeMasterKey)
-	ctxFake, err := lib.NewMasterKeyContext(t.Context())
+	ctxFake, err := lib.NewMasterKeyContext(t.Context(), fakeMasterKey)
 	require.NoError(t, err)
 
 	data := map[string]any{"foo": "bar"}

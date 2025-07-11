@@ -2,22 +2,16 @@ package services
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
-	"github.com/getsentry/sentry-go"
+	"go.opentelemetry.io/otel/attribute"
+
+	"github.com/a-novel/golib/otel"
 
 	"github.com/a-novel-kit/jwt"
 
-	"github.com/a-novel/service-json-keys/config"
 	"github.com/a-novel/service-json-keys/models"
 )
-
-var ErrSignClaimsService = errors.New("SignClaimsService.SignClaims")
-
-func NewErrSignClaimsService(err error) error {
-	return errors.Join(err, ErrSignClaimsService)
-}
 
 type SignClaimsRequest struct {
 	// Claims to sign.
@@ -28,21 +22,25 @@ type SignClaimsRequest struct {
 
 type SignClaimsService struct {
 	producers map[models.KeyUsage][]jwt.ProducerPlugin
+	keys      map[models.KeyUsage]*models.JSONKeyConfig
 }
 
-func NewSignClaimsService(producers map[models.KeyUsage][]jwt.ProducerPlugin) *SignClaimsService {
-	return &SignClaimsService{producers: producers}
+func NewSignClaimsService(
+	producers map[models.KeyUsage][]jwt.ProducerPlugin,
+	keys map[models.KeyUsage]*models.JSONKeyConfig,
+) *SignClaimsService {
+	return &SignClaimsService{producers: producers, keys: keys}
 }
 
 func (service *SignClaimsService) SignClaims(ctx context.Context, request SignClaimsRequest) (string, error) {
-	span := sentry.StartSpan(ctx, "SignClaimsService.SignClaims")
-	defer span.Finish()
+	ctx, span := otel.Tracer().Start(ctx, "service.SignClaims")
+	defer span.End()
 
-	span.SetData("usage", request.Usage)
+	span.SetAttributes(attribute.String("usage", request.Usage.String()))
 
-	keyConfig, ok := config.Keys[request.Usage]
+	keyConfig, ok := service.keys[request.Usage]
 	if !ok {
-		return "", NewErrSignClaimsService(fmt.Errorf("%w: %s", ErrConfigNotFound, request.Usage))
+		return "", otel.ReportError(span, fmt.Errorf("%w: %s", ErrConfigNotFound, request.Usage))
 	}
 
 	claims, err := jwt.NewBasicClaims(request.Claims, jwt.ClaimsProducerConfig{
@@ -54,26 +52,20 @@ func (service *SignClaimsService) SignClaims(ctx context.Context, request SignCl
 		TTL: keyConfig.Token.TTL,
 	})
 	if err != nil {
-		span.SetData("error", err.Error())
-
-		return "", NewErrSignClaimsService(fmt.Errorf("create claims: %w", err))
+		return "", otel.ReportError(span, fmt.Errorf("create claims: %w", err))
 	}
 
 	producerPlugins, ok := service.producers[request.Usage]
 	if !ok {
-		span.SetData("error", fmt.Sprintf("no producer plugins found for usage: %s", request.Usage))
-
-		return "", NewErrSignClaimsService(fmt.Errorf("%w: %s", ErrConfigNotFound, request.Usage))
+		return "", otel.ReportError(span, fmt.Errorf("%w: %s", ErrConfigNotFound, request.Usage))
 	}
 
 	producer := jwt.NewProducer(jwt.ProducerConfig{Plugins: producerPlugins})
 
-	token, err := producer.Issue(span.Context(), claims, nil)
+	token, err := producer.Issue(ctx, claims, nil)
 	if err != nil {
-		span.SetData("error", err.Error())
-
-		return "", NewErrSignClaimsService(fmt.Errorf("issue token: %w", err))
+		return "", otel.ReportError(span, fmt.Errorf("issue token: %w", err))
 	}
 
-	return token, nil
+	return otel.ReportSuccess(span, token), nil
 }

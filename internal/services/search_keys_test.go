@@ -16,12 +16,13 @@ import (
 	"github.com/a-novel/service-json-keys/internal/lib"
 	"github.com/a-novel/service-json-keys/internal/services"
 	servicesmocks "github.com/a-novel/service-json-keys/internal/services/mocks"
+	testutils "github.com/a-novel/service-json-keys/internal/test"
 )
 
 func TestSearchKeys(t *testing.T) {
 	t.Parallel()
 
-	ctx, err := lib.NewMasterKeyContext(t.Context())
+	ctx, err := lib.NewMasterKeyContext(t.Context(), testutils.TestMasterKey)
 	require.NoError(t, err)
 
 	errFoo := errors.New("foo")

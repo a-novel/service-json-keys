@@ -19,6 +19,7 @@ import (
 	"github.com/a-novel/service-json-keys/internal/lib"
 	"github.com/a-novel/service-json-keys/internal/services"
 	servicesmocks "github.com/a-novel/service-json-keys/internal/services/mocks"
+	testutils "github.com/a-novel/service-json-keys/internal/test"
 	"github.com/a-novel/service-json-keys/models"
 )
 
@@ -65,7 +66,7 @@ func checkGeneratedPublicKey(t *testing.T, key string) (*jwa.JWK, error) {
 func TestGenerateKeys(t *testing.T) {
 	t.Parallel()
 
-	ctx, err := lib.NewMasterKeyContext(t.Context())
+	ctx, err := lib.NewMasterKeyContext(t.Context(), testutils.TestMasterKey)
 	require.NoError(t, err)
 
 	errFoo := errors.New("foo")
@@ -302,7 +303,7 @@ func TestGenerateKeys(t *testing.T) {
 					Return(testCase.insertKeyData.resp, testCase.insertKeyData.err)
 			}
 
-			service := services.NewGenerateKeyService(source)
+			service := services.NewGenerateKeyService(source, models.DefaultJWKSConfig)
 
 			kid, err := service.GenerateKey(ctx, testCase.usage)
 			require.ErrorIs(t, err, testCase.expectErr)

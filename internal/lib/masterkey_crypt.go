@@ -8,8 +8,10 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/getsentry/sentry-go"
+	"go.opentelemetry.io/otel/codes"
 	"golang.org/x/crypto/nacl/secretbox"
+
+	"github.com/a-novel/golib/otel"
 )
 
 var (
@@ -29,39 +31,50 @@ func NewErrDecryptMasterKey(err error) error {
 
 // EncryptMasterKey encrypts the input using the master key.
 func EncryptMasterKey(ctx context.Context, data any) ([]byte, error) {
+	ctx, span := otel.Tracer().Start(ctx, "lib.EncryptMasterKey")
+	defer span.End()
+
 	secret, err := MasterKeyContext(ctx)
 	if err != nil {
-		return nil, NewErrEncryptMasterKey(fmt.Errorf("get master key: %w", err))
+		return nil, otel.ReportError(span, NewErrEncryptMasterKey(fmt.Errorf("get master key: %w", err)))
 	}
+
+	span.AddEvent("masterKey.retrieved")
 
 	serializedData, err := json.Marshal(data)
 	if err != nil {
-		return nil, NewErrEncryptMasterKey(fmt.Errorf("serialize data: %w", err))
+		return nil, otel.ReportError(span, NewErrEncryptMasterKey(fmt.Errorf("serialize data: %w", err)))
 	}
+
+	span.AddEvent("data.serialized")
 
 	var nonce [24]byte
 
 	_, err = io.ReadFull(rand.Reader, nonce[:])
 	if err != nil {
-		return nil, NewErrEncryptMasterKey(fmt.Errorf("generate nonce: %w", err))
+		return nil, otel.ReportError(span, NewErrEncryptMasterKey(fmt.Errorf("generate nonce: %w", err)))
 	}
+
+	span.AddEvent("nonce.generated")
 
 	encrypted := secretbox.Seal(nonce[:], serializedData, &nonce, &secret)
 
-	return encrypted, nil
+	span.AddEvent("data.encrypted")
+
+	return otel.ReportSuccess(span, encrypted), nil
 }
 
 // DecryptMasterKey decrypts the input using the master key.
 func DecryptMasterKey(ctx context.Context, data []byte, output any) error {
-	span := sentry.StartSpan(ctx, "DecryptMasterKey")
-	defer span.Finish()
+	ctx, span := otel.Tracer().Start(ctx, "lib.DecryptMasterKey")
+	defer span.End()
 
 	secret, err := MasterKeyContext(ctx)
 	if err != nil {
-		span.SetData("masterKey.error", err.Error())
-
-		return fmt.Errorf("get master key: %w", err)
+		return otel.ReportError(span, fmt.Errorf("get master key: %w", err))
 	}
+
+	span.AddEvent("masterKey.retrieved")
 
 	var decryptNonce [24]byte
 
@@ -69,17 +82,18 @@ func DecryptMasterKey(ctx context.Context, data []byte, output any) error {
 
 	decrypted, ok := secretbox.Open(nil, data[24:], &decryptNonce, &secret)
 	if !ok {
-		span.SetData("decrypt.error", "invalid secret or nonce")
-
-		return NewErrDecryptMasterKey(fmt.Errorf("decrypt data: %w", ErrInvalidSecret))
+		return otel.ReportError(span, NewErrDecryptMasterKey(fmt.Errorf("decrypt data: %w", ErrInvalidSecret)))
 	}
+
+	span.AddEvent("data.decrypted")
 
 	err = json.Unmarshal(decrypted, &output)
 	if err != nil {
-		span.SetData("unmarshal.error", err.Error())
-
-		return NewErrDecryptMasterKey(fmt.Errorf("unmarshal data: %w", err))
+		return otel.ReportError(span, NewErrDecryptMasterKey(fmt.Errorf("unmarshal data: %w", err)))
 	}
+
+	span.AddEvent("data.unmarshalled")
+	span.SetStatus(codes.Ok, "")
 
 	return nil
 }
