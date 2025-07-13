@@ -8,6 +8,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/require"
+	"github.com/uptrace/bun"
+
+	"github.com/a-novel/golib/postgres"
 
 	"github.com/a-novel/service-json-keys/internal/dao"
 	testutils "github.com/a-novel/service-json-keys/internal/test"
@@ -49,12 +52,16 @@ func TestInsertKey(t *testing.T) {
 	repository := dao.NewInsertKeyRepository()
 
 	for _, testCase := range testCases {
-		testutils.TransactionalTest(t, testCase.name, func(ctx context.Context, t *testing.T) {
-			t.Helper()
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
 
-			key, err := repository.InsertKey(ctx, testCase.insertData)
-			require.NoError(t, err)
-			require.NotNil(t, key)
+			postgres.RunIsolatedTransactionalTest(t, testutils.TestDBConfig, func(ctx context.Context, t *testing.T, _ *bun.DB) {
+				t.Helper()
+
+				key, err := repository.InsertKey(ctx, testCase.insertData)
+				require.NoError(t, err)
+				require.NotNil(t, key)
+			})
 		})
 	}
 }

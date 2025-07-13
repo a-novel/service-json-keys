@@ -53,9 +53,6 @@ jobs:
       - uses: a-novel-kit/workflows/open-api-actions/lint-open-api@master
 
   lint-go:
-    needs:
-      - generated-go
-      - generated-mockery
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -79,22 +76,15 @@ jobs:
           pat: ${{ secrets.ACTION_PAT }}
 
   test:
-    needs:
-      - generated-go
-      - generated-mockery
+    needs: [generated-go, generated-mockery, lint-go, database-build]
     runs-on: ubuntu-latest
     permissions:
       contents: read
     services:
       postgres:
+        image: ghcr.io/a-novel/service-json-keys/database@${{ needs.database-build.outputs.digest }}
         ports:
           - "5432:5432"
-        image: docker.io/library/postgres:17
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 500ms
-          --health-timeout 5s
-          --health-retries 50
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
@@ -109,7 +99,7 @@ jobs:
 
   report-codecov:
     runs-on: ubuntu-latest
-    needs: [test, lint-go]
+    needs: [test]
     permissions:
       contents: read
     steps:
@@ -120,7 +110,7 @@ jobs:
   report-grc:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master' && success()
-    needs: [test, lint-go]
+    needs: [test]
     permissions:
       contents: read
     steps:
@@ -141,8 +131,37 @@ jobs:
           working_directory: ./docs
           build_path: ./docs/.vitepress/dist/
 
+  database-build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    env:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+      POSTGRES_INITDB_ARGS: --auth=scram-sha-256
+    outputs:
+      digest: ${{ steps.database_build.outputs.digest }}
+    steps:
+      - uses: a-novel-kit/workflows/build-actions/docker@master
+        id: database_build
+        with:
+          file: build/database.Dockerfile
+          image_name: ${{ github.repository }}/database
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          run_args: >-
+            -e POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" 
+            -e POSTGRES_USER="${POSTGRES_USER}" 
+            -e POSTGRES_DB="${POSTGRES_DB}"
+            -e POSTGRES_HOST_AUTH_METHOD="${POSTGRES_HOST_AUTH_METHOD}"
+            -e POSTGRES_INITDB_ARGS="${POSTGRES_INITDB_ARGS}"
+
   api-build:
-    needs: [test]
+    needs: [test, database-build]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -151,23 +170,20 @@ jobs:
       id-token: write
     services:
       postgres:
-        image: postgres:17-alpine
+        image: ghcr.io/a-novel/service-json-keys/database@${{ needs.database-build.outputs.digest }}
         ports:
           - "5432:5432"
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 500ms
-          --health-timeout 5s
-          --health-retries 50
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
           POSTGRES_DB: postgres
+          POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+          POSTGRES_INITDB_ARGS: --auth=scram-sha-256
     env:
       POSTGRES_DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
     steps:
-      - uses: a-novel-kit/workflows/build-actions/docker-rest-api@master
+      - uses: a-novel-kit/workflows/build-actions/docker@master
         with:
           file: build/api.Dockerfile
           image_name: ${{ github.repository }}/api
@@ -175,7 +191,7 @@ jobs:
           run_args: -e POSTGRES_DSN="${POSTGRES_DSN}" -e APP_MASTER_KEY="${APP_MASTER_KEY}"
 
   rotate-keys-build:
-    needs: [test]
+    needs: [test, database-build]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -184,18 +200,15 @@ jobs:
       id-token: write
     services:
       postgres:
-        image: postgres:17-alpine
+        image: ghcr.io/a-novel/service-json-keys/database@${{ needs.database-build.outputs.digest }}
         ports:
           - "5432:5432"
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 500ms
-          --health-timeout 5s
-          --health-retries 50
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
           POSTGRES_DB: postgres
+          POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+          POSTGRES_INITDB_ARGS: --auth=scram-sha-256
     env:
       POSTGRES_DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
@@ -208,7 +221,7 @@ jobs:
           run_args: -e POSTGRES_DSN="${POSTGRES_DSN}" -e APP_MASTER_KEY="${APP_MASTER_KEY}"
 
   standalone-build:
-    needs: [test]
+    needs: [test, database-build]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -217,23 +230,20 @@ jobs:
       id-token: write
     services:
       postgres:
-        image: postgres:17-alpine
+        image: ghcr.io/a-novel/service-json-keys/database@${{ needs.database-build.outputs.digest }}
         ports:
           - "5432:5432"
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 500ms
-          --health-timeout 5s
-          --health-retries 50
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
           POSTGRES_DB: postgres
+          POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+          POSTGRES_INITDB_ARGS: --auth=scram-sha-256
     env:
       POSTGRES_DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
     steps:
-      - uses: a-novel-kit/workflows/build-actions/docker-rest-api@master
+      - uses: a-novel-kit/workflows/build-actions/docker@master
         with:
           file: build/standalone.Dockerfile
           image_name: ${{ github.repository }}/standalone

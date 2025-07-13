@@ -1,6 +1,8 @@
 services:
   json-keys-postgres:
-    image: docker.io/library/postgres:17
+    build:
+      context: ..
+      dockerfile: ./build/database.Dockerfile
     ports:
       - "${POSTGRES_TEST_PORT}:5432"
     networks:
@@ -15,7 +17,7 @@ services:
       - json-keys-postgres-test-data:/var/lib/postgresql/data/
 
 networks:
-  json-keys-api-test: {}
+  json-keys-api-test:
 
 volumes:
   json-keys-postgres-test-data:

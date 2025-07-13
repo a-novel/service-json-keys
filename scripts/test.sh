@@ -13,7 +13,7 @@ int_handler()
 trap int_handler INT
 
 # Setup test containers.
-podman compose -p "${APP_NAME}" -f "${PODMAN_FILE}" up -d
+podman compose -p "${APP_NAME}" -f "${PODMAN_FILE}" up -d --build
 
 # shellcheck disable=SC2046
 go run ${TEST_TOOL_PKG} --format pkgname -- -count=1 -cover $(go list ./... | grep -v /mocks | grep -v /codegen | grep -v /test)

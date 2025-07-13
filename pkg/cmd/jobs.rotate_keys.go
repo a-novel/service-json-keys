@@ -2,9 +2,11 @@ package cmdpkg
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"sync"
 
-	"github.com/go-faster/errors"
+	"github.com/uptrace/bun"
 	"go.opentelemetry.io/otel/codes"
 
 	"github.com/a-novel/golib/otel"
@@ -62,18 +64,33 @@ func JobRotateKeys[Otel otel.Config, Pg postgres.Config](
 		config.JWKS,
 	)
 
-	rotateKeyUsage := func(usage models.KeyUsage) error {
-		_, err = generateKeysService.GenerateKey(ctx, usage)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}
+	var (
+		wg    sync.WaitGroup
+		sErrs sync.Map
+	)
 
 	for usage := range config.JWKS {
-		err = errors.Join(rotateKeyUsage(usage), err)
+		wg.Add(1)
+
+		go func(usage models.KeyUsage) {
+			defer wg.Done()
+
+			sErrs.Store(usage, postgres.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
+				_, localErr := generateKeysService.GenerateKey(ctx, usage)
+
+				return localErr
+			}))
+		}(usage)
 	}
+
+	wg.Wait()
+
+	sErrs.Range(func(key, value interface{}) bool {
+		cErr, _ := value.(error)
+		err = errors.Join(err, cErr)
+
+		return true
+	})
 
 	if err != nil {
 		return otel.ReportError(span, fmt.Errorf("rotate keys: %w", err))
