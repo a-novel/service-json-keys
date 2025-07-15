@@ -38,14 +38,6 @@ func TestApp(t *testing.T) {
 
 			require.NoError(t, cmdpkg.JobRotateKeys(ctx, rotateKeysConfig))
 
-			db, err := postgres.GetContext(ctx)
-			require.NoError(t, err)
-
-			// The new keys must also be added to the materialized view.
-			// This operation is scheduled regularly in production.
-			_, err = db.NewRaw("REFRESH MATERIALIZED VIEW active_keys;").Exec(ctx)
-			require.NoError(t, err)
-
 			go func() {
 				assert.NoError(t, cmdpkg.App(ctx, apiConfig))
 			}()

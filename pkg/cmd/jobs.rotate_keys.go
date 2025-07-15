@@ -96,6 +96,17 @@ func JobRotateKeys[Otel otel.Config, Pg postgres.Config](
 		return otel.ReportError(span, fmt.Errorf("rotate keys: %w", err))
 	}
 
+	db, err := postgres.GetContext(ctx)
+	if err != nil {
+		return otel.ReportError(span, fmt.Errorf("get db from context: %w", err))
+	}
+
+	// The new keys must also be added to the materialized view.
+	_, err = db.NewRaw("REFRESH MATERIALIZED VIEW active_keys;").Exec(ctx)
+	if err != nil {
+		return otel.ReportError(span, fmt.Errorf("refresh materialized view: %w", err))
+	}
+
 	span.SetStatus(codes.Ok, "")
 
 	return nil

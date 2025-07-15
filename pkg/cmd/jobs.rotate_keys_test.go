@@ -28,15 +28,7 @@ func TestJobRotateKeys(t *testing.T) {
 		func(ctx context.Context, t *testing.T, _ *bun.DB) {
 			t.Helper()
 
-			db, err := postgres.GetContext(ctx)
-			require.NoError(t, err)
-
 			require.NoError(t, cmdpkg.JobRotateKeys(ctx, config))
-
-			// The new keys must also be added to the materialized view.
-			// This operation is scheduled regularly in production.
-			_, err = db.NewRaw("REFRESH MATERIALIZED VIEW active_keys;").Exec(ctx)
-			require.NoError(t, err)
 
 			searchKeysDAO := dao.NewSearchKeysRepository()
 
