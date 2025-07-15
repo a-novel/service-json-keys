@@ -18,11 +18,11 @@ import (
 
 	"github.com/a-novel/service-json-keys/internal/adapters"
 	"github.com/a-novel/service-json-keys/internal/api"
-	"github.com/a-novel/service-json-keys/internal/api/codegen"
 	"github.com/a-novel/service-json-keys/internal/dao"
 	"github.com/a-novel/service-json-keys/internal/lib"
 	"github.com/a-novel/service-json-keys/internal/services"
 	"github.com/a-novel/service-json-keys/models"
+	"github.com/a-novel/service-json-keys/models/api"
 )
 
 type AppAppConfig struct {
@@ -144,7 +144,7 @@ func App[Otel otel.Config, Pg postgres.Config](ctx context.Context, config AppCo
 		SignClaimsService: signClaimsService,
 	}
 
-	apiServer, err := codegen.NewServer(handler)
+	apiServer, err := apimodels.NewServer(handler)
 	if err != nil {
 		return fmt.Errorf("new api server: %w", err)
 	}

@@ -12,10 +12,10 @@ import (
 	"github.com/a-novel-kit/jwt/jwa"
 
 	"github.com/a-novel/service-json-keys/internal/api"
-	"github.com/a-novel/service-json-keys/internal/api/codegen"
 	apimocks "github.com/a-novel/service-json-keys/internal/api/mocks"
 	"github.com/a-novel/service-json-keys/internal/dao"
 	"github.com/a-novel/service-json-keys/internal/services"
+	"github.com/a-novel/service-json-keys/models/api"
 )
 
 func TestGetPublicKey(t *testing.T) {
@@ -31,18 +31,18 @@ func TestGetPublicKey(t *testing.T) {
 	testCases := []struct {
 		name string
 
-		params codegen.GetPublicKeyParams
+		params apimodels.GetPublicKeyParams
 
 		selectKeyData *selectKeyData
 
-		expect    codegen.GetPublicKeyRes
+		expect    apimodels.GetPublicKeyRes
 		expectErr error
 	}{
 		{
 			name: "Success",
 
-			params: codegen.GetPublicKeyParams{
-				Kid: codegen.KID(uuid.MustParse("00000000-0000-0000-0000-000000000001")),
+			params: apimodels.GetPublicKeyParams{
+				Kid: apimodels.KID(uuid.MustParse("00000000-0000-0000-0000-000000000001")),
 			},
 
 			selectKeyData: &selectKeyData{
@@ -58,16 +58,16 @@ func TestGetPublicKey(t *testing.T) {
 				},
 			},
 
-			expect: &codegen.JWK{
+			expect: &apimodels.JWK{
 				Kty:    "test-kty",
 				Use:    "test-use",
-				KeyOps: []codegen.KeyOp{"test-keyops"},
+				KeyOps: []apimodels.KeyOp{"test-keyops"},
 				Alg:    "test-alg",
-				Kid: codegen.OptKID{
-					Value: codegen.KID(uuid.MustParse("00000000-0000-0000-0000-000000000001")),
+				Kid: apimodels.OptKID{
+					Value: apimodels.KID(uuid.MustParse("00000000-0000-0000-0000-000000000001")),
 					Set:   true,
 				},
-				AdditionalProps: codegen.JWKAdditional{
+				AdditionalProps: apimodels.JWKAdditional{
 					"test": jx.Raw(`"payload"`),
 				},
 			},
@@ -75,21 +75,21 @@ func TestGetPublicKey(t *testing.T) {
 		{
 			name: "KeyNotFound",
 
-			params: codegen.GetPublicKeyParams{
-				Kid: codegen.KID(uuid.MustParse("00000000-0000-0000-0000-000000000001")),
+			params: apimodels.GetPublicKeyParams{
+				Kid: apimodels.KID(uuid.MustParse("00000000-0000-0000-0000-000000000001")),
 			},
 
 			selectKeyData: &selectKeyData{
 				err: dao.ErrKeyNotFound,
 			},
 
-			expect: &codegen.NotFoundError{Error: "key not found"},
+			expect: &apimodels.NotFoundError{Error: "key not found"},
 		},
 		{
 			name: "Error",
 
-			params: codegen.GetPublicKeyParams{
-				Kid: codegen.KID(uuid.MustParse("00000000-0000-0000-0000-000000000001")),
+			params: apimodels.GetPublicKeyParams{
+				Kid: apimodels.KID(uuid.MustParse("00000000-0000-0000-0000-000000000001")),
 			},
 
 			selectKeyData: &selectKeyData{

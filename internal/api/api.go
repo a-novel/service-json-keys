@@ -7,23 +7,23 @@ import (
 
 	"github.com/a-novel/golib/otel"
 
-	"github.com/a-novel/service-json-keys/internal/api/codegen"
+	"github.com/a-novel/service-json-keys/models/api"
 )
 
-var ErrInternalServerError = &codegen.UnexpectedErrorStatusCode{
+var ErrInternalServerError = &apimodels.UnexpectedErrorStatusCode{
 	StatusCode: http.StatusInternalServerError,
-	Response:   codegen.UnexpectedError{Error: "internal server error"},
+	Response:   apimodels.UnexpectedError{Error: "internal server error"},
 }
 
 type API struct {
-	codegen.UnimplementedHandler
+	apimodels.UnimplementedHandler
 
 	SelectKeyService  SelectKeyService
 	SearchKeysService SearchKeysService
 	SignClaimsService SignClaimsService
 }
 
-func (api *API) NewError(ctx context.Context, err error) *codegen.UnexpectedErrorStatusCode {
+func (api *API) NewError(ctx context.Context, err error) *apimodels.UnexpectedErrorStatusCode {
 	// no-op
 	if err == nil {
 		return nil

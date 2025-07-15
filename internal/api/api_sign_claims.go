@@ -6,9 +6,9 @@ import (
 
 	"github.com/a-novel/golib/otel"
 
-	"github.com/a-novel/service-json-keys/internal/api/codegen"
 	"github.com/a-novel/service-json-keys/internal/services"
 	"github.com/a-novel/service-json-keys/models"
+	"github.com/a-novel/service-json-keys/models/api"
 )
 
 type SignClaimsService interface {
@@ -16,8 +16,8 @@ type SignClaimsService interface {
 }
 
 func (api *API) SignClaims(
-	ctx context.Context, req codegen.SignClaimsReq, params codegen.SignClaimsParams,
-) (codegen.SignClaimsRes, error) {
+	ctx context.Context, req apimodels.SignClaimsReq, params apimodels.SignClaimsParams,
+) (apimodels.SignClaimsRes, error) {
 	ctx, span := otel.Tracer().Start(ctx, "api.SignClaims")
 	defer span.End()
 
@@ -29,5 +29,5 @@ func (api *API) SignClaims(
 		return nil, otel.ReportError(span, fmt.Errorf("sign claims: %w", err))
 	}
 
-	return otel.ReportSuccess(span, &codegen.Token{Token: token}), nil
+	return otel.ReportSuccess(span, &apimodels.Token{Token: token}), nil
 }

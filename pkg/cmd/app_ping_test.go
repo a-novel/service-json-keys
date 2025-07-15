@@ -6,10 +6,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/a-novel/service-json-keys/internal/api/codegen"
+	"github.com/a-novel/service-json-keys/models/api"
 )
 
-func testAppPing(_ context.Context, t *testing.T, client *codegen.Client) {
+func testAppPing(_ context.Context, t *testing.T, client *apimodels.Client) {
 	t.Helper()
 
 	_, err := client.Ping(t.Context())

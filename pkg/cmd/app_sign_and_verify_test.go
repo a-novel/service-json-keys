@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/a-novel/service-json-keys/internal/api/codegen"
 	"github.com/a-novel/service-json-keys/models"
+	"github.com/a-novel/service-json-keys/models/api"
 	"github.com/a-novel/service-json-keys/pkg"
 )
 
@@ -16,7 +16,7 @@ type testClaims struct {
 	Email    string `json:"email"`
 }
 
-func testAppSignAndVerify(_ context.Context, t *testing.T, client *codegen.Client) {
+func testAppSignAndVerify(_ context.Context, t *testing.T, client *apimodels.Client) {
 	t.Helper()
 
 	signer := pkg.NewClaimsSigner(client)

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/a-novel/service-json-keys/internal/api/codegen"
+	"github.com/a-novel/service-json-keys/models/api"
 )
 
 const (
@@ -13,11 +13,9 @@ const (
 	defaultPingTimeout  = 16 * time.Second
 )
 
-type APIClient = codegen.Client
-
 // NewAPIClient creates a new client to interact with a JSON keys server.
-func NewAPIClient(ctx context.Context, url string) (*APIClient, error) {
-	client, err := codegen.NewClient(url)
+func NewAPIClient(ctx context.Context, url string) (*apimodels.Client, error) {
+	client, err := apimodels.NewClient(url)
 	if err != nil {
 		return nil, fmt.Errorf("create client: %w", err)
 	}

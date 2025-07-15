@@ -11,14 +11,14 @@ import (
 	"github.com/a-novel/golib/otel"
 	"github.com/a-novel/golib/postgres"
 
-	"github.com/a-novel/service-json-keys/internal/api/codegen"
+	"github.com/a-novel/service-json-keys/models/api"
 )
 
-func (api *API) Ping(_ context.Context) (codegen.PingRes, error) {
-	return &codegen.PingOK{Data: strings.NewReader("pong")}, nil
+func (api *API) Ping(_ context.Context) (apimodels.PingRes, error) {
+	return &apimodels.PingOK{Data: strings.NewReader("pong")}, nil
 }
 
-func (api *API) reportPostgres(ctx context.Context) codegen.Dependency {
+func (api *API) reportPostgres(ctx context.Context) apimodels.Dependency {
 	ctx, span := otel.Tracer().Start(ctx, "api.reportPostgres")
 	defer span.End()
 
@@ -29,9 +29,9 @@ func (api *API) reportPostgres(ctx context.Context) codegen.Dependency {
 		logger.ErrorContext(ctx, fmt.Sprintf("retrieve postgres context: %v", err))
 		span.SetStatus(codes.Error, "")
 
-		return codegen.Dependency{
+		return apimodels.Dependency{
 			Name:   "postgres",
-			Status: codegen.DependencyStatusDown,
+			Status: apimodels.DependencyStatusDown,
 		}
 	}
 
@@ -40,9 +40,9 @@ func (api *API) reportPostgres(ctx context.Context) codegen.Dependency {
 		logger.ErrorContext(ctx, fmt.Sprintf("retrieve postgres context: invalid type %T", pg))
 		span.SetStatus(codes.Error, "")
 
-		return codegen.Dependency{
+		return apimodels.Dependency{
 			Name:   "postgres",
-			Status: codegen.DependencyStatusDown,
+			Status: apimodels.DependencyStatusDown,
 		}
 	}
 
@@ -51,22 +51,22 @@ func (api *API) reportPostgres(ctx context.Context) codegen.Dependency {
 		logger.ErrorContext(ctx, fmt.Sprintf("ping postgres: %v", err))
 		span.SetStatus(codes.Error, "")
 
-		return codegen.Dependency{
+		return apimodels.Dependency{
 			Name:   "postgres",
-			Status: codegen.DependencyStatusDown,
+			Status: apimodels.DependencyStatusDown,
 		}
 	}
 
 	span.SetStatus(codes.Ok, "")
 
-	return codegen.Dependency{
+	return apimodels.Dependency{
 		Name:   "postgres",
-		Status: codegen.DependencyStatusUp,
+		Status: apimodels.DependencyStatusUp,
 	}
 }
 
-func (api *API) Healthcheck(ctx context.Context) (codegen.HealthcheckRes, error) {
-	return &codegen.Health{
+func (api *API) Healthcheck(ctx context.Context) (apimodels.HealthcheckRes, error) {
+	return &apimodels.Health{
 		Postgres: api.reportPostgres(ctx),
 	}, nil
 }

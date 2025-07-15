@@ -13,10 +13,10 @@ import (
 	"github.com/a-novel-kit/jwt/jwa"
 
 	"github.com/a-novel/service-json-keys/internal/api"
-	"github.com/a-novel/service-json-keys/internal/api/codegen"
 	apimocks "github.com/a-novel/service-json-keys/internal/api/mocks"
 	"github.com/a-novel/service-json-keys/internal/services"
 	"github.com/a-novel/service-json-keys/models"
+	"github.com/a-novel/service-json-keys/models/api"
 )
 
 func TestListPublicKeys(t *testing.T) {
@@ -32,17 +32,17 @@ func TestListPublicKeys(t *testing.T) {
 	testCases := []struct {
 		name string
 
-		params codegen.ListPublicKeysParams
+		params apimodels.ListPublicKeysParams
 
 		listKeysData *listKeysData
 
-		expect    codegen.ListPublicKeysRes
+		expect    apimodels.ListPublicKeysRes
 		expectErr error
 	}{
 		{
 			name: "Success",
 
-			params: codegen.ListPublicKeysParams{
+			params: apimodels.ListPublicKeysParams{
 				Usage: "test-usage",
 			},
 
@@ -71,30 +71,30 @@ func TestListPublicKeys(t *testing.T) {
 				},
 			},
 
-			expect: lo.ToPtr(codegen.ListPublicKeysOKApplicationJSON([]codegen.JWK{
+			expect: lo.ToPtr(apimodels.ListPublicKeysOKApplicationJSON([]apimodels.JWK{
 				{
 					Kty:    "test-kty",
 					Use:    "test-use",
-					KeyOps: []codegen.KeyOp{"test-keyops"},
+					KeyOps: []apimodels.KeyOp{"test-keyops"},
 					Alg:    "test-alg",
-					Kid: codegen.OptKID{
-						Value: codegen.KID(uuid.MustParse("00000000-0000-0000-0000-000000000002")),
+					Kid: apimodels.OptKID{
+						Value: apimodels.KID(uuid.MustParse("00000000-0000-0000-0000-000000000002")),
 						Set:   true,
 					},
-					AdditionalProps: codegen.JWKAdditional{
+					AdditionalProps: apimodels.JWKAdditional{
 						"test": jx.Raw(`"payload-2"`),
 					},
 				},
 				{
 					Kty:    "test-kty",
 					Use:    "test-use",
-					KeyOps: []codegen.KeyOp{"test-keyops"},
+					KeyOps: []apimodels.KeyOp{"test-keyops"},
 					Alg:    "test-alg",
-					Kid: codegen.OptKID{
-						Value: codegen.KID(uuid.MustParse("00000000-0000-0000-0000-000000000001")),
+					Kid: apimodels.OptKID{
+						Value: apimodels.KID(uuid.MustParse("00000000-0000-0000-0000-000000000001")),
 						Set:   true,
 					},
-					AdditionalProps: codegen.JWKAdditional{
+					AdditionalProps: apimodels.JWKAdditional{
 						"test": jx.Raw(`"payload-1"`),
 					},
 				},
@@ -103,7 +103,7 @@ func TestListPublicKeys(t *testing.T) {
 		{
 			name: "NoResults",
 
-			params: codegen.ListPublicKeysParams{
+			params: apimodels.ListPublicKeysParams{
 				Usage: "test-usage",
 			},
 
@@ -111,12 +111,12 @@ func TestListPublicKeys(t *testing.T) {
 				res: []*jwa.JWK{},
 			},
 
-			expect: lo.ToPtr(codegen.ListPublicKeysOKApplicationJSON([]codegen.JWK{})),
+			expect: lo.ToPtr(apimodels.ListPublicKeysOKApplicationJSON([]apimodels.JWK{})),
 		},
 		{
 			name: "Error",
 
-			params: codegen.ListPublicKeysParams{
+			params: apimodels.ListPublicKeysParams{
 				Usage: "test-usage",
 			},
 

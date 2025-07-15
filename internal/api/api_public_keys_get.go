@@ -12,16 +12,18 @@ import (
 
 	"github.com/a-novel-kit/jwt/jwa"
 
-	"github.com/a-novel/service-json-keys/internal/api/codegen"
 	"github.com/a-novel/service-json-keys/internal/dao"
 	"github.com/a-novel/service-json-keys/internal/services"
+	"github.com/a-novel/service-json-keys/models/api"
 )
 
 type SelectKeyService interface {
 	SelectKey(ctx context.Context, request services.SelectKeyRequest) (*jwa.JWK, error)
 }
 
-func (api *API) GetPublicKey(ctx context.Context, params codegen.GetPublicKeyParams) (codegen.GetPublicKeyRes, error) {
+func (api *API) GetPublicKey(
+	ctx context.Context, params apimodels.GetPublicKeyParams,
+) (apimodels.GetPublicKeyRes, error) {
 	ctx, span := otel.Tracer().Start(ctx, "api.GetPublicKey")
 	defer span.End()
 
@@ -35,7 +37,7 @@ func (api *API) GetPublicKey(ctx context.Context, params codegen.GetPublicKeyPar
 		span.RecordError(err)
 		span.SetStatus(codes.Error, "")
 
-		return &codegen.NotFoundError{Error: "key not found"}, nil
+		return &apimodels.NotFoundError{Error: "key not found"}, nil
 	case err != nil:
 		span.RecordError(err)
 		span.SetStatus(codes.Error, "")

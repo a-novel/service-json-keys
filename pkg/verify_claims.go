@@ -7,9 +7,9 @@ import (
 	"github.com/samber/lo"
 
 	"github.com/a-novel/service-json-keys/internal/adapters"
-	"github.com/a-novel/service-json-keys/internal/api/codegen"
 	"github.com/a-novel/service-json-keys/internal/services"
 	"github.com/a-novel/service-json-keys/models"
+	"github.com/a-novel/service-json-keys/models/api"
 )
 
 type ClaimsVerifier[Out any] struct {
@@ -17,7 +17,7 @@ type ClaimsVerifier[Out any] struct {
 }
 
 func NewClaimsVerifier[Out any](
-	client *codegen.Client,
+	client *apimodels.Client,
 	keys map[models.KeyUsage]*models.JSONKeyConfig,
 ) (*ClaimsVerifier[Out], error) {
 	adapter := adapters.NewPublicKeySourcesAPI(client)
