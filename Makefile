@@ -29,7 +29,7 @@ openapi-generate:
 	go generate ./...
 
 run-infra:
-	podman compose -p "${APP_NAME}" -f "${PWD}/build/podman-compose.yaml" up -d
+	podman compose -p "${APP_NAME}" -f "${PWD}/build/podman-compose.yaml" up -d --build
 
 run-infra-down:
 	podman compose -p "${APP_NAME}" -f "${PWD}/build/podman-compose.yaml" down

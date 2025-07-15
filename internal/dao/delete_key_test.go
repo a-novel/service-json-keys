@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/require"
+	"github.com/uptrace/bun"
 
 	"github.com/a-novel/golib/postgres"
 
@@ -160,20 +161,31 @@ func TestDeleteKey(t *testing.T) {
 	repository := dao.NewDeleteKeyRepository()
 
 	for _, testCase := range testCases {
-		testutils.TransactionalTest(t, testCase.name, func(ctx context.Context, t *testing.T) {
-			t.Helper()
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
 
-			db, err := postgres.GetContext(ctx)
-			require.NoError(t, err)
+			postgres.RunIsolatedTransactionalTest(
+				t,
+				testutils.TestDBConfig,
+				func(ctx context.Context, t *testing.T, _ *bun.DB) {
+					t.Helper()
 
-			if len(testCase.fixtures) > 0 {
-				_, err = db.NewInsert().Model(&testCase.fixtures).Exec(ctx)
-				require.NoError(t, err)
-			}
+					db, err := postgres.GetContext(ctx)
+					require.NoError(t, err)
 
-			key, err := repository.DeleteKey(ctx, testCase.data)
-			require.ErrorIs(t, err, testCase.expectErr)
-			require.Equal(t, testCase.expect, key)
+					if len(testCase.fixtures) > 0 {
+						_, err = db.NewInsert().Model(&testCase.fixtures).Exec(ctx)
+						require.NoError(t, err)
+					}
+
+					_, err = db.NewRaw("REFRESH MATERIALIZED VIEW active_keys;").Exec(ctx)
+					require.NoError(t, err)
+
+					key, err := repository.DeleteKey(ctx, testCase.data)
+					require.ErrorIs(t, err, testCase.expectErr)
+					require.Equal(t, testCase.expect, key)
+				},
+			)
 		})
 	}
 }

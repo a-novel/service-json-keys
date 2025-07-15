@@ -4,10 +4,10 @@ import (
 	"context"
 	"database/sql"
 	_ "embed"
+	"errors"
 	"fmt"
 	"time"
 
-	"github.com/go-faster/errors"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/attribute"
 

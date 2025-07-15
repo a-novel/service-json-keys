@@ -13,7 +13,7 @@ service to run correctly.
 # https://github.com/containers/podman-compose
 services:
   json-keys-postgres:
-    image: docker.io/library/postgres:17
+    image: ghcr.io/a-novel/service-json-keys/database:v1
     networks:
       - api
     environment:
@@ -44,63 +44,6 @@ services:
     image: ghcr.io/a-novel/service-json-keys/api:v1
     depends_on:
       - json-keys-postgres
-    environment:
-      POSTGRES_DSN: postgres://postgres:postgres@json-keys-postgres:5432/json-keys?sslmode=disable
-      APP_MASTER_KEY: fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca
-    networks:
-      - api
-
-networks:
-  api: {}
-
-volumes:
-  json-keys-postgres-data:
-```
-
-```yaml [docker]
-# https://docs.docker.com/compose/
-version: "3.8"
-services:
-  json-keys-postgres:
-    image: postgres:17
-    networks:
-      - api
-    environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_DB: json-keys
-      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
-      POSTGRES_INITDB_ARGS: --auth=scram-sha-256
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 10s
-      retries: 5
-      start_period: 30s
-      timeout: 10s
-    volumes:
-      - json-keys-postgres-data:/var/lib/postgresql/data/
-
-  # Make sure the master key is the same across all containers.
-  # The Master Key is a secure, 32-bit random secret used to encrypt private JSON keys
-  # in the database.
-  # This value is a dummy key used for tests. Use your own random key in production.
-
-  json-keys-job-rotate-keys:
-    image: ghcr.io/a-novel/service-json-keys/jobs/rotatekeys:v1
-    depends_on:
-      json-keys-postgres:
-        condition: service_healthy
-    environment:
-      POSTGRES_DSN: postgres://postgres:postgres@json-keys-postgres:5432/json-keys?sslmode=disable
-      APP_MASTER_KEY: fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca
-    networks:
-      - api
-
-  json-keys-service:
-    image: ghcr.io/a-novel/service-json-keys/api:v1
-    depends_on:
-      json-keys-postgres:
-        condition: service_healthy
     environment:
       POSTGRES_DSN: postgres://postgres:postgres@json-keys-postgres:5432/json-keys?sslmode=disable
       APP_MASTER_KEY: fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca
@@ -131,7 +74,7 @@ The standalone image takes longer to boot, and it is not suited for production u
 # https://github.com/containers/podman-compose
 services:
   json-keys-postgres:
-    image: docker.io/library/postgres:17
+    image: ghcr.io/a-novel/service-json-keys/database:v1
     networks:
       - api
     environment:
@@ -150,50 +93,6 @@ services:
     image: ghcr.io/a-novel/service-json-keys/standalone:v1
     depends_on:
       - json-keys-postgres
-    environment:
-      POSTGRES_DSN: postgres://postgres:postgres@json-keys-postgres:5432/json-keys?sslmode=disable
-      APP_MASTER_KEY: fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca
-    networks:
-      - api
-
-networks:
-  api: {}
-
-volumes:
-  json-keys-postgres-data:
-```
-
-```yaml [docker]
-# https://docs.docker.com/compose/
-version: "3.8"
-services:
-  json-keys-postgres:
-    image: postgres:17
-    networks:
-      - api
-    environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_DB: json-keys
-      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
-      POSTGRES_INITDB_ARGS: --auth=scram-sha-256
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 10s
-      retries: 5
-      start_period: 30s
-      timeout: 10s
-    volumes:
-      - json-keys-postgres-data:/var/lib/postgresql/data/
-
-  # The Master Key is a secure, 32-bit random secret used to encrypt private JSON keys
-  # in the database.
-  # This value is a dummy key used for tests. Use your own random key in production.
-  json-keys-service:
-    image: ghcr.io/a-novel/service-json-keys/standalone:v1
-    depends_on:
-      json-keys-postgres:
-        condition: service_healthy
     environment:
       POSTGRES_DSN: postgres://postgres:postgres@json-keys-postgres:5432/json-keys?sslmode=disable
       APP_MASTER_KEY: fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca

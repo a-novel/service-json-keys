@@ -8,8 +8,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/uptrace/bun"
 
 	"github.com/a-novel/golib/config"
+	"github.com/a-novel/golib/postgres"
 	postgrespresets "github.com/a-novel/golib/postgres/presets"
 
 	"github.com/a-novel/service-json-keys/internal/api/codegen"
@@ -28,28 +30,40 @@ func TestApp(t *testing.T) {
 	rotateKeysConfig := cmdpkg.JobRotateKeysDefault
 	rotateKeysConfig.Postgres = postgrespresets.NewPassthroughConfig(testutils.TestDB)
 
-	testutils.TransactionalTest(t, "App", func(ctx context.Context, t *testing.T) {
-		t.Helper()
+	postgres.RunIsolatedTransactionalTest(
+		t,
+		testutils.TestDBConfig,
+		func(ctx context.Context, t *testing.T, _ *bun.DB) {
+			t.Helper()
 
-		require.NoError(t, cmdpkg.JobRotateKeys(ctx, rotateKeysConfig))
+			require.NoError(t, cmdpkg.JobRotateKeys(ctx, rotateKeysConfig))
 
-		go func() {
-			assert.NoError(t, cmdpkg.App(ctx, apiConfig))
-		}()
+			db, err := postgres.GetContext(ctx)
+			require.NoError(t, err)
 
-		client, err := pkg.NewAPIClient(ctx, fmt.Sprintf("http://localhost:%v/v1", apiConfig.API.Port))
-		require.NoError(t, err)
+			// The new keys must also be added to the materialized view.
+			// This operation is scheduled regularly in production.
+			_, err = db.NewRaw("REFRESH MATERIALIZED VIEW active_keys;").Exec(ctx)
+			require.NoError(t, err)
 
-		testSuites := map[string]func(ctx context.Context, t *testing.T, client *codegen.Client){
-			"Ping":          testAppPing,
-			"SignAndVerify": testAppSignAndVerify,
-		}
+			go func() {
+				assert.NoError(t, cmdpkg.App(ctx, apiConfig))
+			}()
 
-		for testName, testSuite := range testSuites {
-			t.Run(testName, func(t *testing.T) {
-				t.Parallel()
-				testSuite(ctx, t, client)
-			})
-		}
-	})
+			client, err := pkg.NewAPIClient(ctx, fmt.Sprintf("http://localhost:%v/v1", apiConfig.API.Port))
+			require.NoError(t, err)
+
+			testSuites := map[string]func(ctx context.Context, t *testing.T, client *codegen.Client){
+				"Ping":          testAppPing,
+				"SignAndVerify": testAppSignAndVerify,
+			}
+
+			for testName, testSuite := range testSuites {
+				t.Run(testName, func(t *testing.T) {
+					t.Parallel()
+					testSuite(ctx, t, client)
+				})
+			}
+		},
+	)
 }

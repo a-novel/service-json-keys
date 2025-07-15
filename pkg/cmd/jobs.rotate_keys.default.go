@@ -10,7 +10,6 @@ import (
 	"github.com/a-novel/golib/postgres"
 	postgrespresets "github.com/a-novel/golib/postgres/presets"
 
-	"github.com/a-novel/service-json-keys/migrations"
 	"github.com/a-novel/service-json-keys/models"
 )
 
@@ -36,7 +35,6 @@ var JobRotateKeysDefault = JobRotateKeysConfig[*otelpresets.SentryOtelConfig, po
 		),
 	},
 	Postgres: postgrespresets.DefaultConfig{
-		DSN:        os.Getenv("POSTGRES_DSN"),
-		Migrations: migrations.Migrations,
+		DSN: os.Getenv("POSTGRES_DSN"),
 	},
 }
