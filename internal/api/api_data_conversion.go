@@ -8,11 +8,11 @@ import (
 
 	"github.com/a-novel-kit/jwt/jwa"
 
-	"github.com/a-novel/service-json-keys/internal/api/codegen"
+	"github.com/a-novel/service-json-keys/models/api"
 )
 
-func (api *API) jwkToModel(src *jwa.JWK) (*codegen.JWK, error) {
-	rawPayload := new(codegen.JWKAdditional)
+func (api *API) jwkToModel(src *jwa.JWK) (*apimodels.JWK, error) {
+	rawPayload := new(apimodels.JWKAdditional)
 
 	err := rawPayload.UnmarshalJSON(src.Payload)
 	if err != nil {
@@ -24,18 +24,18 @@ func (api *API) jwkToModel(src *jwa.JWK) (*codegen.JWK, error) {
 		return nil, fmt.Errorf("parse kid: %w", err)
 	}
 
-	return &codegen.JWK{
-		Kty:             codegen.KTY(src.KTY),
-		Use:             codegen.Use(src.Use),
-		KeyOps:          lo.Map(src.KeyOps, func(item jwa.KeyOp, _ int) codegen.KeyOp { return codegen.KeyOp(item) }),
-		Alg:             codegen.Alg(src.Alg),
-		Kid:             codegen.OptKID{Value: codegen.KID(kid), Set: true},
+	return &apimodels.JWK{
+		Kty:             apimodels.KTY(src.KTY),
+		Use:             apimodels.Use(src.Use),
+		KeyOps:          lo.Map(src.KeyOps, func(item jwa.KeyOp, _ int) apimodels.KeyOp { return apimodels.KeyOp(item) }),
+		Alg:             apimodels.Alg(src.Alg),
+		Kid:             apimodels.OptKID{Value: apimodels.KID(kid), Set: true},
 		AdditionalProps: *rawPayload,
 	}, nil
 }
 
-func (api *API) jwksToModels(src ...*jwa.JWK) ([]codegen.JWK, error) {
-	output := make([]codegen.JWK, len(src))
+func (api *API) jwksToModels(src ...*jwa.JWK) ([]apimodels.JWK, error) {
+	output := make([]apimodels.JWK, len(src))
 
 	for i, jwk := range src {
 		model, err := api.jwkToModel(jwk)

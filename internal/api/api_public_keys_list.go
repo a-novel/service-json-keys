@@ -10,9 +10,9 @@ import (
 
 	"github.com/a-novel-kit/jwt/jwa"
 
-	"github.com/a-novel/service-json-keys/internal/api/codegen"
 	"github.com/a-novel/service-json-keys/internal/services"
 	"github.com/a-novel/service-json-keys/models"
+	"github.com/a-novel/service-json-keys/models/api"
 )
 
 type SearchKeysService interface {
@@ -20,8 +20,8 @@ type SearchKeysService interface {
 }
 
 func (api *API) ListPublicKeys(
-	ctx context.Context, params codegen.ListPublicKeysParams,
-) (codegen.ListPublicKeysRes, error) {
+	ctx context.Context, params apimodels.ListPublicKeysParams,
+) (apimodels.ListPublicKeysRes, error) {
 	ctx, span := otel.Tracer().Start(ctx, "api.ListPublicKeys")
 	defer span.End()
 
@@ -38,5 +38,5 @@ func (api *API) ListPublicKeys(
 		return nil, otel.ReportError(span, fmt.Errorf("convert keys to models: %w", err))
 	}
 
-	return otel.ReportSuccess(span, lo.ToPtr(codegen.ListPublicKeysOKApplicationJSON(keysModels))), nil
+	return otel.ReportSuccess(span, lo.ToPtr(apimodels.ListPublicKeysOKApplicationJSON(keysModels))), nil
 }

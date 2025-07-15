@@ -96,6 +96,8 @@ jobs:
       API_PORT_TEST: 8080
     steps:
       - uses: a-novel-kit/workflows/go-actions/test-go@master
+        with:
+          ignore_patterns: /mocks,/test,/models/api
 
   report-codecov:
     runs-on: ubuntu-latest

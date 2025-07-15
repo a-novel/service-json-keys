@@ -16,7 +16,7 @@ trap int_handler INT
 podman compose -p "${APP_NAME}" -f "${PODMAN_FILE}" up -d --build --pull-always
 
 # shellcheck disable=SC2046
-go run ${TEST_TOOL_PKG} --format pkgname -- -count=1 -cover $(go list ./... | grep -v /mocks | grep -v /codegen | grep -v /test)
+go run ${TEST_TOOL_PKG} --format pkgname -- -count=1 -cover $(go list ./... | grep -v /mocks | grep -v /models/api | grep -v /test)
 
 # Normal execution: containers are shut down.
 podman compose -p "${APP_NAME}" -f "${PODMAN_FILE}" down --volume

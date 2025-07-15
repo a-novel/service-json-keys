@@ -14,8 +14,8 @@ import (
 	"github.com/a-novel/golib/postgres"
 	postgrespresets "github.com/a-novel/golib/postgres/presets"
 
-	"github.com/a-novel/service-json-keys/internal/api/codegen"
 	testutils "github.com/a-novel/service-json-keys/internal/test"
+	"github.com/a-novel/service-json-keys/models/api"
 	"github.com/a-novel/service-json-keys/pkg"
 	cmdpkg "github.com/a-novel/service-json-keys/pkg/cmd"
 )
@@ -53,7 +53,7 @@ func TestApp(t *testing.T) {
 			client, err := pkg.NewAPIClient(ctx, fmt.Sprintf("http://localhost:%v/v1", apiConfig.API.Port))
 			require.NoError(t, err)
 
-			testSuites := map[string]func(ctx context.Context, t *testing.T, client *codegen.Client){
+			testSuites := map[string]func(ctx context.Context, t *testing.T, client *apimodels.Client){
 				"Ping":          testAppPing,
 				"SignAndVerify": testAppSignAndVerify,
 			}

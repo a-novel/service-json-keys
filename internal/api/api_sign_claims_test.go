@@ -8,10 +8,10 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/a-novel/service-json-keys/internal/api"
-	"github.com/a-novel/service-json-keys/internal/api/codegen"
 	apimocks "github.com/a-novel/service-json-keys/internal/api/mocks"
 	"github.com/a-novel/service-json-keys/internal/services"
 	"github.com/a-novel/service-json-keys/models"
+	"github.com/a-novel/service-json-keys/models/api"
 )
 
 func TestSignClaims(t *testing.T) {
@@ -27,23 +27,23 @@ func TestSignClaims(t *testing.T) {
 	testCases := []struct {
 		name string
 
-		req    codegen.SignClaimsReq
-		params codegen.SignClaimsParams
+		req    apimodels.SignClaimsReq
+		params apimodels.SignClaimsParams
 
 		signClaimsData *signClaimsData
 
-		expect    codegen.SignClaimsRes
+		expect    apimodels.SignClaimsRes
 		expectErr error
 	}{
 		{
 			name: "Success",
 
-			req: codegen.SignClaimsReq{
+			req: apimodels.SignClaimsReq{
 				"test-claim":    []byte(`"test-value"`),
 				"another-claim": []byte("12345"),
 			},
 
-			params: codegen.SignClaimsParams{
+			params: apimodels.SignClaimsParams{
 				Usage: "test-usage",
 			},
 
@@ -51,17 +51,17 @@ func TestSignClaims(t *testing.T) {
 				res: "test-token",
 			},
 
-			expect: &codegen.Token{Token: "test-token"},
+			expect: &apimodels.Token{Token: "test-token"},
 		},
 		{
 			name: "Error",
 
-			req: codegen.SignClaimsReq{
+			req: apimodels.SignClaimsReq{
 				"test-claim":    []byte(`"test-value"`),
 				"another-claim": []byte("12345"),
 			},
 
-			params: codegen.SignClaimsParams{
+			params: apimodels.SignClaimsParams{
 				Usage: "test-usage",
 			},
 
