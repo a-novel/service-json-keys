@@ -1,5 +1,4 @@
 #!/bin/bash
-clear
 
 APP_NAME="service-json-keys-test"
 PODMAN_FILE="$PWD/build/podman-compose.test.yaml"
