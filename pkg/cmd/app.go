@@ -78,9 +78,13 @@ func App[Otel otel.Config, Pg postgres.Config](ctx context.Context, config AppCo
 		return fmt.Errorf("new master key context: %w", err)
 	}
 
-	ctx, err = postgres.InitPostgres(ctx, config.Postgres)
+	// Don't override the context if it already has a bun.IDB
+	_, err = postgres.GetContext(ctx)
 	if err != nil {
-		return fmt.Errorf("init postgres: %w", err)
+		ctx, err = postgres.NewContext(ctx, config.Postgres)
+		if err != nil {
+			return fmt.Errorf("init postgres: %w", err)
+		}
 	}
 
 	// =================================================================================================================
