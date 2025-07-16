@@ -8,12 +8,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/require"
-	"github.com/uptrace/bun"
 
 	"github.com/a-novel/golib/postgres"
 
 	"github.com/a-novel/service-json-keys/internal/dao"
 	testutils "github.com/a-novel/service-json-keys/internal/test"
+	"github.com/a-novel/service-json-keys/migrations"
 	"github.com/a-novel/service-json-keys/models"
 )
 
@@ -55,13 +55,18 @@ func TestInsertKey(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			postgres.RunIsolatedTransactionalTest(t, testutils.TestDBConfig, func(ctx context.Context, t *testing.T, _ *bun.DB) {
-				t.Helper()
+			postgres.RunIsolatedTransactionalTest(
+				t,
+				testutils.TestDBConfig,
+				migrations.Migrations,
+				func(ctx context.Context, t *testing.T) {
+					t.Helper()
 
-				key, err := repository.InsertKey(ctx, testCase.insertData)
-				require.NoError(t, err)
-				require.NotNil(t, key)
-			})
+					key, err := repository.InsertKey(ctx, testCase.insertData)
+					require.NoError(t, err)
+					require.NotNil(t, key)
+				},
+			)
 		})
 	}
 }

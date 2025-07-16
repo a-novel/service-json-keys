@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sync"
 
 	"github.com/uptrace/bun"
 	"go.opentelemetry.io/otel/codes"
@@ -45,9 +44,13 @@ func JobRotateKeys[Otel otel.Config, Pg postgres.Config](
 		return fmt.Errorf("new master key context: %w", err)
 	}
 
-	ctx, err = postgres.InitPostgres(ctx, config.Postgres)
+	// Don't override the context if it already has a bun.IDB
+	_, err = postgres.GetContext(ctx)
 	if err != nil {
-		return fmt.Errorf("init postgres: %w", err)
+		ctx, err = postgres.NewContext(ctx, config.Postgres)
+		if err != nil {
+			return fmt.Errorf("init postgres: %w", err)
+		}
 	}
 
 	// =================================================================================================================
@@ -64,33 +67,13 @@ func JobRotateKeys[Otel otel.Config, Pg postgres.Config](
 		config.JWKS,
 	)
 
-	var (
-		wg    sync.WaitGroup
-		sErrs sync.Map
-	)
-
 	for usage := range config.JWKS {
-		wg.Add(1)
+		err = errors.Join(err, postgres.RunInTx(ctx, nil, func(ctx context.Context, _ bun.IDB) error {
+			_, localErr := generateKeysService.GenerateKey(ctx, usage)
 
-		go func(usage models.KeyUsage) {
-			defer wg.Done()
-
-			sErrs.Store(usage, postgres.RunInTx(ctx, nil, func(ctx context.Context, tx bun.Tx) error {
-				_, localErr := generateKeysService.GenerateKey(ctx, usage)
-
-				return localErr
-			}))
-		}(usage)
+			return localErr
+		}))
 	}
-
-	wg.Wait()
-
-	sErrs.Range(func(key, value interface{}) bool {
-		cErr, _ := value.(error)
-		err = errors.Join(err, cErr)
-
-		return true
-	})
 
 	if err != nil {
 		return otel.ReportError(span, fmt.Errorf("rotate keys: %w", err))

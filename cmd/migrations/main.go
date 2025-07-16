@@ -3,19 +3,20 @@ package main
 import (
 	"context"
 	"log"
-	"os"
 
 	"github.com/a-novel/golib/postgres"
-	postgrespresets "github.com/a-novel/golib/postgres/presets"
 
 	"github.com/a-novel/service-json-keys/migrations"
+	cmdpkg "github.com/a-novel/service-json-keys/pkg/cmd"
 )
 
 func main() {
-	_, err := postgres.InitPostgres(context.Background(), postgrespresets.DefaultConfig{
-		DSN:        os.Getenv("POSTGRES_DSN"),
-		Migrations: migrations.Migrations,
-	})
+	ctx, err := postgres.NewContext(context.Background(), cmdpkg.PostgresConfig)
+	if err != nil {
+		log.Fatalf("failed to create context: %v", err)
+	}
+
+	err = postgres.RunMigrationsContext(ctx, migrations.Migrations)
 	if err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}

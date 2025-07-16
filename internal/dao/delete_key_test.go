@@ -8,12 +8,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/require"
-	"github.com/uptrace/bun"
 
 	"github.com/a-novel/golib/postgres"
 
 	"github.com/a-novel/service-json-keys/internal/dao"
 	testutils "github.com/a-novel/service-json-keys/internal/test"
+	"github.com/a-novel/service-json-keys/migrations"
 	"github.com/a-novel/service-json-keys/models"
 )
 
@@ -167,7 +167,8 @@ func TestDeleteKey(t *testing.T) {
 			postgres.RunIsolatedTransactionalTest(
 				t,
 				testutils.TestDBConfig,
-				func(ctx context.Context, t *testing.T, _ *bun.DB) {
+				migrations.Migrations,
+				func(ctx context.Context, t *testing.T) {
 					t.Helper()
 
 					db, err := postgres.GetContext(ctx)

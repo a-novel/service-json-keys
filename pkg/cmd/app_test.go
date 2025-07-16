@@ -8,13 +8,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/uptrace/bun"
 
 	"github.com/a-novel/golib/config"
 	"github.com/a-novel/golib/postgres"
-	postgrespresets "github.com/a-novel/golib/postgres/presets"
 
 	testutils "github.com/a-novel/service-json-keys/internal/test"
+	"github.com/a-novel/service-json-keys/migrations"
 	"github.com/a-novel/service-json-keys/models/api"
 	"github.com/a-novel/service-json-keys/pkg"
 	cmdpkg "github.com/a-novel/service-json-keys/pkg/cmd"
@@ -25,15 +24,16 @@ func TestApp(t *testing.T) {
 
 	apiConfig := cmdpkg.AppConfigDefault
 	apiConfig.API.Port = config.LoadEnv(os.Getenv("API_PORT_TEST"), 0, config.IntParser)
-	apiConfig.Postgres = postgrespresets.NewPassthroughConfig(testutils.TestDB)
+	apiConfig.Postgres = testutils.TestDBConfig
 
 	rotateKeysConfig := cmdpkg.JobRotateKeysDefault
-	rotateKeysConfig.Postgres = postgrespresets.NewPassthroughConfig(testutils.TestDB)
+	rotateKeysConfig.Postgres = testutils.TestDBConfig
 
 	postgres.RunIsolatedTransactionalTest(
 		t,
 		testutils.TestDBConfig,
-		func(ctx context.Context, t *testing.T, _ *bun.DB) {
+		migrations.Migrations,
+		func(ctx context.Context, t *testing.T) {
 			t.Helper()
 
 			require.NoError(t, cmdpkg.JobRotateKeys(ctx, rotateKeysConfig))
