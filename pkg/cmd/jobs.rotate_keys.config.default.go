@@ -16,7 +16,7 @@ const (
 	JobsRotateKeysName = "service-json-keys-job-rotate-keys"
 )
 
-var JobRotateKeysDefault = JobRotateKeysConfig[*otelpresets.SentryOtelConfig, postgres.Config]{
+var JobRotateKeysConfigDefault = JobRotateKeysConfig[*otelpresets.SentryOtelConfig, postgres.Config]{
 	App: AppAppConfig{
 		Name:      config.LoadEnv(os.Getenv("APP_NAME"), JobsRotateKeysName, config.StringParser),
 		MasterKey: os.Getenv("APP_MASTER_KEY"),

@@ -1,6 +1,5 @@
 # App.
 export API_PORT=4001
-export API_PORT_TEST=5001
 export DEBUG=true
 
 # Postgres.
