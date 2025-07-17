@@ -12,7 +12,9 @@ int_handler()
 trap int_handler INT
 
 # Setup test containers.
-podman compose -p "${APP_NAME}" -f "${PODMAN_FILE}" up -d --build --pull-always
+podman compose -p "${APP_NAME}" -f "${PODMAN_FILE}" up -d --build --pull-
+
+POSTGRES_DSN=${POSTGRES_DSN_TEST} go run cmd/migrations/main.go
 
 # shellcheck disable=SC2046
 go run ${TEST_TOOL_PKG} --format pkgname -- -count=1 -cover $(go list ./... | grep -v /mocks | grep -v /models/api | grep -v /test)

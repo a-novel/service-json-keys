@@ -8,13 +8,11 @@ WORKDIR /app
 COPY ./go.mod ./go.mod
 COPY ./go.sum ./go.sum
 COPY "./cmd/api" "./cmd/api"
-COPY "./cmd/migrations" "./cmd/migrations"
 COPY ./internal/api ./internal/api
 COPY ./internal/adapters ./internal/adapters
 COPY ./internal/dao ./internal/dao
 COPY ./internal/lib ./internal/lib
 COPY ./internal/services ./internal/services
-COPY ./migrations ./migrations
 COPY ./models ./models
 COPY "./pkg/cmd" "./pkg/cmd"
 
@@ -24,14 +22,12 @@ RUN go mod download
 # Build executables.
 # ======================================================================================================================
 RUN go build -o /api cmd/api/main.go
-RUN go build -o /migrations cmd/migrations/main.go
 
 FROM docker.io/library/alpine:latest
 
 WORKDIR /
 
 COPY --from=builder /api /api
-COPY --from=builder /migrations /migrations
 
 # ======================================================================================================================
 # Healthcheck.
@@ -49,4 +45,4 @@ ENV PORT=8080
 EXPOSE 8080
 
 # Make sure the migrations are run before the API starts.
-CMD ["sh", "-c", "/migrations && /api"]
+CMD ["/api"]

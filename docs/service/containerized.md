@@ -25,6 +25,16 @@ services:
     volumes:
       - json-keys-postgres-data:/var/lib/postgresql/data/
 
+  json-keys-postgres-migrations:
+    image: ghcr.io/a-novel/service-json-keys/jobs/migrations:v1
+    depends_on:
+      json-keys-postgres:
+        condition: service_healthy
+    networks:
+      - api
+    environment:
+      POSTGRES_DSN: postgres://postgres:postgres@json-keys-postgres:5432/json-keys?sslmode=disable
+
   # Make sure the master key is the same across all containers.
   # The Master Key is a secure, 32-bit random secret used to encrypt private JSON keys
   # in the database.
@@ -33,7 +43,10 @@ services:
   json-keys-job-rotate-keys:
     image: ghcr.io/a-novel/service-json-keys/jobs/rotatekeys:v1
     depends_on:
-      - json-keys-postgres
+      json-keys-postgres:
+        condition: service_healthy
+      json-keys-postgres-migrations:
+        condition: service_completed_successfully
     environment:
       POSTGRES_DSN: postgres://postgres:postgres@json-keys-postgres:5432/json-keys?sslmode=disable
       APP_MASTER_KEY: fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca
@@ -43,7 +56,12 @@ services:
   json-keys-service:
     image: ghcr.io/a-novel/service-json-keys/api:v1
     depends_on:
-      - json-keys-postgres
+      json-keys-postgres:
+        condition: service_healthy
+      json-keys-postgres-migrations:
+        condition: service_completed_successfully
+      json-keys-job-rotate-keys:
+        condition: service_completed_successfully
     environment:
       POSTGRES_DSN: postgres://postgres:postgres@json-keys-postgres:5432/json-keys?sslmode=disable
       APP_MASTER_KEY: fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca
@@ -92,7 +110,8 @@ services:
   json-keys-service:
     image: ghcr.io/a-novel/service-json-keys/standalone:v1
     depends_on:
-      - json-keys-postgres
+      json-keys-postgres:
+        condition: service_healthy
     environment:
       POSTGRES_DSN: postgres://postgres:postgres@json-keys-postgres:5432/json-keys?sslmode=disable
       APP_MASTER_KEY: fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca
