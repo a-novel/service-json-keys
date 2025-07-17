@@ -100,7 +100,6 @@ jobs:
     env:
       POSTGRES_DSN_TEST: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
       POSTGRES_DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
-      API_PORT_TEST: 8080
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/run-migrations

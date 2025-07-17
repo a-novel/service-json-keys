@@ -18,9 +18,6 @@ import (
 func TestJobRotateKeys(t *testing.T) {
 	t.Parallel()
 
-	config := cmdpkg.JobRotateKeysDefault
-	config.Postgres = testutils.TestDBConfig
-
 	postgres.RunIsolatedTransactionalTest(
 		t,
 		testutils.TestDBConfig,
@@ -28,11 +25,11 @@ func TestJobRotateKeys(t *testing.T) {
 		func(ctx context.Context, t *testing.T) {
 			t.Helper()
 
-			require.NoError(t, cmdpkg.JobRotateKeys(ctx, config))
+			require.NoError(t, cmdpkg.JobRotateKeys(ctx, cmdpkg.JobRotateKeysConfigTest))
 
 			searchKeysDAO := dao.NewSearchKeysRepository()
 
-			for usage := range config.JWKS {
+			for usage := range cmdpkg.JobRotateKeysConfigTest.JWKS {
 				keys, err := searchKeysDAO.SearchKeys(ctx, usage)
 				require.NoError(t, err)
 				assert.Len(t, keys, 1, usage)

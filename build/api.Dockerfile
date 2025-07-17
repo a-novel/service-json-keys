@@ -44,5 +44,7 @@ ENV PORT=8080
 
 EXPOSE 8080
 
+ENV HOST="0.0.0.0"
+
 # Make sure the migrations are run before the API starts.
 CMD ["/api"]
