@@ -10,6 +10,7 @@ import (
 	"github.com/a-novel/service-json-keys/internal/services"
 	"github.com/a-novel/service-json-keys/models"
 	"github.com/a-novel/service-json-keys/models/api"
+	"github.com/a-novel/service-json-keys/models/config"
 )
 
 type ClaimsVerifier[Out any] struct {
@@ -18,7 +19,7 @@ type ClaimsVerifier[Out any] struct {
 
 func NewClaimsVerifier[Out any](
 	client *apimodels.Client,
-	keys map[models.KeyUsage]*models.JSONKeyConfig,
+	keys map[models.KeyUsage]*config.JWKS,
 ) (*ClaimsVerifier[Out], error) {
 	adapter := adapters.NewPublicKeySourcesAPI(client)
 

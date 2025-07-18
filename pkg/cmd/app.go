@@ -7,7 +7,6 @@ import (
 	"net"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -21,47 +20,11 @@ import (
 	"github.com/a-novel/service-json-keys/internal/dao"
 	"github.com/a-novel/service-json-keys/internal/lib"
 	"github.com/a-novel/service-json-keys/internal/services"
-	"github.com/a-novel/service-json-keys/models"
 	"github.com/a-novel/service-json-keys/models/api"
+	"github.com/a-novel/service-json-keys/models/config"
 )
 
-type AppAppConfig struct {
-	Name      string `json:"name"      yaml:"name"`
-	MasterKey string `json:"masterKey" yaml:"masterKey"`
-}
-
-type AppApiTimeoutsConfig struct {
-	Read       time.Duration `json:"read"       yaml:"read"`
-	ReadHeader time.Duration `json:"readHeader" yaml:"readHeader"`
-	Write      time.Duration `json:"write"      yaml:"write"`
-	Idle       time.Duration `json:"idle"       yaml:"idle"`
-	Request    time.Duration `json:"request"    yaml:"request"`
-}
-
-type AppCorsConfig struct {
-	AllowedOrigins   []string `json:"allowedOrigins"   yaml:"allowedOrigins"`
-	AllowedHeaders   []string `json:"allowedHeaders"   yaml:"allowedHeaders"`
-	AllowCredentials bool     `json:"allowCredentials" yaml:"allowCredentials"`
-	MaxAge           int      `json:"maxAge"           yaml:"maxAge"`
-}
-
-type AppAPIConfig struct {
-	Port           int                  `json:"port"           yaml:"port"`
-	Timeouts       AppApiTimeoutsConfig `json:"timeouts"       yaml:"timeouts"`
-	MaxRequestSize int64                `json:"maxRequestSize" yaml:"maxRequestSize"`
-	Cors           AppCorsConfig        `json:"cors"           yaml:"cors"`
-}
-
-type AppConfig[Otel otel.Config, Pg postgres.Config] struct {
-	App  AppAppConfig                              `json:"app"  yaml:"app"`
-	API  AppAPIConfig                              `json:"api"  yaml:"api"`
-	JWKS map[models.KeyUsage]*models.JSONKeyConfig `json:"jwks" yaml:"jwks"`
-
-	Otel     Otel `json:"otel"     yaml:"otel"`
-	Postgres Pg   `json:"postgres" yaml:"postgres"`
-}
-
-func App[Otel otel.Config, Pg postgres.Config](ctx context.Context, config AppConfig[Otel, Pg]) error {
+func App[Otel otel.Config, Pg postgres.Config](ctx context.Context, config config.App[Otel, Pg]) error {
 	// =================================================================================================================
 	// DEPENDENCIES
 	// =================================================================================================================

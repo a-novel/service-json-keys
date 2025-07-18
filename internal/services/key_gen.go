@@ -20,6 +20,7 @@ import (
 	"github.com/a-novel/service-json-keys/internal/dao"
 	"github.com/a-novel/service-json-keys/internal/lib"
 	"github.com/a-novel/service-json-keys/models"
+	"github.com/a-novel/service-json-keys/models/config"
 )
 
 var ErrUnknownKeyUsage = errors.New("unknown key usage")
@@ -45,12 +46,12 @@ func NewGenerateKeySource(searchDAO *dao.SearchKeysRepository, insertDAO *dao.In
 
 type GenerateKeyService struct {
 	source GenerateKeySource
-	keys   map[models.KeyUsage]*models.JSONKeyConfig
+	keys   map[models.KeyUsage]*config.JWKS
 }
 
 func NewGenerateKeyService(
 	source GenerateKeySource,
-	keys map[models.KeyUsage]*models.JSONKeyConfig,
+	keys map[models.KeyUsage]*config.JWKS,
 ) *GenerateKeyService {
 	return &GenerateKeyService{source: source, keys: keys}
 }

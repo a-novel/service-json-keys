@@ -13,6 +13,7 @@ import (
 	"github.com/a-novel-kit/jwt/jws"
 
 	"github.com/a-novel/service-json-keys/models"
+	"github.com/a-novel/service-json-keys/models/config"
 )
 
 var HMACPresets = map[jwa.Alg]jwk.HMACPreset{
@@ -160,7 +161,7 @@ type PrivateKeyGenericSource interface {
 
 func NewPrivateKeySources(
 	source PrivateKeyGenericSource,
-	keys map[models.KeyUsage]*models.JSONKeyConfig,
+	keys map[models.KeyUsage]*config.JWKS,
 ) (*PrivateKeysSourceType, error) {
 	output := &PrivateKeysSourceType{
 		EdDSA: make(map[models.KeyUsage]*jwk.Source[ed25519.PrivateKey]),
@@ -208,7 +209,7 @@ type PublicKeyGenericSource interface {
 
 func NewPublicKeySource(
 	source PublicKeyGenericSource,
-	keys map[models.KeyUsage]*models.JSONKeyConfig,
+	keys map[models.KeyUsage]*config.JWKS,
 ) (*PublicKeySourceType, error) {
 	output := &PublicKeySourceType{
 		EdDSA: make(map[models.KeyUsage]*jwk.Source[ed25519.PublicKey]),
@@ -247,7 +248,7 @@ type Producers map[models.KeyUsage][]jwt.ProducerPlugin
 
 func NewProducers(
 	sources *PrivateKeysSourceType,
-	keys map[models.KeyUsage]*models.JSONKeyConfig,
+	keys map[models.KeyUsage]*config.JWKS,
 ) (Producers, error) {
 	output := make(Producers)
 
@@ -285,7 +286,7 @@ type Recipients map[models.KeyUsage][]jwt.RecipientPlugin
 
 func NewRecipients(
 	sources *PublicKeySourceType,
-	keys map[models.KeyUsage]*models.JSONKeyConfig,
+	keys map[models.KeyUsage]*config.JWKS,
 ) (Recipients, error) {
 	output := make(Recipients)
 

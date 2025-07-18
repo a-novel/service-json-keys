@@ -10,8 +10,8 @@ import (
 	"github.com/a-novel/golib/postgres"
 
 	"github.com/a-novel/service-json-keys/internal/dao"
-	testutils "github.com/a-novel/service-json-keys/internal/test"
 	"github.com/a-novel/service-json-keys/migrations"
+	testutils "github.com/a-novel/service-json-keys/models/config"
 	cmdpkg "github.com/a-novel/service-json-keys/pkg/cmd"
 )
 
@@ -20,16 +20,16 @@ func TestJobRotateKeys(t *testing.T) {
 
 	postgres.RunIsolatedTransactionalTest(
 		t,
-		testutils.TestDBConfig,
+		testutils.PostgresPresetTest,
 		migrations.Migrations,
 		func(ctx context.Context, t *testing.T) {
 			t.Helper()
 
-			require.NoError(t, cmdpkg.JobRotateKeys(ctx, cmdpkg.JobRotateKeysConfigTest))
+			require.NoError(t, cmdpkg.JobRotateKeys(ctx, testutils.JobRotateKeysPresetTest))
 
 			searchKeysDAO := dao.NewSearchKeysRepository()
 
-			for usage := range cmdpkg.JobRotateKeysConfigTest.JWKS {
+			for usage := range testutils.JobRotateKeysPresetTest.JWKS {
 				keys, err := searchKeysDAO.SearchKeys(ctx, usage)
 				require.NoError(t, err)
 				assert.Len(t, keys, 1, usage)
