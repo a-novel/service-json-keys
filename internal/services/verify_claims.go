@@ -12,6 +12,7 @@ import (
 	"github.com/a-novel-kit/jwt/jwp"
 
 	"github.com/a-novel/service-json-keys/models"
+	"github.com/a-novel/service-json-keys/models/config"
 )
 
 type VerifyClaimsRequest struct {
@@ -22,12 +23,12 @@ type VerifyClaimsRequest struct {
 
 type VerifyClaimsService[Out any] struct {
 	recipients map[models.KeyUsage][]jwt.RecipientPlugin
-	keys       map[models.KeyUsage]*models.JSONKeyConfig
+	keys       map[models.KeyUsage]*config.JWKS
 }
 
 func NewVerifyClaimsService[Out any](
 	recipients map[models.KeyUsage][]jwt.RecipientPlugin,
-	keys map[models.KeyUsage]*models.JSONKeyConfig,
+	keys map[models.KeyUsage]*config.JWKS,
 ) *VerifyClaimsService[Out] {
 	return &VerifyClaimsService[Out]{recipients: recipients, keys: keys}
 }

@@ -12,9 +12,9 @@ import (
 	"github.com/a-novel/golib/postgres"
 
 	"github.com/a-novel/service-json-keys/internal/dao"
-	testutils "github.com/a-novel/service-json-keys/internal/test"
 	"github.com/a-novel/service-json-keys/migrations"
 	"github.com/a-novel/service-json-keys/models"
+	testutils "github.com/a-novel/service-json-keys/models/config"
 )
 
 func TestDeleteKey(t *testing.T) {
@@ -166,7 +166,7 @@ func TestDeleteKey(t *testing.T) {
 
 			postgres.RunIsolatedTransactionalTest(
 				t,
-				testutils.TestDBConfig,
+				testutils.PostgresPresetTest,
 				migrations.Migrations,
 				func(ctx context.Context, t *testing.T) {
 					t.Helper()

@@ -8,6 +8,7 @@ import (
 
 	"github.com/a-novel/service-json-keys/models"
 	"github.com/a-novel/service-json-keys/models/api"
+	"github.com/a-novel/service-json-keys/models/config"
 	"github.com/a-novel/service-json-keys/pkg"
 )
 
@@ -20,7 +21,7 @@ func testAppSignAndVerify(_ context.Context, t *testing.T, client *apimodels.Cli
 	t.Helper()
 
 	signer := pkg.NewClaimsSigner(client)
-	verifier, err := pkg.NewClaimsVerifier[testClaims](client, models.DefaultJWKSConfig)
+	verifier, err := pkg.NewClaimsVerifier[testClaims](client, config.JWKSPresetDefault)
 	require.NoError(t, err)
 
 	claims := testClaims{

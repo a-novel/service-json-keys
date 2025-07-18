@@ -14,19 +14,11 @@ import (
 	"github.com/a-novel/service-json-keys/internal/dao"
 	"github.com/a-novel/service-json-keys/internal/lib"
 	"github.com/a-novel/service-json-keys/internal/services"
-	"github.com/a-novel/service-json-keys/models"
+	"github.com/a-novel/service-json-keys/models/config"
 )
 
-type JobRotateKeysConfig[Otel otel.Config, Pg postgres.Config] struct {
-	App  AppAppConfig                              `json:"app"  yaml:"app"`
-	JWKS map[models.KeyUsage]*models.JSONKeyConfig `json:"jwks" yaml:"jwks"`
-
-	Otel     Otel `json:"otel"     yaml:"otel"`
-	Postgres Pg   `json:"postgres" yaml:"postgres"`
-}
-
 func JobRotateKeys[Otel otel.Config, Pg postgres.Config](
-	ctx context.Context, config JobRotateKeysConfig[Otel, Pg],
+	ctx context.Context, config config.JobRotateKeys[Otel, Pg],
 ) error {
 	// =================================================================================================================
 	// DEPENDENCIES

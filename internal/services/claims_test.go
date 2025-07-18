@@ -15,6 +15,7 @@ import (
 
 	"github.com/a-novel/service-json-keys/internal/services"
 	"github.com/a-novel/service-json-keys/models"
+	"github.com/a-novel/service-json-keys/models/config"
 )
 
 func TestSignAndVerifyClaims(t *testing.T) {
@@ -61,7 +62,7 @@ func TestSignAndVerifyClaims(t *testing.T) {
 				HMAC: make(map[models.KeyUsage]*jwk.Source[[]byte]),
 				ES:   make(map[models.KeyUsage]*jwk.Source[*ecdsa.PrivateKey]),
 				RSA:  make(map[models.KeyUsage]*jwk.Source[*rsa.PrivateKey]),
-			}, models.DefaultJWKSConfig)
+			}, config.JWKSPresetDefault)
 			require.NoError(t, err)
 
 			recipients, err := services.NewRecipients(&services.PublicKeySourceType{
@@ -75,11 +76,11 @@ func TestSignAndVerifyClaims(t *testing.T) {
 				HMAC: make(map[models.KeyUsage]*jwk.Source[[]byte]),
 				ES:   make(map[models.KeyUsage]*jwk.Source[*ecdsa.PublicKey]),
 				RSA:  make(map[models.KeyUsage]*jwk.Source[*rsa.PublicKey]),
-			}, models.DefaultJWKSConfig)
+			}, config.JWKSPresetDefault)
 			require.NoError(t, err)
 
-			signer := services.NewSignClaimsService(producers, models.DefaultJWKSConfig)
-			verifier := services.NewVerifyClaimsService[testClaims](recipients, models.DefaultJWKSConfig)
+			signer := services.NewSignClaimsService(producers, config.JWKSPresetDefault)
+			verifier := services.NewVerifyClaimsService[testClaims](recipients, config.JWKSPresetDefault)
 
 			ctx := context.Background()
 

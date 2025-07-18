@@ -11,6 +11,7 @@ import (
 	"github.com/a-novel-kit/jwt"
 
 	"github.com/a-novel/service-json-keys/models"
+	"github.com/a-novel/service-json-keys/models/config"
 )
 
 type SignClaimsRequest struct {
@@ -22,12 +23,12 @@ type SignClaimsRequest struct {
 
 type SignClaimsService struct {
 	producers map[models.KeyUsage][]jwt.ProducerPlugin
-	keys      map[models.KeyUsage]*models.JSONKeyConfig
+	keys      map[models.KeyUsage]*config.JWKS
 }
 
 func NewSignClaimsService(
 	producers map[models.KeyUsage][]jwt.ProducerPlugin,
-	keys map[models.KeyUsage]*models.JSONKeyConfig,
+	keys map[models.KeyUsage]*config.JWKS,
 ) *SignClaimsService {
 	return &SignClaimsService{producers: producers, keys: keys}
 }

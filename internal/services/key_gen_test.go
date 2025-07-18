@@ -21,6 +21,7 @@ import (
 	servicesmocks "github.com/a-novel/service-json-keys/internal/services/mocks"
 	testutils "github.com/a-novel/service-json-keys/internal/test"
 	"github.com/a-novel/service-json-keys/models"
+	"github.com/a-novel/service-json-keys/models/config"
 )
 
 func checkGeneratedPrivateKey(ctx context.Context, t *testing.T, key string) (*jwa.JWK, error) {
@@ -303,7 +304,7 @@ func TestGenerateKeys(t *testing.T) {
 					Return(testCase.insertKeyData.resp, testCase.insertKeyData.err)
 			}
 
-			service := services.NewGenerateKeyService(source, models.DefaultJWKSConfig)
+			service := services.NewGenerateKeyService(source, config.JWKSPresetDefault)
 
 			kid, err := service.GenerateKey(ctx, testCase.usage)
 			require.ErrorIs(t, err, testCase.expectErr)

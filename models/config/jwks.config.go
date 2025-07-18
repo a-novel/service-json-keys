@@ -1,17 +1,13 @@
-package models
+package config
 
 import (
 	_ "embed"
 	"time"
 
-	"github.com/goccy/go-yaml"
-
-	"github.com/a-novel/golib/config"
-
 	"github.com/a-novel-kit/jwt/jwa"
 )
 
-type JSONKeyConfig struct {
+type JWKS struct {
 	Alg jwa.Alg `json:"alg" yaml:"alg"`
 	Key struct {
 		TTL      time.Duration `json:"ttl"      yaml:"ttl"`
@@ -26,8 +22,3 @@ type JSONKeyConfig struct {
 		Leeway   time.Duration `json:"leeway"   yaml:"leeway"`
 	} `json:"token" yaml:"token"`
 }
-
-//go:embed jwks.yaml
-var defaultJWKSConfigFile []byte
-
-var DefaultJWKSConfig = config.MustUnmarshal[map[KeyUsage]*JSONKeyConfig](yaml.Unmarshal, defaultJWKSConfigFile)
