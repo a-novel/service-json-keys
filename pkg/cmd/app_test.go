@@ -30,7 +30,7 @@ func TestApp(t *testing.T) {
 		t.Run(testName, func(t *testing.T) {
 			t.Parallel()
 
-			listener, err := net.Listen("tcp", ":0")
+			listener, err := (&net.ListenConfig{}).Listen(t.Context(), "tcp", ":0")
 			require.NoError(t, err)
 
 			addr, ok := listener.Addr().(*net.TCPAddr)
