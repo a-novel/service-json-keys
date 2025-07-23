@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	defaultPingInterval = 500 * time.Millisecond
+	defaultPingInterval = time.Second
 	defaultPingTimeout  = 16 * time.Second
 )
 
@@ -21,12 +21,12 @@ func NewAPIClient(ctx context.Context, url string) (*apimodels.Client, error) {
 	}
 
 	start := time.Now()
-	_, err = client.Ping(ctx)
+	_, err = client.Healthcheck(ctx)
 
 	for time.Since(start) < defaultPingTimeout && err != nil {
 		time.Sleep(defaultPingInterval)
 
-		_, err = client.Ping(ctx)
+		_, err = client.Healthcheck(ctx)
 	}
 
 	if err != nil {
