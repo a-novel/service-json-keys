@@ -3,7 +3,7 @@
   "assignAutomerge": true,
   "assignees": ["kushuh"],
   "postUpgradeTasks": {
-    "commands": ["npx -y prettier . --write"],
+    "commands": ["sh ./scripts/post-upgrade-renovate.sh"],
     "executionMode": "branch"
   },
   "packageRules": [
