@@ -2,6 +2,7 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "assignAutomerge": true,
   "assignees": ["kushuh"],
+  "labels": ["dependencies"],
   "postUpgradeTasks": {
     "commands": ["sh ./scripts/post-upgrade-renovate.sh"],
     "executionMode": "branch"
