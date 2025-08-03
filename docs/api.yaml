@@ -229,7 +229,6 @@ components:
       required:
         - name
         - status
-        - error
       additionalProperties: true
       properties:
         name:
