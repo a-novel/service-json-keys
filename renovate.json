@@ -1,9 +1,4 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "postUpgradeTasks": {
-    "commands": ["sh ./scripts/post-upgrade-renovate.sh"],
-    "fileFilters": ["docs/package.json", "docs/pnpm-lock.yaml"],
-    "executionMode": "branch"
-  },
   "extends": ["config:recommended"]
 }

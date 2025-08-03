@@ -10,7 +10,6 @@ jobs:
     steps:
       - uses: a-novel-kit/workflows/generic-actions/renovate@master
         with:
-          allowed_commands: '["^sh \\./scripts/post-upgrade-renovate.sh$"]'
           app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
           app_id: ${{ vars.DEPENDENCY_BOT_ID }}
           app_login: ${{ vars.DEPENDENCY_BOT_LOGIN }}
