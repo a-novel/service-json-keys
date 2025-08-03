@@ -6,9 +6,9 @@ runs:
     - uses: actions/setup-go@v5
       with:
         go-version: stable
-    - name: Download Go packages
+    - name: download Go packages
       shell: bash
       run: go mod download
-    - name: Run migrations
+    - name: run migrations
       shell: bash
       run: go run cmd/migrations/main.go
