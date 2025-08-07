@@ -1,5 +1,5 @@
 # This image is a convenience for tests and development. It is not suitable for production use.
-FROM docker.io/library/golang:alpine AS builder
+FROM docker.io/library/golang:1.24.6-alpine AS builder
 
 WORKDIR /app
 
@@ -29,7 +29,7 @@ RUN go build -o /api cmd/api/main.go
 RUN go build -o /rotatekeys cmd/rotatekeys/main.go
 RUN go build -o /migrations cmd/migrations/main.go
 
-FROM docker.io/library/alpine:latest
+FROM docker.io/library/alpine:3.22.1
 
 WORKDIR /
 
