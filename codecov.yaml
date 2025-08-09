@@ -1,0 +1,16 @@
+coverage:
+  precision: 2
+  round: down
+  status:
+    project:
+      default:
+        target: 50
+        threshold: 2.0
+    patch:
+      default:
+        target: 50
+        threshold: 5.0
+
+parsers:
+  go:
+    partials_as_hits: false
