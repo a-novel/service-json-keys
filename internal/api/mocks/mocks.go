@@ -73,15 +73,26 @@ type MockSelectKeyService_SelectKey_Call struct {
 }
 
 // SelectKey is a helper method to define mock.On call
-//   - ctx
-//   - request
+//   - ctx context.Context
+//   - request services.SelectKeyRequest
 func (_e *MockSelectKeyService_Expecter) SelectKey(ctx interface{}, request interface{}) *MockSelectKeyService_SelectKey_Call {
 	return &MockSelectKeyService_SelectKey_Call{Call: _e.mock.On("SelectKey", ctx, request)}
 }
 
 func (_c *MockSelectKeyService_SelectKey_Call) Run(run func(ctx context.Context, request services.SelectKeyRequest)) *MockSelectKeyService_SelectKey_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(services.SelectKeyRequest))
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 services.SelectKeyRequest
+		if args[1] != nil {
+			arg1 = args[1].(services.SelectKeyRequest)
+		}
+		run(
+			arg0,
+			arg1,
+		)
 	})
 	return _c
 }
@@ -157,15 +168,26 @@ type MockSearchKeysService_SearchKeys_Call struct {
 }
 
 // SearchKeys is a helper method to define mock.On call
-//   - ctx
-//   - request
+//   - ctx context.Context
+//   - request services.SearchKeysRequest
 func (_e *MockSearchKeysService_Expecter) SearchKeys(ctx interface{}, request interface{}) *MockSearchKeysService_SearchKeys_Call {
 	return &MockSearchKeysService_SearchKeys_Call{Call: _e.mock.On("SearchKeys", ctx, request)}
 }
 
 func (_c *MockSearchKeysService_SearchKeys_Call) Run(run func(ctx context.Context, request services.SearchKeysRequest)) *MockSearchKeysService_SearchKeys_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(services.SearchKeysRequest))
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 services.SearchKeysRequest
+		if args[1] != nil {
+			arg1 = args[1].(services.SearchKeysRequest)
+		}
+		run(
+			arg0,
+			arg1,
+		)
 	})
 	return _c
 }
@@ -239,15 +261,26 @@ type MockSignClaimsService_SignClaims_Call struct {
 }
 
 // SignClaims is a helper method to define mock.On call
-//   - ctx
-//   - request
+//   - ctx context.Context
+//   - request services.SignClaimsRequest
 func (_e *MockSignClaimsService_Expecter) SignClaims(ctx interface{}, request interface{}) *MockSignClaimsService_SignClaims_Call {
 	return &MockSignClaimsService_SignClaims_Call{Call: _e.mock.On("SignClaims", ctx, request)}
 }
 
 func (_c *MockSignClaimsService_SignClaims_Call) Run(run func(ctx context.Context, request services.SignClaimsRequest)) *MockSignClaimsService_SignClaims_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(services.SignClaimsRequest))
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 services.SignClaimsRequest
+		if args[1] != nil {
+			arg1 = args[1].(services.SignClaimsRequest)
+		}
+		run(
+			arg0,
+			arg1,
+		)
 	})
 	return _c
 }

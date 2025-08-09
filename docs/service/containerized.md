@@ -148,7 +148,6 @@ Generic configuration.
 | ---------- | ----------------------------------------------- | ----------------------------------------------------------- | -------------------------------------- |
 | `APP_NAME` | Name of the application, used for tracing.      | `json-keys-service`<br/>`service-json-keys-job-rotate-keys` | `standalone`, `api`, `jobs/rotatekeys` |
 | `ENV`      | Provide information on the current environment. |                                                             | `standalone`, `api`, `jobs/rotatekeys` |
-| `DEBUG`    | Activate debug mode for logs.                   | `false`                                                     | `standalone`, `api`, `jobs/rotatekeys` |
 
 API configuration.
 
@@ -166,12 +165,9 @@ API configuration.
 | `API_CORS_ALLOW_CREDENTIALS` | Whether to allow credentials in CORS requests.                                          | `false` | `standalone`, `api` |
 | `API_CORS_MAX_AGE`           | CORS max age for the API.<br/>Provided as a number of seconds.                          | `3600`  | `standalone`, `api` |
 
-Tracing configuration (with [Sentry](https://sentry.io/)).
+Tracing configuration.
 
-| Variable               | Description                                                          | Default                               | Images                                 |
-| ---------------------- | -------------------------------------------------------------------- | ------------------------------------- | -------------------------------------- |
-| `SENTRY_DSN`           | Sentry DSN for tracing.<br/>Tracing will be disabled if omitted.     |                                       | `standalone`, `api`, `jobs/rotatekeys` |
-| `SENTRY_RELEASE`       | Release information for Sentry logs.                                 |                                       | `standalone`, `api`, `jobs/rotatekeys` |
-| `SENTRY_FLUSH_TIMEOUT` | Timeout for flushing Sentry logs.<br/>Provided as a duration string. | `2s`                                  | `standalone`, `api`, `jobs/rotatekeys` |
-| `SENTRY_ENVIRONMENT`   | Which environment to attach logs to.                                 | Uses the value from `ENV` variable.   | `standalone`, `api`, `jobs/rotatekeys` |
-| `SENTRY_DEBUG`         | Activate debug mode for Sentry.                                      | Uses the value from `DEBUG` variable. | `standalone`, `api`, `jobs/rotatekeys` |
+| Variable            | Description                                                                                                                      | Default |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| `GCLOUD_PROJECT_ID` | A Google Cloud Platform project ID. Note this activate Google Cloud tracing.                                                     |         |
+| `PRETTY_CONSOLE`    | When using local (default) tracing, set it to false to turn off colors in the console. Ineffective if `GCLOUD_PROJECT_ID` is set | `true`  |

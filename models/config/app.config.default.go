@@ -6,12 +6,13 @@ import (
 	"github.com/samber/lo"
 
 	"github.com/a-novel/golib/config"
+	"github.com/a-novel/golib/otel"
 	otelpresets "github.com/a-novel/golib/otel/presets"
 	"github.com/a-novel/golib/postgres"
 )
 
 const (
-	SentryFlushTimeout = 2 * time.Second
+	OtelFlushTimeout = 2 * time.Second
 
 	AppName = "service-json-keys"
 
@@ -31,7 +32,17 @@ var (
 	APICorsAllowedHeaders = []string{"*"}
 )
 
-var AppPresetDefault = App[*otelpresets.SentryOtelConfig, postgres.Config]{
+var OtelProd = otelpresets.GCloudOtelConfig{
+	ProjectID:    getEnv("GCLOUD_PROJECT_ID"),
+	FlushTimeout: OtelFlushTimeout,
+}
+
+var OtelDev = otelpresets.LocalOtelConfig{
+	PrettyPrint:  config.LoadEnv(getEnv("PRETTY_CONSOLE"), true, config.BoolParser),
+	FlushTimeout: OtelFlushTimeout,
+}
+
+var AppPresetDefault = App[otel.Config, postgres.Config]{
 	App: Main{
 		Name:      config.LoadEnv(getEnv("APP_NAME"), AppName, config.StringParser),
 		MasterKey: getEnv("APP_MASTER_KEY"),
@@ -63,15 +74,6 @@ var AppPresetDefault = App[*otelpresets.SentryOtelConfig, postgres.Config]{
 	},
 	JWKS: JWKSPresetDefault,
 
-	Otel: &otelpresets.SentryOtelConfig{
-		DSN:          getEnv("SENTRY_DSN"),
-		ServerName:   config.LoadEnv(getEnv("APP_NAME"), AppName, config.StringParser),
-		Release:      getEnv("SENTRY_RELEASE"),
-		Environment:  lo.CoalesceOrEmpty(getEnv("SENTRY_ENVIRONMENT"), getEnv("ENV")),
-		FlushTimeout: config.LoadEnv(getEnv("SENTRY_FLUSH_TIMEOUT"), SentryFlushTimeout, config.DurationParser),
-		Debug: config.LoadEnv(
-			lo.CoalesceOrEmpty(getEnv("SENTRY_DEBUG"), getEnv("DEBUG")), false, config.BoolParser,
-		),
-	},
+	Otel:     lo.Ternary[otel.Config](getEnv("GCLOUD_PROJECT_ID") == "", &OtelDev, &OtelProd),
 	Postgres: PostgresPresetDefault,
 }

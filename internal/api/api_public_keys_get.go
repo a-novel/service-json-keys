@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"go.opentelemetry.io/otel/codes"
 
 	"github.com/a-novel/golib/otel"
 
@@ -34,13 +33,11 @@ func (api *API) GetPublicKey(
 
 	switch {
 	case errors.Is(err, dao.ErrKeyNotFound):
-		span.RecordError(err)
-		span.SetStatus(codes.Error, "")
+		_ = otel.ReportError(span, err)
 
 		return &apimodels.NotFoundError{Error: "key not found"}, nil
 	case err != nil:
-		span.RecordError(err)
-		span.SetStatus(codes.Error, "")
+		_ = otel.ReportError(span, err)
 
 		return nil, fmt.Errorf("select key: %w", err)
 	}

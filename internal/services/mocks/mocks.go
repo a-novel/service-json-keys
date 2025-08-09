@@ -75,15 +75,26 @@ type MockGenerateKeySource_InsertKey_Call struct {
 }
 
 // InsertKey is a helper method to define mock.On call
-//   - ctx
-//   - data
+//   - ctx context.Context
+//   - data dao.InsertKeyData
 func (_e *MockGenerateKeySource_Expecter) InsertKey(ctx interface{}, data interface{}) *MockGenerateKeySource_InsertKey_Call {
 	return &MockGenerateKeySource_InsertKey_Call{Call: _e.mock.On("InsertKey", ctx, data)}
 }
 
 func (_c *MockGenerateKeySource_InsertKey_Call) Run(run func(ctx context.Context, data dao.InsertKeyData)) *MockGenerateKeySource_InsertKey_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(dao.InsertKeyData))
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 dao.InsertKeyData
+		if args[1] != nil {
+			arg1 = args[1].(dao.InsertKeyData)
+		}
+		run(
+			arg0,
+			arg1,
+		)
 	})
 	return _c
 }
@@ -132,15 +143,26 @@ type MockGenerateKeySource_SearchKeys_Call struct {
 }
 
 // SearchKeys is a helper method to define mock.On call
-//   - ctx
-//   - usage
+//   - ctx context.Context
+//   - usage models.KeyUsage
 func (_e *MockGenerateKeySource_Expecter) SearchKeys(ctx interface{}, usage interface{}) *MockGenerateKeySource_SearchKeys_Call {
 	return &MockGenerateKeySource_SearchKeys_Call{Call: _e.mock.On("SearchKeys", ctx, usage)}
 }
 
 func (_c *MockGenerateKeySource_SearchKeys_Call) Run(run func(ctx context.Context, usage models.KeyUsage)) *MockGenerateKeySource_SearchKeys_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(models.KeyUsage))
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 models.KeyUsage
+		if args[1] != nil {
+			arg1 = args[1].(models.KeyUsage)
+		}
+		run(
+			arg0,
+			arg1,
+		)
 	})
 	return _c
 }
@@ -216,15 +238,26 @@ type MockPrivateKeyGenericSource_SearchKeys_Call struct {
 }
 
 // SearchKeys is a helper method to define mock.On call
-//   - ctx
-//   - usage
+//   - ctx context.Context
+//   - usage models.KeyUsage
 func (_e *MockPrivateKeyGenericSource_Expecter) SearchKeys(ctx interface{}, usage interface{}) *MockPrivateKeyGenericSource_SearchKeys_Call {
 	return &MockPrivateKeyGenericSource_SearchKeys_Call{Call: _e.mock.On("SearchKeys", ctx, usage)}
 }
 
 func (_c *MockPrivateKeyGenericSource_SearchKeys_Call) Run(run func(ctx context.Context, usage models.KeyUsage)) *MockPrivateKeyGenericSource_SearchKeys_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(models.KeyUsage))
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 models.KeyUsage
+		if args[1] != nil {
+			arg1 = args[1].(models.KeyUsage)
+		}
+		run(
+			arg0,
+			arg1,
+		)
 	})
 	return _c
 }
@@ -300,15 +333,26 @@ type MockPublicKeyGenericSource_SearchKeys_Call struct {
 }
 
 // SearchKeys is a helper method to define mock.On call
-//   - ctx
-//   - usage
+//   - ctx context.Context
+//   - usage models.KeyUsage
 func (_e *MockPublicKeyGenericSource_Expecter) SearchKeys(ctx interface{}, usage interface{}) *MockPublicKeyGenericSource_SearchKeys_Call {
 	return &MockPublicKeyGenericSource_SearchKeys_Call{Call: _e.mock.On("SearchKeys", ctx, usage)}
 }
 
 func (_c *MockPublicKeyGenericSource_SearchKeys_Call) Run(run func(ctx context.Context, usage models.KeyUsage)) *MockPublicKeyGenericSource_SearchKeys_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(models.KeyUsage))
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 models.KeyUsage
+		if args[1] != nil {
+			arg1 = args[1].(models.KeyUsage)
+		}
+		run(
+			arg0,
+			arg1,
+		)
 	})
 	return _c
 }
@@ -384,15 +428,26 @@ type MockSearchKeysSource_SearchKeys_Call struct {
 }
 
 // SearchKeys is a helper method to define mock.On call
-//   - ctx
-//   - usage
+//   - ctx context.Context
+//   - usage models.KeyUsage
 func (_e *MockSearchKeysSource_Expecter) SearchKeys(ctx interface{}, usage interface{}) *MockSearchKeysSource_SearchKeys_Call {
 	return &MockSearchKeysSource_SearchKeys_Call{Call: _e.mock.On("SearchKeys", ctx, usage)}
 }
 
 func (_c *MockSearchKeysSource_SearchKeys_Call) Run(run func(ctx context.Context, usage models.KeyUsage)) *MockSearchKeysSource_SearchKeys_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(models.KeyUsage))
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 models.KeyUsage
+		if args[1] != nil {
+			arg1 = args[1].(models.KeyUsage)
+		}
+		run(
+			arg0,
+			arg1,
+		)
 	})
 	return _c
 }
@@ -468,15 +523,26 @@ type MockSelectKeySource_SelectKey_Call struct {
 }
 
 // SelectKey is a helper method to define mock.On call
-//   - ctx
-//   - id
+//   - ctx context.Context
+//   - id uuid.UUID
 func (_e *MockSelectKeySource_Expecter) SelectKey(ctx interface{}, id interface{}) *MockSelectKeySource_SelectKey_Call {
 	return &MockSelectKeySource_SelectKey_Call{Call: _e.mock.On("SelectKey", ctx, id)}
 }
 
 func (_c *MockSelectKeySource_SelectKey_Call) Run(run func(ctx context.Context, id uuid.UUID)) *MockSelectKeySource_SelectKey_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(uuid.UUID))
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
 	})
 	return _c
 }
