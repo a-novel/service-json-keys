@@ -5,15 +5,13 @@ test:
 # Check code quality.
 lint:
 	go tool golangci-lint run
-	npx prettier . --check
-	sqlfluff lint
+	pnpm lint
 
 # Reformat code so it passes the code style lint checks.
 format:
 	go mod tidy
 	go tool golangci-lint run --fix
-	npx prettier . --write
-	sqlfluff fix
+	pnpm format
 
 # Lint OpenAPI specs.
 openapi-lint:

@@ -1,2 +1,6 @@
-SELECT * FROM active_keys
-WHERE id = ?0;
+SELECT
+  *
+FROM
+  active_keys
+WHERE
+  id = ?0;
