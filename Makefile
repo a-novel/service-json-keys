@@ -34,7 +34,3 @@ run-rotate-keys:
 # Run the API
 run-api:
 	bash -c "set -m; bash '$(CURDIR)/scripts/run.sh'"
-
-install:
-	pipx install sqlfluff
-	bash -c "cd ./docs && pnpm i"
