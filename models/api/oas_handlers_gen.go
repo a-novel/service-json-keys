@@ -8,16 +8,15 @@ import (
 	"time"
 
 	"github.com/go-faster/errors"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
-	"go.opentelemetry.io/otel/metric"
-	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
-	"go.opentelemetry.io/otel/trace"
-
 	ht "github.com/ogen-go/ogen/http"
 	"github.com/ogen-go/ogen/middleware"
 	"github.com/ogen-go/ogen/ogenerrors"
 	"github.com/ogen-go/ogen/otelogen"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/metric"
+	semconv "go.opentelemetry.io/otel/semconv/v1.34.0"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type codeRecorder struct {
@@ -86,7 +85,7 @@ func (s *Server) handleGetPublicKeyRequest(args [0]string, argsEscaped bool, w h
 			// unless there was another error (e.g., network error receiving the response body; or 3xx codes with
 			// max redirects exceeded), in which case status MUST be set to Error.
 			code := statusWriter.status
-			if code >= 100 && code < 500 {
+			if code < 100 || code >= 500 {
 				span.SetStatus(codes.Error, stage)
 			}
 
@@ -115,6 +114,8 @@ func (s *Server) handleGetPublicKeyRequest(args [0]string, argsEscaped bool, w h
 		return
 	}
 
+	var rawBody []byte
+
 	var response GetPublicKeyRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -123,6 +124,7 @@ func (s *Server) handleGetPublicKeyRequest(args [0]string, argsEscaped bool, w h
 			OperationSummary: "Get the public keys used for JSON Web Algorithms.",
 			OperationID:      "getPublicKey",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "kid",
@@ -235,7 +237,7 @@ func (s *Server) handleHealthcheckRequest(args [0]string, argsEscaped bool, w ht
 			// unless there was another error (e.g., network error receiving the response body; or 3xx codes with
 			// max redirects exceeded), in which case status MUST be set to Error.
 			code := statusWriter.status
-			if code >= 100 && code < 500 {
+			if code < 100 || code >= 500 {
 				span.SetStatus(codes.Error, stage)
 			}
 
@@ -250,6 +252,8 @@ func (s *Server) handleHealthcheckRequest(args [0]string, argsEscaped bool, w ht
 		err error
 	)
 
+	var rawBody []byte
+
 	var response HealthcheckRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -258,6 +262,7 @@ func (s *Server) handleHealthcheckRequest(args [0]string, argsEscaped bool, w ht
 			OperationSummary: "Check the health of the service.",
 			OperationID:      "healthcheck",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params:           middleware.Parameters{},
 			Raw:              r,
 		}
@@ -365,7 +370,7 @@ func (s *Server) handleListPublicKeysRequest(args [0]string, argsEscaped bool, w
 			// unless there was another error (e.g., network error receiving the response body; or 3xx codes with
 			// max redirects exceeded), in which case status MUST be set to Error.
 			code := statusWriter.status
-			if code >= 100 && code < 500 {
+			if code < 100 || code >= 500 {
 				span.SetStatus(codes.Error, stage)
 			}
 
@@ -394,6 +399,8 @@ func (s *Server) handleListPublicKeysRequest(args [0]string, argsEscaped bool, w
 		return
 	}
 
+	var rawBody []byte
+
 	var response ListPublicKeysRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -402,6 +409,7 @@ func (s *Server) handleListPublicKeysRequest(args [0]string, argsEscaped bool, w
 			OperationSummary: "List all public keys used for JSON Web Algorithms.",
 			OperationID:      "listPublicKeys",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "usage",
@@ -514,7 +522,7 @@ func (s *Server) handlePingRequest(args [0]string, argsEscaped bool, w http.Resp
 			// unless there was another error (e.g., network error receiving the response body; or 3xx codes with
 			// max redirects exceeded), in which case status MUST be set to Error.
 			code := statusWriter.status
-			if code >= 100 && code < 500 {
+			if code < 100 || code >= 500 {
 				span.SetStatus(codes.Error, stage)
 			}
 
@@ -529,6 +537,8 @@ func (s *Server) handlePingRequest(args [0]string, argsEscaped bool, w http.Resp
 		err error
 	)
 
+	var rawBody []byte
+
 	var response PingRes
 	if m := s.cfg.Middleware; m != nil {
 		mreq := middleware.Request{
@@ -537,6 +547,7 @@ func (s *Server) handlePingRequest(args [0]string, argsEscaped bool, w http.Resp
 			OperationSummary: "Check the status of the service.",
 			OperationID:      "ping",
 			Body:             nil,
+			RawBody:          rawBody,
 			Params:           middleware.Parameters{},
 			Raw:              r,
 		}
@@ -644,7 +655,7 @@ func (s *Server) handleSignClaimsRequest(args [0]string, argsEscaped bool, w htt
 			// unless there was another error (e.g., network error receiving the response body; or 3xx codes with
 			// max redirects exceeded), in which case status MUST be set to Error.
 			code := statusWriter.status
-			if code >= 100 && code < 500 {
+			if code < 100 || code >= 500 {
 				span.SetStatus(codes.Error, stage)
 			}
 
@@ -672,7 +683,9 @@ func (s *Server) handleSignClaimsRequest(args [0]string, argsEscaped bool, w htt
 		s.cfg.ErrorHandler(ctx, w, r, err)
 		return
 	}
-	request, close, err := s.decodeSignClaimsRequest(r)
+
+	var rawBody []byte
+	request, rawBody, close, err := s.decodeSignClaimsRequest(r)
 	if err != nil {
 		err = &ogenerrors.DecodeRequestError{
 			OperationContext: opErrContext,
@@ -696,6 +709,7 @@ func (s *Server) handleSignClaimsRequest(args [0]string, argsEscaped bool, w htt
 			OperationSummary: "Sign a payload using the configuration for the target usage.",
 			OperationID:      "signClaims",
 			Body:             request,
+			RawBody:          rawBody,
 			Params: middleware.Parameters{
 				{
 					Name: "usage",
