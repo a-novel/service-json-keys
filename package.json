@@ -7,10 +7,14 @@
     "format": "pnpm run format:prettier",
     "format:prettier": "prettier --write . --config prettier.config.js",
     "lint": "pnpm run lint:prettier",
+    "lint:openapi": "pnpm redocly lint ./docs/api.yaml",
     "lint:prettier": "prettier --check . --config prettier.config.js",
     "publish:major": "pnpm version major && git push --follow-tags",
     "publish:minor": "pnpm version minor && git push --follow-tags",
     "publish:patch": "pnpm version patch && git push --follow-tags"
+  },
+  "dependencies": {
+    "@redocly/cli": "^2.2.2"
   },
   "devDependencies": {
     "prettier": "^3.6.2",
