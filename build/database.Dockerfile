@@ -1,4 +1,4 @@
-FROM docker.io/library/postgres:17.6
+FROM docker.io/library/postgres:18.0
 
 # ======================================================================================================================
 # Prepare extension scripts.
@@ -11,7 +11,7 @@ RUN chmod +x /usr/local/bin/database.entrypoint.sh
 
 COPY ./build/database.sql /docker-entrypoint-initdb.d/init.sql
 
-RUN apt-get update && apt-get -y install git build-essential postgresql-server-dev-17
+RUN apt-get update && apt-get -y install git build-essential postgresql-server-dev-18
 
 # ======================================================================================================================
 # Install pg_cron.
@@ -21,13 +21,13 @@ RUN apt-get update && apt-get -y install git build-essential postgresql-server-d
 RUN git clone https://github.com/citusdata/pg_cron.git
 RUN cd pg_cron && \
     git fetch --tags && \
-    # Use the latest tagged version, not the latest commit.
+    # Use the latest tagged version, not the latest commit. \
     git checkout $(git describe --tags "$(git rev-list --tags --max-count=1)") && \
     make && make install
 
 RUN cd / && \
         rm -rf /pg_cron && \
-        apt-get remove -y git build-essential postgresql-server-dev-17 && \
+        apt-get remove -y git build-essential postgresql-server-dev-18 && \
         apt-get autoremove --purge -y && \
         apt-get clean && \
         apt-get purge
