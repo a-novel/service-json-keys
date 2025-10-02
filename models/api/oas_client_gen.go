@@ -121,7 +121,7 @@ func (c *Client) sendGetPublicKey(ctx context.Context, params GetPublicKeyParams
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("getPublicKey"),
 		semconv.HTTPRequestMethodKey.String("GET"),
-		semconv.HTTPRouteKey.String("/public-keys"),
+		semconv.URLTemplateKey.String("/public-keys"),
 	}
 	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
 
@@ -215,7 +215,7 @@ func (c *Client) sendHealthcheck(ctx context.Context) (res HealthcheckRes, err e
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("healthcheck"),
 		semconv.HTTPRequestMethodKey.String("GET"),
-		semconv.HTTPRouteKey.String("/healthcheck"),
+		semconv.URLTemplateKey.String("/healthcheck"),
 	}
 	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
 
@@ -288,7 +288,7 @@ func (c *Client) sendListPublicKeys(ctx context.Context, params ListPublicKeysPa
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("listPublicKeys"),
 		semconv.HTTPRequestMethodKey.String("GET"),
-		semconv.HTTPRouteKey.String("/public-keys/list"),
+		semconv.URLTemplateKey.String("/public-keys/list"),
 	}
 	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
 
@@ -379,7 +379,7 @@ func (c *Client) sendPing(ctx context.Context) (res PingRes, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("ping"),
 		semconv.HTTPRequestMethodKey.String("GET"),
-		semconv.HTTPRouteKey.String("/ping"),
+		semconv.URLTemplateKey.String("/ping"),
 	}
 	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
 
@@ -452,7 +452,7 @@ func (c *Client) sendSignClaims(ctx context.Context, request SignClaimsReq, para
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("signClaims"),
 		semconv.HTTPRequestMethodKey.String("POST"),
-		semconv.HTTPRouteKey.String("/payload/sign"),
+		semconv.URLTemplateKey.String("/payload/sign"),
 	}
 	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
 
