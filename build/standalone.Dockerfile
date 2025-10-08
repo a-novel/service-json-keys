@@ -29,7 +29,7 @@ RUN go build -o /api cmd/api/main.go
 RUN go build -o /rotatekeys cmd/rotatekeys/main.go
 RUN go build -o /migrations cmd/migrations/main.go
 
-FROM docker.io/library/alpine:3.22.1
+FROM docker.io/library/alpine:3.22.2
 
 WORKDIR /
 

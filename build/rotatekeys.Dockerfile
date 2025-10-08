@@ -23,7 +23,7 @@ RUN go mod download
 # ======================================================================================================================
 RUN go build -o /job cmd/rotatekeys/main.go
 
-FROM docker.io/library/alpine:3.22.1
+FROM docker.io/library/alpine:3.22.2
 
 WORKDIR /
 
