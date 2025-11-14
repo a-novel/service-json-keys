@@ -1,0 +1,14 @@
+package config
+
+import (
+	"github.com/a-novel/golib/otel"
+	"github.com/a-novel/golib/postgres"
+)
+
+type JobRotateKeys struct {
+	App Main            `json:"app" yaml:"app"`
+	Jwk map[string]*Jwk `json:"jwk" yaml:"jwk"`
+
+	Otel     otel.Config     `json:"otel"     yaml:"otel"`
+	Postgres postgres.Config `json:"postgres" yaml:"postgres"`
+}

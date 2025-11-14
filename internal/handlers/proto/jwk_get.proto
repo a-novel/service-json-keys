@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+import "jwk.proto";
+
+service JwkGetService {
+  rpc JwkGet(JwkGetRequest) returns (JwkGetResponse);
+}
+
+message JwkGetRequest {
+  string id = 1;
+  bool private = 2;
+}
+
+message JwkGetResponse {
+  Jwk jwk = 1;
+}

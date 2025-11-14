@@ -1,0 +1,19 @@
+# App.
+export GRPC_PORT=4002
+export GRPC_URL="localhost:${GRPC_PORT}"
+export GRPC_TEST_PORT=5002
+export GRPC_TEST_URL="localhost:${GRPC_TEST_PORT}"
+
+# Postgres.
+export POSTGRES_USER="postgres"
+export POSTGRES_PASSWORD="postgres"
+export POSTGRES_DB="json-keys"
+export POSTGRES_PORT=4003
+export POSTGRES_TEST_PORT=5003
+export POSTGRES_HOST="0.0.0.0"
+
+export POSTGRES_DSN="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable"
+export POSTGRES_DSN_TEST="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_TEST_PORT}/${POSTGRES_DB}?sslmode=disable"
+
+# Secrets.
+export APP_MASTER_KEY="fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"

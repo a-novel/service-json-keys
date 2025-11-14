@@ -1,0 +1,23 @@
+#!/bin/bash
+
+APP_NAME="service-json-keys-test"
+PODMAN_FILE="$PWD/builds/podman-compose.test.yaml"
+
+# Ensure containers are properly shut down when the program exits abnormally.
+int_handler()
+{
+    podman compose -p "${APP_NAME}" -f "${PODMAN_FILE}" down --volume
+}
+trap int_handler INT
+
+# Setup test containers.
+podman compose --podman-build-args='--format docker -q' -p "${APP_NAME}" -f "${PODMAN_FILE}" up -d --build
+
+POSTGRES_DSN=${POSTGRES_DSN_TEST} go run cmd/migrations/main.go
+
+# shellcheck disable=SC2046
+PACKAGES="$(go list ./... | grep internal | grep -v /mocks | grep -v /test | grep -v /proto)"
+go tool gotestsum --format pkgname -- -count=1 -cover $PACKAGES
+
+# Normal execution: containers are shut down.
+podman compose -p "${APP_NAME}" -f "${PODMAN_FILE}" down --volume
