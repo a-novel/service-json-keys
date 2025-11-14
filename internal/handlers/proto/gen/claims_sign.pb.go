@@ -130,7 +130,7 @@ const file_claims_sign_proto_rawDesc = "" +
 	"\x05token\x18\x01 \x01(\tR\x05token2J\n" +
 	"\x11ClaimsSignService\x125\n" +
 	"\n" +
-	"ClaimsSign\x12\x12.ClaimsSignRequest\x1a\x13.ClaimsSignResponseB^B\x0fClaimsSignProtoP\x01ZIgithub.com/a-novel/service-json-keys/internal/handlers/proto/gen;protogenb\x06proto3"
+	"ClaimsSign\x12\x12.ClaimsSignRequest\x1a\x13.ClaimsSignResponseBaB\x0fClaimsSignProtoP\x01ZLgithub.com/a-novel/service-json-keys/v2/internal/handlers/proto/gen;protogenb\x06proto3"
 
 var (
 	file_claims_sign_proto_rawDescOnce sync.Once

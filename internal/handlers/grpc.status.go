@@ -9,7 +9,7 @@ import (
 	"github.com/a-novel/golib/otel"
 	"github.com/a-novel/golib/postgres"
 
-	protogen "github.com/a-novel/service-json-keys/internal/handlers/proto/gen"
+	protogen "github.com/a-novel/service-json-keys/v2/internal/handlers/proto/gen"
 )
 
 func NewHealthStatus(err error) *protogen.DependencyHealth {

@@ -7,7 +7,7 @@ package handlersmocks
 import (
 	"context"
 
-	"github.com/a-novel/service-json-keys/internal/services"
+	"github.com/a-novel/service-json-keys/v2/internal/services"
 	mock "github.com/stretchr/testify/mock"
 )
 

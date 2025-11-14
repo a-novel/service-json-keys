@@ -12,7 +12,7 @@ import (
 	"github.com/a-novel-kit/jwt/jwk"
 	"github.com/a-novel-kit/jwt/jws"
 
-	"github.com/a-novel/service-json-keys/internal/config"
+	"github.com/a-novel/service-json-keys/v2/internal/config"
 )
 
 var JwkPresetsHMAC = map[jwa.Alg]jwk.HMACPreset{

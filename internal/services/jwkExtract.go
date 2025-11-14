@@ -11,8 +11,8 @@ import (
 
 	"github.com/a-novel/golib/otel"
 
-	"github.com/a-novel/service-json-keys/internal/dao"
-	"github.com/a-novel/service-json-keys/internal/lib"
+	"github.com/a-novel/service-json-keys/v2/internal/dao"
+	"github.com/a-novel/service-json-keys/v2/internal/lib"
 )
 
 type JwkExtractRequest struct {

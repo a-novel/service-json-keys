@@ -16,12 +16,12 @@ import (
 
 	"github.com/a-novel-kit/jwt/jwa"
 
-	"github.com/a-novel/service-json-keys/internal/config"
-	"github.com/a-novel/service-json-keys/internal/dao"
-	"github.com/a-novel/service-json-keys/internal/lib"
-	testutils "github.com/a-novel/service-json-keys/internal/lib/test"
-	"github.com/a-novel/service-json-keys/internal/services"
-	servicesmocks "github.com/a-novel/service-json-keys/internal/services/mocks"
+	"github.com/a-novel/service-json-keys/v2/internal/config"
+	"github.com/a-novel/service-json-keys/v2/internal/dao"
+	"github.com/a-novel/service-json-keys/v2/internal/lib"
+	testutils "github.com/a-novel/service-json-keys/v2/internal/lib/test"
+	"github.com/a-novel/service-json-keys/v2/internal/services"
+	servicesmocks "github.com/a-novel/service-json-keys/v2/internal/services/mocks"
 )
 
 func checkGeneratedPrivateKey(ctx context.Context, t *testing.T, key string) (*jwa.JWK, error) {

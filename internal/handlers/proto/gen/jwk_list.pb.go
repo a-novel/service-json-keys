@@ -128,7 +128,7 @@ const file_jwk_list_proto_rawDesc = "" +
 	"\x0fJwkListResponse\x12\x18\n" +
 	"\x04keys\x18\x01 \x03(\v2\x04.JwkR\x04keys2>\n" +
 	"\x0eJwkListService\x12,\n" +
-	"\aJwkList\x12\x0f.JwkListRequest\x1a\x10.JwkListResponseB[B\fJwkListProtoP\x01ZIgithub.com/a-novel/service-json-keys/internal/handlers/proto/gen;protogenb\x06proto3"
+	"\aJwkList\x12\x0f.JwkListRequest\x1a\x10.JwkListResponseB^B\fJwkListProtoP\x01ZLgithub.com/a-novel/service-json-keys/v2/internal/handlers/proto/gen;protogenb\x06proto3"
 
 var (
 	file_jwk_list_proto_rawDescOnce sync.Once

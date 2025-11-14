@@ -6,7 +6,7 @@ import (
 	"github.com/a-novel/golib/config"
 	"github.com/a-novel/golib/otel"
 
-	"github.com/a-novel/service-json-keys/internal/config/env"
+	"github.com/a-novel/service-json-keys/v2/internal/config/env"
 )
 
 const (

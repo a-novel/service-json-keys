@@ -10,9 +10,9 @@ import (
 
 	"github.com/a-novel/golib/otel"
 
-	"github.com/a-novel/service-json-keys/internal/dao"
-	protogen "github.com/a-novel/service-json-keys/internal/handlers/proto/gen"
-	"github.com/a-novel/service-json-keys/internal/services"
+	"github.com/a-novel/service-json-keys/v2/internal/dao"
+	protogen "github.com/a-novel/service-json-keys/v2/internal/handlers/proto/gen"
+	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
 type JwkGetService interface {

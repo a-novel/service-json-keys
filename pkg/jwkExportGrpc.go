@@ -7,7 +7,7 @@ import (
 
 	"github.com/a-novel-kit/jwt/jwa"
 
-	protogen "github.com/a-novel/service-json-keys/internal/handlers/proto/gen"
+	protogen "github.com/a-novel/service-json-keys/v2/internal/handlers/proto/gen"
 )
 
 type jwkExportGrpc struct {

@@ -10,8 +10,8 @@ import (
 	"github.com/a-novel/golib/grpcf"
 	"github.com/a-novel/golib/otel"
 
-	protogen "github.com/a-novel/service-json-keys/internal/handlers/proto/gen"
-	"github.com/a-novel/service-json-keys/internal/services"
+	protogen "github.com/a-novel/service-json-keys/v2/internal/handlers/proto/gen"
+	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
 type ClaimsSignService interface {

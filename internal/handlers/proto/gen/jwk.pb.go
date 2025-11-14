@@ -169,7 +169,7 @@ const file_jwk_proto_rawDesc = "" +
 	"\bJwkUsage\x12\x19\n" +
 	"\x15JWK_USAGE_UNSPECIFIED\x10\x00\x12\x12\n" +
 	"\x0eJWK_USAGE_AUTH\x10\x01\x12\x1a\n" +
-	"\x16JWK_USAGE_AUTH_REFRESH\x10\x02BWB\bJwkProtoP\x01ZIgithub.com/a-novel/service-json-keys/internal/handlers/proto/gen;protogenb\x06proto3"
+	"\x16JWK_USAGE_AUTH_REFRESH\x10\x02BZB\bJwkProtoP\x01ZLgithub.com/a-novel/service-json-keys/v2/internal/handlers/proto/gen;protogenb\x06proto3"
 
 var (
 	file_jwk_proto_rawDescOnce sync.Once

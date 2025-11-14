@@ -8,8 +8,8 @@ import (
 	"context"
 
 	"github.com/a-novel-kit/jwt/jwa"
-	"github.com/a-novel/service-json-keys/internal/dao"
-	"github.com/a-novel/service-json-keys/internal/services"
+	"github.com/a-novel/service-json-keys/v2/internal/dao"
+	"github.com/a-novel/service-json-keys/v2/internal/services"
 	mock "github.com/stretchr/testify/mock"
 )
 
