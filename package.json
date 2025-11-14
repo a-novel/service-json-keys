@@ -16,9 +16,9 @@
     "lint:eslint": "pnpm dlx eslint .",
     "lint:stylecheck": "prettier --check . --config prettier.config.ts",
     "lint:typecheck": "tsc",
-    "publish:major": "pnpm version major --workspaces --workspaces-update=false --no-git-tag-version && git add -A && git commit -m \"$(node -p \"require('./package.json').version\")\" && git tag v$(node -p \"require('./package.json').version\") && git push && git push --tags",
-    "publish:minor": "pnpm version minor --workspaces --workspaces-update=false --no-git-tag-version && git add -A && git commit -m \"$(node -p \"require('./package.json').version\")\" && git tag v$(node -p \"require('./package.json').version\") && git push && git push --tags",
-    "publish:patch": "pnpm version patch --workspaces --workspaces-update=false --no-git-tag-version && git add -A && git commit -m \"$(node -p \"require('./package.json').version\")\" && git tag v$(node -p \"require('./package.json').version\") && git push && git push --tags"
+    "publish:major": "pnpm version major && git push --follow-tags",
+    "publish:minor": "pnpm version minor && git push --follow-tags",
+    "publish:patch": "pnpm version patch && git push --follow-tags"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
@@ -33,7 +33,7 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.4"
   },
-  "packageManager": "pnpm@10.21.0",
+  "packageManager": "pnpm@10.22.0",
   "engines": {
     "node": ">=23.11.0",
     "npm": ">=10.9.2"
