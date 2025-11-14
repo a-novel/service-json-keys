@@ -123,6 +123,8 @@ jobs:
     services:
       postgres-json-keys:
         image: ghcr.io/a-novel/service-json-keys/database:${{ github.ref_name }}
+        ports:
+          - "5432:5432"
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
@@ -158,6 +160,8 @@ jobs:
     services:
       postgres-json-keys:
         image: ghcr.io/a-novel/service-json-keys/database:${{ github.ref_name }}
+        ports:
+          - "5432:5432"
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
