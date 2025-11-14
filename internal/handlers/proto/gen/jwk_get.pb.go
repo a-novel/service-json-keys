@@ -128,7 +128,7 @@ const file_jwk_get_proto_rawDesc = "" +
 	"\x0eJwkGetResponse\x12\x16\n" +
 	"\x03jwk\x18\x01 \x01(\v2\x04.JwkR\x03jwk2:\n" +
 	"\rJwkGetService\x12)\n" +
-	"\x06JwkGet\x12\x0e.JwkGetRequest\x1a\x0f.JwkGetResponseBZB\vJwkGetProtoP\x01ZIgithub.com/a-novel/service-json-keys/internal/handlers/proto/gen;protogenb\x06proto3"
+	"\x06JwkGet\x12\x0e.JwkGetRequest\x1a\x0f.JwkGetResponseB]B\vJwkGetProtoP\x01ZLgithub.com/a-novel/service-json-keys/v2/internal/handlers/proto/gen;protogenb\x06proto3"
 
 var (
 	file_jwk_get_proto_rawDescOnce sync.Once

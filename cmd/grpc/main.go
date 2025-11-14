@@ -14,12 +14,12 @@ import (
 	"github.com/a-novel/golib/otel"
 	"github.com/a-novel/golib/postgres"
 
-	"github.com/a-novel/service-json-keys/internal/config"
-	"github.com/a-novel/service-json-keys/internal/dao"
-	"github.com/a-novel/service-json-keys/internal/handlers"
-	protogen "github.com/a-novel/service-json-keys/internal/handlers/proto/gen"
-	"github.com/a-novel/service-json-keys/internal/lib"
-	"github.com/a-novel/service-json-keys/internal/services"
+	"github.com/a-novel/service-json-keys/v2/internal/config"
+	"github.com/a-novel/service-json-keys/v2/internal/dao"
+	"github.com/a-novel/service-json-keys/v2/internal/handlers"
+	protogen "github.com/a-novel/service-json-keys/v2/internal/handlers/proto/gen"
+	"github.com/a-novel/service-json-keys/v2/internal/lib"
+	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
 func main() {

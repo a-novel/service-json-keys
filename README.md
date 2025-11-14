@@ -10,7 +10,7 @@
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/a-novel/service-json-keys)
 
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/a-novel/service-json-keys/main.yaml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/a-novel/service-json-keys)](https://goreportcard.com/report/github.com/a-novel/service-json-keys)
+[![Go Report Card](https://goreportcard.com/badge/github.com/a-novel/service-json-keys/v2)](https://goreportcard.com/report/github.com/a-novel/service-json-keys/v2)
 [![codecov](https://codecov.io/gh/a-novel/service-json-keys/graph/badge.svg?token=almKepuGQE)](https://codecov.io/gh/a-novel/service-json-keys)
 
 ![Coverage graph](https://codecov.io/gh/a-novel/service-json-keys/graphs/sunburst.svg?token=almKepuGQE)
@@ -25,7 +25,7 @@
 - Make
   - `sudo apt-get install build-essential` (apt)
   - `sudo pacman -S make` (arch)
-  - `https://gnuwin32.sourceforge.net/packages/make.htm` (macOS)
+  - `brew install make` (macOS)
   - [Make for Windows](https://gnuwin32.sourceforge.net/packages/make.htm)
 
 ## Import in other projects
@@ -33,7 +33,7 @@
 ### Go package
 
 ```bash
-go get -u github.com/a-novel/service-json-keys
+go get -u github.com/a-novel/service-json-keys/v2
 ```
 
 ## Development

@@ -7,8 +7,8 @@ import (
 
 	"github.com/a-novel/golib/postgres"
 
-	"github.com/a-novel/service-json-keys/internal/config"
-	"github.com/a-novel/service-json-keys/internal/models/migrations"
+	"github.com/a-novel/service-json-keys/v2/internal/config"
+	"github.com/a-novel/service-json-keys/v2/internal/models/migrations"
 )
 
 func main() {

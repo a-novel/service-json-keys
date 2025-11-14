@@ -12,10 +12,10 @@ import (
 
 	"github.com/a-novel/golib/grpcf"
 
-	"github.com/a-novel/service-json-keys/internal/handlers"
-	handlersmocks "github.com/a-novel/service-json-keys/internal/handlers/mocks"
-	protogen "github.com/a-novel/service-json-keys/internal/handlers/proto/gen"
-	"github.com/a-novel/service-json-keys/internal/services"
+	"github.com/a-novel/service-json-keys/v2/internal/handlers"
+	handlersmocks "github.com/a-novel/service-json-keys/v2/internal/handlers/mocks"
+	protogen "github.com/a-novel/service-json-keys/v2/internal/handlers/proto/gen"
+	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
 func TestClaimsSign(t *testing.T) {

@@ -11,7 +11,7 @@ import (
 
 	"github.com/a-novel-kit/jwt/jwk"
 
-	"github.com/a-novel/service-json-keys/internal/lib"
+	"github.com/a-novel/service-json-keys/v2/internal/lib"
 )
 
 func mustEncryptValue(ctx context.Context, t *testing.T, data any) []byte {

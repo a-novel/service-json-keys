@@ -10,7 +10,7 @@ import (
 
 	"github.com/a-novel-kit/jwt/jwa"
 
-	"github.com/a-novel/service-json-keys/internal/dao"
+	"github.com/a-novel/service-json-keys/v2/internal/dao"
 )
 
 type JwkSearchRepository interface {

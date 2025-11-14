@@ -11,7 +11,7 @@ import (
 	"github.com/a-novel-kit/jwt"
 	"github.com/a-novel-kit/jwt/jwp"
 
-	"github.com/a-novel/service-json-keys/internal/config"
+	"github.com/a-novel/service-json-keys/v2/internal/config"
 )
 
 type ClaimsVerifyRequest struct {

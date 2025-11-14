@@ -1,4 +1,4 @@
-module github.com/a-novel/service-json-keys
+module github.com/a-novel/service-json-keys/v2
 
 go 1.25.4
 

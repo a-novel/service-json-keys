@@ -9,8 +9,8 @@ import (
 
 	"github.com/a-novel/golib/grpcf"
 
-	"github.com/a-novel/service-json-keys/internal/config/env"
-	"github.com/a-novel/service-json-keys/pkg"
+	"github.com/a-novel/service-json-keys/v2/internal/config/env"
+	"github.com/a-novel/service-json-keys/v2/pkg"
 )
 
 func TestClaims(t *testing.T) {

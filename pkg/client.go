@@ -8,9 +8,9 @@ import (
 
 	golibproto "github.com/a-novel/golib/grpcf/proto/gen"
 
-	"github.com/a-novel/service-json-keys/internal/config"
-	protogen "github.com/a-novel/service-json-keys/internal/handlers/proto/gen"
-	"github.com/a-novel/service-json-keys/internal/services"
+	"github.com/a-novel/service-json-keys/v2/internal/config"
+	protogen "github.com/a-novel/service-json-keys/v2/internal/handlers/proto/gen"
+	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
 type (

@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/a-novel/service-json-keys/internal/lib"
+	"github.com/a-novel/service-json-keys/v2/internal/lib"
 )
 
 func TestMasterKeyCrypt(t *testing.T) { //nolint:tparallel
