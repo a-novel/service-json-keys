@@ -44,6 +44,7 @@ HEALTHCHECK --interval=1s --timeout=5s --retries=10 --start-period=1s \
 ENV PORT=8080
 
 EXPOSE 8080
+EXPOSE 443
 
 # Make sure the migrations are run before the API starts.
 CMD ["/grpc"]
