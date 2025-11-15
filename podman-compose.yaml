@@ -70,8 +70,6 @@ services:
     build:
       context: ..
       dockerfile: ./builds/standalone.Dockerfile
-    ports:
-      - "${API_PORT}:8080"
     depends_on:
       - postgres-authentication
       - mailserver

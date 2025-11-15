@@ -1,5 +1,5 @@
 services:
-  json-keys-postgres:
+  postgres-json-keys:
     build:
       context: ..
       dockerfile: ./builds/database.Dockerfile
@@ -19,16 +19,16 @@ services:
   # The Master Key is a secure, 32-bit random secret used to encrypt private JSON keys
   # in the database.
   # This value is a dummy key used for tests. Use your own random key in production.
-  json-keys-service:
+  service-json-keys:
     build:
       context: ..
       dockerfile: ./builds/standalone.Dockerfile
     ports:
-      - "${API_PORT}:8080"
+      - "${GRPC_PORT}:8080"
     depends_on:
-      - json-keys-postgres
+      - postgres-json-keys
     environment:
-      POSTGRES_DSN: postgres://postgres:postgres@json-keys-postgres:5432/json-keys?sslmode=disable
+      POSTGRES_DSN: postgres://postgres:postgres@postgres-json-keys:5432/json-keys?sslmode=disable
       APP_MASTER_KEY: "${APP_MASTER_KEY}"
     networks:
       - api

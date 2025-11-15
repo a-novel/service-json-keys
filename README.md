@@ -36,6 +36,44 @@
 go get -u github.com/a-novel/service-json-keys/v2
 ```
 
+```go
+package main
+
+import (
+	"context"
+
+	"github.com/a-novel/golib/grpcf"
+	jkpkg "github.com/a-novel/service-json-keys/v2/pkg"
+)
+
+type MyClaims struct {
+	UserID string `json:"userID"`
+}
+
+func main() {
+	ctx := context.Background()
+
+	client, _ := jkpkg.NewClient(ctx, "<service-json-keys-url>")
+	claimsVerifier := jkpkg.NewClaimsVerifier[MyClaims](client)
+
+	claims := MyClaims{ UserID: "user-1" }
+	claimsPayload, _ := grpcf.InterfaceToProtoAny(claims)
+
+	// Signed token ready for use.
+	token, _ := client.ClaimsSign(ctx, &jkpkg.ClaimsSignRequest{
+		Usage: jkpkg.KeyUsageAuth,
+		Payload: claimsPayload,
+    })
+
+	decodedClaims, _ := claimsVerifier.VerifyClaims(ctx, &jkpkg.VerifyClaimsRequest{
+		Usage: jkpkg.KeyUsageAuth,
+		AccessToken: token.GetToken(),
+    })
+
+	// decodedClaims should be the same as claims.
+}
+```
+
 ## Development
 
 ### Installation
@@ -66,7 +104,8 @@ make run
 Interact with the server (in a different directory):
 
 ```bash
-go tool grpcurl --plaintext -d '' 0.0.0.0:5002 grpc.health.v1.Health/Check
+go tool grpcurl --plaintext -d '' localhost:4002 grpc.health.v1.Health/Check
+# { "status": "SERVING" }
 ```
 
 > Note: the `run` script handles graceful shutdown and cleanup of the server resources. You can quit the server by
