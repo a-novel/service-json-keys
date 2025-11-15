@@ -1,3 +1,7 @@
+# This image runs a job that rotates the JSON web keys for each usage in the application.
+#
+# It requires a patched database instance to run properly. It does not require a running
+# server.
 FROM docker.io/library/golang:1.25.4-alpine AS builder
 
 WORKDIR /app
@@ -26,5 +30,5 @@ WORKDIR /
 
 COPY --from=builder /rotate-keys /rotate-keys
 
-# Make sure the migrations are run before the job starts.
+# Rotate the JSON web keys for all usages.
 CMD ["/rotate-keys"]

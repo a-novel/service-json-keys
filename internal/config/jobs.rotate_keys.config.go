@@ -6,7 +6,8 @@ import (
 )
 
 type JobRotateKeys struct {
-	App Main            `json:"app" yaml:"app"`
+	App Main `json:"app" yaml:"app"`
+	// Jwk configuration for each supported usage.
 	Jwk map[string]*Jwk `json:"jwk" yaml:"jwk"`
 
 	Otel     otel.Config     `json:"otel"     yaml:"otel"`

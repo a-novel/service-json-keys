@@ -21,11 +21,19 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// A JSON web key is always generated for a specific usage. Only a single producer should
+// be allowed to produce tokens for a given usage, and any number of recipients can consume
+// them.
 type JwkUsage int32
 
 const (
-	JwkUsage_JWK_USAGE_UNSPECIFIED  JwkUsage = 0
-	JwkUsage_JWK_USAGE_AUTH         JwkUsage = 1
+	// JWK_USAGE_UNSPECIFIED is the default value required by proto definition.
+	// It MUST NEVER be used with an actual request, attempts to use it will result in an
+	// exception.
+	JwkUsage_JWK_USAGE_UNSPECIFIED JwkUsage = 0
+	// JWK_USAGE_AUTH is used to produce access tokens for the authentication service.
+	JwkUsage_JWK_USAGE_AUTH JwkUsage = 1
+	// JWK_USAGE_AUTH_REFRESH is used to produce refresh tokens for the authentication service.
 	JwkUsage_JWK_USAGE_AUTH_REFRESH JwkUsage = 2
 )
 
@@ -70,6 +78,7 @@ func (JwkUsage) EnumDescriptor() ([]byte, []int) {
 	return file_jwk_proto_rawDescGZIP(), []int{0}
 }
 
+// Jwk represents a public JSON web key (private keys SHOULD NEVER be returned).
 type Jwk struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Kty           string                 `protobuf:"bytes,1,opt,name=kty,proto3" json:"kty,omitempty"`
@@ -169,7 +178,7 @@ const file_jwk_proto_rawDesc = "" +
 	"\bJwkUsage\x12\x19\n" +
 	"\x15JWK_USAGE_UNSPECIFIED\x10\x00\x12\x12\n" +
 	"\x0eJWK_USAGE_AUTH\x10\x01\x12\x1a\n" +
-	"\x16JWK_USAGE_AUTH_REFRESH\x10\x02BZB\bJwkProtoP\x01ZLgithub.com/a-novel/service-json-keys/v2/internal/handlers/proto/gen;protogenb\x06proto3"
+	"\x16JWK_USAGE_AUTH_REFRESH\x10\x02BYB\bJwkProtoP\x01ZKgithub.com/a-novel/service-json-keys/v2/internal/handlers/protogen;protogenb\x06proto3"
 
 var (
 	file_jwk_proto_rawDescOnce sync.Once

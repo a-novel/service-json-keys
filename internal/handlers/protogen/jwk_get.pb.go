@@ -22,9 +22,10 @@ const (
 )
 
 type JwkGetRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Private       bool                   `protobuf:"varint,2,opt,name=private,proto3" json:"private,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Id of the key to retrieve. This parameter is usually available under the "kid" field
+	// of a JSON web token claims / headers.
+	Id            string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -66,16 +67,10 @@ func (x *JwkGetRequest) GetId() string {
 	return ""
 }
 
-func (x *JwkGetRequest) GetPrivate() bool {
-	if x != nil {
-		return x.Private
-	}
-	return false
-}
-
 type JwkGetResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Jwk           *Jwk                   `protobuf:"bytes,1,opt,name=jwk,proto3" json:"jwk,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The key in JSON Web Key (JWK) format.
+	Jwk           *Jwk `protobuf:"bytes,1,opt,name=jwk,proto3" json:"jwk,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -121,14 +116,13 @@ var File_jwk_get_proto protoreflect.FileDescriptor
 
 const file_jwk_get_proto_rawDesc = "" +
 	"\n" +
-	"\rjwk_get.proto\x1a\tjwk.proto\"9\n" +
+	"\rjwk_get.proto\x1a\tjwk.proto\"\x1f\n" +
 	"\rJwkGetRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
-	"\aprivate\x18\x02 \x01(\bR\aprivate\"(\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"(\n" +
 	"\x0eJwkGetResponse\x12\x16\n" +
 	"\x03jwk\x18\x01 \x01(\v2\x04.JwkR\x03jwk2:\n" +
 	"\rJwkGetService\x12)\n" +
-	"\x06JwkGet\x12\x0e.JwkGetRequest\x1a\x0f.JwkGetResponseB]B\vJwkGetProtoP\x01ZLgithub.com/a-novel/service-json-keys/v2/internal/handlers/proto/gen;protogenb\x06proto3"
+	"\x06JwkGet\x12\x0e.JwkGetRequest\x1a\x0f.JwkGetResponseB\\B\vJwkGetProtoP\x01ZKgithub.com/a-novel/service-json-keys/v2/internal/handlers/protogen;protogenb\x06proto3"
 
 var (
 	file_jwk_get_proto_rawDescOnce sync.Once

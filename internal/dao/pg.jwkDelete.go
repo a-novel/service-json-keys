@@ -18,14 +18,24 @@ import (
 //go:embed pg.jwkDelete.sql
 var jwkDeleteQuery string
 
-var ErrJwkDeleteNotFound = errors.New("jwk delete not found")
+var ErrJwkDeleteNotFound = errors.New("key not found")
 
 type JwkDeleteRequest struct {
-	ID      uuid.UUID
-	Now     time.Time
+	// ID of the key to delete.
+	ID uuid.UUID
+	// Time at which the key will be marked as deleted.
+	Now time.Time
+	// Comment gives information about why a key was deleted.
 	Comment string
 }
 
+// JwkDelete prematurely deletes a JSON web key. It performs a soft delete, meaning the key disappears from the API
+// results but remains available for admins.
+//
+// This repository SHOULD NOT be called when a key expires, as it will naturally be removed from the view anyway.
+//
+// This method only targets active keys. If the key is already deleted or expired, it will throw with
+// ErrJwkDeleteNotFound.
 type JwkDelete struct{}
 
 func NewJwkDelete() *JwkDelete {
@@ -42,26 +52,20 @@ func (repository *JwkDelete) Exec(ctx context.Context, request *JwkDeleteRequest
 		attribute.String("key.comment", request.Comment),
 	)
 
-	// Retrieve a connection to postgres from the context.
 	tx, err := postgres.GetContext(ctx)
 	if err != nil {
 		return nil, otel.ReportError(span, fmt.Errorf("get transaction: %w", err))
 	}
 
-	entity := &Jwk{
-		ID:             request.ID,
-		DeletedAt:      &request.Now,
-		DeletedComment: &request.Comment,
-	}
+	entity := new(Jwk)
 
-	// Execute query.
-	err = tx.NewRaw(jwkDeleteQuery, entity.DeletedAt, entity.DeletedComment, entity.ID).Scan(ctx, entity)
+	err = tx.NewRaw(jwkDeleteQuery, request.Now, request.Comment, request.ID).Scan(ctx, entity)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, otel.ReportError(span, errors.Join(err, ErrJwkDeleteNotFound))
+			err = errors.Join(err, ErrJwkDeleteNotFound)
 		}
 
-		return nil, otel.ReportError(span, fmt.Errorf("delete key: %w", err))
+		return nil, otel.ReportError(span, fmt.Errorf("execute query: %w", err))
 	}
 
 	return otel.ReportSuccess(span, entity), nil

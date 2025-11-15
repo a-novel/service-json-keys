@@ -1,3 +1,6 @@
+# This image exposes our app as a gRPC server.
+#
+# It requires a patched database instance to run properly.
 FROM docker.io/library/golang:1.25.4-alpine AS builder
 
 WORKDIR /app
@@ -22,6 +25,7 @@ RUN go mod download
 # ======================================================================================================================
 RUN go build -o /grpc cmd/grpc/main.go
 
+# Used for healthcheck.
 RUN GOBIN=/grpcurl go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
 
 FROM docker.io/library/alpine:3.22.2
@@ -41,10 +45,12 @@ HEALTHCHECK --interval=1s --timeout=5s --retries=10 --start-period=1s \
 # ======================================================================================================================
 # Finish setup.
 # ======================================================================================================================
+# Make sure the executable uses the default port.
 ENV PORT=8080
 
+# GRPC port.
 EXPOSE 8080
+# TLS port.
 EXPOSE 443
 
-# Make sure the migrations are run before the API starts.
 CMD ["/grpc"]

@@ -14,20 +14,29 @@ import (
 )
 
 type ClaimsSignRequest struct {
+	// The claims that will be wrapped by the token.
 	Claims any
-	Usage  string
+	// The intended usage of the token. It will be used to select
+	// the relevant Json Web Key and algorithm.
+	Usage string
 }
 
+// ClaimsSign is a service used to generate Json Web Tokens from a provided object (claims).
 type ClaimsSign struct {
-	producers map[string][]jwt.ProducerPlugin
-	keys      map[string]*config.Jwk
+	producers  map[string][]jwt.ProducerPlugin
+	keysConfig map[string]*config.Jwk
 }
 
+// NewClaimsSign creates a new ClaimsSign service.
+//
+// The producers are a list of plugins to use depending on the key usage.
+//
+// This method also requires to provide JSON key configuration for each usage.
 func NewClaimsSign(
 	producers map[string][]jwt.ProducerPlugin,
-	keys map[string]*config.Jwk,
+	keysConfig map[string]*config.Jwk,
 ) *ClaimsSign {
-	return &ClaimsSign{producers: producers, keys: keys}
+	return &ClaimsSign{producers: producers, keysConfig: keysConfig}
 }
 
 func (service *ClaimsSign) Exec(ctx context.Context, request *ClaimsSignRequest) (string, error) {
@@ -36,11 +45,13 @@ func (service *ClaimsSign) Exec(ctx context.Context, request *ClaimsSignRequest)
 
 	span.SetAttributes(attribute.String("usage", request.Usage))
 
-	keyConfig, ok := service.keys[request.Usage]
+	keyConfig, ok := service.keysConfig[request.Usage]
 	if !ok {
 		return "", otel.ReportError(span, fmt.Errorf("%w: %s", ErrConfigNotFound, request.Usage))
 	}
 
+	// Wrap the provided claims with basic information. This extra information will be used
+	// to validate the claims along with the token signature.
 	claims, err := jwt.NewBasicClaims(request.Claims, jwt.ClaimsProducerConfig{
 		TargetConfig: jwt.TargetConfig{
 			Issuer:   keyConfig.Token.Issuer,
@@ -60,6 +71,7 @@ func (service *ClaimsSign) Exec(ctx context.Context, request *ClaimsSignRequest)
 
 	producer := jwt.NewProducer(jwt.ProducerConfig{Plugins: producerPlugins})
 
+	// Generate the token.
 	token, err := producer.Issue(ctx, claims, nil)
 	if err != nil {
 		return "", otel.ReportError(span, fmt.Errorf("issue token: %w", err))

@@ -16,10 +16,14 @@ import (
 )
 
 type JwkExtractRequest struct {
-	Jwk     *dao.Jwk
+	// The dao object to extract from.
+	Jwk *dao.Jwk
+	// Whether to extract the private key or not. If false, only the public
+	// key is returned.
 	Private bool
 }
 
+// JwkExtract decodes the raw keys returned from the DAO layer.
 type JwkExtract struct{}
 
 func NewJwkExtract() *JwkExtract {
@@ -32,10 +36,10 @@ func (service *JwkExtract) Exec(ctx context.Context, request *JwkExtractRequest)
 
 	span.SetAttributes(
 		attribute.Bool("request.Jwk.request.Private", request.Private),
-		attribute.String("request.Jwk.id", request.Jwk.ID.String()),
-		attribute.String("request.Jwk.usage", request.Jwk.Usage),
-		attribute.Int64("request.Jwk.created_at", request.Jwk.CreatedAt.Unix()),
-		attribute.Int64("request.Jwk.expires_at", request.Jwk.ExpiresAt.Unix()),
+		attribute.String("request.Jwk.ID", request.Jwk.ID.String()),
+		attribute.String("request.Jwk.Usage", request.Jwk.Usage),
+		attribute.Int64("request.Jwk.CreatedAt", request.Jwk.CreatedAt.Unix()),
+		attribute.Int64("request.Jwk.ExpiresAt", request.Jwk.ExpiresAt.Unix()),
 	)
 
 	decoded, err := base64.RawURLEncoding.DecodeString(

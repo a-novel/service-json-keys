@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+import "jwk.proto";
+
+// JwkListService lists the active keys for a given usage. The keys are returned in
+// creation order (first key in the array is the main key, the rest are legacy).
+service JwkListService {
+  rpc JwkList(JwkListRequest) returns (JwkListResponse);
+}
+
+message JwkListRequest {
+  // The intended usage of the key.
+  string usage = 1;
+}
+
+message JwkListResponse {
+  // The keys in JSON Web Key (JWK) format. The keys are returned in
+  // creation order (first key in the array is the main key, the rest are legacy).
+  repeated Jwk keys = 1;
+}

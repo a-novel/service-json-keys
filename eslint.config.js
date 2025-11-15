@@ -28,7 +28,6 @@ export default defineConfig([
           caughtErrorsIgnorePattern: "^_",
         },
       ],
-      "react/react-in-jsx-scope": "off",
     },
   },
   pluginPrettier,

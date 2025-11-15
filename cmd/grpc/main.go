@@ -17,11 +17,12 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/config"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
-	protogen "github.com/a-novel/service-json-keys/v2/internal/handlers/proto/gen"
+	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
 	"github.com/a-novel/service-json-keys/v2/internal/lib"
 	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
+// Runs the main gRPC server.
 func main() {
 	cfg := config.AppPresetDefault
 	ctx := context.Background()

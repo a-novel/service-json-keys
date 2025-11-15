@@ -24,6 +24,7 @@ import (
 
 var ErrJwkGenUnknownKeyUsage = errors.New("unknown key request.Usage")
 
+// KeyGenerator is a generic method that generates a private/public key pair.
 type KeyGenerator func() (privateKey, publicKey *jwa.JWK, err error)
 
 type JwkGenRepositorySearch interface {
@@ -39,27 +40,37 @@ type JwkGenServiceExtract interface {
 }
 
 type JwkGenRequest struct {
+	// The intended usage of the token. It will be used to select
+	// the relevant Json Web Key configuration.
 	Usage string
 }
 
+// JwkGen is the service responsible for generating new keys.
+//
+// It does not force the generation of a key. Instead, when called, it checks the
+// current state of the database to determine if a new main key should be generated
+// or not.
+//
+// If the main key for the target usage is recent enough, this service will return it
+// and skip generation. This will be indicated in traces.
 type JwkGen struct {
 	repositorySearch JwkGenRepositorySearch
 	repositoryInsert JwkGenRepositoryInsert
 	serviceExtract   JwkGenServiceExtract
-	keys             map[string]*config.Jwk
+	keysConfig       map[string]*config.Jwk
 }
 
 func NewJwkGen(
 	repositorySearch JwkGenRepositorySearch,
 	repositoryInsert JwkGenRepositoryInsert,
 	serviceExtract JwkGenServiceExtract,
-	keys map[string]*config.Jwk,
+	keysConfig map[string]*config.Jwk,
 ) *JwkGen {
 	return &JwkGen{
 		repositorySearch: repositorySearch,
 		repositoryInsert: repositoryInsert,
 		serviceExtract:   serviceExtract,
-		keys:             keys,
+		keysConfig:       keysConfig,
 	}
 }
 
@@ -69,8 +80,8 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 
 	span.SetAttributes(attribute.String("request.Usage", request.Usage))
 
-	// Check the time last key was inserted for this request.Usage, and compare to config. If last key is too recent,
-	// return without generating a new key.
+	// Check the last time a key was inserted for the target usage, and compare to config. If the last key is too
+	// recent, return without generating a new key.
 	keys, err := service.repositorySearch.Exec(ctx, &dao.JwkSearchRequest{Usage: request.Usage})
 	if err != nil {
 		return nil, otel.ReportError(span, fmt.Errorf("list keys: %w", err))
@@ -85,13 +96,13 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 
 	span.SetAttributes(
 		attribute.Int64("lastCreated", lastCreated.Unix()),
-		attribute.Float64("rotationInterval", service.keys[request.Usage].Key.Rotation.Seconds()),
+		attribute.Float64("rotationInterval", service.keysConfig[request.Usage].Key.Rotation.Seconds()),
 	)
 
 	var latestKey *dao.Jwk
 
-	if time.Since(lastCreated) >= service.keys[request.Usage].Key.Rotation {
-		keyGenerator, ok := JwkGenerators[service.keys[request.Usage].Alg]
+	if time.Since(lastCreated) >= service.keysConfig[request.Usage].Key.Rotation {
+		keyGenerator, ok := JwkGenerators[service.keysConfig[request.Usage].Alg]
 		if !ok {
 			return nil, otel.ReportError(span, fmt.Errorf("%w: %s", ErrJwkGenUnknownKeyUsage, request.Usage))
 		}
@@ -104,7 +115,7 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 		span.AddEvent("keyGenerated", trace.WithAttributes(
 			attribute.String("key.private.kid", privateKID),
 			attribute.String("key.public.kid", publicKID),
-			attribute.String("key.alg", string(service.keys[request.Usage].Alg)),
+			attribute.String("key.alg", string(service.keysConfig[request.Usage].Alg)),
 		))
 
 		// Encrypt the private key using the master key, so it is protected against database dumping.
@@ -147,7 +158,7 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 			PublicKey:  publicKeyEncoded,
 			Usage:      request.Usage,
 			Now:        time.Now(),
-			Expiration: time.Now().Add(service.keys[request.Usage].Key.TTL),
+			Expiration: time.Now().Add(service.keysConfig[request.Usage].Key.TTL),
 		})
 		if err != nil {
 			return nil, otel.ReportError(span, fmt.Errorf("insert key: %w", err))

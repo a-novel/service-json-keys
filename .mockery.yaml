@@ -15,5 +15,5 @@ packages:
     config:
       all: true
       pkgname: pkgmocks
-      dir: internal/pkg/mocks
+      dir: pkg/mocks
       filename: mocks.go

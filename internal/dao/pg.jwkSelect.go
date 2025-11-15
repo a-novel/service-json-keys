@@ -20,9 +20,13 @@ var jwkSelectQuery string
 var ErrJwkSelectNotFound = errors.New("jwk not found")
 
 type JwkSelectRequest struct {
+	// ID of the key to retrieve. This parameter is usually available under the "kid" field
+	// of a JSON web token claims / headers.
 	ID uuid.UUID
 }
 
+// JwkSelect retrieves a key from its ID. The key id is usually available under the "kid" field
+// of a JSON web token, but can also appear under different fields.
 type JwkSelect struct{}
 
 func NewJwkSelect() *JwkSelect {
@@ -35,7 +39,6 @@ func (repository *JwkSelect) Exec(ctx context.Context, request *JwkSelectRequest
 
 	span.SetAttributes(attribute.String("key.id", request.ID.String()))
 
-	// Retrieve a connection to postgres from the context.
 	tx, err := postgres.GetContext(ctx)
 	if err != nil {
 		return nil, otel.ReportError(span, fmt.Errorf("get transaction: %w", err))
@@ -45,12 +48,11 @@ func (repository *JwkSelect) Exec(ctx context.Context, request *JwkSelectRequest
 
 	err = tx.NewRaw(jwkSelectQuery, request.ID).Scan(ctx, &entity)
 	if err != nil {
-		// Parse not found error as a managed error.
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, otel.ReportError(span, errors.Join(err, ErrJwkSelectNotFound))
+			err = errors.Join(err, ErrJwkSelectNotFound)
 		}
 
-		return nil, otel.ReportError(span, err)
+		return nil, otel.ReportError(span, fmt.Errorf("execute query: %w", err))
 	}
 
 	return otel.ReportSuccess(span, &entity), nil

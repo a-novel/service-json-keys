@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+// Jwk represents a public JSON web key (private keys SHOULD NEVER be returned).
+message Jwk {
+  string kty = 1;
+  string use = 2;
+  repeated string key_ops = 3;
+  string alg = 4;
+  string kid = 5;
+  bytes payload = 6;
+}
+
+// A JSON web key is always generated for a specific usage. Only a single producer should
+// be allowed to produce tokens for a given usage, and any number of recipients can consume
+// them.
+enum JwkUsage {
+  // JWK_USAGE_UNSPECIFIED is the default value required by proto definition.
+  // It MUST NEVER be used with an actual request, attempts to use it will result in an
+  // exception.
+  JWK_USAGE_UNSPECIFIED = 0;
+  // JWK_USAGE_AUTH is used to produce access tokens for the authentication service.
+  JWK_USAGE_AUTH = 1;
+  // JWK_USAGE_AUTH_REFRESH is used to produce refresh tokens for the authentication service.
+  JWK_USAGE_AUTH_REFRESH = 2;
+}

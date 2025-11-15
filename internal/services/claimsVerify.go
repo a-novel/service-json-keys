@@ -15,21 +15,32 @@ import (
 )
 
 type ClaimsVerifyRequest struct {
-	Token         string
-	Usage         string
+	// The full token to verify.
+	Token string
+	// The intended usage of the token. It must match the usage that has been used for its
+	// creation.
+	Usage string
+	// Tell the service to ignore expiry date verification. This can be used to validate
+	// expired tokens and perform operations like token refresh.
 	IgnoreExpired bool
 }
 
+// ClaimsVerify is a service used to verify and decode a token. It returns the decoded claims.
 type ClaimsVerify[Out any] struct {
 	recipients map[string][]jwt.RecipientPlugin
-	keys       map[string]*config.Jwk
+	keysConfig map[string]*config.Jwk
 }
 
+// NewClaimsVerify creates a new ClaimsVerify service.
+//
+// The recipients are a list of plugins to use depending on the key usage.
+//
+// This method also requires to provide JSON key configuration for each usage.
 func NewClaimsVerify[Out any](
 	recipients map[string][]jwt.RecipientPlugin,
-	keys map[string]*config.Jwk,
+	keysConfig map[string]*config.Jwk,
 ) *ClaimsVerify[Out] {
-	return &ClaimsVerify[Out]{recipients: recipients, keys: keys}
+	return &ClaimsVerify[Out]{recipients: recipients, keysConfig: keysConfig}
 }
 
 func (service *ClaimsVerify[Out]) Exec(ctx context.Context, request *ClaimsVerifyRequest) (*Out, error) {
@@ -38,13 +49,14 @@ func (service *ClaimsVerify[Out]) Exec(ctx context.Context, request *ClaimsVerif
 
 	span.SetAttributes(attribute.String("usage", request.Usage))
 
-	keyConfig, ok := service.keys[request.Usage]
+	keyConfig, ok := service.keysConfig[request.Usage]
 	if !ok {
 		return nil, otel.ReportError(span, ErrConfigNotFound)
 	}
 
 	var claims Out
 
+	// Use the key configuration to further validate the token claims.
 	checks := []jwp.ClaimsCheck{
 		jwp.NewClaimsCheckTarget(jwt.TargetConfig{
 			Issuer:   keyConfig.Token.Issuer,

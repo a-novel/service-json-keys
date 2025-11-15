@@ -1,3 +1,9 @@
+# This image exposes our app as a gRPC server.
+#
+# It requires a database instance to run properly. The instance may not be patched.
+#
+# This image will make sure all patches are applied before starting the server. It is a larger
+# version of the base gRPC image, suited for local development rather than full scale production.
 FROM docker.io/library/golang:1.25.4-alpine AS builder
 
 WORKDIR /app
@@ -26,6 +32,7 @@ RUN go build -o /grpc cmd/grpc/main.go
 RUN go build -o /migrations cmd/migrations/main.go
 RUN go build -o /rotate-keys cmd/rotate-keys/main.go
 
+# Used for healthcheck.
 RUN GOBIN=/grpcurl go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
 
 FROM docker.io/library/alpine:3.22.2
@@ -52,5 +59,5 @@ ENV PORT=8080
 EXPOSE 8080
 EXPOSE 443
 
-# Make sure the migrations are run before the API starts.
+# Run patches before starting the server.
 CMD ["sh", "-c", "/migrations && /rotate-keys && /grpc"]

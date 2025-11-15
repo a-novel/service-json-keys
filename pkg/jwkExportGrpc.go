@@ -7,9 +7,13 @@ import (
 
 	"github.com/a-novel-kit/jwt/jwa"
 
-	protogen "github.com/a-novel/service-json-keys/v2/internal/handlers/proto/gen"
+	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
 )
 
+// jwkExportGrpc is a service used to wrap an api client so it can be used as a
+// cached jwk.Source to reduce load on the network.
+//
+// This exporter is meant for external usage.
 type jwkExportGrpc struct {
 	client BaseClient
 }

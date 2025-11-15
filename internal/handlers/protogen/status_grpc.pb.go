@@ -25,6 +25,8 @@ const (
 // StatusServiceClient is the client API for StatusService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// StatusService returns the health of the grpc server dependencies.
 type StatusServiceClient interface {
 	Status(ctx context.Context, in *StatusRequest, opts ...grpc.CallOption) (*StatusResponse, error)
 }
@@ -50,6 +52,8 @@ func (c *statusServiceClient) Status(ctx context.Context, in *StatusRequest, opt
 // StatusServiceServer is the server API for StatusService service.
 // All implementations must embed UnimplementedStatusServiceServer
 // for forward compatibility.
+//
+// StatusService returns the health of the grpc server dependencies.
 type StatusServiceServer interface {
 	Status(context.Context, *StatusRequest) (*StatusResponse, error)
 	mustEmbedUnimplementedStatusServiceServer()

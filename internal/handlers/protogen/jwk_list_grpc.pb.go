@@ -25,6 +25,9 @@ const (
 // JwkListServiceClient is the client API for JwkListService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// JwkListService lists the active keys for a given usage. The keys are returned in
+// creation order (first key in the array is the main key, the rest are legacy).
 type JwkListServiceClient interface {
 	JwkList(ctx context.Context, in *JwkListRequest, opts ...grpc.CallOption) (*JwkListResponse, error)
 }
@@ -50,6 +53,9 @@ func (c *jwkListServiceClient) JwkList(ctx context.Context, in *JwkListRequest, 
 // JwkListServiceServer is the server API for JwkListService service.
 // All implementations must embed UnimplementedJwkListServiceServer
 // for forward compatibility.
+//
+// JwkListService lists the active keys for a given usage. The keys are returned in
+// creation order (first key in the array is the main key, the rest are legacy).
 type JwkListServiceServer interface {
 	JwkList(context.Context, *JwkListRequest) (*JwkListResponse, error)
 	mustEmbedUnimplementedJwkListServiceServer()

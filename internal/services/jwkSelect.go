@@ -21,10 +21,18 @@ type JwkSelectServiceExtract interface {
 }
 
 type JwkSelectRequest struct {
-	ID      uuid.UUID
+	// ID of the key to retrieve. This parameter is usually available under the "kid" field
+	// of a JSON web token claims / headers.
+	ID uuid.UUID
+	// Whether to return private or public keys.
+	//
+	// Note: if this option is set to true, make sure the query comes from the
+	// correct producer.
 	Private bool
 }
 
+// JwkSelect retrieves a key from its ID. The key id is usually available under the "kid" field
+// of a JSON web token, but can also appear under different fields.
 type JwkSelect struct {
 	repository     JwkSelectRepository
 	serviceExtract JwkSelectServiceExtract

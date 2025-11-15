@@ -1,7 +1,8 @@
 package authentication
 
+// Generate mocks.
 //go:generate go tool mockery
 
-//go:generate rm -rf internal/handlers/proto/gen
-
+// Generate proto stubs.
+//go:generate rm -rf internal/handlers/protogen
 //go:generate go tool buf generate

@@ -24,9 +24,15 @@ const (
 type DependencyStatus int32
 
 const (
+	// DEPENDENCY_STATUS_UNSPECIFIED means the application has failed to, or has not yet
+	// assess the status of the given dependency.
 	DependencyStatus_DEPENDENCY_STATUS_UNSPECIFIED DependencyStatus = 0
-	DependencyStatus_DEPENDENCY_STATUS_UP          DependencyStatus = 1
-	DependencyStatus_DEPENDENCY_STATUS_DOWN        DependencyStatus = 2
+	// DEPENDENCY_STATUS_UP means the dependency was successfully pinged, and
+	// should serve normally.
+	DependencyStatus_DEPENDENCY_STATUS_UP DependencyStatus = 1
+	// DEPENDENCY_STATUS_DOWN means the application has contacted the dependency, but it
+	// failed to respond with a proper status.
+	DependencyStatus_DEPENDENCY_STATUS_DOWN DependencyStatus = 2
 )
 
 // Enum value maps for DependencyStatus.
@@ -71,9 +77,10 @@ func (DependencyStatus) EnumDescriptor() ([]byte, []int) {
 }
 
 type DependencyHealth struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        DependencyStatus       `protobuf:"varint,1,opt,name=status,proto3,enum=DependencyStatus" json:"status,omitempty"`
-	Err           string                 `protobuf:"bytes,2,opt,name=err,proto3" json:"err,omitempty"`
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	Status DependencyStatus       `protobuf:"varint,1,opt,name=status,proto3,enum=DependencyStatus" json:"status,omitempty"`
+	// The error that occurred when checking for the dependency status, if any.
+	Err           string `protobuf:"bytes,2,opt,name=err,proto3" json:"err,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -218,7 +225,7 @@ const file_status_proto_rawDesc = "" +
 	"\x14DEPENDENCY_STATUS_UP\x10\x01\x12\x1a\n" +
 	"\x16DEPENDENCY_STATUS_DOWN\x10\x022:\n" +
 	"\rStatusService\x12)\n" +
-	"\x06Status\x12\x0e.StatusRequest\x1a\x0f.StatusResponseB]B\vStatusProtoP\x01ZLgithub.com/a-novel/service-json-keys/v2/internal/handlers/proto/gen;protogenb\x06proto3"
+	"\x06Status\x12\x0e.StatusRequest\x1a\x0f.StatusResponseB\\B\vStatusProtoP\x01ZKgithub.com/a-novel/service-json-keys/v2/internal/handlers/protogen;protogenb\x06proto3"
 
 var (
 	file_status_proto_rawDescOnce sync.Once

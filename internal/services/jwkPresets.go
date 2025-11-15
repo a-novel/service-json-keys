@@ -5,6 +5,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/ed25519"
 	"crypto/rsa"
+	"errors"
 	"fmt"
 
 	"github.com/a-novel-kit/jwt"
@@ -13,6 +14,11 @@ import (
 	"github.com/a-novel-kit/jwt/jws"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
+)
+
+var (
+	ErrJwkPresetUnknown          = errors.New("unknown jwk preset")
+	ErrJwkPresetUnknownAlgorithm = errors.New("unknown jwk algorithm")
 )
 
 var JwkPresetsHMAC = map[jwa.Alg]jwk.HMACPreset{
@@ -95,7 +101,7 @@ func JwkGeneratorHs(alg jwa.Alg) func() (any, any, string, string, error) {
 		)
 
 		if preset, ok = JwkPresetsHMAC[alg]; !ok {
-			return nil, nil, "", "", fmt.Errorf("unknown HMAC preset for algorithm: %s", alg)
+			return nil, nil, "", "", fmt.Errorf("%w (hmac): %s", ErrJwkPresetUnknown, alg)
 		}
 
 		key, err := jwk.GenerateHMAC(preset)
@@ -115,7 +121,7 @@ func JwkGeneratorEs(alg jwa.Alg) func() (any, any, string, string, error) {
 		)
 
 		if preset, ok = JwkPresetsEcdsa[alg]; !ok {
-			return nil, nil, "", "", fmt.Errorf("unknown ECDSA preset for algorithm: %s", alg)
+			return nil, nil, "", "", fmt.Errorf("%w (es): %s", ErrJwkPresetUnknown, alg)
 		}
 
 		priv, pub, err := jwk.GenerateECDSA(preset)
@@ -135,7 +141,7 @@ func JwkGeneratorRsa(alg jwa.Alg) func() (any, any, string, string, error) {
 		)
 
 		if preset, ok = JwkPresetsRsa[alg]; !ok {
-			return nil, nil, "", "", fmt.Errorf("unknown RSA preset for algorithm: %s", alg)
+			return nil, nil, "", "", fmt.Errorf("%w (rsa): %s", ErrJwkPresetUnknown, alg)
 		}
 
 		priv, pub, err := jwk.GenerateRSA(preset)
@@ -188,7 +194,7 @@ func NewJwkPrivateSource(
 		case jwa.RS256, jwa.RS384, jwa.RS512, jwa.PS256, jwa.PS384, jwa.PS512:
 			output.RSA[usage] = jwk.NewRSAPrivateSource(sourceConfig, JwkPresetsRsa[keyConfig.Alg])
 		default:
-			return nil, fmt.Errorf("unknown algorithm: %s", keyConfig.Alg)
+			return nil, fmt.Errorf("%w: %s", ErrJwkPresetUnknownAlgorithm, keyConfig.Alg)
 		}
 	}
 
@@ -236,7 +242,7 @@ func NewJwkPublicSource(
 		case jwa.RS256, jwa.RS384, jwa.RS512, jwa.PS256, jwa.PS384, jwa.PS512:
 			output.RSA[usage] = jwk.NewRSAPublicSource(sourceConfig, JwkPresetsRsa[keyConfig.Alg])
 		default:
-			return nil, fmt.Errorf("unknown algorithm: %s", keyConfig.Alg)
+			return nil, fmt.Errorf("%w: %s", ErrJwkPresetUnknownAlgorithm, keyConfig.Alg)
 		}
 	}
 
@@ -274,7 +280,7 @@ func NewJwkProducers(
 			signer := jws.NewSourcedRSAPSSSigner(usageConfig, rsapssPreset)
 			output[usage] = append(output[usage], signer)
 		} else {
-			return nil, fmt.Errorf("unknown RSA preset for usage: %s", usage)
+			return nil, fmt.Errorf("%w (rsa) for usage: %s", ErrJwkPresetUnknown, usage)
 		}
 	}
 
@@ -312,7 +318,7 @@ func NewJwkRecipients(
 			recipient := jws.NewSourcedRSAPSSVerifier(usageConfig, rsapssPreset)
 			output[usage] = append(output[usage], recipient)
 		} else {
-			return nil, fmt.Errorf("unknown RSA preset for usage: %s", usage)
+			return nil, fmt.Errorf("%w (rsa) for usage: %s", ErrJwkPresetUnknown, usage)
 		}
 	}
 

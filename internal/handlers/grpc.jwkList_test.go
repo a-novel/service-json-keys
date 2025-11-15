@@ -14,7 +14,7 @@ import (
 
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
 	handlersmocks "github.com/a-novel/service-json-keys/v2/internal/handlers/mocks"
-	protogen "github.com/a-novel/service-json-keys/v2/internal/handlers/proto/gen"
+	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
 	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
@@ -42,8 +42,7 @@ func TestJwkList(t *testing.T) {
 			name: "Success",
 
 			request: &protogen.JwkListRequest{
-				Usage:   "test-usage",
-				Private: true,
+				Usage: "test-usage",
 			},
 
 			serviceJwkSearchMock: &serviceJwkSearchMock{
@@ -79,8 +78,7 @@ func TestJwkList(t *testing.T) {
 			name: "Error/Internal",
 
 			request: &protogen.JwkListRequest{
-				Usage:   "test-usage",
-				Private: true,
+				Usage: "test-usage",
 			},
 
 			serviceJwkSearchMock: &serviceJwkSearchMock{
@@ -100,8 +98,7 @@ func TestJwkList(t *testing.T) {
 			if testCase.serviceJwkSearchMock != nil {
 				service.EXPECT().
 					Exec(mock.Anything, &services.JwkSearchRequest{
-						Usage:   testCase.request.GetUsage(),
-						Private: testCase.request.GetPrivate(),
+						Usage: testCase.request.GetUsage(),
 					}).
 					Return(testCase.serviceJwkSearchMock.resp, testCase.serviceJwkSearchMock.err)
 			}

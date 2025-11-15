@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+import "jwk.proto";
+
+// JwkGetService returns a public key for the given key id.
+// This key may be used by any recipient to validate / decrypt a token.
+service JwkGetService {
+  rpc JwkGet(JwkGetRequest) returns (JwkGetResponse);
+}
+
+message JwkGetRequest {
+  // Id of the key to retrieve. This parameter is usually available under the "kid" field
+  // of a JSON web token claims / headers.
+  string id = 1;
+}
+
+message JwkGetResponse {
+  // The key in JSON Web Key (JWK) format.
+  Jwk jwk = 1;
+}

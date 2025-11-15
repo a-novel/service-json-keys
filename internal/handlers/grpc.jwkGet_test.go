@@ -16,7 +16,7 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
 	handlersmocks "github.com/a-novel/service-json-keys/v2/internal/handlers/mocks"
-	protogen "github.com/a-novel/service-json-keys/v2/internal/handlers/proto/gen"
+	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
 	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
@@ -44,8 +44,7 @@ func TestJwkGet(t *testing.T) {
 			name: "Success",
 
 			request: &protogen.JwkGetRequest{
-				Id:      "00000000-0000-0000-0000-000000000001",
-				Private: true,
+				Id: "00000000-0000-0000-0000-000000000001",
 			},
 
 			serviceJwkGetMock: &serviceJwkGetMock{
@@ -77,8 +76,7 @@ func TestJwkGet(t *testing.T) {
 			name: "Error/NotFound",
 
 			request: &protogen.JwkGetRequest{
-				Id:      "00000000-0000-0000-0000-000000000001",
-				Private: true,
+				Id: "00000000-0000-0000-0000-000000000001",
 			},
 
 			serviceJwkGetMock: &serviceJwkGetMock{
@@ -91,8 +89,7 @@ func TestJwkGet(t *testing.T) {
 			name: "Error/Internal",
 
 			request: &protogen.JwkGetRequest{
-				Id:      "00000000-0000-0000-0000-000000000001",
-				Private: true,
+				Id: "00000000-0000-0000-0000-000000000001",
 			},
 
 			serviceJwkGetMock: &serviceJwkGetMock{
@@ -112,8 +109,7 @@ func TestJwkGet(t *testing.T) {
 			if testCase.serviceJwkGetMock != nil {
 				service.EXPECT().
 					Exec(mock.Anything, &services.JwkSelectRequest{
-						ID:      uuid.MustParse(testCase.request.GetId()),
-						Private: testCase.request.GetPrivate(),
+						ID: uuid.MustParse(testCase.request.GetId()),
 					}).
 					Return(testCase.serviceJwkGetMock.resp, testCase.serviceJwkGetMock.err)
 			}
