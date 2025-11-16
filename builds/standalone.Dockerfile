@@ -54,9 +54,12 @@ HEALTHCHECK --interval=1s --timeout=5s --retries=10 --start-period=1s \
 # ======================================================================================================================
 # Finish setup.
 # ======================================================================================================================
+# Make sure the executable uses the default port.
 ENV PORT=8080
 
+# GRPC port.
 EXPOSE 8080
+# TLS port.
 EXPOSE 443
 
 # Run patches before starting the server.
