@@ -23,9 +23,13 @@ const (
 )
 
 type ClaimsSignRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Usage         string                 `protobuf:"bytes,1,opt,name=usage,proto3" json:"usage,omitempty"`
-	Payload       *anypb.Any             `protobuf:"bytes,2,opt,name=payload,proto3" json:"payload,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Intended usage of the token. This determines the parameters and private key used to
+	// generate (and later validate) the token.
+	Usage string `protobuf:"bytes,1,opt,name=usage,proto3" json:"usage,omitempty"`
+	// The payload to sign with the token. Its inner type should remain consistent for a given
+	// usage.
+	Payload       *anypb.Any `protobuf:"bytes,2,opt,name=payload,proto3" json:"payload,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -75,8 +79,9 @@ func (x *ClaimsSignRequest) GetPayload() *anypb.Any {
 }
 
 type ClaimsSignResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The signed token, in JWT format, containing the payload.
+	Token         string `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -130,7 +135,7 @@ const file_claims_sign_proto_rawDesc = "" +
 	"\x05token\x18\x01 \x01(\tR\x05token2J\n" +
 	"\x11ClaimsSignService\x125\n" +
 	"\n" +
-	"ClaimsSign\x12\x12.ClaimsSignRequest\x1a\x13.ClaimsSignResponseBaB\x0fClaimsSignProtoP\x01ZLgithub.com/a-novel/service-json-keys/v2/internal/handlers/proto/gen;protogenb\x06proto3"
+	"ClaimsSign\x12\x12.ClaimsSignRequest\x1a\x13.ClaimsSignResponseB`B\x0fClaimsSignProtoP\x01ZKgithub.com/a-novel/service-json-keys/v2/internal/handlers/protogen;protogenb\x06proto3"
 
 var (
 	file_claims_sign_proto_rawDescOnce sync.Once

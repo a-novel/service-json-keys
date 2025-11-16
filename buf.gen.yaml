@@ -3,14 +3,14 @@ managed:
   enabled: true
   override:
     - file_option: go_package_prefix
-      value: github.com/a-novel/service-json-keys/v2/internal/handlers/proto/gen;protogen
+      value: github.com/a-novel/service-json-keys/v2/internal/handlers/protogen;protogen
 plugins:
   - remote: buf.build/protocolbuffers/go
-    out: internal/handlers/proto/gen
+    out: internal/handlers/protogen
     opt: paths=source_relative
   - remote: buf.build/grpc/go
-    out: internal/handlers/proto/gen
+    out: internal/handlers/protogen
     opt:
       - paths=source_relative
 inputs:
-  - directory: internal/handlers/proto
+  - directory: internal/models/proto

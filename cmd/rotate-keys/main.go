@@ -18,6 +18,7 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
+// Generate new versions for each usage of JSON keys.
 func main() {
 	cfg := config.JobRotateKeysPresetDefault
 	ctx := context.Background()
@@ -46,11 +47,15 @@ func main() {
 
 	var err error
 
+	// Update keys for each usage.
 	for usage := range config.JwkPresetDefault {
 		err = errors.Join(err, postgres.RunInTx(ctx, nil, func(ctx context.Context, _ bun.IDB) error {
 			_, localErr := serviceJwkGen.Exec(ctx, &services.JwkGenRequest{Usage: usage})
+			if localErr != nil {
+				return fmt.Errorf("generate key for usage %s: %w", usage, localErr)
+			}
 
-			return localErr
+			return nil
 		}))
 	}
 

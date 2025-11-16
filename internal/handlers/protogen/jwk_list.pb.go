@@ -22,9 +22,9 @@ const (
 )
 
 type JwkListRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Usage         string                 `protobuf:"bytes,1,opt,name=usage,proto3" json:"usage,omitempty"`
-	Private       bool                   `protobuf:"varint,2,opt,name=private,proto3" json:"private,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The intended usage of the key.
+	Usage         string `protobuf:"bytes,1,opt,name=usage,proto3" json:"usage,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -66,16 +66,11 @@ func (x *JwkListRequest) GetUsage() string {
 	return ""
 }
 
-func (x *JwkListRequest) GetPrivate() bool {
-	if x != nil {
-		return x.Private
-	}
-	return false
-}
-
 type JwkListResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Keys          []*Jwk                 `protobuf:"bytes,1,rep,name=keys,proto3" json:"keys,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The keys in JSON Web Key (JWK) format. The keys are returned in
+	// creation order (first key in the array is the main key, the rest are legacy).
+	Keys          []*Jwk `protobuf:"bytes,1,rep,name=keys,proto3" json:"keys,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -121,14 +116,13 @@ var File_jwk_list_proto protoreflect.FileDescriptor
 
 const file_jwk_list_proto_rawDesc = "" +
 	"\n" +
-	"\x0ejwk_list.proto\x1a\tjwk.proto\"@\n" +
+	"\x0ejwk_list.proto\x1a\tjwk.proto\"&\n" +
 	"\x0eJwkListRequest\x12\x14\n" +
-	"\x05usage\x18\x01 \x01(\tR\x05usage\x12\x18\n" +
-	"\aprivate\x18\x02 \x01(\bR\aprivate\"+\n" +
+	"\x05usage\x18\x01 \x01(\tR\x05usage\"+\n" +
 	"\x0fJwkListResponse\x12\x18\n" +
 	"\x04keys\x18\x01 \x03(\v2\x04.JwkR\x04keys2>\n" +
 	"\x0eJwkListService\x12,\n" +
-	"\aJwkList\x12\x0f.JwkListRequest\x1a\x10.JwkListResponseB^B\fJwkListProtoP\x01ZLgithub.com/a-novel/service-json-keys/v2/internal/handlers/proto/gen;protogenb\x06proto3"
+	"\aJwkList\x12\x0f.JwkListRequest\x1a\x10.JwkListResponseB]B\fJwkListProtoP\x01ZKgithub.com/a-novel/service-json-keys/v2/internal/handlers/protogen;protogenb\x06proto3"
 
 var (
 	file_jwk_list_proto_rawDescOnce sync.Once

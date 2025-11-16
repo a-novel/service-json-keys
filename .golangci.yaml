@@ -29,12 +29,12 @@ linters:
     #    - cyclop
     - decorder
     #    - depguard
-    #    - dogsled
+    - dogsled
     #    - dupl
     - dupword
     - durationcheck
     - embeddedstructfieldcheck
-    #    - err113
+    - err113
     - errcheck
     - errchkjson
     - errname
@@ -52,10 +52,10 @@ linters:
     #    - gochecknoglobals
     #    - gochecknoinits
     - gochecksumtype
-    #    - gocognit
+    - gocognit
     - goconst
     - gocritic
-    #    - gocyclo
+    - gocyclo
     - godoclint
     - godot
     #    - godox
@@ -81,7 +81,7 @@ linters:
     - makezero
     - mirror
     - misspell
-    #    - mnd
+    - mnd
     - musttag
     - nakedret
     #    - nestif
@@ -139,16 +139,18 @@ linters:
   exclusions:
     paths:
       - mocks
-      - proto
+      - protogen
     rules:
       - path: (.+)_test.go
         linters:
           - forcetypeassert
           - maintidx
           - gocognit
+          - gocyclo
           - tagliatelle
           - goconst
           - gocritic
+          - err113
       - path: dao/(.+)_test.go
         linters:
           - paralleltest

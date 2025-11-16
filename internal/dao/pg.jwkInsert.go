@@ -17,25 +17,24 @@ import (
 var jwkInsertQuery string
 
 type JwkInsertRequest struct {
+	// ID of the key to insert. Must be unique among all existing keys.
 	ID uuid.UUID
 
-	// The private key in JSON Web Key format.
-	//
-	// The key MUST BE encrypted, and the result of this encryption is stored as a base64 raw URL encoded string.
+	// See Jwk.PrivateKey. Must be encrypted.
 	PrivateKey string
-	// The public key in JSON Web Key format. The key is stored as a base64 raw URL encoded string.
-	//
-	// This value is OPTIONAL for symmetric keys.
+	// See Jwk.PublicKey.
 	PublicKey *string
-
+	// See Jwk.Usage.
 	Usage string
 
+	// Time used for key creation.
 	Now time.Time
-	// Expiration of the key. Each key pair is REQUIRED to expire past a certain time. Once the expiration date
-	// is reached, the key pair becomes invisible to the keys view.
+	// See Jwk.ExpiresAt.
 	Expiration time.Time
 }
 
+// JwkInsert inserts a new key for a given usage. If the creation time is greater
+// than any existing key for this usage, the new key will become the "main" key.
 type JwkInsert struct{}
 
 func NewJwkInsert() *JwkInsert {
@@ -53,35 +52,26 @@ func (repository *JwkInsert) Exec(ctx context.Context, request *JwkInsertRequest
 		attribute.Int64("key.expires_at", request.Expiration.Unix()),
 	)
 
-	// Retrieve a connection to postgres from the context.
 	tx, err := postgres.GetContext(ctx)
 	if err != nil {
 		return nil, otel.ReportError(span, fmt.Errorf("get transaction: %w", err))
 	}
 
-	entity := &Jwk{
-		ID:         request.ID,
-		PrivateKey: request.PrivateKey,
-		PublicKey:  request.PublicKey,
-		Usage:      request.Usage,
-		CreatedAt:  request.Now,
-		ExpiresAt:  request.Expiration,
-	}
+	entity := new(Jwk)
 
-	// Execute query.
 	err = tx.
 		NewRaw(
 			jwkInsertQuery,
-			entity.ID,
-			entity.PrivateKey,
-			entity.PublicKey,
-			entity.Usage,
-			entity.CreatedAt,
-			entity.ExpiresAt,
+			request.ID,
+			request.PrivateKey,
+			request.PublicKey,
+			request.Usage,
+			request.Now,
+			request.Expiration,
 		).
 		Scan(ctx, entity)
 	if err != nil {
-		return nil, otel.ReportError(span, err)
+		return nil, otel.ReportError(span, fmt.Errorf("execute query: %w", err))
 	}
 
 	return otel.ReportSuccess(span, entity), nil

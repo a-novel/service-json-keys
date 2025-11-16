@@ -3,19 +3,14 @@ package config
 import (
 	"github.com/samber/lo"
 
-	"github.com/a-novel/golib/config"
 	"github.com/a-novel/golib/otel"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config/env"
 )
 
-const (
-	JobsRotateKeysName = "service-json-keys-job-rotate-keys"
-)
-
 var JobRotateKeysPresetDefault = JobRotateKeys{
 	App: Main{
-		Name:      config.LoadEnv(env.AppName, JobsRotateKeysName, config.StringParser),
+		Name:      env.AppName + "-job-rotate-keys",
 		MasterKey: env.AppMasterKey,
 	},
 	Jwk: JwkPresetDefault,

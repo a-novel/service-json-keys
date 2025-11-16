@@ -25,16 +25,14 @@ func TestClient(t *testing.T) {
 	require.NoError(t, err)
 
 	keys, err := client.JwkList(t.Context(), &pkg.JwkListRequest{
-		Usage:   pkg.KeyUsageAuth,
-		Private: true,
+		Usage: pkg.KeyUsageAuth,
 	})
 	require.NoError(t, err)
 
 	require.GreaterOrEqual(t, len(keys.GetKeys()), 1)
 
 	key, err := client.JwkGet(t.Context(), &pkg.JwkGetRequest{
-		Id:      keys.GetKeys()[0].GetKid(),
-		Private: true,
+		Id: keys.GetKeys()[0].GetKid(),
 	})
 
 	require.NoError(t, err)

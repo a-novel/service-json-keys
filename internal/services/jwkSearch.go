@@ -22,10 +22,17 @@ type JwkSearchServiceExtract interface {
 }
 
 type JwkSearchRequest struct {
-	Usage   string
+	// The intended usage of the key.
+	Usage string
+	// Whether to return private or public keys.
+	//
+	// Note: if this option is set to true, make sure the query comes from the
+	// correct producer.
 	Private bool
 }
 
+// JwkSearch lists the active keys for a given usage. The keys are returned in
+// creation order (first key in the array is the main key, the rest are legacy).
 type JwkSearch struct {
 	repository     JwkSearchRepository
 	serviceExtract JwkSearchServiceExtract
@@ -59,6 +66,7 @@ func (service *JwkSearch) Exec(ctx context.Context, request *JwkSearchRequest) (
 
 	span.SetAttributes(attribute.Int("entities.count", len(entities)))
 
+	// Don't use lo so we can handle errors properly.
 	deserialized := make([]*jwa.JWK, len(entities))
 
 	for i, entity := range entities {

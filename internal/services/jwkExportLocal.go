@@ -6,6 +6,11 @@ import (
 	"github.com/a-novel-kit/jwt/jwa"
 )
 
+// JwkExportLocal is a service used to wrap the local application so it can be used as a
+// cached jwk.Source to reduce load on the database.
+//
+// This exporter is meant for internal usage only. The pkg defines its own exporter using the
+// grpc api. See pkg.jwkExportGrpc.
 type JwkExportLocal struct {
 	service *JwkSearch
 }

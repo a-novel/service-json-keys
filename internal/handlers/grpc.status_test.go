@@ -11,7 +11,7 @@ import (
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
-	protogen "github.com/a-novel/service-json-keys/v2/internal/handlers/proto/gen"
+	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
 )
 
 func TestStatus(t *testing.T) {

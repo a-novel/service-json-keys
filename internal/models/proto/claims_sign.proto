@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+
+// ClaimsSignService remotely generates a signed token from claims. The parameters used to
+// sign a token depend on the intended usage.
+service ClaimsSignService {
+  rpc ClaimsSign(ClaimsSignRequest) returns (ClaimsSignResponse);
+}
+
+message ClaimsSignRequest {
+  // Intended usage of the token. This determines the parameters and private key used to
+  // generate (and later validate) the token.
+  string usage = 1;
+  // The payload to sign with the token. Its inner type should remain consistent for a given
+  // usage.
+  google.protobuf.Any payload = 2;
+}
+
+message ClaimsSignResponse {
+  // The signed token, in JWT format, containing the payload.
+  string token = 1;
+}

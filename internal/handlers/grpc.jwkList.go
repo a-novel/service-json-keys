@@ -9,7 +9,7 @@ import (
 
 	"github.com/a-novel/golib/otel"
 
-	protogen "github.com/a-novel/service-json-keys/v2/internal/handlers/proto/gen"
+	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
 	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
@@ -34,8 +34,7 @@ func (handler *JwkList) JwkList(
 	defer span.End()
 
 	jwks, err := handler.service.Exec(ctx, &services.JwkSearchRequest{
-		Usage:   request.GetUsage(),
-		Private: request.GetPrivate(),
+		Usage: request.GetUsage(),
 	})
 	if err != nil {
 		return nil, otel.ReportError(span, status.Error(codes.Internal, err.Error()))

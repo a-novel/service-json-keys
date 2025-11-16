@@ -11,7 +11,7 @@ import (
 	"github.com/a-novel/golib/otel"
 
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
-	protogen "github.com/a-novel/service-json-keys/v2/internal/handlers/proto/gen"
+	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
 	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
@@ -39,8 +39,7 @@ func (handler *JwkGet) JwkGet(ctx context.Context, request *protogen.JwkGetReque
 	}
 
 	jwk, err := handler.service.Exec(ctx, &services.JwkSelectRequest{
-		ID:      keyId,
-		Private: request.GetPrivate(),
+		ID: keyId,
 	})
 	if errors.Is(err, dao.ErrJwkSelectNotFound) {
 		return nil, otel.ReportError(span, status.Error(codes.NotFound, err.Error()))

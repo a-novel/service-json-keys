@@ -10,13 +10,12 @@ int_handler()
 }
 trap int_handler INT
 
-# Setup test containers.
 podman compose --podman-build-args='--format docker -q' -p "${APP_NAME}" -f "${PODMAN_FILE}" up -d --build
 
 POSTGRES_DSN=${POSTGRES_DSN_TEST} go run cmd/migrations/main.go
 
 # shellcheck disable=SC2046
-PACKAGES="$(go list ./... | grep internal | grep -v /mocks | grep -v /test | grep -v /proto)"
+PACKAGES="$(go list ./... | grep internal | grep -v /mocks | grep -v /test | grep -v /protogen)"
 go tool gotestsum --format pkgname -- -count=1 -cover $PACKAGES
 
 # Normal execution: containers are shut down.

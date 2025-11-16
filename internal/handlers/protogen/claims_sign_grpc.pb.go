@@ -25,6 +25,9 @@ const (
 // ClaimsSignServiceClient is the client API for ClaimsSignService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// ClaimsSignService remotely generates a signed token from claims. The parameters used to
+// sign a token depend on the intended usage.
 type ClaimsSignServiceClient interface {
 	ClaimsSign(ctx context.Context, in *ClaimsSignRequest, opts ...grpc.CallOption) (*ClaimsSignResponse, error)
 }
@@ -50,6 +53,9 @@ func (c *claimsSignServiceClient) ClaimsSign(ctx context.Context, in *ClaimsSign
 // ClaimsSignServiceServer is the server API for ClaimsSignService service.
 // All implementations must embed UnimplementedClaimsSignServiceServer
 // for forward compatibility.
+//
+// ClaimsSignService remotely generates a signed token from claims. The parameters used to
+// sign a token depend on the intended usage.
 type ClaimsSignServiceServer interface {
 	ClaimsSign(context.Context, *ClaimsSignRequest) (*ClaimsSignResponse, error)
 	mustEmbedUnimplementedClaimsSignServiceServer()

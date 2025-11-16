@@ -11,6 +11,7 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/models/migrations"
 )
 
+// Applies migrations.
 func main() {
 	ctx := lo.Must(postgres.NewContext(context.Background(), config.PostgresPresetDefault))
 	lo.Must0(postgres.RunMigrationsContext(ctx, migrations.Migrations))
