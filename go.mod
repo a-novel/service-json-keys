@@ -11,8 +11,8 @@ tool (
 )
 
 require (
-	github.com/a-novel-kit/jwt v1.1.12
-	github.com/a-novel/golib v0.19.2
+	github.com/a-novel-kit/jwt v1.1.13
+	github.com/a-novel/golib v0.19.3
 	github.com/goccy/go-yaml v1.18.0
 	github.com/google/uuid v1.6.0
 	github.com/samber/lo v1.52.0
@@ -136,8 +136,8 @@ require (
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/fullstorydev/grpcurl v1.9.3 // indirect
 	github.com/fzipp/gocyclo v0.6.0 // indirect
-	github.com/getsentry/sentry-go v0.38.0 // indirect
-	github.com/getsentry/sentry-go/otel v0.38.0 // indirect
+	github.com/getsentry/sentry-go v0.39.0 // indirect
+	github.com/getsentry/sentry-go/otel v0.39.0 // indirect
 	github.com/ghostiam/protogetter v0.3.17 // indirect
 	github.com/go-chi/chi/v5 v5.2.3 // indirect
 	github.com/go-critic/go-critic v0.14.2 // indirect
