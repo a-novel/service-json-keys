@@ -31,7 +31,7 @@ importers:
         version: 3.7.1
       prettier-plugin-packagejson:
         specifier: ^2.5.19
-        version: 2.5.19(prettier@3.7.1)
+        version: 2.5.20(prettier@3.7.1)
       prettier-plugin-sql:
         specifier: ^0.19.2
         version: 0.19.2(prettier@3.7.1)
@@ -590,8 +590,8 @@ packages:
     resolution: {integrity: sha512-GbK2cP9nraSSUF9N2XwUwqfzlAFlMNYYl+ShE/V+H8a9uNl/oUqB1w2EL54Jh0OlyRSd8RfWYJ3coVS4TROP2w==}
     engines: {node: '>=6.0.0'}
 
-  prettier-plugin-packagejson@2.5.19:
-    resolution: {integrity: sha512-Qsqp4+jsZbKMpEGZB1UP1pxeAT8sCzne2IwnKkr+QhUe665EXUo3BAvTf1kAPCqyMv9kg3ZmO0+7eOni/C6Uag==}
+  prettier-plugin-packagejson@2.5.20:
+    resolution: {integrity: sha512-G8cowPh+QmJJECTZlrPDKWkVVcwrFjF2rGcw546w3N8blLoc4szSs8UUPfFVxHUNLUjiru71Ah83g1lZkeK9Bw==}
     peerDependencies:
       prettier: '>= 1.16.0'
     peerDependenciesMeta:
@@ -641,11 +641,11 @@ packages:
     resolution: {integrity: sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==}
     engines: {node: '>=8'}
 
-  sort-object-keys@1.1.3:
-    resolution: {integrity: sha512-855pvK+VkU7PaKYPc+Jjnmt4EzejQHyhhF33q31qG8x7maDzkeFhAAThdCYay11CISO+qAMwjOBP+fPZe0IPyg==}
+  sort-object-keys@2.0.1:
+    resolution: {integrity: sha512-R89fO+z3x7hiKPXX5P0qim+ge6Y60AjtlW+QQpRozrrNcR1lw9Pkpm5MLB56HoNvdcLHL4wbpq16OcvGpEDJIg==}
 
-  sort-package-json@3.4.0:
-    resolution: {integrity: sha512-97oFRRMM2/Js4oEA9LJhjyMlde+2ewpZQf53pgue27UkbEXfHJnDzHlUxQ/DWUkzqmp7DFwJp8D+wi/TYeQhpA==}
+  sort-package-json@3.5.0:
+    resolution: {integrity: sha512-moY4UtptUuP5sPuu9H9dp8xHNel7eP5/Kz/7+90jTvC0IOiPH2LigtRM/aSFSxreaWoToHUVUpEV4a2tAs2oKQ==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -1257,9 +1257,9 @@ snapshots:
     dependencies:
       fast-diff: 1.3.0
 
-  prettier-plugin-packagejson@2.5.19(prettier@3.7.1):
+  prettier-plugin-packagejson@2.5.20(prettier@3.7.1):
     dependencies:
-      sort-package-json: 3.4.0
+      sort-package-json: 3.5.0
       synckit: 0.11.11
     optionalDependencies:
       prettier: 3.7.1
@@ -1295,16 +1295,16 @@ snapshots:
 
   shebang-regex@3.0.0: {}
 
-  sort-object-keys@1.1.3: {}
+  sort-object-keys@2.0.1: {}
 
-  sort-package-json@3.4.0:
+  sort-package-json@3.5.0:
     dependencies:
       detect-indent: 7.0.2
       detect-newline: 4.0.1
       git-hooks-list: 4.1.1
       is-plain-obj: 4.1.0
       semver: 7.7.3
-      sort-object-keys: 1.1.3
+      sort-object-keys: 2.0.1
       tinyglobby: 0.2.15
 
   sql-formatter@15.6.10:
