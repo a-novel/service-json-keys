@@ -2,7 +2,7 @@
 #
 # It requires a patched database instance to run properly. It does not require a running
 # server.
-FROM docker.io/library/golang:1.25.4-alpine AS builder
+FROM docker.io/library/golang:1.25.5-alpine AS builder
 
 WORKDIR /app
 
