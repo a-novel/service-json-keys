@@ -1,6 +1,6 @@
 module github.com/a-novel/service-json-keys/v2
 
-go 1.25.4
+go 1.25.5
 
 tool (
 	github.com/bufbuild/buf/cmd/buf
@@ -11,8 +11,8 @@ tool (
 )
 
 require (
-	github.com/a-novel-kit/jwt v1.1.14
-	github.com/a-novel/golib v0.19.4
+	github.com/a-novel-kit/jwt v1.1.15
+	github.com/a-novel/golib v0.19.6
 	github.com/goccy/go-yaml v1.19.0
 	github.com/google/uuid v1.6.0
 	github.com/samber/lo v1.52.0
