@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/a-novel/golib/otel"
+	"github.com/a-novel-kit/golib/otel"
 )
 
 // Key used to identify the master key value in a context.

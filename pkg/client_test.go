@@ -7,7 +7,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	golibproto "github.com/a-novel/golib/grpcf/proto/gen"
+	golibproto "github.com/a-novel-kit/golib/grpcf/proto/gen"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config/env"
 	"github.com/a-novel/service-json-keys/v2/pkg"

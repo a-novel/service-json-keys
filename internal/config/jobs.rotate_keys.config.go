@@ -1,8 +1,8 @@
 package config
 
 import (
-	"github.com/a-novel/golib/otel"
-	"github.com/a-novel/golib/postgres"
+	"github.com/a-novel-kit/golib/otel"
+	"github.com/a-novel-kit/golib/postgres"
 )
 
 type JobRotateKeys struct {

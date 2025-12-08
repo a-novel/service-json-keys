@@ -6,8 +6,7 @@ import (
 
 	"go.opentelemetry.io/otel/attribute"
 
-	"github.com/a-novel/golib/otel"
-
+	"github.com/a-novel-kit/golib/otel"
 	"github.com/a-novel-kit/jwt"
 	"github.com/a-novel-kit/jwt/jwp"
 

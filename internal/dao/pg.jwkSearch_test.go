@@ -9,7 +9,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/require"
 
-	"github.com/a-novel/golib/postgres"
+	"github.com/a-novel-kit/golib/postgres"
 
 	testutils "github.com/a-novel/service-json-keys/v2/internal/config"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"

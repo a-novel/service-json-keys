@@ -7,7 +7,7 @@ package pkgmocks
 import (
 	"context"
 
-	"github.com/a-novel/golib/grpcf/proto/gen"
+	"github.com/a-novel-kit/golib/grpcf/proto/gen"
 	"github.com/a-novel/service-json-keys/v2/pkg"
 	mock "github.com/stretchr/testify/mock"
 	"google.golang.org/grpc"

@@ -3,9 +3,9 @@ package config
 import (
 	"time"
 
-	"github.com/a-novel/golib/logging"
-	"github.com/a-novel/golib/otel"
-	"github.com/a-novel/golib/postgres"
+	"github.com/a-novel-kit/golib/logging"
+	"github.com/a-novel-kit/golib/otel"
+	"github.com/a-novel-kit/golib/postgres"
 )
 
 // Main application configuration.

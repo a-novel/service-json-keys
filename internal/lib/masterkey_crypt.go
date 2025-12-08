@@ -10,7 +10,7 @@ import (
 
 	"golang.org/x/crypto/nacl/secretbox"
 
-	"github.com/a-novel/golib/otel"
+	"github.com/a-novel-kit/golib/otel"
 )
 
 var ErrInvalidSecret = errors.New("invalid secret")

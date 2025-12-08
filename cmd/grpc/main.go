@@ -10,9 +10,9 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	"github.com/a-novel/golib/grpcf"
-	"github.com/a-novel/golib/otel"
-	"github.com/a-novel/golib/postgres"
+	"github.com/a-novel-kit/golib/grpcf"
+	"github.com/a-novel-kit/golib/otel"
+	"github.com/a-novel-kit/golib/postgres"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
