@@ -13,7 +13,7 @@ tool (
 require (
 	github.com/a-novel-kit/golib v0.19.9
 	github.com/a-novel-kit/jwt v1.1.19
-	github.com/goccy/go-yaml v1.19.0
+	github.com/goccy/go-yaml v1.19.1
 	github.com/google/uuid v1.6.0
 	github.com/samber/lo v1.52.0
 	github.com/stretchr/testify v1.11.1
