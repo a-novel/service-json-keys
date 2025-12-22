@@ -97,6 +97,8 @@ github.com/a-novel-kit/golib v0.19.10 h1:5cVmIE9gXr3gSv7JwCC0tlJ+kM84Yixk5h0r+v4
 github.com/a-novel-kit/golib v0.19.10/go.mod h1:LFZYl3yoImIraXcgo4U6pjiam7jGq90kJ1C5N8U/5nA=
 github.com/a-novel-kit/jwt v1.1.20 h1:JEu1p7FpKFd/F2giln6ABCgJkznthRMMKvtapsraAFI=
 github.com/a-novel-kit/jwt v1.1.20/go.mod h1:qk3AJUAKhNTJyCeSku1XH20YjSa2pn6FxVsHrmKR03A=
+github.com/a-novel-kit/jwt v1.1.21 h1:Fu9nzZK67nC+msL3XaW4cYALYMK45bn3a6oGezM2m/4=
+github.com/a-novel-kit/jwt v1.1.21/go.mod h1:qk3AJUAKhNTJyCeSku1XH20YjSa2pn6FxVsHrmKR03A=
 github.com/alecthomas/assert/v2 v2.11.0 h1:2Q9r3ki8+JYXvGsDyBXwH3LcJ+WK5D0gc5E8vS6K3D0=
 github.com/alecthomas/assert/v2 v2.11.0/go.mod h1:Bze95FyfUr7x34QZrjL+XP+0qgp/zg8yS+TtBj1WA3k=
 github.com/alecthomas/chroma/v2 v2.20.0 h1:sfIHpxPyR07/Oylvmcai3X/exDlE8+FA820NTz+9sGw=
