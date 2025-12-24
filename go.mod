@@ -11,7 +11,7 @@ tool (
 )
 
 require (
-	github.com/a-novel-kit/golib v0.19.10
+	github.com/a-novel-kit/golib v0.19.11
 	github.com/a-novel-kit/jwt v1.1.21
 	github.com/goccy/go-yaml v1.19.1
 	github.com/google/uuid v1.6.0
