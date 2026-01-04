@@ -95,10 +95,8 @@ github.com/OpenPeeDeeP/depguard/v2 v2.2.1 h1:vckeWVESWp6Qog7UZSARNqfu/cZqvki8zsu
 github.com/OpenPeeDeeP/depguard/v2 v2.2.1/go.mod h1:q4DKzC4UcVaAvcfd41CZh0PWpGgzrVxUYBlgKNGquUo=
 github.com/a-novel-kit/golib v0.19.11 h1:MulhTDIKE8KT7P6GmnwpfznfaF2GwmXLP/5cZ1r7d5A=
 github.com/a-novel-kit/golib v0.19.11/go.mod h1:PZHTBwUHuMK8Gd0kKuZUqrzXIvwpJpQ7AwFEzk0S8eI=
-github.com/a-novel-kit/jwt v1.1.22 h1:1Do/l1xS142kPMV06pfWhR4smYVvpg+FKzvS8t5AgMs=
-github.com/a-novel-kit/jwt v1.1.22/go.mod h1:qk3AJUAKhNTJyCeSku1XH20YjSa2pn6FxVsHrmKR03A=
-github.com/a-novel-kit/jwt v1.1.23 h1:UwfdCgxOLUFnzyHKkSpoEQRnPqX7HmQv/x5iQ8JOySk=
-github.com/a-novel-kit/jwt v1.1.23/go.mod h1:qk3AJUAKhNTJyCeSku1XH20YjSa2pn6FxVsHrmKR03A=
+github.com/a-novel-kit/jwt v1.1.24 h1:lXRZ+7K+PeMXMuMUqc/xNzwhqM7qAFKst74pUWcnEZU=
+github.com/a-novel-kit/jwt v1.1.24/go.mod h1:qk3AJUAKhNTJyCeSku1XH20YjSa2pn6FxVsHrmKR03A=
 github.com/alecthomas/assert/v2 v2.11.0 h1:2Q9r3ki8+JYXvGsDyBXwH3LcJ+WK5D0gc5E8vS6K3D0=
 github.com/alecthomas/assert/v2 v2.11.0/go.mod h1:Bze95FyfUr7x34QZrjL+XP+0qgp/zg8yS+TtBj1WA3k=
 github.com/alecthomas/chroma/v2 v2.20.0 h1:sfIHpxPyR07/Oylvmcai3X/exDlE8+FA820NTz+9sGw=
