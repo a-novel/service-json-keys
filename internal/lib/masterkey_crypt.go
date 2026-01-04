@@ -15,6 +15,8 @@ import (
 
 var ErrInvalidSecret = errors.New("invalid secret")
 
+const masterKeyNonceLength = 24
+
 // EncryptMasterKey encrypts the input using the master key saved in the context.
 func EncryptMasterKey(ctx context.Context, data any) ([]byte, error) {
 	ctx, span := otel.Tracer().Start(ctx, "lib.EncryptMasterKey")
@@ -35,7 +37,7 @@ func EncryptMasterKey(ctx context.Context, data any) ([]byte, error) {
 	span.AddEvent("data.serialized")
 
 	// Generate a random nonce for encryption.
-	var nonce [24]byte
+	var nonce [masterKeyNonceLength]byte
 
 	_, err = io.ReadFull(rand.Reader, nonce[:])
 	if err != nil {
@@ -63,11 +65,19 @@ func DecryptMasterKey(ctx context.Context, data []byte, output any) error {
 
 	span.AddEvent("masterKey.retrieved")
 
-	// Retrieve the nonce value from the source.
-	var decryptNonce [24]byte
-	copy(decryptNonce[:], data[:24])
+	// Validate minimum data length to prevent panic on slice access.
+	if len(data) < masterKeyNonceLength {
+		return otel.ReportError(span, fmt.Errorf(
+			"%w: invalid data length %d, minimum %d bytes required",
+			ErrInvalidSecret, len(data), masterKeyNonceLength,
+		))
+	}
 
-	decrypted, ok := secretbox.Open(nil, data[24:], &decryptNonce, &secret)
+	// Retrieve the nonce value from the source.
+	var decryptNonce [masterKeyNonceLength]byte
+	copy(decryptNonce[:], data[:masterKeyNonceLength])
+
+	decrypted, ok := secretbox.Open(nil, data[masterKeyNonceLength:], &decryptNonce, &secret)
 	if !ok {
 		return otel.ReportError(span, fmt.Errorf("decrypt data: %w", ErrInvalidSecret))
 	}

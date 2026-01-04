@@ -16,4 +16,6 @@ export POSTGRES_DSN="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES
 export POSTGRES_DSN_TEST="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_TEST_PORT}/${POSTGRES_DB}?sslmode=disable"
 
 # Secrets.
+# SECURITY: Generate a secure 32-byte (64 hex chars) random key for production.
+# For development/testing only:
 export APP_MASTER_KEY="fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
