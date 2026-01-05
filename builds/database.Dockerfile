@@ -32,7 +32,7 @@ RUN cd pg_cron && \
 
 RUN cd / && \
     rm -rf /pg_cron && \
-    # Remove build packages.
+    # Remove build packages \
     apt-get remove -y git build-essential postgresql-server-dev-18 && \
     apt-get autoremove --purge -y && \
     apt-get clean && \

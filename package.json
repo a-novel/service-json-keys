@@ -16,6 +16,7 @@
     "lint:eslint": "eslint .",
     "lint:stylecheck": "prettier --check . --config prettier.config.ts",
     "lint:typecheck": "tsc --noEmit",
+    "prepublish:doc": "sed -Ei \"s|(a-novel/service-json-keys/[^/]+)v[0-9.]+|\\1v$(node -p -e \"require('./package.json').version\")|g\" README.md && git commit -a --amend --no-edit",
     "publish:major": "pnpm version major && git push --follow-tags",
     "publish:minor": "pnpm version minor && git push --follow-tags",
     "publish:patch": "pnpm version patch && git push --follow-tags"
