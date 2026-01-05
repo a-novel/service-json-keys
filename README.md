@@ -15,22 +15,127 @@
 
 ![Coverage graph](https://codecov.io/gh/a-novel/service-json-keys/graphs/sunburst.svg?token=almKepuGQE)
 
-## Prerequisites
-
-- [Go](https://go.dev/doc/install)
-- [Node.js](https://nodejs.org/en/download)
-  - [pnpm](https://pnpm.io/installation)
-- [Podman](https://podman.io/docs/installation)
-- [Direnv](https://direnv.net/)
-- Make
-  - `sudo apt-get install build-essential` (apt)
-  - `sudo pacman -S make` (arch)
-  - `brew install make` (macOS)
-  - [Make for Windows](https://gnuwin32.sourceforge.net/packages/make.htm)
-
 ## Import in other projects
 
-### Go package
+## Usage
+
+### Docker
+
+Run the service as a containerized application (the below examples use docker-compose syntax).
+
+```yaml
+services:
+  postgres-json-keys:
+    image: ghcr.io/a-novel/service-json-keys/database:v2.1.2
+    networks:
+      - api
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+      POSTGRES_INITDB_ARGS: --auth=scram-sha-256
+    volumes:
+      - json-keys-postgres-data:/var/lib/postgresql/
+
+  service-json-keys:
+    image: ghcr.io/a-novel/service-json-keys/standalone:v2.1.2
+    ports:
+      - "4001:8080"
+    depends_on:
+      postgres-json-keys:
+        condition: service_healthy
+    environment:
+      POSTGRES_DSN: "postgres://postgres:postgres@postgres-json-keys:5432/postgres?sslmode=disable"
+      APP_MASTER_KEY: "<your-master-key-here>"
+    networks:
+      - api
+
+networks:
+  api:
+
+volumes:
+  json-keys-postgres-data:
+```
+
+Note the standalone image is an all-in-one initializer for the application; however, it runs heavy operations such
+as migrations on every launch. Thus, while it comes in handy for local development, it is NOT RECOMMENDED for
+production deployments. Instead, consider using the separate, optimized images for that purpose.
+
+```yaml
+services:
+  postgres-json-keys:
+    image: ghcr.io/a-novel/service-json-keys/database:v2.1.2
+    networks:
+      - api
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+      POSTGRES_INITDB_ARGS: --auth=scram-sha-256
+    volumes:
+      - json-keys-postgres-data:/var/lib/postgresql/
+
+  migrations-json-keys:
+    image: ghcr.io/a-novel/service-json-keys/migrations:v2.1.2
+    depends_on:
+      postgres-json-keys:
+        condition: service_healthy
+    environment:
+      POSTGRES_DSN: "postgres://postgres:postgres@postgres-json-keys:5432/postgres?sslmode=disable"
+    networks:
+      - api
+
+  service-json-keys:
+    image: ghcr.io/a-novel/service-json-keys/grpc:v2.1.2
+    ports:
+      - "4002:8080"
+    depends_on:
+      postgres-json-keys:
+        condition: service_healthy
+      migrations-json-keys:
+        condition: service_completed_successfully
+    environment:
+      POSTGRES_DSN: "postgres://postgres:postgres@postgres-json-keys:5432/postgres?sslmode=disable"
+      APP_MASTER_KEY: "<your-master-key-here>"
+    networks:
+      - api
+
+networks:
+  api:
+
+volumes:
+  json-keys-postgres-data:
+```
+
+Above are the minimal required configuration to run the service locally. Configuration is done through environment
+variables. Below is a list of available configurations:
+
+**Required variables**
+
+| Name           | Description                                                                                                                                                                                            | Images                                   |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------- |
+| POSTGRES_DSN   | The Postgres Data Source Name (DSN) used to connect to the database.                                                                                                                                   | `standalone`<br/>`grpc`<br/>`migrations` |
+| APP_MASTER_KEY | Master key used to securely encrypt private keys in the database. This should NEVER be exposed, and should not be rotated unless necessary (changing it will lose access to previous keys permanently) | `standalone`<br/>`grpc`                  |
+
+The GRPC service exposes sensitive data, and should run in an isolated, secure network.
+
+**Logs & Tracing**
+
+For now, OTEL is only provided using 2 exporters: stdout and Google Cloud. Other integrations may come
+in the future.
+
+| Name              | Description                                                                             | Default value       | Images                  |
+| ----------------- | --------------------------------------------------------------------------------------- | ------------------- | ----------------------- |
+| OTEL              | Activate OTEL tracing (use options below to switch between exporters)                   | `false`             | `standalone`<br/>`rest` |
+| GCLOUD_PROJECT_ID | Google Cloud project id for the OTEL exporter. Switch to Google Cloud exporter when set |                     | `standalone`<br/>`rest` |
+| APP_NAME          | Application name to be used in traces                                                   | `service-json-keys` | `standalone`<br/>`rest` |
+
+### Go module
+
+You can integrate the json keys capabilities directly into your Go services by using the provided
+Go module. It requires a connection to a running instance of this service.
 
 ```bash
 go get -u github.com/a-novel/service-json-keys/v2
@@ -40,105 +145,36 @@ go get -u github.com/a-novel/service-json-keys/v2
 package main
 
 import (
-	"context"
+  "context"
 
-	"github.com/a-novel-kit/golib/grpcf"
-	jkpkg "github.com/a-novel/service-json-keys/v2/pkg"
+  "github.com/a-novel-kit/golib/grpcf"
+  jkpkg "github.com/a-novel/service-json-keys/v2/pkg"
 )
 
 type MyClaims struct {
-	UserID string `json:"userID"`
+  UserID string `json:"userID"`
 }
 
 func main() {
-	ctx := context.Background()
+  ctx := context.Background()
 
-	client, _ := jkpkg.NewClient(ctx, "<service-json-keys-url>")
-	claimsVerifier := jkpkg.NewClaimsVerifier[MyClaims](client)
+  client, _ := jkpkg.NewClient(ctx, "<service-json-keys-url>")
+  claimsVerifier := jkpkg.NewClaimsVerifier[MyClaims](client)
 
-	claims := MyClaims{ UserID: "user-1" }
-	claimsPayload, _ := grpcf.InterfaceToProtoAny(claims)
+  claims := MyClaims{ UserID: "user-1" }
+  claimsPayload, _ := grpcf.InterfaceToProtoAny(claims)
 
-	// Signed token ready for use.
-	token, _ := client.ClaimsSign(ctx, &jkpkg.ClaimsSignRequest{
-		Usage: jkpkg.KeyUsageAuth,
-		Payload: claimsPayload,
-    })
+  // Signed token ready for use.
+  token, _ := client.ClaimsSign(ctx, &jkpkg.ClaimsSignRequest{
+    Usage: jkpkg.KeyUsageAuth,
+    Payload: claimsPayload,
+  })
 
-	decodedClaims, _ := claimsVerifier.VerifyClaims(ctx, &jkpkg.VerifyClaimsRequest{
-		Usage: jkpkg.KeyUsageAuth,
-		AccessToken: token.GetToken(),
-    })
+  decodedClaims, _ := claimsVerifier.VerifyClaims(ctx, &jkpkg.VerifyClaimsRequest{
+    Usage: jkpkg.KeyUsageAuth,
+    AccessToken: token.GetToken(),
+  })
 
-	// decodedClaims should be the same as claims.
+  // decodedClaims should be the same as claims.
 }
-```
-
-## Development
-
-### Installation
-
-Install dependencies
-
-```bash
-make install
-```
-
-Create env file
-
-```bash
-cp .envrc.template .envrc
-```
-
-Ask an admin to get the actual values for the placeholders in the new `.envrc` file (indicated by surrounding `[]`
-brackets).
-
-### Run locally
-
-#### As Rest API
-
-```bash
-make run
-```
-
-Interact with the server (in a different directory):
-
-```bash
-go tool grpcurl --plaintext -d '' localhost:4002 grpc.health.v1.Health/Check
-# { "status": "SERVING" }
-```
-
-> Note: the `run` script handles graceful shutdown and cleanup of the server resources. You can quit the server by
-> killing it with Ctrl+C / Cmd+C, however beware this will not terminate immediately, and instead trigger the cleanup
-> script.
-
-#### As Containers
-
-You can build local version of the containers using
-
-```bash
-make build
-```
-
-You can then use the `:local` tag and the official image handler
-(eg: `ghcr.io/a-novel/service-json-keys/standalone:local`)
-
-### Contribute
-
-Run tests
-
-```bash
-make test
-```
-
-Make sure the code complies to our guidelines
-
-```bash
-make lint # make format
-```
-
-Keep the code up-to-date
-
-```bash
-make generate
 ```
