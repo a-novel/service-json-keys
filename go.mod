@@ -12,7 +12,7 @@ tool (
 
 require (
 	github.com/a-novel-kit/golib v0.19.11
-	github.com/a-novel-kit/jwt v1.1.26
+	github.com/a-novel-kit/jwt v1.1.27
 	github.com/goccy/go-yaml v1.19.2
 	github.com/google/uuid v1.6.0
 	github.com/samber/lo v1.52.0
@@ -310,7 +310,7 @@ require (
 	github.com/uudashr/gocognit v1.2.0 // indirect
 	github.com/uudashr/iface v1.4.1 // indirect
 	github.com/vbatts/tar-split v0.12.2 // indirect
-	github.com/vektra/mockery/v3 v3.6.1 // indirect
+	github.com/vektra/mockery/v3 v3.6.2 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
