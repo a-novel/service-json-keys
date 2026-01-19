@@ -26,7 +26,7 @@ Run the service as a containerized application (the below examples use docker-co
 ```yaml
 services:
   postgres-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/database:v2.1.3
+    image: ghcr.io/a-novel/service-json-keys/database:v2.1.4
     networks:
       - api
     environment:
@@ -39,7 +39,7 @@ services:
       - json-keys-postgres-data:/var/lib/postgresql/
 
   service-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/standalone:v2.1.3
+    image: ghcr.io/a-novel/service-json-keys/standalone:v2.1.4
     ports:
       - "4001:8080"
     depends_on:
@@ -65,7 +65,7 @@ production deployments. Instead, consider using the separate, optimized images f
 ```yaml
 services:
   postgres-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/database:v2.1.3
+    image: ghcr.io/a-novel/service-json-keys/database:v2.1.4
     networks:
       - api
     environment:
@@ -78,7 +78,7 @@ services:
       - json-keys-postgres-data:/var/lib/postgresql/
 
   migrations-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/migrations:v2.1.3
+    image: ghcr.io/a-novel/service-json-keys/migrations:v2.1.4
     depends_on:
       postgres-json-keys:
         condition: service_healthy
@@ -88,7 +88,7 @@ services:
       - api
 
   service-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/grpc:v2.1.3
+    image: ghcr.io/a-novel/service-json-keys/grpc:v2.1.4
     ports:
       - "4002:8080"
     depends_on:
