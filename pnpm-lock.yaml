@@ -10,7 +10,7 @@ importers:
     devDependencies:
       '@a-novel-kit/nodelib-config':
         specifier: ^1.3.1
-        version: 1.3.4(14710053e3e65e28c8c10d25db052595)
+        version: 1.3.4(f7d609fbb7e0d9a84a64db276e843105)
       '@eslint/js':
         specifier: ^9.39.1
         version: 9.39.2
@@ -42,8 +42,8 @@ importers:
         specifier: ^3.6.2
         version: 3.8.0
       prettier-plugin-packagejson:
-        specifier: ^2.5.19
-        version: 2.5.22(prettier@3.8.0)
+        specifier: ^3.0.0
+        version: 3.0.0(prettier@3.8.0)
       prettier-plugin-sql:
         specifier: ^0.19.2
         version: 0.19.2(prettier@3.8.0)
@@ -1407,10 +1407,10 @@ packages:
     peerDependencies:
       prettier: 3.x
 
-  prettier-plugin-packagejson@2.5.22:
-    resolution: {integrity: sha512-G6WalmoUssKF8ZXkni0+n4324K+gG143KPysSQNW+FrR0XyNb3BdRxchGC/Q1FE/F702p7/6KU7r4mv0WSWbzA==}
+  prettier-plugin-packagejson@3.0.0:
+    resolution: {integrity: sha512-z8/QmPSqx/ANvvQMWJSkSq1+ihBXeuwDEYdjX3ZjRJ5Ty1k7vGbFQfhzk2eDe0rwS/TNyRjWK/qnjJEStAOtDw==}
     peerDependencies:
-      prettier: '>= 1.16.0'
+      prettier: ^3
     peerDependenciesMeta:
       prettier:
         optional: true
@@ -1705,7 +1705,7 @@ packages:
 
 snapshots:
 
-  '@a-novel-kit/nodelib-config@1.3.4(14710053e3e65e28c8c10d25db052595)':
+  '@a-novel-kit/nodelib-config@1.3.4(f7d609fbb7e0d9a84a64db276e843105)':
     dependencies:
       '@eslint/compat': 2.0.0(eslint@9.39.2(jiti@2.6.1))
       '@eslint/js': 9.39.2
@@ -1719,7 +1719,7 @@ snapshots:
       eslint-plugin-svelte: 3.13.1(eslint@9.39.2(jiti@2.6.1))(svelte@5.45.6)
       prettier: 3.8.0
       prettier-plugin-css-order: 2.1.2(postcss@8.5.6)(prettier@3.8.0)
-      prettier-plugin-packagejson: 2.5.22(prettier@3.8.0)
+      prettier-plugin-packagejson: 3.0.0(prettier@3.8.0)
       prettier-plugin-sql: 0.19.2(prettier@3.8.0)
       prettier-plugin-svelte: 3.4.0(prettier@3.8.0)(svelte@5.45.6)
       typescript: 5.9.3
@@ -2872,7 +2872,7 @@ snapshots:
     transitivePeerDependencies:
       - postcss
 
-  prettier-plugin-packagejson@2.5.22(prettier@3.8.0):
+  prettier-plugin-packagejson@3.0.0(prettier@3.8.0):
     dependencies:
       sort-package-json: 3.6.0
     optionalDependencies:
