@@ -1,6 +1,6 @@
-# Contributing to service-authentication
+# Contributing to service-json-keys
 
-Welcome to the authentication service for the A-Novel platform. This guide will help you understand the codebase, set
+Welcome to the JSON Keys service for the A-Novel platform. This guide will help you understand the codebase, set
 up your development environment, and contribute effectively.
 
 ## Table of Contents
@@ -11,7 +11,7 @@ up your development environment, and contribute effectively.
 4. [Development Workflow](#development-workflow)
 5. [AI Usage](#ai-usage)
 6. [Go Coding Conventions](#go-coding-conventions)
-7. [OpenAPI Specification](#openapi-specification)
+7. [Protocol Buffers](#protocol-buffers)
 8. [Testing](#testing)
 9. [CI/CD Pipeline](#cicd-pipeline)
 10. [Project-Specific Guidelines](#project-specific-guidelines)
@@ -21,25 +21,25 @@ up your development environment, and contribute effectively.
 
 ## Introduction
 
-This is a **Go backend service** providing authentication for the A-Novel platform:
+This is a **Go backend service** providing JWK (JSON Web Key) management for the A-Novel platform:
 
-- User credential management (registration, authentication, password reset)
-- JWT token generation and verification (two-token system: access + refresh)
-- Role-based access control
-- Email verification via short codes
+- JWK storage with encryption (private keys secured via master key)
+- JWT signing and verification
+- Key rotation and lifecycle management
+- gRPC API for internal service communication
 
-The project also includes a **TypeScript client SDK** (`pkg/rest-js/`) for frontend integration, but the core service
-is written entirely in Go.
+The project exposes a **Go client package** (`pkg/`) for other services to integrate with. There is no JavaScript/TypeScript client — this service is designed for internal backend-to-backend communication only.
 
 **Tech Stack:**
 
-| Layer          | Technology                                             |
-| -------------- | ------------------------------------------------------ |
-| Backend        | Go, Chi router, Bun ORM                                |
-| Database       | PostgreSQL                                             |
-| Authentication | JWT (via service-json-keys), Argon2id password hashing |
-| Observability  | OpenTelemetry                                          |
-| Containers     | Docker/Podman                                          |
+| Layer         | Technology             |
+| ------------- | ---------------------- |
+| Backend       | Go, gRPC               |
+| Database      | PostgreSQL             |
+| Key Storage   | AES-GCM encrypted JWKs |
+| Observability | OpenTelemetry          |
+| Containers    | Docker/Podman          |
+| Protobuf      | Buf                    |
 
 ---
 
@@ -68,8 +68,6 @@ Create a `.envrc` file in the project root:
 cp .envrc.template .envrc
 ```
 
-Ask for an admin to replace variables with a `[SECRET]` value.
-
 Then, load the environment variables:
 
 ```bash
@@ -86,110 +84,46 @@ make install
 
 ### Common Commands
 
-| Command         | Description                  |
-| --------------- | ---------------------------- |
-| `make run`      | Start all services locally   |
-| `make test`     | Run all tests                |
-| `make lint`     | Run all linters              |
-| `make format`   | Format all code              |
-| `make build`    | Build Docker images locally  |
-| `make generate` | Generate mocks and templates |
+| Command         | Description                      |
+| --------------- | -------------------------------- |
+| `make run`      | Start all services locally       |
+| `make test`     | Run all tests                    |
+| `make lint`     | Run all linters                  |
+| `make format`   | Format all code                  |
+| `make build`    | Build Docker images locally      |
+| `make generate` | Generate mocks and protobuf code |
 
 ### Interacting with the Service
 
-Once the service is running (`make run`), you can interact with it using `curl` or any HTTP client.
+Once the service is running (`make run`), you can interact with it using `grpcurl` or any gRPC client.
+
+```bash
+# List all available methods.
+grpcurl -plaintext localhost:4002 list
+```
 
 #### Health Checks
 
 ```bash
 # Simple ping (is the server up?)
-curl http://localhost:4011/ping
+grpcurl -plaintext localhost:4002 grpc.health.v1.Health/Check
 
-# Detailed health check (checks database, dependencies)
-curl http://localhost:4011/healthcheck
+# Check the status of all services.
+grpcurl -plaintext localhost:4002 StatusService/Status
 ```
 
-#### Authentication
+#### Key Operations
 
-Get an anonymous token (required for most interactions).
+List available keys:
 
 ```bash
-ACCESS_TOKEN=$(curl -X PUT http://localhost:4011/session/anon | jq -r '.accessToken')
-
-# Verify session.
-curl -X GET http://localhost:4011/session \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $ACCESS_TOKEN"
+grpcurl -plaintext -d '{"usage": "auth"}' localhost:4002 JwkListService/JwkList
 ```
 
-Register an account.
+Get a specific key:
 
 ```bash
-# Create short code.
-curl -X PUT http://localhost:4011/short-code/register \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $ACCESS_TOKEN" \
-  -d '{"email": "newuser@example.com", "lang": "en"}'
-
-# Retrieve email
-EMAIL_ID=$(curl -s http://localhost:4014/api/v1/messages | jq -r '.messages[0].ID')
-SHORT_CODE=$(
-  curl -s "http://localhost:4014/api/v1/message/$EMAIL_ID" | \
-    grep -oP '(?<=shortCode\=)[a-zA-Z0-9]+' | \
-    head -1
-)
-
-# Complete registration with the code
-TOKEN=$(
-  curl -X PUT http://localhost:4011/credentials \
-    -H "Authorization: Bearer $ACCESS_TOKEN" \
-    -H "Content-Type: application/json" \
-    -d "{\"email\": \"newuser@example.com\", \"password\": \"securepassword\", \"shortCode\": \"$SHORT_CODE\"}"
-)
-ACCESS_TOKEN=$(echo $TOKEN | jq -r '.accessToken')
-REFRESH_TOKEN=$(echo $TOKEN | jq -r '.refreshToken')
-```
-
-Refresh token on expiration.
-
-```bash
-# Refresh an expired access token
-TOKEN=$(
-  curl -X PATCH http://localhost:4011/session \
-    -H "Content-Type: application/json" \
-    -d "{\"accessToken\": \"$ACCESS_TOKEN\", \"refreshToken\": \"$REFRESH_TOKEN\"}"
-)
-ACCESS_TOKEN=$(echo $TOKEN | jq -r '.accessToken')
-REFRESH_TOKEN=$(echo $TOKEN | jq -r '.refreshToken')
-```
-
-### MailPit (Email Testing)
-
-[MailPit](https://mailpit.axllent.org/) captures all emails sent by the service during local development. No emails
-are actually sent to real addresses.
-
-**Access the UI:** http://localhost:4014
-
-**Documentation:**
-
-- [MailPit Features](https://mailpit.axllent.org/docs/)
-- [API v1 Reference](https://mailpit.axllent.org/docs/api-v1/view.html)
-- [Integration Testing Guide](https://mailpit.axllent.org/docs/integration/)
-
-#### Quick API Examples
-
-```bash
-# List all captured emails
-curl http://localhost:4014/api/v1/messages
-
-# Get the latest email (useful for testing)
-curl http://localhost:4014/api/v1/messages | jq '.messages[0]'
-
-# Delete all emails (clean slate for testing)
-curl -X DELETE http://localhost:4014/api/v1/messages
-
-# Search for emails by recipient
-curl "http://localhost:4014/api/v1/search?query=to:user@example.com"
+grpcurl -plaintext -d '{"id": "<key-uuid>"}' localhost:4002 JwkGetService/JwkGet
 ```
 
 ---
@@ -199,27 +133,27 @@ curl "http://localhost:4014/api/v1/search?query=to:user@example.com"
 ### Directory Structure
 
 ```
-service-authentication-v2/
+service-json-keys-v2/
 ├── cmd/                          # Entry points (Go)
-│   ├── rest/main.go              # REST API server
+│   ├── grpc/main.go              # gRPC API server
 │   ├── migrations/main.go        # Database migration runner
-│   └── init/main.go              # Patch the server with initial state
+│   └── rotate-keys/main.go       # Key rotation job
 │
 ├── internal/                     # Private Go packages (core logic)
 │   ├── config/                   # Configuration management
 │   ├── dao/                      # Data Access Objects (external data sources)
-│   ├── handlers/                 # HTTP request handlers
-│   │   └── middlewares/          # HTTP middleware
+│   ├── handlers/                 # gRPC request handlers
+│   │   └── protogen/             # Generated protobuf Go code
 │   ├── services/                 # Business logic layer
-│   ├── lib/                      # Utilities (cryptography, random)
+│   ├── lib/                      # Utilities (master key, encryption)
 │   └── models/                   # Domain models
 │       ├── migrations/           # SQL migration files
-│       └── mails/                # Email templates (MJML)
+│       └── proto/                # Protocol buffer definitions
 │
-├── pkg/                          # Public packages
-│   ├── auth.go                   # Public auth interface (Go)
-│   ├── rest-js/                  # TypeScript REST client (wrapper)
-│   └── rest-js-test/             # TypeScript test utilities
+├── pkg/                          # Public Go packages
+│   ├── client.go                 # gRPC client for other services
+│   ├── claims.go                 # Claims verification utilities
+│   └── jwkExportGrpc.go          # JWK export adapter
 │
 ├── builds/                       # Docker build files
 │   ├── *.Dockerfile              # Image definitions
@@ -235,8 +169,8 @@ The backend follows a clean layered architecture:
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                     HTTP Layer                      │
-│              (handlers/, middlewares/)              │
+│                     gRPC Layer                      │
+│                     (handlers/)                     │
 │  • Request parsing, validation, response formatting │
 └──────────────────────────┬──────────────────────────┘
                            │
@@ -255,36 +189,33 @@ The backend follows a clean layered architecture:
 │  • Query execution and response mapping             │
 └──────────────────────────┬──────────────────────────┘
                            │
-        ┌──────────────────┼──────────────────┐
-        ▼                  ▼                  ▼
-   PostgreSQL            LLMs          Other sources
-                    (AI prompting)    (caches, APIs...)
+                           ▼
+                      PostgreSQL
 ```
 
 ### Request Flow
 
 ```
-HTTP Request
+gRPC Request
     │
     ▼
-chi.Router (routing + middleware)
+grpc.Server (routing + interceptors)
     │
     ▼
-Handler.ServeHTTP()
-    ├── Parse JSON body
+Handler.Method()
+    ├── Parse protobuf request
     ├── Call service.Exec()
-    └── Return JSON response
+    └── Return protobuf response
            │
            ▼
       Service.Exec()
            ├── Validate request
            ├── Execute business logic
-           ├── Manage transactions (if any)
            └── Return result
                   │
                   ▼
              DAO.Exec()
-                  ├── Query external data source
+                  ├── Query PostgreSQL
                   └── Map response to domain model
 ```
 
@@ -305,10 +236,10 @@ Handler.ServeHTTP()
 Format: `type/scope/short-description`
 
 ```
-feat/auth/two-factor-login
-fix/dao/credentials-null-check
-chore/deps/upgrade-chi
-refactor/services/token-validation
+feat/services/key-rotation
+fix/dao/jwk-select-null-check
+chore/deps/upgrade-grpc
+refactor/handlers/claims-sign
 ```
 
 **Types:**
@@ -324,7 +255,7 @@ refactor/services/token-validation
 **Scopes** describe the affected area:
 
 - **Layer**: `dao`, `services`, `handlers`, `cmd`, `config`
-- **Domain**: `token`, `credentials`, `shortcode`, `auth`
+- **Domain**: `jwk`, `claims`, `encryption`
 - **General**: `deps`, `format`, `tests`, `ci`
 
 #### Commit Messages
@@ -332,13 +263,13 @@ refactor/services/token-validation
 Format: `type(scope): short description`
 
 ```
-feat(handlers): add rate limiting middleware
-fix(dao): handle null email in credentials lookup
+feat(handlers): add key expiration check
+fix(dao): handle null payload in jwk lookup
 chore(deps): upgrade testify to v1.9.0
-refactor(services): extract token validation logic
+refactor(services): extract key validation logic
 docs(readme): update installation instructions
-test(credentials): add edge cases for email validation
-perf(dao): optimize credentials list query
+test(claims): add edge cases for token verification
+perf(dao): optimize jwk search query
 ```
 
 Keep descriptions concise and imperative ("add", "fix", "update" — not "added", "fixes", "updating").
@@ -348,7 +279,7 @@ Keep descriptions concise and imperative ("add", "fix", "update" — not "added"
 `hotfix` is **reserved for direct commits to `master`** in urgent situations. Do not use it for branch names.
 
 ```
-hotfix(auth): patch token expiration vulnerability
+hotfix(encryption): patch key derivation vulnerability
 ```
 
 Hotfixes bypass the normal PR flow and should be used sparingly for critical production issues only.
@@ -368,12 +299,12 @@ Hotfixes bypass the normal PR flow and should be used sparingly for critical pro
 The project uses code generation for:
 
 - **Mocks**: Generated via `mockery` from interfaces
-- **Email templates**: Compiled from MJML to HTML
+- **Protobuf**: Generated via `buf` from `.proto` files
 
 Always run `make generate` after:
 
 - Adding or modifying interfaces that need mocks
-- Changing email templates in `internal/models/mails/`
+- Changing proto files in `internal/models/proto/`
 
 ### Database Migrations
 
@@ -381,9 +312,10 @@ Migrations live in `internal/models/migrations/` as embedded SQL files.
 
 To add a new migration:
 
-1. Create a new `.sql` file with a sequential name
-2. Write your DDL statements
-3. The migration runs automatically on service startup
+1. Create a new `.sql` file with a timestamped name (e.g., `20250120150000_add_index.up.sql`)
+2. Create the corresponding down migration (`20250120150000_add_index.down.sql`)
+3. Write your DDL statements
+4. The migration runs automatically on service startup
 
 ---
 
@@ -397,8 +329,8 @@ appropriately. However, AI-generated code is still **your responsibility** — y
 1. **Use AI for code you understand and can review.** If you can't explain what the code does, don't commit it. AI is
    a tool to write code faster, not a replacement for understanding.
 
-2. **Never trust AI blindly on critical logic.** Security-sensitive code (authentication, authorization, cryptography,
-   input validation) requires thorough reading and understanding. AI can make subtle mistakes that create vulnerabilities.
+2. **Never trust AI blindly on critical logic.** Security-sensitive code (encryption, key management, cryptography)
+   requires thorough reading and understanding. AI can make subtle mistakes that create vulnerabilities.
 
 3. **Verify before committing.** Always review AI-generated code for:
    - Correctness (does it actually do what you need?)
@@ -423,29 +355,29 @@ appropriately. However, AI-generated code is still **your responsibility** — y
 
 ## Go Coding Conventions
 
-> This section contains patterns that apply to Go backend services in general. See [Project-Specific Guidelines](#project-specific-guidelines) for authentication-specific patterns.
+> This section contains patterns that apply to Go backend services in general. See [Project-Specific Guidelines](#project-specific-guidelines) for json-keys-specific patterns.
 
 ### File Naming
 
-| Type     | Pattern                   | Example                                        |
-| -------- | ------------------------- | ---------------------------------------------- |
-| Services | `{operation}.go`          | `tokenCreate.go`, `credentialsExist.go`        |
-| Handlers | `http.{resource}.go`      | `http.credentials.go`, `http.token.go`         |
-| DAO      | `{source}.{operation}.go` | `pg.credentialsList.go`, `openai.summarize.go` |
-| Tests    | `{file}_test.go`          | `tokenCreate_test.go`                          |
-| Mocks    | Generated in `mocks/`     | `mocks/mocks.go`                               |
+| Type     | Pattern                   | Example                                |
+| -------- | ------------------------- | -------------------------------------- |
+| Services | `{operation}.go`          | `jwkGen.go`, `claimsSign.go`           |
+| Handlers | `grpc.{resource}.go`      | `grpc.jwkGet.go`, `grpc.claimsSign.go` |
+| DAO      | `{source}.{operation}.go` | `pg.jwkSelect.go`, `pg.jwkInsert.go`   |
+| Tests    | `{file}_test.go`          | `jwkGen_test.go`                       |
+| Mocks    | Generated in `mocks/`     | `mocks/mocks.go`                       |
 
 ### Function Naming
 
 ```go
 // Constructors: New[Type]
-func NewTokenCreate(deps Dependencies) *TokenCreate
+func NewJwkGen(deps Dependencies) *JwkGen
 
 // Main business method: Exec
-func (s *TokenCreate) Exec(ctx context.Context, req *Request) (*Response, error)
+func (s *JwkGen) Exec(ctx context.Context, req *Request) (*Response, error)
 
-// HTTP handlers: ServeHTTP
-func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request)
+// gRPC handlers: Method name matches proto service
+func (h *Handler) JwkGet(ctx context.Context, req *protogen.JwkGetRequest) (*protogen.JwkGetResponse, error)
 
 // Private helpers: camelCase
 func (s *service) validateInput(req *Request) error
@@ -463,14 +395,14 @@ import (
     "fmt"
 
     // 2. External packages
-    "github.com/go-chi/chi/v5"
+    "google.golang.org/grpc"
     "go.opentelemetry.io/otel"
 
     // 3. a-novel-kit packages
     "github.com/a-novel-kit/golib/otel"
 
     // 4. Project packages
-    "github.com/a-novel/service-authentication/v2/internal/dao"
+    "github.com/a-novel/service-json-keys/v2/internal/dao"
 
     // 5. Local (embed, etc.)
     _ "embed"
@@ -532,7 +464,7 @@ var (
 )
 
 // Wrap errors with context
-return nil, fmt.Errorf("fetch user: %w", err)
+return nil, fmt.Errorf("fetch key: %w", err)
 
 // Join errors when adding classification
 return nil, errors.Join(err, ErrInvalidRequest)
@@ -543,10 +475,12 @@ if errors.Is(err, ErrNotFound) {
 }
 ```
 
-### Handler Pattern
+### Handler Pattern (gRPC)
 
 ```go
 type MyHandler struct {
+    protogen.UnimplementedMyServiceServer
+
     service MyServiceInterface
 }
 
@@ -554,29 +488,30 @@ func NewMyHandler(service MyServiceInterface) *MyHandler {
     return &MyHandler{service: service}
 }
 
-func (h *MyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-    ctx, span := otel.Tracer().Start(r.Context(), "handler.MyHandler")
+func (h *MyHandler) MyMethod(ctx context.Context, req *protogen.MyRequest) (*protogen.MyResponse, error) {
+    ctx, span := otel.Tracer().Start(ctx, "handler.MyMethod")
     defer span.End()
 
-    // Parse request
-    var request MyRequest
-    if err := httpf.DecodeJSON(r, &request); err != nil {
-        httpf.HandleError(ctx, w, span, nil, err)
-        return
+    // Parse and validate request
+    id, err := uuid.Parse(req.GetId())
+    if err != nil {
+        _ = otel.ReportError(span, err)
+        return nil, status.Error(codes.InvalidArgument, "invalid id")
     }
 
     // Call service
-    result, err := h.service.Exec(ctx, &request)
+    result, err := h.service.Exec(ctx, &ServiceRequest{ID: id})
+    if errors.Is(err, ErrNotFound) {
+        _ = otel.ReportError(span, err)
+        return nil, status.Error(codes.NotFound, "resource not found")
+    }
     if err != nil {
-        httpf.HandleError(ctx, w, span, httpf.ErrMap{
-            ErrNotFound: http.StatusNotFound,
-            ErrInvalidRequest: http.StatusUnprocessableEntity,
-        }, err)
-        return
+        _ = otel.ReportError(span, err)
+        return nil, status.Error(codes.Internal, "internal error")
     }
 
     // Return response
-    httpf.WriteJSON(ctx, w, span, result, http.StatusOK)
+    return &protogen.MyResponse{...}, nil
 }
 ```
 
@@ -614,22 +549,19 @@ func (s *Service) Exec(ctx context.Context, req *Request) (*Response, error) {
 
 #### Entity Naming
 
-- Tables: `snake_case` plural (e.g., `credentials`, `short_codes`)
-- Columns: `snake_case` (e.g., `created_at`, `email_validated`)
+- Tables: `snake_case` plural (e.g., `jwks`, `key_metadata`)
+- Columns: `snake_case` (e.g., `created_at`, `expires_at`)
 
 #### Bun ORM Tags
 
 ```go
-type Credentials struct {
-    bun.BaseModel `bun:"table:credentials"`
+type Jwk struct {
+    bun.BaseModel `bun:"table:jwks"`
 
-    ID             uuid.UUID  `bun:"id,pk,type:uuid,default:uuid_generate_v4()"`
-    Email          string     `bun:"email,notnull,unique"`
-    EmailValidated bool       `bun:"email_validated,notnull,default:false"`
-    Password       string     `bun:"password,notnull"`
-    Role           string     `bun:"role,notnull,default:'user'"`
-    CreatedAt      time.Time  `bun:"created_at,notnull,default:current_timestamp"`
-    UpdatedAt      *time.Time `bun:"updated_at"`
+    ID        uuid.UUID  `bun:"id,pk,type:uuid,default:uuid_generate_v4()"`
+    Payload   []byte     `bun:"payload,notnull"`
+    ExpiresAt *time.Time `bun:"expires_at"`
+    CreatedAt time.Time  `bun:"created_at,notnull,default:current_timestamp"`
 }
 ```
 
@@ -638,66 +570,69 @@ type Credentials struct {
 For PostgreSQL operations, DAO files use **raw SQL queries in external `.sql` files**, not Bun's query builder. This avoids typical ORM pitfalls (unexpected query generation, N+1 problems, abstraction leaks) and gives full control over the executed SQL:
 
 ```go
-//go:embed pg.credentialsSelect.sql
-var credentialsSelectQuery string
+//go:embed pg.jwkSelect.sql
+var jwkSelectQuery string
 
-func (dao *CredentialsSelect) Exec(ctx context.Context, req *Request) (*Credentials, error) {
-    var result Credentials
-    err := dao.db.NewRaw(credentialsSelectQuery, req.ID).Scan(ctx, &result)
+func (dao *JwkSelect) Exec(ctx context.Context, req *Request) (*Jwk, error) {
+    var result Jwk
+    err := dao.db.NewRaw(jwkSelectQuery, req.ID).Scan(ctx, &result)
     return &result, err
 }
 ```
 
 Bun is used only for connection management and result scanning — the query itself is always explicit SQL.
 
-### Email Templates
-
-Templates use [MJML](https://mjml.io/) format in `internal/models/mails/`:
-
-```
-mails/
-├── {templateName}.en.mjml    # English version
-└── {templateName}.fr.mjml    # French version
-```
-
-After editing, regenerate HTML with:
-
-```bash
-pnpm generate
-```
-
 ---
 
-## OpenAPI Specification
+## Protocol Buffers
 
-The API is documented in `openapi.yaml` following the [OpenAPI 3.1 specification](https://spec.openapis.org/oas/v3.1.0). This is the source of truth for all available endpoints, request/response schemas, and security requirements.
+The gRPC API is defined using Protocol Buffers in `internal/models/proto/`. These files are the source of truth for all available endpoints, request/response schemas, and service definitions.
 
-### Manual Maintenance
+### Directory Structure
 
-The OpenAPI spec is **NOT auto-generated**. When adding or modifying endpoints, you must manually update `openapi.yaml` to reflect the changes:
+```
+internal/models/proto/
+├── jwk.proto           # Common JWK message types
+├── jwk_get.proto       # JwkGetService definition
+├── jwk_list.proto      # JwkListService definition
+├── claims_sign.proto   # ClaimsSignService definition
+└── status.proto        # StatusService definition
+```
 
-- Add new paths and operations
-- Update request/response schemas
-- Document query parameters and headers
-- Specify security requirements
+### Editing Proto Files
 
-### Editing
+When adding or modifying proto files:
 
-Use the [Swagger Editor](https://editor.swagger.io/) for visual editing with live validation and preview.
+1. Define your messages and services in `.proto` files
+2. Run `make generate` to regenerate Go code
+3. Run `make lint-proto` to validate the proto files
+
+### Code Generation
+
+Proto files are compiled to Go code using `buf`:
+
+```bash
+# Generate Go code from proto files
+make generate
+
+# Lint proto files
+make lint-proto
+
+# Format proto files
+make format-proto
+```
+
+Generated code lives in `internal/handlers/protogen/` and should **never be edited manually**.
+
+### Buf Configuration
+
+The project uses [Buf](https://buf.build/) for proto management. Configuration is in `buf.yaml` and `buf.gen.yaml`.
 
 **Resources:**
 
-- [OpenAPI 3.1 Specification](https://spec.openapis.org/oas/v3.1.0)
-- [Swagger Editor](https://editor.swagger.io/)
-- [OpenAPI Guide](https://swagger.io/docs/specification/about/)
-
-### Validation
-
-The spec is validated in CI using [Redocly](https://redocly.com/). Run locally:
-
-```bash
-pnpm lint:openapi
-```
+- [Buf Documentation](https://buf.build/docs/)
+- [Protocol Buffers Language Guide](https://protobuf.dev/programming-guides/proto3/)
+- [gRPC Go Documentation](https://grpc.io/docs/languages/go/)
 
 ---
 
@@ -708,6 +643,7 @@ pnpm lint:openapi
 ```bash
 make test       # All tests
 make test-unit  # Go unit tests only
+make test-pkg   # Package integration tests
 ```
 
 ### Table-Driven Tests
@@ -747,7 +683,7 @@ Use descriptive names that indicate the scenario:
 | `Success/Variant` | Happy path with specific conditions |
 | `Error/Reason`    | Expected failure with cause         |
 
-Examples: `"Success"`, `"Success/WithOptionalField"`, `"Error/InvalidInput"`, `"Error/NotFound"`
+Examples: `"Success"`, `"Success/WithExpiredKey"`, `"Error/InvalidInput"`, `"Error/NotFound"`
 
 ### Parallel Execution
 
@@ -779,8 +715,8 @@ DAO tests run against a real PostgreSQL instance to verify actual SQL behavior. 
 - Database state is reset between cases
 
 ```go
-func TestCredentialsSelect(t *testing.T) {
-    repository := dao.NewCredentialsSelect()
+func TestJwkSelect(t *testing.T) {
+    repository := dao.NewJwkSelect()
 
     for _, tc := range testCases {
         t.Run(tc.name, func(t *testing.T) {
@@ -795,44 +731,7 @@ func TestCredentialsSelect(t *testing.T) {
 }
 ```
 
-**Fixtures** are defined in the test case struct alongside expected inputs/outputs, then inserted at the start of the transactional callback:
-
-```go
-testCases := []struct {
-    name     string
-    fixtures []*dao.Credentials  // Data to insert before test
-    request  *Request
-    expect   *Response
-}{
-    {
-        name:     "Success",
-        fixtures: []*dao.Credentials{{ID: id1, Email: "user@test.com"}},
-        request:  &Request{Email: "user@test.com"},
-        expect:   &Response{ID: id1},
-    },
-    {
-        name:     "Error/NotFound",
-        fixtures: nil,  // Empty database
-        request:  &Request{Email: "unknown@test.com"},
-        expectErr: dao.ErrNotFound,
-    },
-}
-
-// In the test loop:
-postgres.RunTransactionalTest(t, config.PostgresPresetTest, func(ctx context.Context, t *testing.T) {
-    // Insert fixtures using Bun's query builder directly
-    for _, f := range tc.fixtures {
-        _, err := db.NewInsert().Model(f).Exec(ctx)
-        require.NoError(t, err)
-    }
-
-    // Then run the actual test
-    result, err := repository.Exec(ctx, tc.request)
-    // Assert...
-})
-```
-
-Note: While production DAO code uses raw SQL (see [Embedded SQL](#embedded-sql-postgresql-dao)), fixtures use Bun's query builder directly. Inserting test data is a straightforward operation where ORM pitfalls don't apply, so we favor convenience here.
+**Fixtures** are defined in the test case struct alongside expected inputs/outputs, then inserted at the start of the transactional callback.
 
 ### Service/Handler Tests (Mocks)
 
@@ -854,61 +753,6 @@ Mocks are generated by mockery. After adding or modifying interfaces:
 make generate
 ```
 
-### Integration Tests (TypeScript)
-
-Integration tests verify that the full service works correctly by making real HTTP requests against a running instance. These tests live in `pkg/test/rest-js/` and are written in TypeScript using Vitest.
-
-#### Package Structure
-
-The TypeScript packages are organized in three layers:
-
-```
-pkg/
-├── rest-js/                 # Public SDK (@a-novel/service-authentication-rest)
-│   └── src/                 # API client methods (tokenCreate, credentialsGet, etc.)
-│
-├── rest-js-test/            # Public test helpers (@a-novel/service-authentication-rest-test)
-│   └── src/                 # Reusable test utilities (registerUser, checkEmail, etc.)
-│
-└── test/rest-js/            # Private test package (not published)
-    └── src/                 # Actual integration test files (*.test.ts)
-```
-
-**Why this separation?**
-
-- `rest-js` is the client SDK that frontend applications import to interact with the service
-- `rest-js-test` contains helper functions that simplify common test scenarios (like registering a user, which involves multiple API calls and email verification). This package is **published** so other projects depending on this service can reuse these helpers in their own integration tests
-- `pkg/test/rest-js` contains the actual test files. This package is **private** (not published) — it's only used to test this service
-
-#### Writing Integration Tests
-
-Integration tests use the SDK and test helpers together:
-
-```typescript
-import { AuthenticationApi, tokenCreate } from "@a-novel/service-authentication-rest";
-import { preRegisterUser, registerUser } from "@a-novel/service-authentication-rest-test";
-
-describe("credentialsCreate", () => {
-  it("registers the user", async () => {
-    const api = new AuthenticationApi(process.env.API_URL!);
-
-    // Use test helpers for complex flows
-    const preRegister = await preRegisterUser(api, process.env.MAIL_TEST_HOST!, anonToken);
-    await registerUser(api, preRegister);
-  });
-});
-```
-
-Test helpers handle multi-step operations (like email verification) so your tests stay focused on the behavior being tested.
-
-#### Running Integration Tests
-
-Integration tests require a running service instance:
-
-```bash
-make test-pkg-js
-```
-
 ---
 
 ## CI/CD Pipeline
@@ -921,13 +765,14 @@ The CI pipeline runs on every push and pull request:
 ┌─────────────────────────────────────────────────┐
 │                 Generate Check                  │
 │  • Verify go generate is up-to-date             │
-│  • Verify pnpm generate is up-to-date           │
+│  • Verify buf generate is up-to-date            │
 └─────────────────────┬───────────────────────────┘
                       │
 ┌─────────────────────▼───────────────────────────┐
 │                      Lint                       │
 │  • golangci-lint (Go)                           │
-│  • ESLint, Prettier, TypeScript (Node)          │
+│  • buf lint (Proto)                             │
+│  • ESLint, Prettier (Node config files)         │
 └─────────────────────┬───────────────────────────┘
                       │
 ┌─────────────────────▼───────────────────────────┐
@@ -938,15 +783,13 @@ The CI pipeline runs on every push and pull request:
                       │
 ┌─────────────────────▼───────────────────────────┐
 │                      Build                      │
-│  • Docker images (database, migrations, etc.)   │
-│  • TypeScript packages                          │
+│  • Docker images (database, grpc, migrations)   │
 └─────────────────────┬───────────────────────────┘
                       │
 ┌─────────────────────▼───────────────────────────┐
 │                     Reports                     │
 │  • Go Report Card                               │
 │  • Codecov coverage                             │
-│  • OpenAPI docs to GitHub Pages                 │
 └─────────────────────────────────────────────────┘
 ```
 
@@ -966,7 +809,6 @@ This approach eliminates the need for a `develop` branch, preventing divergence 
 
 - Docker images (tagged with commit SHA or version)
 - Go modules
-- npm packages (to GitHub registry)
 
 ### Publishing a Release
 
@@ -985,7 +827,7 @@ pnpm publish:major
 
 This will:
 
-1. Bump version in all workspaces
+1. Bump version in package.json
 2. Update version references in documentation
 3. Commit and tag the release
 4. Push to `master` with the new tag
@@ -994,75 +836,92 @@ The CI pipeline then builds and publishes all artifacts with the version tag.
 
 ### Docker Images
 
-| Image        | Purpose                             |
-| ------------ | ----------------------------------- |
-| `database`   | PostgreSQL with extensions          |
-| `migrations` | Schema migration runner             |
-| `init`       | Patch the server with initial state |
-| `rest`       | REST API server                     |
-| `standalone` | All-in-one (dev only)               |
+| Image         | Purpose                    |
+| ------------- | -------------------------- |
+| `database`    | PostgreSQL with extensions |
+| `migrations`  | Schema migration runner    |
+| `grpc`        | gRPC API server            |
+| `rotate-keys` | Key rotation job           |
+| `standalone`  | All-in-one (dev only)      |
 
 ---
 
 ## Project-Specific Guidelines
 
-> This section contains patterns specific to this authentication service.
+> This section contains patterns specific to this JSON Keys service.
 
-### Two-Token System
+### Master Key Encryption
 
-The service uses a two-token JWT system:
+Private JWKs are stored encrypted using AES-GCM with a master key. The master key is:
 
-| Token         | Purpose           | Lifetime        |
-| ------------- | ----------------- | --------------- |
-| Access Token  | API authorization | Short (minutes) |
-| Refresh Token | Session extension | Long (days)     |
+- Loaded from `APP_MASTER_KEY` environment variable
+- Stored in context via `lib.NewMasterKeyContext()`
+- Used to encrypt/decrypt private key payloads before storage/retrieval
 
-**Flow:**
+**Critical:** The master key should **never** be rotated unless absolutely necessary — changing it will permanently lose access to all existing encrypted keys.
 
-1. User authenticates with email/password
-2. Service returns both tokens
-3. Client uses access token for API calls
-4. When access token expires, client uses refresh token to get new pair
+### JWK Lifecycle
 
-### Short Codes
+Keys go through the following states:
 
-Temporary verification codes for:
+1. **Generated**: New key created with expiration time
+2. **Active**: Key is used for signing
+3. **Expired**: Key past expiration, still valid for verification
+4. **Deleted**: Key removed from database
 
-- Email verification during registration
-- Password reset
-- Email change confirmation
+### Key Configuration
 
-**Lifecycle:**
+Key types and their settings are defined in `internal/config/jwks.config.yaml`:
 
-1. Generated with expiration time
-2. Sent to user via email
-3. Consumed once (single-use)
-4. Soft-deleted after use for audit trail
-
-### Roles and Permissions
-
-| Role         | Description               |
-| ------------ | ------------------------- |
-| `Anon`       | Anonymous/unauthenticated |
-| `User`       | Authenticated user        |
-| `Admin`      | Administrative access     |
-| `SuperAdmin` | Full system access        |
-
-Permissions are defined in `internal/config/permissions.go` and enforced via middleware.
-
-### Password Security
-
-Passwords are hashed using Argon2id (RFC 9106):
-
-```go
-// Hashing
-hash, err := lib.GenerateArgon2(password)
-
-// Verification
-valid := lib.CompareArgon2(password, hash)
+```yaml
+auth:
+  algorithm: ES256
+  rotation: 720h
+  expiry: 8760h
 ```
 
-Never log, expose, or store plaintext passwords.
+Each key usage (e.g., `auth`) can have different algorithms, rotation schedules, and expiry times.
+
+### Key Rotation
+
+The `rotate-keys` job (`cmd/rotate-keys/main.go`) handles automatic key rotation:
+
+- Generates new keys when current ones approach expiration
+- Deletes keys past their retention period
+- Should be run as a scheduled job (cron, Kubernetes CronJob, etc.)
+
+### gRPC Services
+
+| Service             | Purpose                    |
+| ------------------- | -------------------------- |
+| `StatusService`     | Health and status checks   |
+| `JwkGetService`     | Retrieve single key by ID  |
+| `JwkListService`    | List keys by usage         |
+| `ClaimsSignService` | Sign JWT claims with a key |
+
+### Go Client Package
+
+Other services integrate with json-keys via the `pkg/` package:
+
+```go
+import jkpkg "github.com/a-novel/service-json-keys/v2/pkg"
+
+// Create client
+client, err := jkpkg.NewClient("<grpc-address>")
+
+// Sign claims
+token, err := client.ClaimsSign(ctx, &jkpkg.ClaimsSignRequest{
+    Usage:   "auth",
+    Payload: claimsPayload,
+})
+
+// Verify claims
+verifier := jkpkg.NewClaimsVerifier[MyClaims](client)
+claims, err := verifier.VerifyClaims(ctx, &jkpkg.VerifyClaimsRequest{
+    Usage:       "auth",
+    AccessToken: token.GetToken(),
+})
+```
 
 ---
 
@@ -1070,36 +929,24 @@ Never log, expose, or store plaintext passwords.
 
 ### A. Key Go Dependencies
 
-| Package                                  | Purpose               |
-| ---------------------------------------- | --------------------- |
-| `github.com/go-chi/chi/v5`               | HTTP router           |
-| `github.com/uptrace/bun`                 | PostgreSQL ORM        |
-| `github.com/a-novel-kit/jwt`             | JWT handling          |
-| `github.com/a-novel-kit/golib`           | Shared utilities      |
-| `github.com/go-playground/validator/v10` | Struct validation     |
-| `go.opentelemetry.io/otel`               | Observability         |
-| `golang.org/x/crypto`                    | Cryptography (Argon2) |
-| `github.com/stretchr/testify`            | Testing               |
+| Package                        | Purpose          |
+| ------------------------------ | ---------------- |
+| `google.golang.org/grpc`       | gRPC framework   |
+| `google.golang.org/protobuf`   | Protocol Buffers |
+| `github.com/uptrace/bun`       | PostgreSQL ORM   |
+| `github.com/a-novel-kit/jwt`   | JWT handling     |
+| `github.com/a-novel-kit/golib` | Shared utilities |
+| `go.opentelemetry.io/otel`     | Observability    |
+| `golang.org/x/crypto`          | Cryptography     |
+| `github.com/stretchr/testify`  | Testing          |
 
-### B. TypeScript Client SDK
+### B. Environment Variables
 
-The `pkg/rest-js/` directory contains a TypeScript client for frontend integration. This is a thin wrapper around the REST API and is rarely modified.
-
-#### Conventions
-
-- **Zod schemas** define request/response validation
-- **Types are derived** from schemas using `z.infer<typeof Schema>`
-- **One function per endpoint** with consistent signatures
-
-#### When to Modify
-
-Only modify the TypeScript client when:
-
-- Adding a new API endpoint
-- Changing an existing endpoint's request/response format
-- Fixing a bug in the client
-
-Run `make lint` and `make test` after changes.
+| Variable         | Description                            | Required |
+| ---------------- | -------------------------------------- | -------- |
+| `GRPC_PORT`      | Port for gRPC server                   | Yes      |
+| `POSTGRES_DSN`   | PostgreSQL connection string           | Yes      |
+| `APP_MASTER_KEY` | Master key for encrypting private keys | Yes      |
 
 ---
 
@@ -1107,6 +954,6 @@ Run `make lint` and `make test` after changes.
 
 If you have questions or run into issues:
 
-- Open an issue at https://github.com/a-novel/service-authentication/issues
+- Open an issue at https://github.com/a-novel/service-json-keys/issues
 - Check existing issues for similar problems
 - Include relevant logs and environment details

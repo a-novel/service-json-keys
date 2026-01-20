@@ -106,7 +106,7 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 	var latestKey *dao.Jwk
 
 	if time.Since(lastCreated) >= keyConfig.Key.Rotation {
-		keyGenerator, ok := JwkGenerators[service.keysConfig[request.Usage].Alg]
+		keyGenerator, ok := JwkGenerators[keyConfig.Alg]
 		if !ok {
 			return nil, otel.ReportError(span, fmt.Errorf("%w: %s", ErrJwkGenUnknownKeyUsage, request.Usage))
 		}
@@ -119,7 +119,7 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 		span.AddEvent("keyGenerated", trace.WithAttributes(
 			attribute.String("key.private.kid", privateKID),
 			attribute.String("key.public.kid", publicKID),
-			attribute.String("key.alg", string(service.keysConfig[request.Usage].Alg)),
+			attribute.String("key.alg", string(keyConfig.Alg)),
 		))
 
 		// Encrypt the private key using the master key, so it is protected against database dumping.
@@ -162,7 +162,7 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 			PublicKey:  publicKeyEncoded,
 			Usage:      request.Usage,
 			Now:        time.Now(),
-			Expiration: time.Now().Add(service.keysConfig[request.Usage].Key.TTL),
+			Expiration: time.Now().Add(keyConfig.Key.TTL),
 		})
 		if err != nil {
 			return nil, otel.ReportError(span, fmt.Errorf("insert key: %w", err))
