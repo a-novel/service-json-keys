@@ -18,10 +18,10 @@ func getEnv(name string) string {
 
 // Default values for environment variables, if applicable.
 const (
-	appNameDefault = "service-authentication"
+	AppNameDefault = "service-json-keys"
 
-	grpcPortDefault = 8080
-	grpcDefaultPing = time.Second * 5
+	GrpcPortDefault = 8080
+	GrpcDefaultPing = time.Second * 5
 )
 
 // Raw values for environment variables.
@@ -53,7 +53,7 @@ var (
 	PostgresDsnTest = postgresDsnTest
 
 	// AppName is the name of the application, as it will appear in logs and tracing.
-	AppName = config.LoadEnv(appName, appNameDefault, config.StringParser)
+	AppName = config.LoadEnv(appName, AppNameDefault, config.StringParser)
 	// AppMasterKey is a secure, 32-byte random secret used to encrypt private JSON keys
 	// in the database.
 	AppMasterKey = appMasterKey
@@ -63,15 +63,15 @@ var (
 	Otel = config.LoadEnv(otel, false, config.BoolParser)
 
 	// GrpcPort is the port on which the Grpc server will listen for incoming requests.
-	GrpcPort = config.LoadEnv(grpcPort, grpcPortDefault, config.IntParser)
+	GrpcPort = config.LoadEnv(grpcPort, GrpcPortDefault, config.IntParser)
 	// GrpcUrl is the url of the Grpc service, typically <host>:<port>.
 	GrpcUrl = grpcUrl
 	// GrpcTestPort is the port on which the Grpc test server will listen for incoming requests.
-	GrpcTestPort = config.LoadEnv(grpcTestPort, grpcPortDefault, config.IntParser)
+	GrpcTestPort = config.LoadEnv(grpcTestPort, GrpcPortDefault, config.IntParser)
 	// GrpcTestUrl is the url of the Grpc test service, typically <host>:<port>.
 	GrpcTestUrl = grpcTestUrl
 	// GrpcPing configures the refresh interval for the Grpc server internal healthcheck.
-	GrpcPing = config.LoadEnv(grpcPing, grpcDefaultPing, config.DurationParser)
+	GrpcPing = config.LoadEnv(grpcPing, GrpcDefaultPing, config.DurationParser)
 
 	// GcloudProjectId configures the server for Google Cloud environment.
 	//

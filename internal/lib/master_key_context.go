@@ -14,6 +14,8 @@ type masterKeyContext struct{}
 
 var ErrInvalidMasterKey = errors.New("invalid master key")
 
+const MasterKeyLength = 32
+
 // NewMasterKeyContext parses the provided master encryption key, and makes it available in
 // the context. The master key must be provided as an hex encoded string.
 //
@@ -31,9 +33,16 @@ func NewMasterKeyContext(ctx context.Context, masterKeyRaw string) (context.Cont
 		return ctx, otel.ReportError(span, fmt.Errorf("decode master key: %w", err))
 	}
 
-	// Convert the raw master key to a fixed 32 bytes array.
-	// This is required for usage with secretbox (see golang.org/x/crypto/nacl/secretbox).
-	var masterKey [32]byte
+	if len(masterKeyBytes) != MasterKeyLength {
+		return ctx, otel.ReportError(span, fmt.Errorf(
+			"%w: expected %d bytes, got %d bytes",
+			ErrInvalidMasterKey, MasterKeyLength, len(masterKeyBytes),
+		))
+	}
+
+	// Convert the raw master key to a fixed 32-byte array.
+	// This is required for usage with the secretbox package (see golang.org/x/crypto/nacl/secretbox).
+	var masterKey [MasterKeyLength]byte
 	copy(masterKey[:], masterKeyBytes)
 
 	return otel.ReportSuccess(span, context.WithValue(ctx, masterKeyContext{}, masterKey)), nil
@@ -41,14 +50,14 @@ func NewMasterKeyContext(ctx context.Context, masterKeyRaw string) (context.Cont
 
 // MasterKeyContext returns the master key saved in the current context. If the current context
 // does not contain a master key, ErrInvalidMasterKey is thrown.
-func MasterKeyContext(ctx context.Context) ([32]byte, error) {
-	masterKey, ok := ctx.Value(masterKeyContext{}).([32]byte)
+func MasterKeyContext(ctx context.Context) ([MasterKeyLength]byte, error) {
+	masterKey, ok := ctx.Value(masterKeyContext{}).([MasterKeyLength]byte)
 
 	if !ok {
-		return [32]byte{}, fmt.Errorf(
+		return [MasterKeyLength]byte{}, fmt.Errorf(
 			"extract master key: %w: got type %T, expected %T",
 			ErrInvalidMasterKey,
-			ctx.Value(masterKeyContext{}), [32]byte{},
+			ctx.Value(masterKeyContext{}), [MasterKeyLength]byte{},
 		)
 	}
 
@@ -62,7 +71,7 @@ func MasterKeyContext(ctx context.Context) ([32]byte, error) {
 // If the base context does not contain any master key, this is a no-op, and the
 // destination context is returned as-is.
 func TransferMasterKeyContext(baseCtx, destCtx context.Context) context.Context {
-	masterKey, ok := baseCtx.Value(masterKeyContext{}).([32]byte)
+	masterKey, ok := baseCtx.Value(masterKeyContext{}).([MasterKeyLength]byte)
 	if !ok {
 		return destCtx
 	}

@@ -93,14 +93,19 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 		lastCreated = keys[0].CreatedAt
 	}
 
+	keyConfig, ok := service.keysConfig[request.Usage]
+	if !ok {
+		return nil, otel.ReportError(span, ErrConfigNotFound)
+	}
+
 	span.SetAttributes(
 		attribute.Int64("lastCreated", lastCreated.Unix()),
-		attribute.Float64("rotationInterval", service.keysConfig[request.Usage].Key.Rotation.Seconds()),
+		attribute.Float64("rotationInterval", keyConfig.Key.Rotation.Seconds()),
 	)
 
 	var latestKey *dao.Jwk
 
-	if time.Since(lastCreated) >= service.keysConfig[request.Usage].Key.Rotation {
+	if time.Since(lastCreated) >= keyConfig.Key.Rotation {
 		keyGenerator, ok := JwkGenerators[service.keysConfig[request.Usage].Alg]
 		if !ok {
 			return nil, otel.ReportError(span, fmt.Errorf("%w: %s", ErrJwkGenUnknownKeyUsage, request.Usage))

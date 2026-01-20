@@ -84,8 +84,8 @@ func main() {
 
 	reflection.Register(server)
 
-	defer server.Stop()
 	defer server.GracefulStop()
+	defer server.Stop()
 
 	err := server.Serve(listener)
 	if err != nil {

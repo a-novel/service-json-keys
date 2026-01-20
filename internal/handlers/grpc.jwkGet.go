@@ -35,18 +35,24 @@ func (handler *JwkGet) JwkGet(ctx context.Context, request *protogen.JwkGetReque
 
 	keyId, err := uuid.Parse(request.GetId())
 	if err != nil {
-		return nil, otel.ReportError(span, status.Error(codes.InvalidArgument, err.Error()))
+		_ = otel.ReportError(span, err)
+
+		return nil, status.Error(codes.InvalidArgument, "invalid key id")
 	}
 
 	jwk, err := handler.service.Exec(ctx, &services.JwkSelectRequest{
 		ID: keyId,
 	})
 	if errors.Is(err, dao.ErrJwkSelectNotFound) {
-		return nil, otel.ReportError(span, status.Error(codes.NotFound, err.Error()))
+		_ = otel.ReportError(span, err)
+
+		return nil, status.Error(codes.NotFound, "key not found")
 	}
 
 	if err != nil {
-		return nil, otel.ReportError(span, status.Error(codes.Internal, err.Error()))
+		_ = otel.ReportError(span, err)
+
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
 	return &protogen.JwkGetResponse{
