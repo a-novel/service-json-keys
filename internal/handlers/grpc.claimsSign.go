@@ -36,7 +36,9 @@ func (handler *ClaimsSign) ClaimsSign(
 
 	extractedClaims, err := grpcf.ProtoAnyToInterface(request.GetPayload())
 	if err != nil {
-		return nil, otel.ReportError(span, status.Error(codes.InvalidArgument, err.Error()))
+		_ = otel.ReportError(span, err)
+
+		return nil, status.Error(codes.InvalidArgument, "invalid payload")
 	}
 
 	signed, err := handler.service.Exec(ctx, &services.ClaimsSignRequest{
@@ -44,11 +46,15 @@ func (handler *ClaimsSign) ClaimsSign(
 		Usage:  request.GetUsage(),
 	})
 	if errors.Is(err, services.ErrConfigNotFound) {
-		return nil, otel.ReportError(span, status.Error(codes.Unavailable, err.Error()))
+		_ = otel.ReportError(span, err)
+
+		return nil, status.Error(codes.Unavailable, "unknown usage")
 	}
 
 	if err != nil {
-		return nil, otel.ReportError(span, status.Error(codes.Internal, err.Error()))
+		_ = otel.ReportError(span, err)
+
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
 	return &protogen.ClaimsSignResponse{Token: signed}, nil

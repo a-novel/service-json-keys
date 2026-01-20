@@ -13,7 +13,12 @@ import (
 	"github.com/a-novel-kit/golib/otel"
 )
 
-var ErrInvalidSecret = errors.New("invalid secret")
+var (
+	ErrInvalidSecret     = errors.New("invalid secret")
+	ErrInvalidCiphertext = errors.New("ciphertext too short")
+)
+
+const NonceLength = 24
 
 // EncryptMasterKey encrypts the input using the master key saved in the context.
 func EncryptMasterKey(ctx context.Context, data any) ([]byte, error) {
@@ -35,7 +40,7 @@ func EncryptMasterKey(ctx context.Context, data any) ([]byte, error) {
 	span.AddEvent("data.serialized")
 
 	// Generate a random nonce for encryption.
-	var nonce [24]byte
+	var nonce [NonceLength]byte
 
 	_, err = io.ReadFull(rand.Reader, nonce[:])
 	if err != nil {
@@ -63,11 +68,16 @@ func DecryptMasterKey(ctx context.Context, data []byte, output any) error {
 
 	span.AddEvent("masterKey.retrieved")
 
-	// Retrieve the nonce value from the source.
-	var decryptNonce [24]byte
-	copy(decryptNonce[:], data[:24])
+	// Secretbox requires a 24-byte nonce prefix plus at least the 16-byte Poly1305 tag.
+	if len(data) < NonceLength+secretbox.Overhead {
+		return otel.ReportError(span, fmt.Errorf("decrypt data: %w", ErrInvalidCiphertext))
+	}
 
-	decrypted, ok := secretbox.Open(nil, data[24:], &decryptNonce, &secret)
+	// Retrieve the nonce value from the source.
+	var decryptNonce [NonceLength]byte
+	copy(decryptNonce[:], data[:NonceLength])
+
+	decrypted, ok := secretbox.Open(nil, data[NonceLength:], &decryptNonce, &secret)
 	if !ok {
 		return otel.ReportError(span, fmt.Errorf("decrypt data: %w", ErrInvalidSecret))
 	}

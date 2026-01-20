@@ -37,7 +37,9 @@ func (handler *JwkList) JwkList(
 		Usage: request.GetUsage(),
 	})
 	if err != nil {
-		return nil, otel.ReportError(span, status.Error(codes.Internal, err.Error()))
+		_ = otel.ReportError(span, err)
+
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
 	return &protogen.JwkListResponse{

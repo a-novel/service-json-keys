@@ -1,7 +1,6 @@
 package lib_test
 
 import (
-	"encoding/hex"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -10,8 +9,9 @@ import (
 )
 
 func TestMasterKeyCrypt(t *testing.T) { //nolint:tparallel
-	masterKey := hex.EncodeToString([]byte("secret-master-key"))
-	fakeMasterKey := hex.EncodeToString([]byte("fake-master-key"))
+	// 32-byte keys (64 hex chars).
+	masterKey := "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+	fakeMasterKey := "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"
 
 	ctxReal, err := lib.NewMasterKeyContext(t.Context(), masterKey)
 	require.NoError(t, err)
@@ -39,6 +39,18 @@ func TestMasterKeyCrypt(t *testing.T) { //nolint:tparallel
 		var decrypted map[string]any
 
 		require.ErrorIs(t, lib.DecryptMasterKey(ctxFake, encrypted, &decrypted), lib.ErrInvalidSecret)
+		require.Nil(t, decrypted)
+	})
+
+	t.Run("DecryptTooShort", func(t *testing.T) {
+		t.Parallel()
+
+		var decrypted map[string]any
+
+		// Ciphertext must be at least NonceLength (24) + secretbox.Overhead (16) = 40 bytes.
+		shortData := make([]byte, 10)
+
+		require.ErrorIs(t, lib.DecryptMasterKey(ctxReal, shortData, &decrypted), lib.ErrInvalidCiphertext)
 		require.Nil(t, decrypted)
 	})
 }

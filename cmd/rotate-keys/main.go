@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 
@@ -45,26 +44,20 @@ func main() {
 		config.JwkPresetDefault,
 	)
 
-	var err error
-
-	// Update keys for each usage.
-	for usage := range config.JwkPresetDefault {
-		err = errors.Join(err, postgres.RunInTx(ctx, nil, func(ctx context.Context, _ bun.IDB) error {
-			_, localErr := serviceJwkGen.Exec(ctx, &services.JwkGenRequest{Usage: usage})
-			if localErr != nil {
-				return fmt.Errorf("generate key for usage %s: %w", usage, localErr)
+	err := postgres.RunInTx(ctx, nil, func(ctx context.Context, _ bun.IDB) error {
+		// Update keys for each usage.
+		for usage := range config.JwkPresetDefault {
+			_, err := serviceJwkGen.Exec(ctx, &services.JwkGenRequest{Usage: usage})
+			if err != nil {
+				return fmt.Errorf("generate key for usage %s: %w", usage, err)
 			}
+		}
 
-			return nil
-		}))
-	}
-
+		return nil
+	})
 	if err != nil {
 		err = otel.ReportError(span, fmt.Errorf("rotate keys: %w", err))
-		span.End()
 		log.Fatalln(err.Error()) //nolint:gocritic
-
-		return
 	}
 
 	db := lo.Must(postgres.GetContext(ctx))
@@ -73,10 +66,7 @@ func main() {
 	_, err = db.NewRaw("REFRESH MATERIALIZED VIEW active_keys;").Exec(ctx)
 	if err != nil {
 		err = otel.ReportError(span, fmt.Errorf("rotate keys: %w", err))
-		span.End()
 		log.Fatalln(err.Error())
-
-		return
 	}
 
 	otel.ReportSuccessNoContent(span)
