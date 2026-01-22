@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "postUpdateOptions": ["gomodTidy"],
+  "postUpdateOptions": ["gomodTidy", "pnpmDedupe"],
   "docker-compose": {
     "managerFilePatterns": ["/(^|/)(?:podman-)?compose[^/]*\\.ya?ml$/"]
   },
@@ -9,6 +9,7 @@
       "matchManagers": ["gomod"],
       "postUpgradeTasks": {
         "commands": [
+          "go mod tidy",
           "go generate ./...",
           "go tool golangci-lint run ./... --fix",
           "go tool buf format -w",
@@ -18,17 +19,9 @@
       }
     },
     {
-      "matchManagers": ["gomod"],
-      "groupName": "uptrace/bun",
-      "postUpgradeTasks": {
-        "commands": ["go get -u github.com/a-novel-kit/golib"],
-        "executionMode": "branch"
-      }
-    },
-    {
       "matchManagers": ["npm"],
       "postUpgradeTasks": {
-        "commands": ["pnpm format"],
+        "commands": ["pnpm i", "pnpm format"],
         "executionMode": "branch"
       }
     }
