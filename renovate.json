@@ -9,7 +9,7 @@
       "matchManagers": ["gomod"],
       "postUpgradeTasks": {
         "commands": [
-          "go mod tidy",
+          "go mod download",
           "go generate ./...",
           "go tool golangci-lint run ./... --fix",
           "go tool buf format -w",
@@ -21,7 +21,7 @@
     {
       "matchManagers": ["npm"],
       "postUpgradeTasks": {
-        "commands": ["pnpm i", "pnpm format"],
+        "commands": ["CI=true pnpm i", "pnpm format"],
         "executionMode": "branch"
       }
     }
