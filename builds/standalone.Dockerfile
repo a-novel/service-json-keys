@@ -35,7 +35,7 @@ RUN go build -o /rotate-keys cmd/rotate-keys/main.go
 # Used for healthcheck.
 RUN GOBIN=/grpcurl go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
 
-FROM docker.io/library/alpine:3.23.2
+FROM docker.io/library/alpine:3.23.3
 
 WORKDIR /
 
