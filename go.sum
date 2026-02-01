@@ -101,6 +101,8 @@ github.com/a-novel-kit/golib v0.19.13 h1:EBMtr1S7CyioeYaor0fhvhYuh7w8oI6ESZhX2kJ
 github.com/a-novel-kit/golib v0.19.13/go.mod h1:KpDAHrTEnlOlSROxU6TeYhqIp1wr13rx5uUXX56g+Zk=
 github.com/a-novel-kit/golib v0.19.14 h1:/Yr0IbWw6TsrSbl55ozLl/lVHVNMRxkkoLmJyWrWtPs=
 github.com/a-novel-kit/golib v0.19.14/go.mod h1:yesuVkpYljUZxNu9SKMsjPxBaVY4RG4WprLSr/z+Jo4=
+github.com/a-novel-kit/golib v0.20.3 h1:FOTolVYAw79WmL2JQQ+dX4Y81+QiGrZW8V2LVmZiY70=
+github.com/a-novel-kit/golib v0.20.3/go.mod h1:+wcV0fpFwZEUwLrktN4EySeigw0CBRTBZugiX/GCWiY=
 github.com/a-novel-kit/jwt v1.1.29 h1:BrmQRDoS5Bvrlqa8D2T4zPWyH1CBdGuJCdeRGtTv2Jw=
 github.com/a-novel-kit/jwt v1.1.29/go.mod h1:1d2yjQO4qCUdQqSgUIBxjEWE/vsu6Sstwz+Npg+q5u8=
 github.com/a-novel-kit/jwt v1.1.30 h1:3xD+bv/ck7dbXdceePH1YMMHgca5B5USFxnZ+WshzIc=
@@ -929,6 +931,8 @@ google.golang.org/api v0.260.0 h1:XbNi5E6bOVEj/uLXQRlt6TKuEzMD7zvW/6tNwltE4P4=
 google.golang.org/api v0.260.0/go.mod h1:Shj1j0Phr/9sloYrKomICzdYgsSDImpTxME8rGLaZ/o=
 google.golang.org/api v0.263.0 h1:UFs7qn8gInIdtk1ZA6eXRXp5JDAnS4x9VRsRVCeKdbk=
 google.golang.org/api v0.263.0/go.mod h1:fAU1xtNNisHgOF5JooAs8rRaTkl2rT3uaoNGo9NS3R8=
+google.golang.org/api v0.264.0 h1:+Fo3DQXBK8gLdf8rFZ3uLu39JpOnhvzJrLMQSoSYZJM=
+google.golang.org/api v0.264.0/go.mod h1:fAU1xtNNisHgOF5JooAs8rRaTkl2rT3uaoNGo9NS3R8=
 google.golang.org/genproto v0.0.0-20251202230838-ff82c1b0f217 h1:GvESR9BIyHUahIb0NcTum6itIWtdoglGX+rnGxm2934=
 google.golang.org/genproto v0.0.0-20251202230838-ff82c1b0f217/go.mod h1:yJ2HH4EHEDTd3JiLmhds6NkJ17ITVYOdV3m3VKOnws0=
 google.golang.org/genproto/googleapis/api v0.0.0-20260114163908-3f89685c29c3 h1:X9z6obt+cWRX8XjDVOn+SZWhWe5kZHm46TThU9j+jss=
