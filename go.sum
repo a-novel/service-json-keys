@@ -97,6 +97,8 @@ github.com/OpenPeeDeeP/depguard/v2 v2.2.1 h1:vckeWVESWp6Qog7UZSARNqfu/cZqvki8zsu
 github.com/OpenPeeDeeP/depguard/v2 v2.2.1/go.mod h1:q4DKzC4UcVaAvcfd41CZh0PWpGgzrVxUYBlgKNGquUo=
 github.com/a-novel-kit/golib v0.20.4 h1:mVcOw1atD1BsMzvCva3aTmy95LTGKMJ3of5AGjxsDQ4=
 github.com/a-novel-kit/golib v0.20.4/go.mod h1:H4Uo6J3IRbVHTE59u4lIVw1Q4phgEbzcN79B+f+IsvU=
+github.com/a-novel-kit/golib v0.20.5 h1:XJDWeWQFwIllXeftVDFNO1Y3n9w7NdEHrXi7scdoMCM=
+github.com/a-novel-kit/golib v0.20.5/go.mod h1:MHObNvWpiNHYd1UO5F2jtqTdpfH6zJ2t0ZzCpZwR59Y=
 github.com/a-novel-kit/jwt v1.1.32 h1:bjxayCq2i+sC86IHw1K2GPNloP4P7+fL1R65BglWIfg=
 github.com/a-novel-kit/jwt v1.1.32/go.mod h1:1d2yjQO4qCUdQqSgUIBxjEWE/vsu6Sstwz+Npg+q5u8=
 github.com/alecthomas/assert/v2 v2.11.0 h1:2Q9r3ki8+JYXvGsDyBXwH3LcJ+WK5D0gc5E8vS6K3D0=
@@ -906,6 +908,8 @@ gonum.org/v1/gonum v0.16.0 h1:5+ul4Swaf3ESvrOnidPp4GZbzf0mxVQpDCYUQE7OJfk=
 gonum.org/v1/gonum v0.16.0/go.mod h1:fef3am4MQ93R2HHpKnLk4/Tbh/s0+wqD5nfa6Pnwy4E=
 google.golang.org/api v0.264.0 h1:+Fo3DQXBK8gLdf8rFZ3uLu39JpOnhvzJrLMQSoSYZJM=
 google.golang.org/api v0.264.0/go.mod h1:fAU1xtNNisHgOF5JooAs8rRaTkl2rT3uaoNGo9NS3R8=
+google.golang.org/api v0.265.0 h1:FZvfUdI8nfmuNrE34aOWFPmLC+qRBEiNm3JdivTvAAU=
+google.golang.org/api v0.265.0/go.mod h1:uAvfEl3SLUj/7n6k+lJutcswVojHPp2Sp08jWCu8hLY=
 google.golang.org/genproto v0.0.0-20251202230838-ff82c1b0f217 h1:GvESR9BIyHUahIb0NcTum6itIWtdoglGX+rnGxm2934=
 google.golang.org/genproto v0.0.0-20251202230838-ff82c1b0f217/go.mod h1:yJ2HH4EHEDTd3JiLmhds6NkJ17ITVYOdV3m3VKOnws0=
 google.golang.org/genproto/googleapis/api v0.0.0-20260128011058-8636f8732409 h1:merA0rdPeUV3YIIfHHcH4qBkiQAc1nfCKSI7lB4cV2M=
