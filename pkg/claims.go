@@ -8,10 +8,11 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
-// KeyUsage determines the intended usage of a token. The token parameters (ttl, issuer, etc.),
-// along with the set of keys used to generate it, are determined by the usage.
+// KeyUsage determines the intended usage of a token. The usage
 //
-// Note that each service willing to produce tokens must register its own unique usages,
+//	determines the token parameters (ttl, issuer, etc.), along with the set of keys used to generate it.
+//
+// Note that each service willing to produce tokens must register its own unique usages
 // and configure them directly on this service.
 type KeyUsage = string
 
@@ -23,7 +24,7 @@ const (
 )
 
 type VerifyClaimsOptions struct {
-	// Ignore expiration date check. This can be used to validate expired tokens.
+	// Ignore the expiration date check. This can be used to validate expired tokens.
 	IgnoreExpired bool
 }
 
@@ -31,7 +32,7 @@ type VerifyClaimsRequest struct {
 	// See KeyUsage.
 	Usage KeyUsage
 	// The token to verify.
-	AccessToken string
+	AccessToken string //nolint:gosec
 	// Validation options. Check VerifyClaimsOptions for more information.
 	Options *VerifyClaimsOptions
 }
