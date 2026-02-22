@@ -10,7 +10,7 @@ importers:
     devDependencies:
       '@a-novel-kit/nodelib-config':
         specifier: ^1.3.1
-        version: 1.3.15(39b5ac583af6652d96aa50d430432e8a)
+        version: 1.3.16(39b5ac583af6652d96aa50d430432e8a)
       '@eslint/js':
         specifier: ^10.0.0
         version: 10.0.1(eslint@10.0.1(jiti@2.6.1))
@@ -56,16 +56,16 @@ importers:
 
 packages:
 
-  '@a-novel-kit/nodelib-config@1.3.15':
-    resolution: {integrity: sha512-sH3nk6uH40097PNwBza9fdtn0a16lxbPD9c1UhGvsGeYxI7+RUfErgbafPSDtVPeyZlODx2bwoYbewCgutQFsQ==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/nodelib-config/1.3.15/09da6a91a6144fbaff5d6121b6df5e3935adb98a}
+  '@a-novel-kit/nodelib-config@1.3.16':
+    resolution: {integrity: sha512-EP+FekqN9XXAqdXTEOe8fco492EyzE3TknUIiEZ/eLqDd8FmVEzkdjDq1qNwTYCxOwopYgozcLLZAEmiGRNfKA==, tarball: https://npm.pkg.github.com/download/@a-novel-kit/nodelib-config/1.3.16/37c657d6f4ba15d844c7302670a7461721d98f56}
     engines: {node: '>=24.0.0', npm: '>=10.9.2'}
     peerDependencies:
       '@eslint/compat': ^2.0.2
       '@eslint/js': ^10.0.1
-      '@sveltejs/kit': ^2.52.2
+      '@sveltejs/kit': ^2.53.0
       '@trivago/prettier-plugin-sort-imports': ^6.0.2
       '@types/node': ^24.10.13
-      eslint: ^10.0.0
+      eslint: ^10.0.1
       eslint-config-prettier: ^10.1.8
       eslint-plugin-prettier: ^5.5.5
       eslint-plugin-storybook: ^10.2.10
@@ -76,7 +76,7 @@ packages:
       prettier-plugin-sql: ^0.19.2
       prettier-plugin-svelte: ^3.5.0
       storybook: ^10.2.10
-      svelte: ^5.51.3
+      svelte: ^5.53.2
       typescript: ^5.9.3
       typescript-eslint: ^8.56.0
 
@@ -1675,7 +1675,7 @@ packages:
 
 snapshots:
 
-  '@a-novel-kit/nodelib-config@1.3.15(39b5ac583af6652d96aa50d430432e8a)':
+  '@a-novel-kit/nodelib-config@1.3.16(39b5ac583af6652d96aa50d430432e8a)':
     dependencies:
       '@eslint/compat': 2.0.0(eslint@10.0.1(jiti@2.6.1))
       '@eslint/js': 10.0.1(eslint@10.0.1(jiti@2.6.1))
