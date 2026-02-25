@@ -12,7 +12,7 @@ tool (
 
 require (
 	github.com/a-novel-kit/golib v0.20.9
-	github.com/a-novel-kit/jwt v1.1.36
+	github.com/a-novel-kit/jwt v1.1.37
 	github.com/goccy/go-yaml v1.19.2
 	github.com/google/uuid v1.6.0
 	github.com/samber/lo v1.52.0
