@@ -17,8 +17,8 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/samber/lo v1.52.0
 	github.com/stretchr/testify v1.11.1
-	github.com/uptrace/bun v1.2.17
-	github.com/uptrace/bun/driver/pgdriver v1.2.17
+	github.com/uptrace/bun v1.2.18
+	github.com/uptrace/bun/driver/pgdriver v1.2.18
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.65.0
 	go.opentelemetry.io/otel v1.40.0
 	go.opentelemetry.io/otel/trace v1.40.0
