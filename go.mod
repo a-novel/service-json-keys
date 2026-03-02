@@ -11,14 +11,14 @@ tool (
 )
 
 require (
-	github.com/a-novel-kit/golib v0.20.11
+	github.com/a-novel-kit/golib v0.20.12
 	github.com/a-novel-kit/jwt v1.1.38
 	github.com/goccy/go-yaml v1.19.2
 	github.com/google/uuid v1.6.0
 	github.com/samber/lo v1.52.0
 	github.com/stretchr/testify v1.11.1
-	github.com/uptrace/bun v1.2.17
-	github.com/uptrace/bun/driver/pgdriver v1.2.17
+	github.com/uptrace/bun v1.2.18
+	github.com/uptrace/bun/driver/pgdriver v1.2.18
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.65.0
 	go.opentelemetry.io/otel v1.40.0
 	go.opentelemetry.io/otel/trace v1.40.0
@@ -304,7 +304,7 @@ require (
 	github.com/tommy-muehle/go-mnd/v2 v2.5.1 // indirect
 	github.com/ultraware/funlen v0.2.0 // indirect
 	github.com/ultraware/whitespace v0.2.0 // indirect
-	github.com/uptrace/bun/dialect/pgdialect v1.2.17 // indirect
+	github.com/uptrace/bun/dialect/pgdialect v1.2.18 // indirect
 	github.com/uudashr/gocognit v1.2.0 // indirect
 	github.com/uudashr/iface v1.4.1 // indirect
 	github.com/vbatts/tar-split v0.12.2 // indirect
