@@ -1,5 +1,24 @@
+packages:
+  - pkg/rest-js
+  - pkg/test/rest-js
+
+autoInstallPeers: true
+
+gitChecks: false
+
+linkWorkspacePackages: true
+
 onlyBuiltDependencies:
+  - core-js
   - esbuild
+  - msw
+  - protobufjs
+
+prefer-workspace-packages: true
+
+recursive-install: true
+
+strictPeerDependencies: false
 
 overrides:
   "@sveltejs/kit@>=2.19.0 <=2.49.4": ">=2.49.5"

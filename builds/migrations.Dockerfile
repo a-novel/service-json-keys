@@ -25,5 +25,7 @@ WORKDIR /
 
 COPY --from=builder /migrations /migrations
 
+ARG DEBIAN_FRONTEND=noninteractive
+
 # Applies the migrations to a linked database instance.
 CMD ["/migrations"]

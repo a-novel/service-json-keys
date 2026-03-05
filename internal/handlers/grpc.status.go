@@ -12,7 +12,7 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
 )
 
-func NewHealthStatus(err error) *protogen.DependencyHealth {
+func NewGrpcHealthStatus(err error) *protogen.DependencyHealth {
 	errMsg := ""
 	if err != nil {
 		errMsg = err.Error()
@@ -28,25 +28,25 @@ func NewHealthStatus(err error) *protogen.DependencyHealth {
 	}
 }
 
-type Status struct {
+type GrpcStatus struct {
 	protogen.UnimplementedStatusServiceServer
 }
 
-func NewStatus() *Status {
-	return new(Status)
+func NewGrpcStatus() *GrpcStatus {
+	return new(GrpcStatus)
 }
 
-func (handler *Status) Status(ctx context.Context, _ *protogen.StatusRequest) (*protogen.StatusResponse, error) {
-	ctx, span := otel.Tracer().Start(ctx, "api.Status")
+func (handler *GrpcStatus) Status(ctx context.Context, _ *protogen.StatusRequest) (*protogen.StatusResponse, error) {
+	ctx, span := otel.Tracer().Start(ctx, "api.GrpcStatus")
 	defer span.End()
 
 	return &protogen.StatusResponse{
-		Postgres: NewHealthStatus(handler.reportPostgres(ctx)),
+		Postgres: NewGrpcHealthStatus(handler.reportPostgres(ctx)),
 	}, nil
 }
 
-func (handler *Status) reportPostgres(ctx context.Context) error {
-	ctx, span := otel.Tracer().Start(ctx, "api.Status(reportPostgres)")
+func (handler *GrpcStatus) reportPostgres(ctx context.Context) error {
+	ctx, span := otel.Tracer().Start(ctx, "api.GrpcStatus(reportPostgres)")
 	defer span.End()
 
 	pg, err := postgres.GetContext(ctx)

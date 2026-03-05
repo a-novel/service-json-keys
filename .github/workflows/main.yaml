@@ -91,7 +91,7 @@ jobs:
           coverage_file: coverage.txt
 
   test-pkg:
-    needs: [build-database, build-standalone]
+    needs: [build-database, build-standalone-grpc]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -115,7 +115,7 @@ jobs:
           --health-retries 5
 
       service-json-keys:
-        image: ghcr.io/a-novel/service-json-keys/standalone@${{ needs.build-standalone.outputs.digest }}
+        image: ghcr.io/a-novel/service-json-keys/standalone-grpc@${{ needs.build-standalone-grpc.outputs.digest }}
         ports:
           - "8080:8080"
         credentials:
@@ -125,7 +125,7 @@ jobs:
           POSTGRES_DSN: postgres://postgres:postgres@postgres-json-keys:5432/postgres?sslmode=disable
           APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
     env:
-      GRPC_TEST_URL: "localhost:8080"
+      GRPC_URL: "localhost:8080"
     steps:
       - uses: actions/checkout@v6
       - uses: a-novel-kit/workflows/go-actions/test-go@master
@@ -136,6 +136,52 @@ jobs:
           test_artifact: gotestpkg
           coverage_artifact: gocoverpkg
           coverage_file: coverage_pkg.txt
+
+  test-pkg-js:
+    runs-on: ubuntu-latest
+    needs: [build-database, build-standalone-rest]
+    permissions:
+      contents: read
+      packages: read
+    outputs:
+      artifact-id: ${{ steps.test.outputs.artifact-id }}
+    services:
+      postgres-json-keys:
+        image: ghcr.io/a-novel/service-json-keys/database@${{ needs.build-database.outputs.digest }}
+        ports:
+          - "5432:5432"
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+          POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+          POSTGRES_INITDB_ARGS: --auth=scram-sha-256
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      service-json-keys:
+        image: ghcr.io/a-novel/service-json-keys/standalone-rest@${{ needs.build-standalone-rest.outputs.digest }}
+        ports:
+          - "8080:8080"
+        credentials:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          POSTGRES_DSN: postgres://postgres:postgres@postgres-json-keys:5432/postgres?sslmode=disable
+          APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
+    env:
+      REST_URL: "http://localhost:8080"
+    steps:
+      - uses: a-novel-kit/workflows/node-actions/test-node@master
+        id: test
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
+          app_id: ${{ vars.DEPENDENCY_BOT_ID }}
+          coverage_artifact: jscover
 
   build-database:
     runs-on: ubuntu-latest
@@ -256,6 +302,11 @@ jobs:
           POSTGRES_DB: postgres
           POSTGRES_HOST_AUTH_METHOD: scram-sha-256
           POSTGRES_INITDB_ARGS: --auth=scram-sha-256
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
       POSTGRES_DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
@@ -269,7 +320,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           run_args: -e POSTGRES_DSN="${POSTGRES_DSN}" -e APP_MASTER_KEY="${APP_MASTER_KEY}"
 
-  build-standalone:
+  build-standalone-grpc:
     needs: [test, build-database]
     runs-on: ubuntu-latest
     permissions:
@@ -304,10 +355,101 @@ jobs:
       - uses: a-novel-kit/workflows/build-actions/docker@master
         id: build
         with:
-          file: builds/standalone.Dockerfile
-          image_name: ${{ github.repository }}/standalone
+          file: builds/standalone.grpc.Dockerfile
+          image_name: ${{ github.repository }}/standalone-grpc
           github_token: ${{ secrets.GITHUB_TOKEN }}
           run_args: -e POSTGRES_DSN="${POSTGRES_DSN}" -e APP_MASTER_KEY="${APP_MASTER_KEY}"
+
+  build-rest:
+    needs: [test, build-database]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    services:
+      postgres-json-keys:
+        image: ghcr.io/a-novel/service-json-keys/database@${{ needs.build-database.outputs.digest }}
+        ports:
+          - "5432:5432"
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+          POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+          POSTGRES_INITDB_ARGS: --auth=scram-sha-256
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      POSTGRES_DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
+      APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/run-migrations
+      - uses: a-novel-kit/workflows/build-actions/docker@master
+        with:
+          file: builds/rest.Dockerfile
+          image_name: ${{ github.repository }}/rest
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          run_args: -e POSTGRES_DSN="${POSTGRES_DSN}" -e APP_MASTER_KEY="${APP_MASTER_KEY}"
+
+  build-standalone-rest:
+    needs: [test, build-database]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+    services:
+      postgres-json-keys:
+        image: ghcr.io/a-novel/service-json-keys/database@${{ needs.build-database.outputs.digest }}
+        ports:
+          - "5432:5432"
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+          POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+          POSTGRES_INITDB_ARGS: --auth=scram-sha-256
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      POSTGRES_DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
+      APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/run-migrations
+      - uses: a-novel-kit/workflows/build-actions/docker@master
+        id: build
+        with:
+          file: builds/standalone.rest.Dockerfile
+          image_name: ${{ github.repository }}/standalone-rest
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          run_args: -e POSTGRES_DSN="${POSTGRES_DSN}" -e APP_MASTER_KEY="${APP_MASTER_KEY}"
+
+  build-js:
+    needs: [test-pkg-js]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: a-novel-kit/workflows/node-actions/build-node@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
+          app_id: ${{ vars.DEPENDENCY_BOT_ID }}
+          build_action: "build:rest"
 
   report-grc:
     runs-on: ubuntu-latest
@@ -321,12 +463,31 @@ jobs:
 
   report-codecov:
     runs-on: ubuntu-latest
-    needs: [test, test-pkg]
+    needs: [test, test-pkg, test-pkg-js]
     permissions:
       contents: read
     steps:
       - uses: a-novel-kit/workflows/generic-actions/codecov@master
         with:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
-          coverage_files: coverage.txt,coverage_pkg.txt
-          coverage_artifact_ids: ${{ needs.test.outputs.artifact-id }},${{ needs.test-pkg.outputs.artifact-id }}
+          coverage_files: coverage.txt,coverage_pkg.txt,coverage/*
+          coverage_artifact_ids: ${{ needs.test.outputs.artifact-id }},${{ needs.test-pkg.outputs.artifact-id }},${{ needs.test-pkg-js.outputs.artifact-id }}
+
+  publish-docs:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' && success()
+    needs: [build-js]
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+      - run: |
+          mkdir _site
+          mv openapi.html _site/index.html
+          mv openapi.yaml _site/openapi.yaml
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+      - id: deployment
+        uses: actions/deploy-pages@v4
