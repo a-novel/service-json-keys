@@ -30,7 +30,7 @@ func TestHealth(t *testing.T) {
 		{
 			name: "Success",
 
-			request: httptest.NewRequest(http.MethodPost, "/", nil),
+			request: httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/", nil),
 
 			expectResponse: map[string]any{
 				"client:postgres": map[string]any{

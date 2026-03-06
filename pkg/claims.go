@@ -32,7 +32,7 @@ type VerifyClaimsRequest struct {
 	// See KeyUsage.
 	Usage KeyUsage
 	// The token to verify.
-	AccessToken string //nolint:gosec
+	AccessToken string
 	// Validation options. Check VerifyClaimsOptions for more information.
 	Options *VerifyClaimsOptions
 }

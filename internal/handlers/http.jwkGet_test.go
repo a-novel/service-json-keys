@@ -43,7 +43,12 @@ func TestJwkGetPublic(t *testing.T) {
 		{
 			name: "Success",
 
-			request: httptest.NewRequest(http.MethodGet, "/jwk?id=00000000-0000-0000-0000-000000000001", nil),
+			request: httptest.NewRequestWithContext(
+				t.Context(),
+				http.MethodGet,
+				"/jwk?id=00000000-0000-0000-0000-000000000001",
+				nil,
+			),
 
 			serviceJwkGetMock: &serviceJwkGetMock{
 				resp: &services.Jwk{
@@ -71,14 +76,24 @@ func TestJwkGetPublic(t *testing.T) {
 		{
 			name: "Error/InvalidID",
 
-			request: httptest.NewRequest(http.MethodGet, "/jwk?id=not-a-uuid", nil),
+			request: httptest.NewRequestWithContext(
+				t.Context(),
+				http.MethodGet,
+				"/jwk?id=not-a-uuid",
+				nil,
+			),
 
 			expectStatus: http.StatusBadRequest,
 		},
 		{
 			name: "Error/NotFound",
 
-			request: httptest.NewRequest(http.MethodGet, "/jwk?id=00000000-0000-0000-0000-000000000001", nil),
+			request: httptest.NewRequestWithContext(
+				t.Context(),
+				http.MethodGet,
+				"/jwk?id=00000000-0000-0000-0000-000000000001",
+				nil,
+			),
 
 			serviceJwkGetMock: &serviceJwkGetMock{
 				err: dao.ErrJwkSelectNotFound,
@@ -89,7 +104,12 @@ func TestJwkGetPublic(t *testing.T) {
 		{
 			name: "Error/Internal",
 
-			request: httptest.NewRequest(http.MethodGet, "/jwk?id=00000000-0000-0000-0000-000000000001", nil),
+			request: httptest.NewRequestWithContext(
+				t.Context(),
+				http.MethodGet,
+				"/jwk?id=00000000-0000-0000-0000-000000000001",
+				nil,
+			),
 
 			serviceJwkGetMock: &serviceJwkGetMock{
 				err: errFoo,

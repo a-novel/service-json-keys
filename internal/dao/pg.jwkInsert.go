@@ -21,7 +21,7 @@ type JwkInsertRequest struct {
 	ID uuid.UUID
 
 	// See Jwk.PrivateKey. Must be encrypted.
-	PrivateKey string //nolint:gosec
+	PrivateKey string
 	// See Jwk.PublicKey.
 	PublicKey *string
 	// See Jwk.Usage.

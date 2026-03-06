@@ -41,7 +41,7 @@ func TestJwkListPublic(t *testing.T) {
 		{
 			name: "Success",
 
-			request: httptest.NewRequest(http.MethodGet, "/jwks?usage=test-usage", nil),
+			request: httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/jwks?usage=test-usage", nil),
 
 			serviceJwkListMock: &serviceJwkListMock{
 				resp: []*services.Jwk{
@@ -73,7 +73,7 @@ func TestJwkListPublic(t *testing.T) {
 		{
 			name: "Success/Empty",
 
-			request: httptest.NewRequest(http.MethodGet, "/jwks?usage=test-usage", nil),
+			request: httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/jwks?usage=test-usage", nil),
 
 			serviceJwkListMock: &serviceJwkListMock{
 				resp: []*services.Jwk{},
@@ -84,7 +84,7 @@ func TestJwkListPublic(t *testing.T) {
 		{
 			name: "Error/Internal",
 
-			request: httptest.NewRequest(http.MethodGet, "/jwks?usage=test-usage", nil),
+			request: httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/jwks?usage=test-usage", nil),
 
 			serviceJwkListMock: &serviceJwkListMock{
 				err: errFoo,

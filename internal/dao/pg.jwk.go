@@ -27,7 +27,7 @@ type Jwk struct {
 	// PrivateKey is the private key in JSON Web Key format.
 	//
 	// This key MUST BE encrypted, and the result of this encryption is stored as a base64 raw URL encoded string.
-	PrivateKey string `bun:"private_key"` //nolint:gosec
+	PrivateKey string `bun:"private_key"`
 	// PublicKey is the public key in JSON Web Key format. The key is stored as a base64 raw URL encoded string.
 	//
 	// This value is OPTIONAL for symmetric keys.
