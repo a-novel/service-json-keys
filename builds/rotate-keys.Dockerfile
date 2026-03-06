@@ -30,5 +30,7 @@ WORKDIR /
 
 COPY --from=builder /rotate-keys /rotate-keys
 
+ARG DEBIAN_FRONTEND=noninteractive
+
 # Rotate the JSON web keys for all usages.
 CMD ["/rotate-keys"]

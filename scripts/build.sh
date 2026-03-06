@@ -2,7 +2,7 @@
 
 set -e
 
-# This script builds all the local dockerfiles under the ":local" tag.
+# This script builds all the dockerfiles under the ":local" tag.
 
 podman build --format docker \
   -f ./builds/database.Dockerfile \
@@ -19,5 +19,12 @@ podman build --format docker \
   -f ./builds/grpc.Dockerfile \
   -t ghcr.io/a-novel/service-json-keys/grpc:local .
 podman build --format docker \
-  -f ./builds/standalone.Dockerfile \
-  -t ghcr.io/a-novel/service-json-keys/standalone:local .
+  -f ./builds/standalone.grpc.Dockerfile \
+  -t ghcr.io/a-novel/service-json-keys/standalone-grpc:local .
+
+podman build --format docker \
+  -f ./builds/rest.Dockerfile \
+  -t ghcr.io/a-novel/service-json-keys/rest:local .
+podman build --format docker \
+  -f ./builds/standalone.rest.Dockerfile \
+  -t ghcr.io/a-novel/service-json-keys/standalone-rest:local .

@@ -3,7 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"net"
+	"os"
+	"os/signal"
+	"strconv"
+	"syscall"
 
 	"github.com/samber/lo"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
@@ -15,6 +20,7 @@ import (
 	"github.com/a-novel-kit/golib/postgres"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
+	"github.com/a-novel/service-json-keys/v2/internal/config/env"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
@@ -32,11 +38,23 @@ func main() {
 	lo.Must0(otel.Init(cfg.Otel))
 	defer cfg.Otel.Flush()
 
+	if env.GcloudProjectId == "" {
+		log.SetFlags(log.Flags() &^ (log.Ldate | log.Ltime))
+	}
+
 	ctx = lo.Must(lib.NewMasterKeyContext(ctx, cfg.App.MasterKey))
 	ctx = lo.Must(postgres.NewContext(ctx, config.PostgresPresetDefault))
 
+	// =================================================================================================================
+	// DAO
+	// =================================================================================================================
+
 	repositoryJwkSearch := dao.NewJwkSearch()
 	repositoryJwkSelect := dao.NewJwkSelect()
+
+	// =================================================================================================================
+	// SERVICES
+	// =================================================================================================================
 
 	serviceJwkExtract := services.NewJwkExtract()
 	serviceJwkSearch := services.NewJwkSearch(repositoryJwkSearch, serviceJwkExtract)
@@ -46,10 +64,18 @@ func main() {
 	serviceJwkProducer := lo.Must(services.NewJwkProducers(serviceJwkSource, config.JwkPresetDefault))
 	serviceClaimsSign := services.NewClaimsSign(serviceJwkProducer, config.JwkPresetDefault)
 
-	handlerStatus := handlers.NewStatus()
+	// =================================================================================================================
+	// HANDLERS
+	// =================================================================================================================
+
+	handlerStatus := handlers.NewGrpcStatus()
 	handlerClaimsSign := handlers.NewClaimsSign(serviceClaimsSign)
 	handlersJwkGet := handlers.NewJwkGet(serviceJwkSelect)
 	handlersJwkList := handlers.NewJwkList(serviceJwkSearch)
+
+	// =================================================================================================================
+	// SERVER
+	// =================================================================================================================
 
 	ctxInterceptor := func(rpCtx context.Context) context.Context {
 		rpCtx = postgres.TransferContext(ctx, rpCtx)
@@ -84,11 +110,23 @@ func main() {
 
 	reflection.Register(server)
 
-	defer server.GracefulStop()
-	defer server.Stop()
+	// =================================================================================================================
+	// RUN
+	// =================================================================================================================
 
-	err := server.Serve(listener)
-	if err != nil {
-		panic(err)
-	}
+	log.Println("Starting gRPC server on :" + strconv.Itoa(cfg.Grpc.Port))
+
+	go func() {
+		err := server.Serve(listener)
+		if err != nil {
+			panic(err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	log.Println("Shutting down gRPC server...")
+	server.GracefulStop()
 }

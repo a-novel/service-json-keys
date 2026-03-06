@@ -16,7 +16,7 @@ import (
 func TestClaims(t *testing.T) {
 	t.Parallel()
 
-	client, err := pkg.NewClient(env.GrpcTestUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	client, err := pkg.NewClient(env.GrpcUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	require.NoError(t, err)
 
 	defer client.Close()

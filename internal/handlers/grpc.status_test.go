@@ -38,7 +38,7 @@ func TestStatus(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			handler := handlers.NewStatus()
+			handler := handlers.NewGrpcStatus()
 
 			ctx, err := postgres.NewContext(t.Context(), config.PostgresPresetTest)
 			require.NoError(t, err)

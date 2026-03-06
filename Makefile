@@ -7,7 +7,10 @@ test-unit:
 test-pkg:
 	bash -c "set -m; bash '$(CURDIR)/scripts/test.pkg.sh'"
 
-test: test-unit test-pkg
+test-pkg-js:
+	bash -c "set -m; bash '$(CURDIR)/scripts/test.pkg.js.sh'"
+
+test: test-unit test-pkg test-pkg-js
 
 # ================================================================================
 # Lint.

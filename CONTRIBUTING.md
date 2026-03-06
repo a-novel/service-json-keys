@@ -61,21 +61,25 @@ make install
 
 ### Interacting with the Service
 
-Once the service is running (`make run`), you can interact with it using `grpcurl` or any gRPC client.
+Once the service is running (`make run`), you can interact with it using:
 
-```bash
-# List all available methods.
-grpcurl -plaintext localhost:4002 list
-```
+- `curl` or any HTTP client (REST API).
+- `grpcurl` or any gRPC client (gRPC API).
 
 #### Health Checks
 
 ```bash
-# Simple ping (is the server up?)
-grpcurl -plaintext localhost:4002 grpc.health.v1.Health/Check
+# REST: Simple ping (is the server up?)
+curl http://localhost:${SERVICE_JSON_KEYS_REST_PORT}/ping
 
-# Check the status of all services.
-grpcurl -plaintext localhost:4002 StatusService/Status
+# REST: Detailed health check (checks database, dependencies)
+curl http://localhost:${SERVICE_JSON_KEYS_REST_PORT}/healthcheck
+
+# gRPC: Simple ping (is the server up?)
+grpcurl -plaintext localhost:${SERVICE_JSON_KEYS_GRPC_PORT} grpc.health.v1.Health/Check
+
+# gRPC: Check the status of all services.
+grpcurl -plaintext localhost:${SERVICE_JSON_KEYS_GRPC_PORT} StatusService/Status
 ```
 
 #### Key Operations
@@ -83,13 +87,21 @@ grpcurl -plaintext localhost:4002 StatusService/Status
 List available keys:
 
 ```bash
-grpcurl -plaintext -d '{"usage": "auth"}' localhost:4002 JwkListService/JwkList
+# REST
+curl "http://localhost:${SERVICE_JSON_KEYS_REST_PORT}/jwks?usage=auth"
+
+# gRPC
+grpcurl -plaintext -d '{"usage": "auth"}' "localhost:${SERVICE_JSON_KEYS_GRPC_PORT}" JwkListService/JwkList
 ```
 
 Get a specific key:
 
 ```bash
-grpcurl -plaintext -d '{"id": "<key-uuid>"}' localhost:4002 JwkGetService/JwkGet
+# REST
+curl "http://localhost:${SERVICE_JSON_KEYS_REST_PORT}/jwk?id=<key-uuid>"
+
+# gRPC
+grpcurl -plaintext -d '{"id": "<key-uuid>"}' "localhost:${SERVICE_JSON_KEYS_GRPC_PORT}" JwkGetService/JwkGet
 ```
 
 ---
@@ -146,6 +158,38 @@ The `rotate-keys` job (`cmd/rotate-keys/main.go`) handles automatic key rotation
 | `JwkGetService`     | Retrieve single key by ID  |
 | `JwkListService`    | List keys by usage         |
 | `ClaimsSignService` | Sign JWT claims with a key |
+
+### REST API
+
+The REST API serves public JWK data over HTTP. It is documented via an OpenAPI spec:
+
+- `openapi.yaml` — machine-readable spec
+- `openapi.html` — interactive Scalar API Reference viewer (open in a browser)
+
+The published API reference is hosted at [GitHub Pages](https://a-novel.github.io/service-json-keys-v2).
+
+### JavaScript Client Package
+
+Frontend or Node.js consumers can use `@a-novel/service-json-keys-rest` (`pkg/rest-js/`) to call the REST API:
+
+```typescript
+import { JsonKeysApi, jwkGet, jwkList } from "@a-novel/service-json-keys-rest";
+
+const api = new JsonKeysApi("http://localhost:4021");
+
+// Check service health.
+await api.ping();
+
+// Fetch public keys.
+const keys = await jwkList(api, "auth");
+const key = await jwkGet(api, "<key-id>");
+```
+
+Integration tests for the JS client live in `pkg/test/rest-js/`. Run them locally with:
+
+```bash
+make test-pkg-js
+```
 
 ### Go Client Package
 
