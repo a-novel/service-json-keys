@@ -16,7 +16,7 @@ info:
     verify signatures but cannot sign new tokens. This is safe to expose to external consumers.
 
     To sign tokens, use the internal gRPC API.
-  version: v2.1.5
+  version: v2.2.0
   license:
     name: AGPL-3.0
     url: "https://raw.githubusercontent.com/a-novel/service-json-keys/refs/heads/master/LICENSE"
