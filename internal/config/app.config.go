@@ -57,7 +57,7 @@ type Rest struct {
 type App struct {
 	App  Main `json:"app"  yaml:"app"`
 	Grpc Grpc `json:"grpc" yaml:"grpc"`
-	Api  Rest `json:"api"  yaml:"api"`
+	Rest Rest `json:"rest" yaml:"rest"`
 
 	Otel       otel.Config        `json:"otel"       yaml:"otel"`
 	Logger     logging.RpcConfig  `json:"logger"     yaml:"logger"`

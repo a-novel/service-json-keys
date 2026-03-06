@@ -60,7 +60,7 @@ var AppPresetDefault = App{
 		Port: env.GrpcPort,
 		Ping: env.GrpcPing,
 	},
-	Api: Rest{
+	Rest: Rest{
 		Port: env.RestPort,
 		Timeouts: RestTimeouts{
 			Read:       env.RestTimeoutRead,

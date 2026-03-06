@@ -76,18 +76,18 @@ func main() {
 
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.RealIP)
-	router.Use(middleware.Timeout(cfg.Api.Timeouts.Request))
-	router.Use(middleware.RequestSize(cfg.Api.MaxRequestSize))
+	router.Use(middleware.Timeout(cfg.Rest.Timeouts.Request))
+	router.Use(middleware.RequestSize(cfg.Rest.MaxRequestSize))
 	router.Use(cfg.Otel.HttpHandler())
 	router.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   cfg.Api.Cors.AllowedOrigins,
-		AllowedHeaders:   cfg.Api.Cors.AllowedHeaders,
-		AllowCredentials: cfg.Api.Cors.AllowCredentials,
+		AllowedOrigins:   cfg.Rest.Cors.AllowedOrigins,
+		AllowedHeaders:   cfg.Rest.Cors.AllowedHeaders,
+		AllowCredentials: cfg.Rest.Cors.AllowCredentials,
 		AllowedMethods: []string{
 			http.MethodHead,
 			http.MethodGet,
 		},
-		MaxAge: cfg.Api.Cors.MaxAge,
+		MaxAge: cfg.Rest.Cors.MaxAge,
 	}))
 	router.Use(cfg.HttpLogger.Logger())
 
@@ -101,12 +101,12 @@ func main() {
 	// =================================================================================================================
 
 	httpServer := &http.Server{
-		Addr:              ":" + strconv.Itoa(cfg.Api.Port),
+		Addr:              ":" + strconv.Itoa(cfg.Rest.Port),
 		Handler:           router,
-		ReadTimeout:       cfg.Api.Timeouts.Read,
-		ReadHeaderTimeout: cfg.Api.Timeouts.ReadHeader,
-		WriteTimeout:      cfg.Api.Timeouts.Write,
-		IdleTimeout:       cfg.Api.Timeouts.Idle,
+		ReadTimeout:       cfg.Rest.Timeouts.Read,
+		ReadHeaderTimeout: cfg.Rest.Timeouts.ReadHeader,
+		WriteTimeout:      cfg.Rest.Timeouts.Write,
+		IdleTimeout:       cfg.Rest.Timeouts.Idle,
 		BaseContext:       func(_ net.Listener) context.Context { return ctx },
 	}
 
@@ -125,7 +125,7 @@ func main() {
 
 	log.Println("Shutting down REST server...")
 
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.Api.Timeouts.Request)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.Rest.Timeouts.Request)
 	defer cancel()
 
 	err := httpServer.Shutdown(shutdownCtx)
