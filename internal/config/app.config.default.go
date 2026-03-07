@@ -32,13 +32,13 @@ var OtelDev = otelpresets.Local{
 // NoOtel runs a disabled otel instance.
 var NoOtel = otelpresets.Disabled{}
 
-// LoggerProd sends production-ready logs to Google Cloud environment.
-var LoggerProd = loggingpresets.GrpcGcloud{
+// LoggerProdGrpc sends production-ready logs to Google Cloud environment.
+var LoggerProdGrpc = loggingpresets.GrpcGcloud{
 	Component: env.GcloudProjectId,
 }
 
-// LoggerDev prints logs in the console, pretty formatted.
-var LoggerDev = loggingpresets.GrpcLocal{}
+// LoggerDevGrpc prints logs in the console, pretty formatted.
+var LoggerDevGrpc = loggingpresets.GrpcLocal{}
 
 // LoggerDevHttp prints HTTP-level logs in the console, pretty formatted.
 var LoggerDevHttp = &loggingpresets.LogLocal{
@@ -81,7 +81,7 @@ var AppPresetDefault = App{
 	Otel: lo.If[otel.Config](!env.Otel, &NoOtel).
 		ElseIf(env.GcloudProjectId == "", &OtelDev).
 		Else(&OtelProd),
-	Logger: lo.Ternary[logging.RpcConfig](env.GcloudProjectId == "", &LoggerDev, &LoggerProd),
+	GrpcLogger: lo.Ternary[logging.RpcConfig](env.GcloudProjectId == "", &LoggerDevGrpc, &LoggerProdGrpc),
 	HttpLogger: lo.Ternary[logging.HttpConfig](
 		env.GcloudProjectId == "",
 		&loggingpresets.HttpLocal{BaseLogger: LoggerDevHttp},

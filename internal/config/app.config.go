@@ -60,7 +60,7 @@ type App struct {
 	Rest Rest `json:"rest" yaml:"rest"`
 
 	Otel       otel.Config        `json:"otel"       yaml:"otel"`
-	Logger     logging.RpcConfig  `json:"logger"     yaml:"logger"`
+	GrpcLogger logging.RpcConfig  `json:"grpclogger" yaml:"grpclogger"`
 	HttpLogger logging.HttpConfig `json:"httpLogger" yaml:"httpLogger"`
 	Postgres   postgres.Config    `json:"postgres"   yaml:"postgres"`
 }

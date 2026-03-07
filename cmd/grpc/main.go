@@ -91,13 +91,13 @@ func main() {
 		cfg.Otel.RpcInterceptor(),
 		grpc.ChainUnaryInterceptor(
 			grpcf.BaseContextUnaryInterceptor(ctxInterceptor),
-			cfg.Logger.UnaryInterceptor(),
-			cfg.Logger.PanicUnaryInterceptor(),
+			cfg.GrpcLogger.UnaryInterceptor(),
+			cfg.GrpcLogger.PanicUnaryInterceptor(),
 		),
 		grpc.ChainStreamInterceptor(
 			grpcf.BaseContextStreamInterceptor(ctxInterceptor),
-			cfg.Logger.StreamInterceptor(),
-			cfg.Logger.PanicStreamInterceptor(),
+			cfg.GrpcLogger.StreamInterceptor(),
+			cfg.GrpcLogger.PanicStreamInterceptor(),
 		),
 	)
 
