@@ -65,8 +65,8 @@ func main() {
 
 	handlerPing := handlers.NewPing()
 	handlerHealth := handlers.NewRestHealth()
-	handlerJwkList := handlers.NewJwkListPublic(serviceJwkSearch)
-	handlerJwkGet := handlers.NewJwkGetPublic(serviceJwkSelect)
+	handlerJwkList := handlers.NewJwkListPublic(serviceJwkSearch, cfg.Logger)
+	handlerJwkGet := handlers.NewJwkGetPublic(serviceJwkSelect, cfg.Logger)
 
 	// =================================================================================================================
 	// ROUTER

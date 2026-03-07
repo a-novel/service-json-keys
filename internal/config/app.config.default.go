@@ -16,21 +16,9 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/config/env"
 )
 
-const OtelFlushTimeout = 2 * time.Second
-
-// OtelProd is the production configuration for Open Telemetry. Requires a Google Cloud project.
-var OtelProd = otelpresets.Gcloud{
-	ProjectID:    env.GcloudProjectId,
-	FlushTimeout: OtelFlushTimeout,
-}
-
-// OtelDev logs all traces locally.
-var OtelDev = otelpresets.Local{
-	FlushTimeout: OtelFlushTimeout,
-}
-
-// NoOtel runs a disabled otel instance.
-var NoOtel = otelpresets.Disabled{}
+const (
+	OtelFlushTimeout = 2 * time.Second
+)
 
 // LoggerProdGrpc sends production-ready logs to Google Cloud environment.
 var LoggerProdGrpc = loggingpresets.GrpcGcloud{
@@ -40,14 +28,14 @@ var LoggerProdGrpc = loggingpresets.GrpcGcloud{
 // LoggerDevGrpc prints logs in the console, pretty formatted.
 var LoggerDevGrpc = loggingpresets.GrpcLocal{}
 
-// LoggerDevHttp prints HTTP-level logs in the console, pretty formatted.
-var LoggerDevHttp = &loggingpresets.LogLocal{
+// LoggerDev prints HTTP-level logs in the console, pretty formatted.
+var LoggerDev = &loggingpresets.LogLocal{
 	Out:      os.Stdout,
 	Renderer: lipgloss.NewRenderer(os.Stdout, termenv.WithTTY(true)),
 }
 
-// LoggerProdHttp sends HTTP-level production-ready logs to Google Cloud environment.
-var LoggerProdHttp = &loggingpresets.LogGcloud{
+// LoggerProd sends HTTP-level production-ready logs to Google Cloud environment.
+var LoggerProd = &loggingpresets.LogGcloud{
 	ProjectId: env.GcloudProjectId,
 }
 
@@ -78,14 +66,20 @@ var AppPresetDefault = App{
 		},
 	},
 
-	Otel: lo.If[otel.Config](!env.Otel, &NoOtel).
-		ElseIf(env.GcloudProjectId == "", &OtelDev).
-		Else(&OtelProd),
+	Otel: lo.If[otel.Config](!env.Otel, &otelpresets.Disabled{}).
+		ElseIf(env.GcloudProjectId == "", &otelpresets.Local{
+			FlushTimeout: OtelFlushTimeout,
+		}).
+		Else(&otelpresets.Gcloud{
+			ProjectID:    env.GcloudProjectId,
+			FlushTimeout: OtelFlushTimeout,
+		}),
+	Logger:     lo.Ternary[logging.Log](env.GcloudProjectId == "", LoggerDev, LoggerProd),
 	GrpcLogger: lo.Ternary[logging.RpcConfig](env.GcloudProjectId == "", &LoggerDevGrpc, &LoggerProdGrpc),
 	HttpLogger: lo.Ternary[logging.HttpConfig](
 		env.GcloudProjectId == "",
-		&loggingpresets.HttpLocal{BaseLogger: LoggerDevHttp},
-		&loggingpresets.HttpGcloud{BaseLogger: LoggerProdHttp},
+		&loggingpresets.HttpLocal{BaseLogger: LoggerDev},
+		&loggingpresets.HttpGcloud{BaseLogger: LoggerProd},
 	),
 	Postgres: PostgresPresetDefault,
 }

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/a-novel-kit/golib/httpf"
+	"github.com/a-novel-kit/golib/logging"
 	"github.com/a-novel-kit/golib/otel"
 
 	"github.com/a-novel/service-json-keys/v2/internal/services"
@@ -16,10 +17,11 @@ type JwkListPublicService interface {
 
 type JwkListPublic struct {
 	service JwkListPublicService
+	logger  logging.Log
 }
 
-func NewJwkListPublic(service JwkListPublicService) *JwkListPublic {
-	return &JwkListPublic{service: service}
+func NewJwkListPublic(service JwkListPublicService, logger logging.Log) *JwkListPublic {
+	return &JwkListPublic{service: service, logger: logger}
 }
 
 func (handler *JwkListPublic) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -30,9 +32,7 @@ func (handler *JwkListPublic) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 
 	jwks, err := handler.service.Exec(ctx, &services.JwkSearchRequest{Usage: usage})
 	if err != nil {
-		_ = otel.ReportError(span, err)
-
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		httpf.HandleError(ctx, handler.logger, w, span, httpf.ErrMap{}, err)
 
 		return
 	}

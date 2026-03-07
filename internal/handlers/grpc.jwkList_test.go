@@ -23,7 +23,7 @@ func TestJwkList(t *testing.T) {
 
 	errFoo := errors.New("foo")
 
-	type serviceJwkSearchMock struct {
+	type serviceMock struct {
 		resp []*services.Jwk
 		err  error
 	}
@@ -33,7 +33,7 @@ func TestJwkList(t *testing.T) {
 
 		request *protogen.JwkListRequest
 
-		serviceJwkSearchMock *serviceJwkSearchMock
+		serviceMock *serviceMock
 
 		expect       *protogen.JwkListResponse
 		expectStatus codes.Code
@@ -45,7 +45,7 @@ func TestJwkList(t *testing.T) {
 				Usage: "test-usage",
 			},
 
-			serviceJwkSearchMock: &serviceJwkSearchMock{
+			serviceMock: &serviceMock{
 				resp: []*services.Jwk{
 					{
 						JWKCommon: jwa.JWKCommon{
@@ -81,7 +81,7 @@ func TestJwkList(t *testing.T) {
 				Usage: "test-usage",
 			},
 
-			serviceJwkSearchMock: &serviceJwkSearchMock{
+			serviceMock: &serviceMock{
 				err: errFoo,
 			},
 
@@ -95,12 +95,12 @@ func TestJwkList(t *testing.T) {
 
 			service := handlersmocks.NewMockJwkListService(t)
 
-			if testCase.serviceJwkSearchMock != nil {
+			if testCase.serviceMock != nil {
 				service.EXPECT().
 					Exec(mock.Anything, &services.JwkSearchRequest{
 						Usage: testCase.request.GetUsage(),
 					}).
-					Return(testCase.serviceJwkSearchMock.resp, testCase.serviceJwkSearchMock.err)
+					Return(testCase.serviceMock.resp, testCase.serviceMock.err)
 			}
 
 			handler := handlers.NewJwkList(service)

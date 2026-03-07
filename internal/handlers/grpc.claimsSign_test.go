@@ -23,7 +23,7 @@ func TestClaimsSign(t *testing.T) {
 
 	errFoo := errors.New("foo")
 
-	type serviceClaimsSignMock struct {
+	type serviceMock struct {
 		req  any
 		resp string
 		err  error
@@ -34,7 +34,7 @@ func TestClaimsSign(t *testing.T) {
 
 		request *protogen.ClaimsSignRequest
 
-		serviceClaimsSignMock *serviceClaimsSignMock
+		serviceMock *serviceMock
 
 		expect       *protogen.ClaimsSignResponse
 		expectStatus codes.Code
@@ -47,7 +47,7 @@ func TestClaimsSign(t *testing.T) {
 				Usage:   "test-usage",
 			},
 
-			serviceClaimsSignMock: &serviceClaimsSignMock{
+			serviceMock: &serviceMock{
 				req:  map[string]any{"message": "hello world"},
 				resp: "access-token",
 			},
@@ -65,7 +65,7 @@ func TestClaimsSign(t *testing.T) {
 				Usage:   "test-usage",
 			},
 
-			serviceClaimsSignMock: &serviceClaimsSignMock{
+			serviceMock: &serviceMock{
 				req: map[string]any{"message": "hello world"},
 				err: services.ErrConfigNotFound,
 			},
@@ -80,7 +80,7 @@ func TestClaimsSign(t *testing.T) {
 				Usage:   "test-usage",
 			},
 
-			serviceClaimsSignMock: &serviceClaimsSignMock{
+			serviceMock: &serviceMock{
 				req: map[string]any{"message": "hello world"},
 				err: errFoo,
 			},
@@ -95,13 +95,13 @@ func TestClaimsSign(t *testing.T) {
 
 			service := handlersmocks.NewMockClaimsSignService(t)
 
-			if testCase.serviceClaimsSignMock != nil {
+			if testCase.serviceMock != nil {
 				service.EXPECT().
 					Exec(mock.Anything, &services.ClaimsSignRequest{
-						Claims: testCase.serviceClaimsSignMock.req,
+						Claims: testCase.serviceMock.req,
 						Usage:  testCase.request.GetUsage(),
 					}).
-					Return(testCase.serviceClaimsSignMock.resp, testCase.serviceClaimsSignMock.err)
+					Return(testCase.serviceMock.resp, testCase.serviceMock.err)
 			}
 
 			handler := handlers.NewClaimsSign(service)

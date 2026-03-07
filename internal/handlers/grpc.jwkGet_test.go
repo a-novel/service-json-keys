@@ -25,7 +25,7 @@ func TestJwkGet(t *testing.T) {
 
 	errFoo := errors.New("foo")
 
-	type serviceJwkGetMock struct {
+	type serviceMock struct {
 		resp *services.Jwk
 		err  error
 	}
@@ -35,7 +35,7 @@ func TestJwkGet(t *testing.T) {
 
 		request *protogen.JwkGetRequest
 
-		serviceJwkGetMock *serviceJwkGetMock
+		serviceMock *serviceMock
 
 		expect       *protogen.JwkGetResponse
 		expectStatus codes.Code
@@ -47,7 +47,7 @@ func TestJwkGet(t *testing.T) {
 				Id: "00000000-0000-0000-0000-000000000001",
 			},
 
-			serviceJwkGetMock: &serviceJwkGetMock{
+			serviceMock: &serviceMock{
 				resp: &services.Jwk{
 					JWKCommon: jwa.JWKCommon{
 						KTY:    "test-kty",
@@ -79,7 +79,7 @@ func TestJwkGet(t *testing.T) {
 				Id: "00000000-0000-0000-0000-000000000001",
 			},
 
-			serviceJwkGetMock: &serviceJwkGetMock{
+			serviceMock: &serviceMock{
 				err: dao.ErrJwkSelectNotFound,
 			},
 
@@ -92,7 +92,7 @@ func TestJwkGet(t *testing.T) {
 				Id: "00000000-0000-0000-0000-000000000001",
 			},
 
-			serviceJwkGetMock: &serviceJwkGetMock{
+			serviceMock: &serviceMock{
 				err: errFoo,
 			},
 
@@ -106,12 +106,12 @@ func TestJwkGet(t *testing.T) {
 
 			service := handlersmocks.NewMockJwkGetService(t)
 
-			if testCase.serviceJwkGetMock != nil {
+			if testCase.serviceMock != nil {
 				service.EXPECT().
 					Exec(mock.Anything, &services.JwkSelectRequest{
 						ID: uuid.MustParse(testCase.request.GetId()),
 					}).
-					Return(testCase.serviceJwkGetMock.resp, testCase.serviceJwkGetMock.err)
+					Return(testCase.serviceMock.resp, testCase.serviceMock.err)
 			}
 
 			handler := handlers.NewJwkGet(service)

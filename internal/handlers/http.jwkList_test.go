@@ -13,6 +13,7 @@ import (
 
 	"github.com/a-novel-kit/jwt/jwa"
 
+	"github.com/a-novel/service-json-keys/v2/internal/config"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
 	handlersmocks "github.com/a-novel/service-json-keys/v2/internal/handlers/mocks"
 	"github.com/a-novel/service-json-keys/v2/internal/services"
@@ -23,7 +24,7 @@ func TestJwkListPublic(t *testing.T) {
 
 	errFoo := errors.New("foo")
 
-	type serviceJwkListMock struct {
+	type serviceMock struct {
 		resp []*services.Jwk
 		err  error
 	}
@@ -33,7 +34,7 @@ func TestJwkListPublic(t *testing.T) {
 
 		request *http.Request
 
-		serviceJwkListMock *serviceJwkListMock
+		serviceMock *serviceMock
 
 		expectStatus   int
 		expectResponse any
@@ -43,7 +44,7 @@ func TestJwkListPublic(t *testing.T) {
 
 			request: httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/jwks?usage=test-usage", nil),
 
-			serviceJwkListMock: &serviceJwkListMock{
+			serviceMock: &serviceMock{
 				resp: []*services.Jwk{
 					{
 						JWKCommon: jwa.JWKCommon{
@@ -75,7 +76,7 @@ func TestJwkListPublic(t *testing.T) {
 
 			request: httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/jwks?usage=test-usage", nil),
 
-			serviceJwkListMock: &serviceJwkListMock{
+			serviceMock: &serviceMock{
 				resp: []*services.Jwk{},
 			},
 
@@ -86,7 +87,7 @@ func TestJwkListPublic(t *testing.T) {
 
 			request: httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/jwks?usage=test-usage", nil),
 
-			serviceJwkListMock: &serviceJwkListMock{
+			serviceMock: &serviceMock{
 				err: errFoo,
 			},
 
@@ -100,15 +101,15 @@ func TestJwkListPublic(t *testing.T) {
 
 			service := handlersmocks.NewMockJwkListPublicService(t)
 
-			if testCase.serviceJwkListMock != nil {
+			if testCase.serviceMock != nil {
 				service.EXPECT().
 					Exec(mock.Anything, &services.JwkSearchRequest{
 						Usage: testCase.request.URL.Query().Get("usage"),
 					}).
-					Return(testCase.serviceJwkListMock.resp, testCase.serviceJwkListMock.err)
+					Return(testCase.serviceMock.resp, testCase.serviceMock.err)
 			}
 
-			handler := handlers.NewJwkListPublic(service)
+			handler := handlers.NewJwkListPublic(service, config.LoggerDev)
 			w := httptest.NewRecorder()
 
 			handler.ServeHTTP(w, testCase.request)
