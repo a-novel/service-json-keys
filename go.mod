@@ -9,7 +9,7 @@ tool (
 
 require (
 	github.com/a-novel-kit/golib v0.20.14
-	github.com/a-novel-kit/jwt v1.1.40
+	github.com/a-novel-kit/jwt v1.1.41
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/go-chi/cors v1.2.2
