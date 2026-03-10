@@ -4,8 +4,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/charmbracelet/lipgloss"
-	"github.com/muesli/termenv"
 	"github.com/samber/lo"
 
 	"github.com/a-novel-kit/golib/logging"
@@ -30,8 +28,7 @@ var LoggerDevGrpc = loggingpresets.GrpcLocal{}
 
 // LoggerDev prints HTTP-level logs in the console, pretty formatted.
 var LoggerDev = &loggingpresets.LogLocal{
-	Out:      os.Stdout,
-	Renderer: lipgloss.NewRenderer(os.Stdout, termenv.WithTTY(true)),
+	Out: os.Stdout,
 }
 
 // LoggerProd sends HTTP-level production-ready logs to Google Cloud environment.
