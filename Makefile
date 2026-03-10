@@ -16,7 +16,7 @@ test: test-unit test-pkg test-pkg-js
 # Lint.
 # ================================================================================
 lint-go:
-	go tool golangci-lint run
+	go tool -modfile=golangci-lint.mod golangci-lint run ./...
 
 lint-proto:
 	go tool buf lint
@@ -31,7 +31,7 @@ lint: lint-go lint-proto lint-node
 # ================================================================================
 format-go:
 	go mod tidy
-	go tool golangci-lint run --fix
+	go tool -modfile=golangci-lint.mod golangci-lint run ./... --fix
 
 format-proto:
 	go tool buf format -w
