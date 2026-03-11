@@ -10,8 +10,8 @@
   "type": "module",
   "workspaces": [
     ".",
-    "pkg/rest-js",
-    "pkg/test/rest-js"
+    "pkg/js/rest",
+    "pkg/js/test/rest"
   ],
   "scripts": {
     "build": "pnpm build:rest && pnpm types:rest && pnpm types:rest-test",
