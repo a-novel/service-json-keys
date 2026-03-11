@@ -28,7 +28,7 @@ Run the service as a containerized application (the below examples use docker-co
 ```yaml
 services:
   postgres-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/database:v2.2.1
+    image: ghcr.io/a-novel/service-json-keys/database:v2.2.2
     networks:
       - api
     environment:
@@ -41,7 +41,7 @@ services:
       - json-keys-postgres-data:/var/lib/postgresql/
 
   service-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/standalone-grpc:v2.2.1
+    image: ghcr.io/a-novel/service-json-keys/standalone-grpc:v2.2.2
     ports:
       - "${SERVICE_JSON_KEYS_GRPC_PORT}:8080"
     depends_on:
@@ -67,7 +67,7 @@ production deployments. Instead, consider using the separate, optimized images f
 ```yaml
 services:
   postgres-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/database:v2.2.1
+    image: ghcr.io/a-novel/service-json-keys/database:v2.2.2
     networks:
       - api
     environment:
@@ -80,7 +80,7 @@ services:
       - json-keys-postgres-data:/var/lib/postgresql/
 
   migrations-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/migrations:v2.2.1
+    image: ghcr.io/a-novel/service-json-keys/migrations:v2.2.2
     depends_on:
       postgres-json-keys:
         condition: service_healthy
@@ -90,7 +90,7 @@ services:
       - api
 
   service-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/grpc:v2.2.1
+    image: ghcr.io/a-novel/service-json-keys/grpc:v2.2.2
     ports:
       - "${SERVICE_JSON_KEYS_GRPC_PORT}:8080"
     depends_on:
@@ -118,7 +118,7 @@ volumes:
 ```yaml
 services:
   postgres-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/database:v2.2.1
+    image: ghcr.io/a-novel/service-json-keys/database:v2.2.2
     networks:
       - api
     environment:
@@ -131,7 +131,7 @@ services:
       - json-keys-postgres-data:/var/lib/postgresql/
 
   service-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/standalone-rest:v2.2.1
+    image: ghcr.io/a-novel/service-json-keys/standalone-rest:v2.2.2
     ports:
       - "${SERVICE_JSON_KEYS_REST_PORT}:8080"
     depends_on:
@@ -157,7 +157,7 @@ production deployments. Instead, consider using the separate, optimized images f
 ```yaml
 services:
   postgres-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/database:v2.2.1
+    image: ghcr.io/a-novel/service-json-keys/database:v2.2.2
     networks:
       - api
     environment:
@@ -170,7 +170,7 @@ services:
       - json-keys-postgres-data:/var/lib/postgresql/
 
   migrations-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/migrations:v2.2.1
+    image: ghcr.io/a-novel/service-json-keys/migrations:v2.2.2
     depends_on:
       postgres-json-keys:
         condition: service_healthy
@@ -180,7 +180,7 @@ services:
       - api
 
   service-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/rest:v2.2.1
+    image: ghcr.io/a-novel/service-json-keys/rest:v2.2.2
     ports:
       - "${SERVICE_JSON_KEYS_REST_PORT}:8080"
     depends_on:
