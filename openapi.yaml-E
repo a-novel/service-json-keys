@@ -1,0 +1,236 @@
+# Created with https://editor.swagger.io/
+openapi: 3.1.0
+
+servers:
+  - url: http://127.0.0.1:{rest_port}
+    variables:
+      rest_port:
+        default: "8080"
+
+info:
+  title: JSON Keys API
+  summary: Public JSON Web Key management.
+  description: |
+    This service manages JSON Web Keys (JWK) used to sign and verify JSON Web Tokens (JWT).
+
+    ## Public keys
+
+    This REST API exposes only the **public** portion of the stored keys. Public keys can be used to
+    verify signatures but cannot sign new tokens. This is safe to expose to external consumers.
+
+    To sign tokens, use the internal gRPC API.
+  version: v2.2.1
+  license:
+    name: AGPL-3.0
+    url: "https://raw.githubusercontent.com/a-novel/service-json-keys/refs/heads/master/LICENSE"
+
+paths:
+  /ping:
+    get:
+      operationId: ping
+      summary: Ping the server.
+      description: |
+        A simple endpoint to check if the server is up and running. It always returns the same response.
+
+        Note this **DOES NOT** give information about the server dependencies. To get more information about the
+        server actual health, please use the `/healthcheck` endpoint.
+      tags: [health]
+      security: []
+      responses:
+        "200":
+          $ref: "#/components/responses/pong"
+        "418":
+          $ref: "#/components/responses/teapot"
+        default:
+          $ref: "#/components/responses/internalError"
+
+  /healthcheck:
+    get:
+      operationId: healthcheck
+      summary: Health diagnosis of the server.
+      description: |
+        Performs a complete health diagnosis of the server dependencies, by trying to reach them each.
+      tags: [health]
+      security: []
+      responses:
+        "200":
+          $ref: "#/components/responses/health"
+        "418":
+          $ref: "#/components/responses/teapot"
+        default:
+          $ref: "#/components/responses/internalError"
+
+  /jwks:
+    get:
+      operationId: jwkList
+      summary: List public JSON Web Keys.
+      description: |
+        Returns the list of public JSON Web Keys (JWK) for a given usage. This can be used by other
+        services to verify signatures on tokens issued by this service.
+      tags: [jwk]
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/usage"
+      responses:
+        "200":
+          $ref: "#/components/responses/jwkList"
+        default:
+          $ref: "#/components/responses/internalError"
+
+  /jwk:
+    get:
+      operationId: jwkGet
+      summary: Get a public JSON Web Key by ID.
+      description: |
+        Returns a single public JSON Web Key (JWK) by its unique identifier.
+      tags: [jwk]
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/jwkID"
+      responses:
+        "200":
+          $ref: "#/components/responses/jwkGet"
+        "400":
+          $ref: "#/components/responses/badRequest"
+        "404":
+          $ref: "#/components/responses/notFound"
+        default:
+          $ref: "#/components/responses/internalError"
+
+components:
+  responses:
+    pong:
+      description: "101100001100101011001010"
+      content:
+        text/plain:
+          schema:
+            type: string
+            examples: [pong]
+
+    health:
+      description: Summary of the server dependencies.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: ["client:postgres"]
+            properties:
+              "client:postgres":
+                $ref: "#/components/schemas/healthStatus"
+            examples:
+              - { "client:postgres": { "status": "up" } }
+              - { "client:postgres": { "status": "down", "err": "Connection to host refused" } }
+
+    jwkList:
+      description: A list of public JSON Web Keys.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/jwk"
+
+    jwkGet:
+      description: A single public JSON Web Key.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/jwk"
+
+    notFound:
+      description: |
+        The requested data was not found on the server.
+
+    badRequest:
+      description: |
+        The request sent to the server could not be parsed.
+
+    internalError:
+      description: Something unexpected happened.
+
+    teapot:
+      description: I'm a teapot!
+
+  schemas:
+    healthStatus:
+      type: object
+      description: Summary of a server's dependencies status.
+      required: [status]
+      examples:
+        - { "status": "up" }
+        - { "status": "down", "err": "Connection to host refused" }
+      properties:
+        status:
+          type: string
+          description: Exposes whether the server managed to connect to the dependency.
+          enum: [up, down]
+        err:
+          type: string
+          description: The error message returned by the dependency, if any.
+
+    jwk:
+      type: object
+      description: |
+        A public JSON Web Key (JWK). The key is composed of standard JWK fields plus algorithm-specific
+        public key material.
+      required: [kty, use, key_ops, alg, kid]
+      examples:
+        - {
+            "kty": "OKP",
+            "use": "sig",
+            "key_ops": ["sign", "verify"],
+            "alg": "EdDSA",
+            "kid": "44de7cd7-aff1-e6c4-4204-74e8341d792c",
+            "x": "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo",
+          }
+      properties:
+        kty:
+          type: string
+          description: The cryptographic algorithm family used with the key.
+          examples: [OKP, EC, RSA]
+        use:
+          type: string
+          description: The intended use of the public key.
+          examples: [sig, enc]
+        key_ops:
+          type: array
+          description: The operations for which the key is intended to be used.
+          items:
+            type: string
+            enum: [sign, verify, encrypt, decrypt, wrapKey, unwrapKey, deriveKey, deriveBits]
+        alg:
+          type: string
+          description: The algorithm intended for use with the key.
+          examples: [EdDSA, ES256, RS256]
+        kid:
+          type: string
+          description: The unique identifier of the key.
+          format: uuid
+          examples:
+            - "44de7cd7-aff1-e6c4-4204-74e8341d792c"
+      additionalProperties: true
+
+    jwkID:
+      type: string
+      description: The unique identifier of a JSON Web Key.
+      format: uuid
+      examples:
+        - "44de7cd7-aff1-e6c4-4204-74e8341d792c"
+
+  parameters:
+    jwkID:
+      name: id
+      in: query
+      description: The unique identifier of the JSON Web Key to retrieve.
+      required: true
+      schema:
+        $ref: "#/components/schemas/jwkID"
+
+    usage:
+      name: usage
+      in: query
+      description: Filter keys by their intended usage.
+      required: false
+      schema:
+        type: string
+        examples: [sig, enc]
