@@ -1,4 +1,4 @@
-package pkg_test
+package servicejsonkeys_test
 
 import (
 	"testing"
@@ -10,13 +10,13 @@ import (
 	golibproto "github.com/a-novel-kit/golib/grpcf/proto/gen"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config/env"
-	"github.com/a-novel/service-json-keys/v2/pkg"
+	"github.com/a-novel/service-json-keys/v2/pkg/go"
 )
 
 func TestClient(t *testing.T) {
 	t.Parallel()
 
-	client, err := pkg.NewClient(env.GrpcUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	client, err := servicejsonkeys.NewClient(env.GrpcUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	require.NoError(t, err)
 
 	defer client.Close()
@@ -24,14 +24,14 @@ func TestClient(t *testing.T) {
 	_, err = client.UnaryEcho(t.Context(), &golibproto.UnaryEchoRequest{})
 	require.NoError(t, err)
 
-	keys, err := client.JwkList(t.Context(), &pkg.JwkListRequest{
-		Usage: pkg.KeyUsageAuth,
+	keys, err := client.JwkList(t.Context(), &servicejsonkeys.JwkListRequest{
+		Usage: servicejsonkeys.KeyUsageAuth,
 	})
 	require.NoError(t, err)
 
 	require.GreaterOrEqual(t, len(keys.GetKeys()), 1)
 
-	key, err := client.JwkGet(t.Context(), &pkg.JwkGetRequest{
+	key, err := client.JwkGet(t.Context(), &servicejsonkeys.JwkGetRequest{
 		Id: keys.GetKeys()[0].GetKid(),
 	})
 
