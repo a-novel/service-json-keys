@@ -170,7 +170,7 @@ The published API reference is hosted at [GitHub Pages](https://a-novel.github.i
 
 ### JavaScript Client Package
 
-Frontend or Node.js consumers can use `@a-novel/service-json-keys-rest` (`pkg/rest-js/`) to call the REST API:
+Frontend or Node.js consumers can use `@a-novel/service-json-keys-rest` (`pkg/js/rest/`) to call the REST API:
 
 ```typescript
 import { JsonKeysApi, jwkGet, jwkList } from "@a-novel/service-json-keys-rest";
@@ -185,7 +185,7 @@ const keys = await jwkList(api, "auth");
 const key = await jwkGet(api, "<key-id>");
 ```
 
-Integration tests for the JS client live in `pkg/test/rest-js/`. Run them locally with:
+Integration tests for the JS client live in `pkg/js/test/rest/`. Run them locally with:
 
 ```bash
 make test-pkg-js
@@ -196,7 +196,7 @@ make test-pkg-js
 Other services integrate with json-keys via the `pkg/` package:
 
 ```go
-import jkpkg "github.com/a-novel/service-json-keys/v2/pkg"
+import jkpkg "github.com/a-novel/service-json-keys/v2/pkg/go"
 
 // Create client
 client, err := jkpkg.NewClient("<grpc-address>")

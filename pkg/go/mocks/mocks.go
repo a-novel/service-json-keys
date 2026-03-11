@@ -8,7 +8,7 @@ import (
 	"context"
 
 	"github.com/a-novel-kit/golib/grpcf/proto/gen"
-	"github.com/a-novel/service-json-keys/v2/pkg"
+	"github.com/a-novel/service-json-keys/v2/pkg/go"
 	mock "github.com/stretchr/testify/mock"
 	"google.golang.org/grpc"
 )
@@ -41,7 +41,7 @@ func (_m *MockClaimsVerifier[C]) EXPECT() *MockClaimsVerifier_Expecter[C] {
 }
 
 // VerifyClaims provides a mock function for the type MockClaimsVerifier
-func (_mock *MockClaimsVerifier[C]) VerifyClaims(ctx context.Context, req *pkg.VerifyClaimsRequest) (*C, error) {
+func (_mock *MockClaimsVerifier[C]) VerifyClaims(ctx context.Context, req *servicejsonkeys.VerifyClaimsRequest) (*C, error) {
 	ret := _mock.Called(ctx, req)
 
 	if len(ret) == 0 {
@@ -50,17 +50,17 @@ func (_mock *MockClaimsVerifier[C]) VerifyClaims(ctx context.Context, req *pkg.V
 
 	var r0 *C
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *pkg.VerifyClaimsRequest) (*C, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *servicejsonkeys.VerifyClaimsRequest) (*C, error)); ok {
 		return returnFunc(ctx, req)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *pkg.VerifyClaimsRequest) *C); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *servicejsonkeys.VerifyClaimsRequest) *C); ok {
 		r0 = returnFunc(ctx, req)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*C)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *pkg.VerifyClaimsRequest) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *servicejsonkeys.VerifyClaimsRequest) error); ok {
 		r1 = returnFunc(ctx, req)
 	} else {
 		r1 = ret.Error(1)
@@ -75,20 +75,20 @@ type MockClaimsVerifier_VerifyClaims_Call[C any] struct {
 
 // VerifyClaims is a helper method to define mock.On call
 //   - ctx context.Context
-//   - req *pkg.VerifyClaimsRequest
+//   - req *servicejsonkeys.VerifyClaimsRequest
 func (_e *MockClaimsVerifier_Expecter[C]) VerifyClaims(ctx interface{}, req interface{}) *MockClaimsVerifier_VerifyClaims_Call[C] {
 	return &MockClaimsVerifier_VerifyClaims_Call[C]{Call: _e.mock.On("VerifyClaims", ctx, req)}
 }
 
-func (_c *MockClaimsVerifier_VerifyClaims_Call[C]) Run(run func(ctx context.Context, req *pkg.VerifyClaimsRequest)) *MockClaimsVerifier_VerifyClaims_Call[C] {
+func (_c *MockClaimsVerifier_VerifyClaims_Call[C]) Run(run func(ctx context.Context, req *servicejsonkeys.VerifyClaimsRequest)) *MockClaimsVerifier_VerifyClaims_Call[C] {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 *pkg.VerifyClaimsRequest
+		var arg1 *servicejsonkeys.VerifyClaimsRequest
 		if args[1] != nil {
-			arg1 = args[1].(*pkg.VerifyClaimsRequest)
+			arg1 = args[1].(*servicejsonkeys.VerifyClaimsRequest)
 		}
 		run(
 			arg0,
@@ -103,7 +103,7 @@ func (_c *MockClaimsVerifier_VerifyClaims_Call[C]) Return(v *C, err error) *Mock
 	return _c
 }
 
-func (_c *MockClaimsVerifier_VerifyClaims_Call[C]) RunAndReturn(run func(ctx context.Context, req *pkg.VerifyClaimsRequest) (*C, error)) *MockClaimsVerifier_VerifyClaims_Call[C] {
+func (_c *MockClaimsVerifier_VerifyClaims_Call[C]) RunAndReturn(run func(ctx context.Context, req *servicejsonkeys.VerifyClaimsRequest) (*C, error)) *MockClaimsVerifier_VerifyClaims_Call[C] {
 	_c.Call.Return(run)
 	return _c
 }
@@ -136,7 +136,7 @@ func (_m *MockBaseClient) EXPECT() *MockBaseClient_Expecter {
 }
 
 // ClaimsSign provides a mock function for the type MockBaseClient
-func (_mock *MockBaseClient) ClaimsSign(ctx context.Context, req *pkg.ClaimsSignRequest, opts ...grpc.CallOption) (*pkg.ClaimsSignResponse, error) {
+func (_mock *MockBaseClient) ClaimsSign(ctx context.Context, req *servicejsonkeys.ClaimsSignRequest, opts ...grpc.CallOption) (*servicejsonkeys.ClaimsSignResponse, error) {
 	var tmpRet mock.Arguments
 	if len(opts) > 0 {
 		tmpRet = _mock.Called(ctx, req, opts)
@@ -149,19 +149,19 @@ func (_mock *MockBaseClient) ClaimsSign(ctx context.Context, req *pkg.ClaimsSign
 		panic("no return value specified for ClaimsSign")
 	}
 
-	var r0 *pkg.ClaimsSignResponse
+	var r0 *servicejsonkeys.ClaimsSignResponse
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *pkg.ClaimsSignRequest, ...grpc.CallOption) (*pkg.ClaimsSignResponse, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *servicejsonkeys.ClaimsSignRequest, ...grpc.CallOption) (*servicejsonkeys.ClaimsSignResponse, error)); ok {
 		return returnFunc(ctx, req, opts...)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *pkg.ClaimsSignRequest, ...grpc.CallOption) *pkg.ClaimsSignResponse); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *servicejsonkeys.ClaimsSignRequest, ...grpc.CallOption) *servicejsonkeys.ClaimsSignResponse); ok {
 		r0 = returnFunc(ctx, req, opts...)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*pkg.ClaimsSignResponse)
+			r0 = ret.Get(0).(*servicejsonkeys.ClaimsSignResponse)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *pkg.ClaimsSignRequest, ...grpc.CallOption) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *servicejsonkeys.ClaimsSignRequest, ...grpc.CallOption) error); ok {
 		r1 = returnFunc(ctx, req, opts...)
 	} else {
 		r1 = ret.Error(1)
@@ -176,22 +176,22 @@ type MockBaseClient_ClaimsSign_Call struct {
 
 // ClaimsSign is a helper method to define mock.On call
 //   - ctx context.Context
-//   - req *pkg.ClaimsSignRequest
+//   - req *servicejsonkeys.ClaimsSignRequest
 //   - opts ...grpc.CallOption
 func (_e *MockBaseClient_Expecter) ClaimsSign(ctx interface{}, req interface{}, opts ...interface{}) *MockBaseClient_ClaimsSign_Call {
 	return &MockBaseClient_ClaimsSign_Call{Call: _e.mock.On("ClaimsSign",
 		append([]interface{}{ctx, req}, opts...)...)}
 }
 
-func (_c *MockBaseClient_ClaimsSign_Call) Run(run func(ctx context.Context, req *pkg.ClaimsSignRequest, opts ...grpc.CallOption)) *MockBaseClient_ClaimsSign_Call {
+func (_c *MockBaseClient_ClaimsSign_Call) Run(run func(ctx context.Context, req *servicejsonkeys.ClaimsSignRequest, opts ...grpc.CallOption)) *MockBaseClient_ClaimsSign_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 *pkg.ClaimsSignRequest
+		var arg1 *servicejsonkeys.ClaimsSignRequest
 		if args[1] != nil {
-			arg1 = args[1].(*pkg.ClaimsSignRequest)
+			arg1 = args[1].(*servicejsonkeys.ClaimsSignRequest)
 		}
 		var arg2 []grpc.CallOption
 		var variadicArgs []grpc.CallOption
@@ -208,12 +208,12 @@ func (_c *MockBaseClient_ClaimsSign_Call) Run(run func(ctx context.Context, req 
 	return _c
 }
 
-func (_c *MockBaseClient_ClaimsSign_Call) Return(v *pkg.ClaimsSignResponse, err error) *MockBaseClient_ClaimsSign_Call {
+func (_c *MockBaseClient_ClaimsSign_Call) Return(v *servicejsonkeys.ClaimsSignResponse, err error) *MockBaseClient_ClaimsSign_Call {
 	_c.Call.Return(v, err)
 	return _c
 }
 
-func (_c *MockBaseClient_ClaimsSign_Call) RunAndReturn(run func(ctx context.Context, req *pkg.ClaimsSignRequest, opts ...grpc.CallOption) (*pkg.ClaimsSignResponse, error)) *MockBaseClient_ClaimsSign_Call {
+func (_c *MockBaseClient_ClaimsSign_Call) RunAndReturn(run func(ctx context.Context, req *servicejsonkeys.ClaimsSignRequest, opts ...grpc.CallOption) (*servicejsonkeys.ClaimsSignResponse, error)) *MockBaseClient_ClaimsSign_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -252,7 +252,7 @@ func (_c *MockBaseClient_Close_Call) RunAndReturn(run func()) *MockBaseClient_Cl
 }
 
 // JwkGet provides a mock function for the type MockBaseClient
-func (_mock *MockBaseClient) JwkGet(ctx context.Context, req *pkg.JwkGetRequest, opts ...grpc.CallOption) (*pkg.JwkGetResponse, error) {
+func (_mock *MockBaseClient) JwkGet(ctx context.Context, req *servicejsonkeys.JwkGetRequest, opts ...grpc.CallOption) (*servicejsonkeys.JwkGetResponse, error) {
 	var tmpRet mock.Arguments
 	if len(opts) > 0 {
 		tmpRet = _mock.Called(ctx, req, opts)
@@ -265,19 +265,19 @@ func (_mock *MockBaseClient) JwkGet(ctx context.Context, req *pkg.JwkGetRequest,
 		panic("no return value specified for JwkGet")
 	}
 
-	var r0 *pkg.JwkGetResponse
+	var r0 *servicejsonkeys.JwkGetResponse
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *pkg.JwkGetRequest, ...grpc.CallOption) (*pkg.JwkGetResponse, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *servicejsonkeys.JwkGetRequest, ...grpc.CallOption) (*servicejsonkeys.JwkGetResponse, error)); ok {
 		return returnFunc(ctx, req, opts...)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *pkg.JwkGetRequest, ...grpc.CallOption) *pkg.JwkGetResponse); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *servicejsonkeys.JwkGetRequest, ...grpc.CallOption) *servicejsonkeys.JwkGetResponse); ok {
 		r0 = returnFunc(ctx, req, opts...)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*pkg.JwkGetResponse)
+			r0 = ret.Get(0).(*servicejsonkeys.JwkGetResponse)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *pkg.JwkGetRequest, ...grpc.CallOption) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *servicejsonkeys.JwkGetRequest, ...grpc.CallOption) error); ok {
 		r1 = returnFunc(ctx, req, opts...)
 	} else {
 		r1 = ret.Error(1)
@@ -292,22 +292,22 @@ type MockBaseClient_JwkGet_Call struct {
 
 // JwkGet is a helper method to define mock.On call
 //   - ctx context.Context
-//   - req *pkg.JwkGetRequest
+//   - req *servicejsonkeys.JwkGetRequest
 //   - opts ...grpc.CallOption
 func (_e *MockBaseClient_Expecter) JwkGet(ctx interface{}, req interface{}, opts ...interface{}) *MockBaseClient_JwkGet_Call {
 	return &MockBaseClient_JwkGet_Call{Call: _e.mock.On("JwkGet",
 		append([]interface{}{ctx, req}, opts...)...)}
 }
 
-func (_c *MockBaseClient_JwkGet_Call) Run(run func(ctx context.Context, req *pkg.JwkGetRequest, opts ...grpc.CallOption)) *MockBaseClient_JwkGet_Call {
+func (_c *MockBaseClient_JwkGet_Call) Run(run func(ctx context.Context, req *servicejsonkeys.JwkGetRequest, opts ...grpc.CallOption)) *MockBaseClient_JwkGet_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 *pkg.JwkGetRequest
+		var arg1 *servicejsonkeys.JwkGetRequest
 		if args[1] != nil {
-			arg1 = args[1].(*pkg.JwkGetRequest)
+			arg1 = args[1].(*servicejsonkeys.JwkGetRequest)
 		}
 		var arg2 []grpc.CallOption
 		var variadicArgs []grpc.CallOption
@@ -324,18 +324,18 @@ func (_c *MockBaseClient_JwkGet_Call) Run(run func(ctx context.Context, req *pkg
 	return _c
 }
 
-func (_c *MockBaseClient_JwkGet_Call) Return(v *pkg.JwkGetResponse, err error) *MockBaseClient_JwkGet_Call {
+func (_c *MockBaseClient_JwkGet_Call) Return(v *servicejsonkeys.JwkGetResponse, err error) *MockBaseClient_JwkGet_Call {
 	_c.Call.Return(v, err)
 	return _c
 }
 
-func (_c *MockBaseClient_JwkGet_Call) RunAndReturn(run func(ctx context.Context, req *pkg.JwkGetRequest, opts ...grpc.CallOption) (*pkg.JwkGetResponse, error)) *MockBaseClient_JwkGet_Call {
+func (_c *MockBaseClient_JwkGet_Call) RunAndReturn(run func(ctx context.Context, req *servicejsonkeys.JwkGetRequest, opts ...grpc.CallOption) (*servicejsonkeys.JwkGetResponse, error)) *MockBaseClient_JwkGet_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // JwkList provides a mock function for the type MockBaseClient
-func (_mock *MockBaseClient) JwkList(ctx context.Context, req *pkg.JwkListRequest, opts ...grpc.CallOption) (*pkg.JwkListResponse, error) {
+func (_mock *MockBaseClient) JwkList(ctx context.Context, req *servicejsonkeys.JwkListRequest, opts ...grpc.CallOption) (*servicejsonkeys.JwkListResponse, error) {
 	var tmpRet mock.Arguments
 	if len(opts) > 0 {
 		tmpRet = _mock.Called(ctx, req, opts)
@@ -348,19 +348,19 @@ func (_mock *MockBaseClient) JwkList(ctx context.Context, req *pkg.JwkListReques
 		panic("no return value specified for JwkList")
 	}
 
-	var r0 *pkg.JwkListResponse
+	var r0 *servicejsonkeys.JwkListResponse
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *pkg.JwkListRequest, ...grpc.CallOption) (*pkg.JwkListResponse, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *servicejsonkeys.JwkListRequest, ...grpc.CallOption) (*servicejsonkeys.JwkListResponse, error)); ok {
 		return returnFunc(ctx, req, opts...)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *pkg.JwkListRequest, ...grpc.CallOption) *pkg.JwkListResponse); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *servicejsonkeys.JwkListRequest, ...grpc.CallOption) *servicejsonkeys.JwkListResponse); ok {
 		r0 = returnFunc(ctx, req, opts...)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*pkg.JwkListResponse)
+			r0 = ret.Get(0).(*servicejsonkeys.JwkListResponse)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *pkg.JwkListRequest, ...grpc.CallOption) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *servicejsonkeys.JwkListRequest, ...grpc.CallOption) error); ok {
 		r1 = returnFunc(ctx, req, opts...)
 	} else {
 		r1 = ret.Error(1)
@@ -375,22 +375,22 @@ type MockBaseClient_JwkList_Call struct {
 
 // JwkList is a helper method to define mock.On call
 //   - ctx context.Context
-//   - req *pkg.JwkListRequest
+//   - req *servicejsonkeys.JwkListRequest
 //   - opts ...grpc.CallOption
 func (_e *MockBaseClient_Expecter) JwkList(ctx interface{}, req interface{}, opts ...interface{}) *MockBaseClient_JwkList_Call {
 	return &MockBaseClient_JwkList_Call{Call: _e.mock.On("JwkList",
 		append([]interface{}{ctx, req}, opts...)...)}
 }
 
-func (_c *MockBaseClient_JwkList_Call) Run(run func(ctx context.Context, req *pkg.JwkListRequest, opts ...grpc.CallOption)) *MockBaseClient_JwkList_Call {
+func (_c *MockBaseClient_JwkList_Call) Run(run func(ctx context.Context, req *servicejsonkeys.JwkListRequest, opts ...grpc.CallOption)) *MockBaseClient_JwkList_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 *pkg.JwkListRequest
+		var arg1 *servicejsonkeys.JwkListRequest
 		if args[1] != nil {
-			arg1 = args[1].(*pkg.JwkListRequest)
+			arg1 = args[1].(*servicejsonkeys.JwkListRequest)
 		}
 		var arg2 []grpc.CallOption
 		var variadicArgs []grpc.CallOption
@@ -407,18 +407,18 @@ func (_c *MockBaseClient_JwkList_Call) Run(run func(ctx context.Context, req *pk
 	return _c
 }
 
-func (_c *MockBaseClient_JwkList_Call) Return(v *pkg.JwkListResponse, err error) *MockBaseClient_JwkList_Call {
+func (_c *MockBaseClient_JwkList_Call) Return(v *servicejsonkeys.JwkListResponse, err error) *MockBaseClient_JwkList_Call {
 	_c.Call.Return(v, err)
 	return _c
 }
 
-func (_c *MockBaseClient_JwkList_Call) RunAndReturn(run func(ctx context.Context, req *pkg.JwkListRequest, opts ...grpc.CallOption) (*pkg.JwkListResponse, error)) *MockBaseClient_JwkList_Call {
+func (_c *MockBaseClient_JwkList_Call) RunAndReturn(run func(ctx context.Context, req *servicejsonkeys.JwkListRequest, opts ...grpc.CallOption) (*servicejsonkeys.JwkListResponse, error)) *MockBaseClient_JwkList_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Status provides a mock function for the type MockBaseClient
-func (_mock *MockBaseClient) Status(ctx context.Context, req *pkg.StatusRequest, opts ...grpc.CallOption) (*pkg.StatusResponse, error) {
+func (_mock *MockBaseClient) Status(ctx context.Context, req *servicejsonkeys.StatusRequest, opts ...grpc.CallOption) (*servicejsonkeys.StatusResponse, error) {
 	var tmpRet mock.Arguments
 	if len(opts) > 0 {
 		tmpRet = _mock.Called(ctx, req, opts)
@@ -431,19 +431,19 @@ func (_mock *MockBaseClient) Status(ctx context.Context, req *pkg.StatusRequest,
 		panic("no return value specified for Status")
 	}
 
-	var r0 *pkg.StatusResponse
+	var r0 *servicejsonkeys.StatusResponse
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *pkg.StatusRequest, ...grpc.CallOption) (*pkg.StatusResponse, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *servicejsonkeys.StatusRequest, ...grpc.CallOption) (*servicejsonkeys.StatusResponse, error)); ok {
 		return returnFunc(ctx, req, opts...)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *pkg.StatusRequest, ...grpc.CallOption) *pkg.StatusResponse); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *servicejsonkeys.StatusRequest, ...grpc.CallOption) *servicejsonkeys.StatusResponse); ok {
 		r0 = returnFunc(ctx, req, opts...)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*pkg.StatusResponse)
+			r0 = ret.Get(0).(*servicejsonkeys.StatusResponse)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *pkg.StatusRequest, ...grpc.CallOption) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *servicejsonkeys.StatusRequest, ...grpc.CallOption) error); ok {
 		r1 = returnFunc(ctx, req, opts...)
 	} else {
 		r1 = ret.Error(1)
@@ -458,22 +458,22 @@ type MockBaseClient_Status_Call struct {
 
 // Status is a helper method to define mock.On call
 //   - ctx context.Context
-//   - req *pkg.StatusRequest
+//   - req *servicejsonkeys.StatusRequest
 //   - opts ...grpc.CallOption
 func (_e *MockBaseClient_Expecter) Status(ctx interface{}, req interface{}, opts ...interface{}) *MockBaseClient_Status_Call {
 	return &MockBaseClient_Status_Call{Call: _e.mock.On("Status",
 		append([]interface{}{ctx, req}, opts...)...)}
 }
 
-func (_c *MockBaseClient_Status_Call) Run(run func(ctx context.Context, req *pkg.StatusRequest, opts ...grpc.CallOption)) *MockBaseClient_Status_Call {
+func (_c *MockBaseClient_Status_Call) Run(run func(ctx context.Context, req *servicejsonkeys.StatusRequest, opts ...grpc.CallOption)) *MockBaseClient_Status_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 *pkg.StatusRequest
+		var arg1 *servicejsonkeys.StatusRequest
 		if args[1] != nil {
-			arg1 = args[1].(*pkg.StatusRequest)
+			arg1 = args[1].(*servicejsonkeys.StatusRequest)
 		}
 		var arg2 []grpc.CallOption
 		var variadicArgs []grpc.CallOption
@@ -490,12 +490,12 @@ func (_c *MockBaseClient_Status_Call) Run(run func(ctx context.Context, req *pkg
 	return _c
 }
 
-func (_c *MockBaseClient_Status_Call) Return(v *pkg.StatusResponse, err error) *MockBaseClient_Status_Call {
+func (_c *MockBaseClient_Status_Call) Return(v *servicejsonkeys.StatusResponse, err error) *MockBaseClient_Status_Call {
 	_c.Call.Return(v, err)
 	return _c
 }
 
-func (_c *MockBaseClient_Status_Call) RunAndReturn(run func(ctx context.Context, req *pkg.StatusRequest, opts ...grpc.CallOption) (*pkg.StatusResponse, error)) *MockBaseClient_Status_Call {
+func (_c *MockBaseClient_Status_Call) RunAndReturn(run func(ctx context.Context, req *servicejsonkeys.StatusRequest, opts ...grpc.CallOption) (*servicejsonkeys.StatusResponse, error)) *MockBaseClient_Status_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -611,7 +611,7 @@ func (_m *MockClient) EXPECT() *MockClient_Expecter {
 }
 
 // ClaimsSign provides a mock function for the type MockClient
-func (_mock *MockClient) ClaimsSign(ctx context.Context, req *pkg.ClaimsSignRequest, opts ...grpc.CallOption) (*pkg.ClaimsSignResponse, error) {
+func (_mock *MockClient) ClaimsSign(ctx context.Context, req *servicejsonkeys.ClaimsSignRequest, opts ...grpc.CallOption) (*servicejsonkeys.ClaimsSignResponse, error) {
 	var tmpRet mock.Arguments
 	if len(opts) > 0 {
 		tmpRet = _mock.Called(ctx, req, opts)
@@ -624,19 +624,19 @@ func (_mock *MockClient) ClaimsSign(ctx context.Context, req *pkg.ClaimsSignRequ
 		panic("no return value specified for ClaimsSign")
 	}
 
-	var r0 *pkg.ClaimsSignResponse
+	var r0 *servicejsonkeys.ClaimsSignResponse
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *pkg.ClaimsSignRequest, ...grpc.CallOption) (*pkg.ClaimsSignResponse, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *servicejsonkeys.ClaimsSignRequest, ...grpc.CallOption) (*servicejsonkeys.ClaimsSignResponse, error)); ok {
 		return returnFunc(ctx, req, opts...)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *pkg.ClaimsSignRequest, ...grpc.CallOption) *pkg.ClaimsSignResponse); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *servicejsonkeys.ClaimsSignRequest, ...grpc.CallOption) *servicejsonkeys.ClaimsSignResponse); ok {
 		r0 = returnFunc(ctx, req, opts...)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*pkg.ClaimsSignResponse)
+			r0 = ret.Get(0).(*servicejsonkeys.ClaimsSignResponse)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *pkg.ClaimsSignRequest, ...grpc.CallOption) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *servicejsonkeys.ClaimsSignRequest, ...grpc.CallOption) error); ok {
 		r1 = returnFunc(ctx, req, opts...)
 	} else {
 		r1 = ret.Error(1)
@@ -651,22 +651,22 @@ type MockClient_ClaimsSign_Call struct {
 
 // ClaimsSign is a helper method to define mock.On call
 //   - ctx context.Context
-//   - req *pkg.ClaimsSignRequest
+//   - req *servicejsonkeys.ClaimsSignRequest
 //   - opts ...grpc.CallOption
 func (_e *MockClient_Expecter) ClaimsSign(ctx interface{}, req interface{}, opts ...interface{}) *MockClient_ClaimsSign_Call {
 	return &MockClient_ClaimsSign_Call{Call: _e.mock.On("ClaimsSign",
 		append([]interface{}{ctx, req}, opts...)...)}
 }
 
-func (_c *MockClient_ClaimsSign_Call) Run(run func(ctx context.Context, req *pkg.ClaimsSignRequest, opts ...grpc.CallOption)) *MockClient_ClaimsSign_Call {
+func (_c *MockClient_ClaimsSign_Call) Run(run func(ctx context.Context, req *servicejsonkeys.ClaimsSignRequest, opts ...grpc.CallOption)) *MockClient_ClaimsSign_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 *pkg.ClaimsSignRequest
+		var arg1 *servicejsonkeys.ClaimsSignRequest
 		if args[1] != nil {
-			arg1 = args[1].(*pkg.ClaimsSignRequest)
+			arg1 = args[1].(*servicejsonkeys.ClaimsSignRequest)
 		}
 		var arg2 []grpc.CallOption
 		var variadicArgs []grpc.CallOption
@@ -683,12 +683,12 @@ func (_c *MockClient_ClaimsSign_Call) Run(run func(ctx context.Context, req *pkg
 	return _c
 }
 
-func (_c *MockClient_ClaimsSign_Call) Return(v *pkg.ClaimsSignResponse, err error) *MockClient_ClaimsSign_Call {
+func (_c *MockClient_ClaimsSign_Call) Return(v *servicejsonkeys.ClaimsSignResponse, err error) *MockClient_ClaimsSign_Call {
 	_c.Call.Return(v, err)
 	return _c
 }
 
-func (_c *MockClient_ClaimsSign_Call) RunAndReturn(run func(ctx context.Context, req *pkg.ClaimsSignRequest, opts ...grpc.CallOption) (*pkg.ClaimsSignResponse, error)) *MockClient_ClaimsSign_Call {
+func (_c *MockClient_ClaimsSign_Call) RunAndReturn(run func(ctx context.Context, req *servicejsonkeys.ClaimsSignRequest, opts ...grpc.CallOption) (*servicejsonkeys.ClaimsSignResponse, error)) *MockClient_ClaimsSign_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -727,7 +727,7 @@ func (_c *MockClient_Close_Call) RunAndReturn(run func()) *MockClient_Close_Call
 }
 
 // JwkGet provides a mock function for the type MockClient
-func (_mock *MockClient) JwkGet(ctx context.Context, req *pkg.JwkGetRequest, opts ...grpc.CallOption) (*pkg.JwkGetResponse, error) {
+func (_mock *MockClient) JwkGet(ctx context.Context, req *servicejsonkeys.JwkGetRequest, opts ...grpc.CallOption) (*servicejsonkeys.JwkGetResponse, error) {
 	var tmpRet mock.Arguments
 	if len(opts) > 0 {
 		tmpRet = _mock.Called(ctx, req, opts)
@@ -740,19 +740,19 @@ func (_mock *MockClient) JwkGet(ctx context.Context, req *pkg.JwkGetRequest, opt
 		panic("no return value specified for JwkGet")
 	}
 
-	var r0 *pkg.JwkGetResponse
+	var r0 *servicejsonkeys.JwkGetResponse
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *pkg.JwkGetRequest, ...grpc.CallOption) (*pkg.JwkGetResponse, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *servicejsonkeys.JwkGetRequest, ...grpc.CallOption) (*servicejsonkeys.JwkGetResponse, error)); ok {
 		return returnFunc(ctx, req, opts...)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *pkg.JwkGetRequest, ...grpc.CallOption) *pkg.JwkGetResponse); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *servicejsonkeys.JwkGetRequest, ...grpc.CallOption) *servicejsonkeys.JwkGetResponse); ok {
 		r0 = returnFunc(ctx, req, opts...)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*pkg.JwkGetResponse)
+			r0 = ret.Get(0).(*servicejsonkeys.JwkGetResponse)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *pkg.JwkGetRequest, ...grpc.CallOption) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *servicejsonkeys.JwkGetRequest, ...grpc.CallOption) error); ok {
 		r1 = returnFunc(ctx, req, opts...)
 	} else {
 		r1 = ret.Error(1)
@@ -767,22 +767,22 @@ type MockClient_JwkGet_Call struct {
 
 // JwkGet is a helper method to define mock.On call
 //   - ctx context.Context
-//   - req *pkg.JwkGetRequest
+//   - req *servicejsonkeys.JwkGetRequest
 //   - opts ...grpc.CallOption
 func (_e *MockClient_Expecter) JwkGet(ctx interface{}, req interface{}, opts ...interface{}) *MockClient_JwkGet_Call {
 	return &MockClient_JwkGet_Call{Call: _e.mock.On("JwkGet",
 		append([]interface{}{ctx, req}, opts...)...)}
 }
 
-func (_c *MockClient_JwkGet_Call) Run(run func(ctx context.Context, req *pkg.JwkGetRequest, opts ...grpc.CallOption)) *MockClient_JwkGet_Call {
+func (_c *MockClient_JwkGet_Call) Run(run func(ctx context.Context, req *servicejsonkeys.JwkGetRequest, opts ...grpc.CallOption)) *MockClient_JwkGet_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 *pkg.JwkGetRequest
+		var arg1 *servicejsonkeys.JwkGetRequest
 		if args[1] != nil {
-			arg1 = args[1].(*pkg.JwkGetRequest)
+			arg1 = args[1].(*servicejsonkeys.JwkGetRequest)
 		}
 		var arg2 []grpc.CallOption
 		var variadicArgs []grpc.CallOption
@@ -799,18 +799,18 @@ func (_c *MockClient_JwkGet_Call) Run(run func(ctx context.Context, req *pkg.Jwk
 	return _c
 }
 
-func (_c *MockClient_JwkGet_Call) Return(v *pkg.JwkGetResponse, err error) *MockClient_JwkGet_Call {
+func (_c *MockClient_JwkGet_Call) Return(v *servicejsonkeys.JwkGetResponse, err error) *MockClient_JwkGet_Call {
 	_c.Call.Return(v, err)
 	return _c
 }
 
-func (_c *MockClient_JwkGet_Call) RunAndReturn(run func(ctx context.Context, req *pkg.JwkGetRequest, opts ...grpc.CallOption) (*pkg.JwkGetResponse, error)) *MockClient_JwkGet_Call {
+func (_c *MockClient_JwkGet_Call) RunAndReturn(run func(ctx context.Context, req *servicejsonkeys.JwkGetRequest, opts ...grpc.CallOption) (*servicejsonkeys.JwkGetResponse, error)) *MockClient_JwkGet_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // JwkList provides a mock function for the type MockClient
-func (_mock *MockClient) JwkList(ctx context.Context, req *pkg.JwkListRequest, opts ...grpc.CallOption) (*pkg.JwkListResponse, error) {
+func (_mock *MockClient) JwkList(ctx context.Context, req *servicejsonkeys.JwkListRequest, opts ...grpc.CallOption) (*servicejsonkeys.JwkListResponse, error) {
 	var tmpRet mock.Arguments
 	if len(opts) > 0 {
 		tmpRet = _mock.Called(ctx, req, opts)
@@ -823,19 +823,19 @@ func (_mock *MockClient) JwkList(ctx context.Context, req *pkg.JwkListRequest, o
 		panic("no return value specified for JwkList")
 	}
 
-	var r0 *pkg.JwkListResponse
+	var r0 *servicejsonkeys.JwkListResponse
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *pkg.JwkListRequest, ...grpc.CallOption) (*pkg.JwkListResponse, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *servicejsonkeys.JwkListRequest, ...grpc.CallOption) (*servicejsonkeys.JwkListResponse, error)); ok {
 		return returnFunc(ctx, req, opts...)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *pkg.JwkListRequest, ...grpc.CallOption) *pkg.JwkListResponse); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *servicejsonkeys.JwkListRequest, ...grpc.CallOption) *servicejsonkeys.JwkListResponse); ok {
 		r0 = returnFunc(ctx, req, opts...)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*pkg.JwkListResponse)
+			r0 = ret.Get(0).(*servicejsonkeys.JwkListResponse)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *pkg.JwkListRequest, ...grpc.CallOption) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *servicejsonkeys.JwkListRequest, ...grpc.CallOption) error); ok {
 		r1 = returnFunc(ctx, req, opts...)
 	} else {
 		r1 = ret.Error(1)
@@ -850,22 +850,22 @@ type MockClient_JwkList_Call struct {
 
 // JwkList is a helper method to define mock.On call
 //   - ctx context.Context
-//   - req *pkg.JwkListRequest
+//   - req *servicejsonkeys.JwkListRequest
 //   - opts ...grpc.CallOption
 func (_e *MockClient_Expecter) JwkList(ctx interface{}, req interface{}, opts ...interface{}) *MockClient_JwkList_Call {
 	return &MockClient_JwkList_Call{Call: _e.mock.On("JwkList",
 		append([]interface{}{ctx, req}, opts...)...)}
 }
 
-func (_c *MockClient_JwkList_Call) Run(run func(ctx context.Context, req *pkg.JwkListRequest, opts ...grpc.CallOption)) *MockClient_JwkList_Call {
+func (_c *MockClient_JwkList_Call) Run(run func(ctx context.Context, req *servicejsonkeys.JwkListRequest, opts ...grpc.CallOption)) *MockClient_JwkList_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 *pkg.JwkListRequest
+		var arg1 *servicejsonkeys.JwkListRequest
 		if args[1] != nil {
-			arg1 = args[1].(*pkg.JwkListRequest)
+			arg1 = args[1].(*servicejsonkeys.JwkListRequest)
 		}
 		var arg2 []grpc.CallOption
 		var variadicArgs []grpc.CallOption
@@ -882,30 +882,30 @@ func (_c *MockClient_JwkList_Call) Run(run func(ctx context.Context, req *pkg.Jw
 	return _c
 }
 
-func (_c *MockClient_JwkList_Call) Return(v *pkg.JwkListResponse, err error) *MockClient_JwkList_Call {
+func (_c *MockClient_JwkList_Call) Return(v *servicejsonkeys.JwkListResponse, err error) *MockClient_JwkList_Call {
 	_c.Call.Return(v, err)
 	return _c
 }
 
-func (_c *MockClient_JwkList_Call) RunAndReturn(run func(ctx context.Context, req *pkg.JwkListRequest, opts ...grpc.CallOption) (*pkg.JwkListResponse, error)) *MockClient_JwkList_Call {
+func (_c *MockClient_JwkList_Call) RunAndReturn(run func(ctx context.Context, req *servicejsonkeys.JwkListRequest, opts ...grpc.CallOption) (*servicejsonkeys.JwkListResponse, error)) *MockClient_JwkList_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Keys provides a mock function for the type MockClient
-func (_mock *MockClient) Keys() map[string]*pkg.JwkConfig {
+func (_mock *MockClient) Keys() map[string]*servicejsonkeys.JwkConfig {
 	ret := _mock.Called()
 
 	if len(ret) == 0 {
 		panic("no return value specified for Keys")
 	}
 
-	var r0 map[string]*pkg.JwkConfig
-	if returnFunc, ok := ret.Get(0).(func() map[string]*pkg.JwkConfig); ok {
+	var r0 map[string]*servicejsonkeys.JwkConfig
+	if returnFunc, ok := ret.Get(0).(func() map[string]*servicejsonkeys.JwkConfig); ok {
 		r0 = returnFunc()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(map[string]*pkg.JwkConfig)
+			r0 = ret.Get(0).(map[string]*servicejsonkeys.JwkConfig)
 		}
 	}
 	return r0
@@ -928,30 +928,30 @@ func (_c *MockClient_Keys_Call) Run(run func()) *MockClient_Keys_Call {
 	return _c
 }
 
-func (_c *MockClient_Keys_Call) Return(stringToV map[string]*pkg.JwkConfig) *MockClient_Keys_Call {
+func (_c *MockClient_Keys_Call) Return(stringToV map[string]*servicejsonkeys.JwkConfig) *MockClient_Keys_Call {
 	_c.Call.Return(stringToV)
 	return _c
 }
 
-func (_c *MockClient_Keys_Call) RunAndReturn(run func() map[string]*pkg.JwkConfig) *MockClient_Keys_Call {
+func (_c *MockClient_Keys_Call) RunAndReturn(run func() map[string]*servicejsonkeys.JwkConfig) *MockClient_Keys_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Recipients provides a mock function for the type MockClient
-func (_mock *MockClient) Recipients() pkg.JwkRecipients {
+func (_mock *MockClient) Recipients() servicejsonkeys.JwkRecipients {
 	ret := _mock.Called()
 
 	if len(ret) == 0 {
 		panic("no return value specified for Recipients")
 	}
 
-	var r0 pkg.JwkRecipients
-	if returnFunc, ok := ret.Get(0).(func() pkg.JwkRecipients); ok {
+	var r0 servicejsonkeys.JwkRecipients
+	if returnFunc, ok := ret.Get(0).(func() servicejsonkeys.JwkRecipients); ok {
 		r0 = returnFunc()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(pkg.JwkRecipients)
+			r0 = ret.Get(0).(servicejsonkeys.JwkRecipients)
 		}
 	}
 	return r0
@@ -974,30 +974,30 @@ func (_c *MockClient_Recipients_Call) Run(run func()) *MockClient_Recipients_Cal
 	return _c
 }
 
-func (_c *MockClient_Recipients_Call) Return(v pkg.JwkRecipients) *MockClient_Recipients_Call {
+func (_c *MockClient_Recipients_Call) Return(v servicejsonkeys.JwkRecipients) *MockClient_Recipients_Call {
 	_c.Call.Return(v)
 	return _c
 }
 
-func (_c *MockClient_Recipients_Call) RunAndReturn(run func() pkg.JwkRecipients) *MockClient_Recipients_Call {
+func (_c *MockClient_Recipients_Call) RunAndReturn(run func() servicejsonkeys.JwkRecipients) *MockClient_Recipients_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Sources provides a mock function for the type MockClient
-func (_mock *MockClient) Sources() *pkg.JwkPublicSources {
+func (_mock *MockClient) Sources() *servicejsonkeys.JwkPublicSources {
 	ret := _mock.Called()
 
 	if len(ret) == 0 {
 		panic("no return value specified for Sources")
 	}
 
-	var r0 *pkg.JwkPublicSources
-	if returnFunc, ok := ret.Get(0).(func() *pkg.JwkPublicSources); ok {
+	var r0 *servicejsonkeys.JwkPublicSources
+	if returnFunc, ok := ret.Get(0).(func() *servicejsonkeys.JwkPublicSources); ok {
 		r0 = returnFunc()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*pkg.JwkPublicSources)
+			r0 = ret.Get(0).(*servicejsonkeys.JwkPublicSources)
 		}
 	}
 	return r0
@@ -1020,18 +1020,18 @@ func (_c *MockClient_Sources_Call) Run(run func()) *MockClient_Sources_Call {
 	return _c
 }
 
-func (_c *MockClient_Sources_Call) Return(v *pkg.JwkPublicSources) *MockClient_Sources_Call {
+func (_c *MockClient_Sources_Call) Return(v *servicejsonkeys.JwkPublicSources) *MockClient_Sources_Call {
 	_c.Call.Return(v)
 	return _c
 }
 
-func (_c *MockClient_Sources_Call) RunAndReturn(run func() *pkg.JwkPublicSources) *MockClient_Sources_Call {
+func (_c *MockClient_Sources_Call) RunAndReturn(run func() *servicejsonkeys.JwkPublicSources) *MockClient_Sources_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Status provides a mock function for the type MockClient
-func (_mock *MockClient) Status(ctx context.Context, req *pkg.StatusRequest, opts ...grpc.CallOption) (*pkg.StatusResponse, error) {
+func (_mock *MockClient) Status(ctx context.Context, req *servicejsonkeys.StatusRequest, opts ...grpc.CallOption) (*servicejsonkeys.StatusResponse, error) {
 	var tmpRet mock.Arguments
 	if len(opts) > 0 {
 		tmpRet = _mock.Called(ctx, req, opts)
@@ -1044,19 +1044,19 @@ func (_mock *MockClient) Status(ctx context.Context, req *pkg.StatusRequest, opt
 		panic("no return value specified for Status")
 	}
 
-	var r0 *pkg.StatusResponse
+	var r0 *servicejsonkeys.StatusResponse
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *pkg.StatusRequest, ...grpc.CallOption) (*pkg.StatusResponse, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *servicejsonkeys.StatusRequest, ...grpc.CallOption) (*servicejsonkeys.StatusResponse, error)); ok {
 		return returnFunc(ctx, req, opts...)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *pkg.StatusRequest, ...grpc.CallOption) *pkg.StatusResponse); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *servicejsonkeys.StatusRequest, ...grpc.CallOption) *servicejsonkeys.StatusResponse); ok {
 		r0 = returnFunc(ctx, req, opts...)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*pkg.StatusResponse)
+			r0 = ret.Get(0).(*servicejsonkeys.StatusResponse)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *pkg.StatusRequest, ...grpc.CallOption) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *servicejsonkeys.StatusRequest, ...grpc.CallOption) error); ok {
 		r1 = returnFunc(ctx, req, opts...)
 	} else {
 		r1 = ret.Error(1)
@@ -1071,22 +1071,22 @@ type MockClient_Status_Call struct {
 
 // Status is a helper method to define mock.On call
 //   - ctx context.Context
-//   - req *pkg.StatusRequest
+//   - req *servicejsonkeys.StatusRequest
 //   - opts ...grpc.CallOption
 func (_e *MockClient_Expecter) Status(ctx interface{}, req interface{}, opts ...interface{}) *MockClient_Status_Call {
 	return &MockClient_Status_Call{Call: _e.mock.On("Status",
 		append([]interface{}{ctx, req}, opts...)...)}
 }
 
-func (_c *MockClient_Status_Call) Run(run func(ctx context.Context, req *pkg.StatusRequest, opts ...grpc.CallOption)) *MockClient_Status_Call {
+func (_c *MockClient_Status_Call) Run(run func(ctx context.Context, req *servicejsonkeys.StatusRequest, opts ...grpc.CallOption)) *MockClient_Status_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 *pkg.StatusRequest
+		var arg1 *servicejsonkeys.StatusRequest
 		if args[1] != nil {
-			arg1 = args[1].(*pkg.StatusRequest)
+			arg1 = args[1].(*servicejsonkeys.StatusRequest)
 		}
 		var arg2 []grpc.CallOption
 		var variadicArgs []grpc.CallOption
@@ -1103,12 +1103,12 @@ func (_c *MockClient_Status_Call) Run(run func(ctx context.Context, req *pkg.Sta
 	return _c
 }
 
-func (_c *MockClient_Status_Call) Return(v *pkg.StatusResponse, err error) *MockClient_Status_Call {
+func (_c *MockClient_Status_Call) Return(v *servicejsonkeys.StatusResponse, err error) *MockClient_Status_Call {
 	_c.Call.Return(v, err)
 	return _c
 }
 
-func (_c *MockClient_Status_Call) RunAndReturn(run func(ctx context.Context, req *pkg.StatusRequest, opts ...grpc.CallOption) (*pkg.StatusResponse, error)) *MockClient_Status_Call {
+func (_c *MockClient_Status_Call) RunAndReturn(run func(ctx context.Context, req *servicejsonkeys.StatusRequest, opts ...grpc.CallOption) (*servicejsonkeys.StatusResponse, error)) *MockClient_Status_Call {
 	_c.Call.Return(run)
 	return _c
 }

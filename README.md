@@ -307,7 +307,7 @@ import (
   "context"
 
   "github.com/a-novel-kit/golib/grpcf"
-  jkpkg "github.com/a-novel/service-json-keys/v2/pkg"
+  jkpkg "github.com/a-novel/service-json-keys/v2/pkg/go"
 )
 
 type MyClaims struct {
