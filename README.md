@@ -307,7 +307,7 @@ import (
   "context"
 
   "github.com/a-novel-kit/golib/grpcf"
-  jkpkg "github.com/a-novel/service-json-keys/v2/pkg/go"
+  "github.com/a-novel/service-json-keys/v2/pkg/go"
 )
 
 type MyClaims struct {
@@ -317,20 +317,20 @@ type MyClaims struct {
 func main() {
   ctx := context.Background()
 
-  client, _ := jkpkg.NewClient(ctx, "<service-json-keys-url>")
-  claimsVerifier := jkpkg.NewClaimsVerifier[MyClaims](client)
+  client, _ := servicejsonkeys.NewClient(ctx, "<service-json-keys-url>")
+  claimsVerifier := servicejsonkeys.NewClaimsVerifier[MyClaims](client)
 
   claims := MyClaims{ UserID: "user-1" }
   claimsPayload, _ := grpcf.InterfaceToProtoAny(claims)
 
   // Signed token ready for use.
-  token, _ := client.ClaimsSign(ctx, &jkpkg.ClaimsSignRequest{
-    Usage: jkpkg.KeyUsageAuth,
+  token, _ := client.ClaimsSign(ctx, &servicejsonkeys.ClaimsSignRequest{
+    Usage: servicejsonkeys.KeyUsageAuth,
     Payload: claimsPayload,
   })
 
-  decodedClaims, _ := claimsVerifier.VerifyClaims(ctx, &jkpkg.VerifyClaimsRequest{
-    Usage: jkpkg.KeyUsageAuth,
+  decodedClaims, _ := claimsVerifier.VerifyClaims(ctx, &servicejsonkeys.VerifyClaimsRequest{
+    Usage: servicejsonkeys.KeyUsageAuth,
     AccessToken: token.GetToken(),
   })
 
