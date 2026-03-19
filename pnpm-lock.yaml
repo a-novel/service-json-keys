@@ -33,7 +33,7 @@ importers:
         version: 1.3.23(zod@4.3.6)
       '@a-novel-kit/nodelib-config':
         specifier: ^1.3.18
-        version: 1.3.23(045b64d7947dba497a0c448c195d1afe)
+        version: 1.3.23(a1e0130ce9bb1dbf752a2971c2eb7dda)
       '@a-novel-kit/nodelib-test':
         specifier: ^1.3.18
         version: 1.3.23(@a-novel-kit/nodelib-browser@1.3.23(zod@4.3.6))(@msw/playwright@0.4.5(msw@2.12.10(@types/node@24.12.0)(typescript@5.9.3)))(@tanstack/react-query@5.90.21(react@19.2.4))(@testing-library/react@16.3.2(@testing-library/dom@10.4.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(msw@2.12.10(@types/node@24.12.0)(typescript@5.9.3))(playwright@1.58.2)(v8-to-istanbul@9.3.0)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(jsdom@29.0.0(@noble/hashes@1.8.0))(msw@2.12.10(@types/node@24.12.0)(typescript@5.9.3))(vite@8.0.1(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)))(zod@4.3.6)
@@ -63,7 +63,7 @@ importers:
         version: 5.5.5(eslint-config-prettier@10.1.8(eslint@10.0.3(jiti@2.6.1)))(eslint@10.0.3(jiti@2.6.1))(prettier@3.8.1)
       eslint-plugin-storybook:
         specifier: ^10.2.8
-        version: 10.3.0(eslint@10.0.3(jiti@2.6.1))(storybook@10.1.4(@testing-library/dom@10.4.1)(prettier@3.8.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(typescript@5.9.3)
+        version: 10.3.1(eslint@10.0.3(jiti@2.6.1))(storybook@10.1.4(@testing-library/dom@10.4.1)(prettier@3.8.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(typescript@5.9.3)
       eslint-plugin-svelte:
         specifier: ^3.15.0
         version: 3.15.2(eslint@10.0.3(jiti@2.6.1))(svelte@5.53.5)
@@ -1577,11 +1577,11 @@ packages:
       eslint-config-prettier:
         optional: true
 
-  eslint-plugin-storybook@10.3.0:
-    resolution: {integrity: sha512-8R0/RjELXkJ2RxPusX14ZiIj1So90bPnrjbxmQx1BD+4M2VoMHfn3n+6IvzJWQH4FT5tMRRUBqjLBe1fJjRRkg==}
+  eslint-plugin-storybook@10.3.1:
+    resolution: {integrity: sha512-zWE8cQTJo2Wuw6I/Ag73rP5rLbaypm5p3G2BV74Y7Lc8NwNclAwNi5u+yl9qBQLW2aSXotDW9fjj3Mx+GeEgfA==}
     peerDependencies:
       eslint: '>=8'
-      storybook: ^10.3.0
+      storybook: ^10.3.1
 
   eslint-plugin-svelte@3.15.2:
     resolution: {integrity: sha512-k4Nsjs3bHujeEnnckoTM4mFYR1e8Mb9l2rTwNdmYiamA+Tjzn8X+2F+fuSP2w4VbXYhn2bmySyACQYdmUDW2Cg==}
@@ -2720,8 +2720,8 @@ packages:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
     engines: {node: '>= 0.8.0'}
 
-  type-fest@5.4.4:
-    resolution: {integrity: sha512-JnTrzGu+zPV3aXIUhnyWJj4z/wigMsdYajGLIYakqyOW1nPllzXEJee0QQbHj+CTIQtXGlAjuK0UY+2xTyjVAw==}
+  type-fest@5.5.0:
+    resolution: {integrity: sha512-PlBfpQwiUvGViBNX84Yxwjsdhd1TUlXr6zjX7eoirtCPIr08NAmxwa+fcYBTeRQxHo9YC9wwF3m9i700sHma8g==}
     engines: {node: '>=20'}
 
   typescript-eslint@8.57.1:
@@ -3031,7 +3031,7 @@ snapshots:
     dependencies:
       zod: 4.3.6
 
-  '@a-novel-kit/nodelib-config@1.3.23(045b64d7947dba497a0c448c195d1afe)':
+  '@a-novel-kit/nodelib-config@1.3.23(a1e0130ce9bb1dbf752a2971c2eb7dda)':
     dependencies:
       '@eslint/compat': 2.0.0(eslint@10.0.3(jiti@2.6.1))
       '@eslint/js': 10.0.1(eslint@10.0.3(jiti@2.6.1))
@@ -3041,7 +3041,7 @@ snapshots:
       eslint: 10.0.3(jiti@2.6.1)
       eslint-config-prettier: 10.1.8(eslint@10.0.3(jiti@2.6.1))
       eslint-plugin-prettier: 5.5.5(eslint-config-prettier@10.1.8(eslint@10.0.3(jiti@2.6.1)))(eslint@10.0.3(jiti@2.6.1))(prettier@3.8.1)
-      eslint-plugin-storybook: 10.3.0(eslint@10.0.3(jiti@2.6.1))(storybook@10.1.4(@testing-library/dom@10.4.1)(prettier@3.8.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(typescript@5.9.3)
+      eslint-plugin-storybook: 10.3.1(eslint@10.0.3(jiti@2.6.1))(storybook@10.1.4(@testing-library/dom@10.4.1)(prettier@3.8.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(typescript@5.9.3)
       eslint-plugin-svelte: 3.15.2(eslint@10.0.3(jiti@2.6.1))(svelte@5.53.5)
       prettier: 3.8.1
       prettier-plugin-css-order: 2.2.0(postcss@8.5.8)(prettier@3.8.1)
@@ -4374,7 +4374,7 @@ snapshots:
     optionalDependencies:
       eslint-config-prettier: 10.1.8(eslint@10.0.3(jiti@2.6.1))
 
-  eslint-plugin-storybook@10.3.0(eslint@10.0.3(jiti@2.6.1))(storybook@10.1.4(@testing-library/dom@10.4.1)(prettier@3.8.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(typescript@5.9.3):
+  eslint-plugin-storybook@10.3.1(eslint@10.0.3(jiti@2.6.1))(storybook@10.1.4(@testing-library/dom@10.4.1)(prettier@3.8.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(typescript@5.9.3):
     dependencies:
       '@typescript-eslint/utils': 8.57.1(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)
       eslint: 10.0.3(jiti@2.6.1)
@@ -4907,7 +4907,7 @@ snapshots:
       statuses: 2.0.2
       strict-event-emitter: 0.5.1
       tough-cookie: 6.0.1
-      type-fest: 5.4.4
+      type-fest: 5.5.0
       until-async: 3.0.2
       yargs: 17.7.2
     optionalDependencies:
@@ -5575,7 +5575,7 @@ snapshots:
     dependencies:
       prelude-ls: 1.2.1
 
-  type-fest@5.4.4:
+  type-fest@5.5.0:
     dependencies:
       tagged-tag: 1.0.0
 
