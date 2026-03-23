@@ -63,8 +63,8 @@ github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERo
 github.com/Microsoft/go-winio v0.6.2/go.mod h1:yd8OoFMLzJbo9gZq8j5qaps8bJ9aShtEA8Ipt1oGCvU=
 github.com/a-novel-kit/golib v0.20.18 h1:3F8XkZpwnRFJvQABqZRddibPvxT7LfgIhpV4DnjJ5QI=
 github.com/a-novel-kit/golib v0.20.18/go.mod h1:MRdkNYYGP76KH9504NIPnWljg5aE89MyUw/wk97hrlU=
-github.com/a-novel-kit/jwt v1.1.43 h1:UVNcsErJbt5tVM/dsIBsyc0UgPv8RWvQqJQHdp87gIY=
-github.com/a-novel-kit/jwt v1.1.43/go.mod h1:XhzCt8jPkazLQtBVT2U5meOLiaCQH6FIlmqx0il6tpc=
+github.com/a-novel-kit/jwt v1.1.44 h1:pcJ6dvIZWrRF0lpC4VUGzwLMtrJ/0m6Z7tGUcg4dTro=
+github.com/a-novel-kit/jwt v1.1.44/go.mod h1:XhzCt8jPkazLQtBVT2U5meOLiaCQH6FIlmqx0il6tpc=
 github.com/antlr4-go/antlr/v4 v4.13.1 h1:SqQKkuVZ+zWkMMNkjy5FZe5mr5WURWnlpmOuzYWrPrQ=
 github.com/antlr4-go/antlr/v4 v4.13.1/go.mod h1:GKmUxMtwp6ZgGwZSva4eWPC5mS6vUAmOABFgjdkM7Nw=
 github.com/bmatcuk/doublestar/v4 v4.10.0 h1:zU9WiOla1YA122oLM6i4EXvGW62DvKZVxIe6TYWexEs=
