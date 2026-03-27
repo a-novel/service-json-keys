@@ -8,7 +8,7 @@ tool (
 )
 
 require (
-	github.com/a-novel-kit/golib v0.20.19
+	github.com/a-novel-kit/golib v0.20.20
 	github.com/a-novel-kit/jwt v1.1.45
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/go-chi/cors v1.2.2
@@ -84,8 +84,8 @@ require (
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
-	github.com/getsentry/sentry-go v0.43.0 // indirect
-	github.com/getsentry/sentry-go/otel v0.43.0 // indirect
+	github.com/getsentry/sentry-go v0.44.1 // indirect
+	github.com/getsentry/sentry-go/otel v0.44.1 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
@@ -94,7 +94,7 @@ require (
 	github.com/google/go-containerregistry v0.21.2 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.14 // indirect
-	github.com/googleapis/gax-go/v2 v2.18.0 // indirect
+	github.com/googleapis/gax-go/v2 v2.19.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.3 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
@@ -177,9 +177,9 @@ require (
 	golang.org/x/text v0.35.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
 	golang.org/x/tools v0.42.0 // indirect
-	google.golang.org/api v0.272.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20260226221140-a57be14db171 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260311181403-84a4fc48630c // indirect
+	google.golang.org/api v0.273.0 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20260316180232-0b37fe3546d5 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260319201613-d00831a3d3e7 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gotest.tools/v3 v3.5.2 // indirect
 	mellium.im/sasl v0.3.2 // indirect
