@@ -9,7 +9,7 @@ tool (
 
 require (
 	github.com/a-novel-kit/golib v0.20.20
-	github.com/a-novel-kit/jwt v1.1.46
+	github.com/a-novel-kit/jwt v1.1.47
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/go-chi/cors v1.2.2
 	github.com/goccy/go-yaml v1.19.2
