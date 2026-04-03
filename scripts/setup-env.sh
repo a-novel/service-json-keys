@@ -15,6 +15,7 @@ export APP_MASTER_KEY="${APP_MASTER_KEY:="fec0681a2f57242211c559ca347721766f8a3a
 
 export GRPC_URL="${GRPC_URL:="localhost:${GRPC_PORT}"}"
 export REST_URL="${REST_URL:="http://localhost:${REST_PORT}"}"
+
 export POSTGRES_USER="${POSTGRES_USER:="postgres"}"
 export POSTGRES_PASSWORD="${POSTGRES_PASSWORD:="postgres"}"
 export POSTGRES_DB="${POSTGRES_DB:="json-keys"}"
