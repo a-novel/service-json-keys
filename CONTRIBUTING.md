@@ -28,21 +28,7 @@ The following must be installed on your system.
 
 ### Bootstrap
 
-Create a `.envrc` file in the project root:
-
-```bash
-cp .envrc.template .envrc
-```
-
-Then, load the environment variables:
-
-```bash
-direnv allow .
-# Alternatively, if you don't have direnv on your system
-source .envrc
-```
-
-Finally, install the dependencies:
+Install the dependencies:
 
 ```bash
 make install
