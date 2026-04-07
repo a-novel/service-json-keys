@@ -1,6 +1,6 @@
 module github.com/a-novel/service-json-keys/v2
 
-go 1.26.1
+go 1.26.2
 
 tool (
 	github.com/bufbuild/buf/cmd/buf
