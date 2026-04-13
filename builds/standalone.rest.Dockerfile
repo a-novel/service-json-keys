@@ -1,9 +1,6 @@
-# This image exposes our app as a REST server.
-#
-# It requires a database instance to run properly. The instance may not be patched.
-#
-# This image will make sure all patches are applied before starting the server. It is a larger
-# version of the base REST image, suited for local development rather than full scale production.
+# Standalone REST server image for local development. Applies migrations and rotates keys
+# automatically before starting the server, so the database does not need to be pre-initialized.
+# For production deployments, use the base REST image (rest.Dockerfile) instead.
 FROM docker.io/library/golang:1.26.2-alpine AS builder
 
 WORKDIR /app
@@ -57,5 +54,5 @@ ENV REST_PORT=8080
 # REST port.
 EXPOSE 8080
 
-# Run patches before starting the server.
+# Apply migrations and rotate keys, then start the server.
 CMD ["sh", "-c", "/migrations && /rotate-keys && /rest"]

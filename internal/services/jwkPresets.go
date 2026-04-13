@@ -17,34 +17,42 @@ import (
 )
 
 var (
-	ErrJwkPresetUnknown          = errors.New("unknown jwk preset")
+	// ErrJwkPresetUnknown is returned when a requested algorithm has no corresponding preset entry.
+	ErrJwkPresetUnknown = errors.New("unknown jwk preset")
+	// ErrJwkPresetUnknownAlgorithm is returned when a key configuration references an algorithm
+	// for which no key-source builder is registered.
 	ErrJwkPresetUnknownAlgorithm = errors.New("unknown jwk algorithm")
 )
 
+// JwkPresetsHMAC maps HMAC algorithm identifiers to their JWK generation presets.
 var JwkPresetsHMAC = map[jwa.Alg]jwk.HMACPreset{
 	jwa.HS256: jwk.HS256,
 	jwa.HS384: jwk.HS384,
 	jwa.HS512: jwk.HS512,
 }
 
+// JwsPresetsHMAC maps HMAC algorithm identifiers to their JWS signing/verification presets.
 var JwsPresetsHMAC = map[jwa.Alg]jws.HMACPreset{
 	jwa.HS256: jws.HS256,
 	jwa.HS384: jws.HS384,
 	jwa.HS512: jws.HS512,
 }
 
+// JwkPresetsEcdsa maps ECDSA algorithm identifiers to their JWK generation presets.
 var JwkPresetsEcdsa = map[jwa.Alg]jwk.ECDSAPreset{
 	jwa.ES256: jwk.ES256,
 	jwa.ES384: jwk.ES384,
 	jwa.ES512: jwk.ES512,
 }
 
+// JwsPresetsEcdsa maps ECDSA algorithm identifiers to their JWS signing/verification presets.
 var JwsPresetsEcdsa = map[jwa.Alg]jws.ECDSAPreset{
 	jwa.ES256: jws.ES256,
 	jwa.ES384: jws.ES384,
 	jwa.ES512: jws.ES512,
 }
 
+// JwkPresetsRsa maps RSA algorithm identifiers to their JWK generation presets (covers both PKCS#1 and PSS variants).
 var JwkPresetsRsa = map[jwa.Alg]jwk.RSAPreset{
 	jwa.RS256: jwk.RS256,
 	jwa.RS384: jwk.RS384,
@@ -54,20 +62,26 @@ var JwkPresetsRsa = map[jwa.Alg]jwk.RSAPreset{
 	jwa.PS512: jwk.PS512,
 }
 
+// JwsPresetsRsa maps RSA PKCS#1 algorithm identifiers to their JWS signing/verification presets.
 var JwsPresetsRsa = map[jwa.Alg]jws.RSAPreset{
 	jwa.RS256: jws.RS256,
 	jwa.RS384: jws.RS384,
 	jwa.RS512: jws.RS512,
 }
 
+// JwsPresetsRsaPss maps RSA-PSS algorithm identifiers to their JWS signing/verification presets.
 var JwsPresetsRsaPss = map[jwa.Alg]jws.RSAPSSPreset{
 	jwa.PS256: jws.PS256,
 	jwa.PS384: jws.PS384,
 	jwa.PS512: jws.PS512,
 }
 
+// JwkGenAny is the common generator signature. It returns a private key, an optional public key
+// (nil for symmetric algorithms), and the KID strings for each, plus any generation error.
 type JwkGenAny func() (any, any, string, string, error)
 
+// JwkGenerators is the registry of key generators keyed by algorithm. JwkGen.Exec uses this
+// to look up the correct generator for a given usage's configured algorithm.
 var JwkGenerators = map[jwa.Alg]JwkGenAny{
 	jwa.EdDSA: JwkGeneratorEd25519,
 	jwa.HS256: JwkGeneratorHs(jwa.HS256),
@@ -84,6 +98,7 @@ var JwkGenerators = map[jwa.Alg]JwkGenAny{
 	jwa.PS512: JwkGeneratorRsa(jwa.PS512),
 }
 
+// JwkGeneratorEd25519 generates an Ed25519 private/public key pair.
 func JwkGeneratorEd25519() (any, any, string, string, error) {
 	priv, pub, err := jwk.GenerateED25519()
 	if err != nil {
@@ -93,6 +108,8 @@ func JwkGeneratorEd25519() (any, any, string, string, error) {
 	return priv, pub, priv.KID, pub.KID, nil
 }
 
+// JwkGeneratorHs returns a generator for the given HMAC algorithm.
+// HMAC keys are symmetric, so the returned public key is always nil.
 func JwkGeneratorHs(alg jwa.Alg) func() (any, any, string, string, error) {
 	return func() (any, any, string, string, error) {
 		var (
@@ -113,6 +130,7 @@ func JwkGeneratorHs(alg jwa.Alg) func() (any, any, string, string, error) {
 	}
 }
 
+// JwkGeneratorEs returns a generator for the given ECDSA algorithm.
 func JwkGeneratorEs(alg jwa.Alg) func() (any, any, string, string, error) {
 	return func() (any, any, string, string, error) {
 		var (
@@ -133,6 +151,7 @@ func JwkGeneratorEs(alg jwa.Alg) func() (any, any, string, string, error) {
 	}
 }
 
+// JwkGeneratorRsa returns a generator for the given RSA algorithm (covers both PKCS#1 and PSS).
 func JwkGeneratorRsa(alg jwa.Alg) func() (any, any, string, string, error) {
 	return func() (any, any, string, string, error) {
 		var (
@@ -153,6 +172,8 @@ func JwkGeneratorRsa(alg jwa.Alg) func() (any, any, string, string, error) {
 	}
 }
 
+// JwkPrivateSources holds typed, cached private-key sources for each supported algorithm family,
+// grouped by usage name, and is used to wire signing plugins for JWT production.
 type JwkPrivateSources struct {
 	EdDSA map[string]*jwk.Source[ed25519.PrivateKey]
 	HMAC  map[string]*jwk.Source[[]byte]
@@ -160,10 +181,15 @@ type JwkPrivateSources struct {
 	RSA   map[string]*jwk.Source[*rsa.PrivateKey]
 }
 
+// JwkPrivateSource is the fetch interface required by NewJwkPrivateSource.
+// It retrieves the raw JWKs for a given usage so they can be decoded into typed key sources.
 type JwkPrivateSource interface {
 	SearchKeys(ctx context.Context, usage string) ([]*jwa.JWK, error)
 }
 
+// NewJwkPrivateSource builds a JwkPrivateSources by creating a typed, cached key source for each
+// usage in keys, using source to fetch raw key material. Returns an error if a usage references
+// an unsupported algorithm.
 func NewJwkPrivateSource(
 	source JwkPrivateSource,
 	keys map[string]*config.Jwk,
@@ -203,6 +229,8 @@ func NewJwkPrivateSource(
 	return output, nil
 }
 
+// JwkPublicSources holds typed, cached public-key sources for each supported algorithm family,
+// grouped by usage name, and is used to wire verification plugins for JWT consumption.
 type JwkPublicSources struct {
 	EdDSA map[string]*jwk.Source[ed25519.PublicKey]
 	HMAC  map[string]*jwk.Source[[]byte]
@@ -210,10 +238,15 @@ type JwkPublicSources struct {
 	RSA   map[string]*jwk.Source[*rsa.PublicKey]
 }
 
+// JwkPublicSource is the fetch interface required by NewJwkPublicSource.
+// It retrieves the raw JWKs for a given usage so they can be decoded into typed key sources.
 type JwkPublicSource interface {
 	SearchKeys(ctx context.Context, usage string) ([]*jwa.JWK, error)
 }
 
+// NewJwkPublicSource builds a JwkPublicSources by creating a typed, cached key source for each
+// usage in keys, using source to fetch raw key material. Returns an error if a usage references
+// an unsupported algorithm.
 func NewJwkPublicSource(
 	source JwkPublicSource,
 	keys map[string]*config.Jwk,
@@ -252,8 +285,12 @@ func NewJwkPublicSource(
 	return output, nil
 }
 
+// JwkProducers maps each key usage to the set of JWT producer plugins used for signing tokens
+// under that usage. Use [NewJwkProducers] to build one from a [JwkPrivateSources].
 type JwkProducers map[string][]jwt.ProducerPlugin
 
+// NewJwkProducers builds a JwkProducers map from sources, wiring the appropriate signer plugin
+// for each usage based on its algorithm. Returns an error if a usage has no matching signer preset.
 func NewJwkProducers(
 	sources *JwkPrivateSources,
 	keys map[string]*config.Jwk,
@@ -290,8 +327,12 @@ func NewJwkProducers(
 	return output, nil
 }
 
+// JwkRecipients maps each key usage to the set of JWT recipient plugins used for verifying tokens
+// under that usage. Use [NewJwkRecipients] to build one from a [JwkPublicSources].
 type JwkRecipients map[string][]jwt.RecipientPlugin
 
+// NewJwkRecipients builds a JwkRecipients map from sources, wiring the appropriate verifier plugin
+// for each usage based on its algorithm. Returns an error if a usage has no matching verifier preset.
 func NewJwkRecipients(
 	sources *JwkPublicSources,
 	keys map[string]*config.Jwk,

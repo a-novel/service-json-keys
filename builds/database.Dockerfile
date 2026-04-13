@@ -1,8 +1,5 @@
-# This is a custom postgres image that comes with pre-loaded extensions. It allows us to customize
-# our instance at build time.
-#
-# Note: this image does not run the migrations from the main image, make sure to call the appropriate
-# patch for this.
+# PostgreSQL image with pg_cron pre-installed at build time.
+# Database migrations are not included; run the migrations image separately after deployment.
 FROM docker.io/library/postgres:18.3
 
 ARG DEBIAN_FRONTEND=noninteractive
@@ -10,11 +7,11 @@ ARG DEBIAN_FRONTEND=noninteractive
 # ======================================================================================================================
 # Prepare extension scripts.
 # ======================================================================================================================
-# Custom entrypoint used to run postgres with extensions.
+# Custom entrypoint used to run PostgreSQL with extensions.
 COPY ./builds/database.entrypoint.sh /usr/local/bin/database.entrypoint.sh
 RUN chmod +x /usr/local/bin/database.entrypoint.sh
 
-# Initial migration of the image, used to setup extensions within postgres.
+# SQL script run on first container start to install PostgreSQL extensions.
 COPY ./builds/database.sql /docker-entrypoint-initdb.d/init.sql
 
 # ======================================================================================================================
@@ -24,7 +21,7 @@ COPY ./builds/database.sql /docker-entrypoint-initdb.d/init.sql
 # Needed to build pg_cron.
 RUN apt-get update && apt-get -y install git build-essential postgresql-server-dev-18
 
-# We install from source to ensure we have the latest version (no trust for Debian apt packages).
+# Install from source for the latest version; the Debian apt package lags behind upstream releases.
 RUN git clone https://github.com/citusdata/pg_cron.git
 RUN cd pg_cron && \
     git fetch --tags && \
@@ -48,14 +45,14 @@ RUN chown postgres:postgres /usr/share/postgresql/postgresql.conf.sample && \
 # ======================================================================================================================
 # Finish setup.
 # ======================================================================================================================
-# Default postgres port.
+# Default PostgreSQL port.
 EXPOSE 5432
 
 # Postgres does not provide a healthcheck by default.
 HEALTHCHECK --interval=1s --timeout=5s --retries=10 --start-period=1s \
   CMD pg_isready || exit 1
 
-# Use our entrypoint instead of the native one.
+# Use the custom entrypoint instead of the native one.
 ENTRYPOINT ["/usr/local/bin/database.entrypoint.sh"]
 
 # Restore the original command from the base image.

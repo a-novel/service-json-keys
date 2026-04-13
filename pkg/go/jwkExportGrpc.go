@@ -10,10 +10,8 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
 )
 
-// jwkExportGrpc is a service used to wrap an api client so it can be used as a
-// cached jwk.Source to reduce load on the network.
-//
-// This exporter is meant for external usage.
+// A jwkExportGrpc adapts a [BaseClient] to the key-source fetch interface used when initializing
+// a [Client], bridging the gRPC JwkList call into the key-source mechanism.
 type jwkExportGrpc struct {
 	client BaseClient
 }

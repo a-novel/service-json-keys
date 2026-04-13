@@ -8,13 +8,14 @@ service JwkListService {
   rpc JwkList(JwkListRequest) returns (JwkListResponse);
 }
 
+// JwkListRequest filters the active public keys to list by usage.
 message JwkListRequest {
-  // The intended usage of the key.
+  // The key usage to filter by.
   string usage = 1;
 }
 
+// JwkListResponse contains the active public keys for the requested usage.
 message JwkListResponse {
-  // The keys in JSON Web Key (JWK) format. The keys are returned in
-  // creation order (first key in the array is the main key, the rest are legacy).
+  // The active JSON Web Keys for the requested usage, in creation order.
   repeated Jwk keys = 1;
 }

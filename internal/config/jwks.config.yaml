@@ -1,15 +1,23 @@
+# Default JWK configuration for all registered key usages.
+# Loaded at startup by both the gRPC server and the rotate-keys job.
+# Each top-level key is a usage name; its value configures the signing algorithm,
+# key lifetime, and the JWT claims applied to every token signed under that usage.
+
+# Short-lived access tokens issued by the authentication service.
 auth:
   alg: EdDSA
   key:
-    ttl: 168h # 7 days
-    rotation: 24h
-    cache: 30m
+    ttl: 168h # 7 days — how long a key version stays active before expiring
+    rotation: 24h # a new key is generated every 24 h; older keys remain active until their TTL
+    cache: 30m # how long public keys are cached locally before re-fetching
   token:
     ttl: 24h
     issuer: "anovel-authentication"
     audience: "anovel-client"
     subject: "user-access"
-    leeway: 5m
+    leeway: 5m # clock-skew tolerance when validating token expiry
+
+# Long-lived refresh tokens used to obtain new access tokens without re-authentication.
 auth-refresh:
   alg: EdDSA
   key:
@@ -17,7 +25,7 @@ auth-refresh:
     rotation: 168h # 7 days
     cache: 30m
   token:
-    ttl: 168h
+    ttl: 168h # 7 days
     issuer: "anovel-authentication"
     audience: "anovel-client"
     subject: "user-refresh"

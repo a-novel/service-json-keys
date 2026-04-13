@@ -16,27 +16,29 @@ import (
 //go:embed pg.jwkInsert.sql
 var jwkInsertQuery string
 
+// JwkInsertRequest holds the parameters for a [JwkInsert.Exec] call.
 type JwkInsertRequest struct {
-	// ID of the key to insert. Must be unique among all existing keys.
+	// ID is the key's unique identifier; it must not collide with any existing key.
 	ID uuid.UUID
 
-	// See Jwk.PrivateKey. Must be encrypted.
+	// PrivateKey is the encrypted ciphertext of the private key. See [Jwk.PrivateKey].
 	PrivateKey string
-	// See Jwk.PublicKey.
+	// PublicKey is the serialized public key; nil for symmetric algorithms. See [Jwk.PublicKey].
 	PublicKey *string
-	// See Jwk.Usage.
+	// Usage is the key's intended signing purpose. See [Jwk.Usage].
 	Usage string
 
-	// Time used for key creation.
+	// Now is the timestamp recorded as the key's creation time.
 	Now time.Time
-	// See Jwk.ExpiresAt.
+	// Expiration is the hard expiry date for this key. See [Jwk.ExpiresAt].
 	Expiration time.Time
 }
 
-// JwkInsert inserts a new key for a given usage. If the creation time is greater
-// than any existing key for this usage, the new key will become the "main" key.
+// A JwkInsert inserts a new key for a given usage. If the creation time is greater
+// than any existing key for this usage, the new key becomes the main key.
 type JwkInsert struct{}
 
+// NewJwkInsert returns a new JwkInsert repository.
 func NewJwkInsert() *JwkInsert {
 	return new(JwkInsert)
 }

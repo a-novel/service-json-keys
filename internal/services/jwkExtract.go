@@ -15,17 +15,18 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/lib"
 )
 
+// JwkExtractRequest holds the parameters for a [JwkExtract.Exec] call.
 type JwkExtractRequest struct {
-	// The dao object to extract from.
+	// Jwk is the DAO entity to extract key material from.
 	Jwk *dao.Jwk
-	// Whether to extract the private key or not. If false, only the public
-	// key is returned.
+	// Private indicates whether to return the private key; when false, the public key is returned.
 	Private bool
 }
 
-// JwkExtract decodes the raw keys returned from the DAO layer.
+// A JwkExtract decodes the raw keys returned from the DAO layer.
 type JwkExtract struct{}
 
+// NewJwkExtract returns a new JwkExtract service.
 func NewJwkExtract() *JwkExtract {
 	return new(JwkExtract)
 }
@@ -43,8 +44,7 @@ func (service *JwkExtract) Exec(ctx context.Context, request *JwkExtractRequest)
 	)
 
 	decoded, err := base64.RawURLEncoding.DecodeString(
-		// In case of a symmetric jwk, the public member will be nil, and the private member will be returned
-		// instead.
+		// For symmetric JWKs the public key is nil, so always fall back to the private key.
 		lo.Ternary(
 			request.Private || request.Jwk.PublicKey == nil,
 			request.Jwk.PrivateKey,
@@ -59,7 +59,7 @@ func (service *JwkExtract) Exec(ctx context.Context, request *JwkExtractRequest)
 
 	err = lo.TernaryF(
 		request.Private || request.Jwk.PublicKey == nil,
-		// Private jwk also needs to be decrypted.
+		// Private key material is encrypted at rest and must be decrypted before use.
 		func() error { return lib.DecryptMasterKey(ctx, decoded, &deserialized) },
 		func() error { return json.Unmarshal(decoded, &deserialized) },
 	)

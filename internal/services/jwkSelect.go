@@ -12,32 +12,32 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 )
 
+// JwkSelectRepository is the DAO dependency of [JwkSelect].
 type JwkSelectRepository interface {
 	Exec(ctx context.Context, request *dao.JwkSelectRequest) (*dao.Jwk, error)
 }
 
+// JwkSelectServiceExtract is the service dependency of [JwkSelect] for deserializing DAO entities.
 type JwkSelectServiceExtract interface {
 	Exec(ctx context.Context, request *JwkExtractRequest) (*Jwk, error)
 }
 
+// JwkSelectRequest holds the parameters for a [JwkSelect.Exec] call.
 type JwkSelectRequest struct {
-	// ID of the key to retrieve. This parameter is usually available under the "kid" field
-	// of a JSON web token claims / headers.
+	// ID is the key to retrieve; it corresponds to the "kid" field in the JWT header.
 	ID uuid.UUID
-	// Whether to return private or public keys.
-	//
-	// Note: if this option is set to true, make sure the query comes from the
-	// correct producer.
+	// Private controls whether to return the private key material. Set to true only for the signing
+	// path (gRPC ClaimsSign); public key endpoints must leave this false.
 	Private bool
 }
 
-// JwkSelect retrieves a key from its ID. The key id is usually available under the "kid" field
-// of a JSON web token, but can also appear under different fields.
+// A JwkSelect retrieves a JSON Web Key by its key ID.
 type JwkSelect struct {
 	repository     JwkSelectRepository
 	serviceExtract JwkSelectServiceExtract
 }
 
+// NewJwkSelect returns a new JwkSelect service.
 func NewJwkSelect(
 	repository JwkSelectRepository,
 	serviceExtract JwkSelectServiceExtract,

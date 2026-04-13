@@ -1,4 +1,4 @@
-# This image runs a job that will apply the latest migrations to a database instance.
+# Runs the migrations job: applies pending database schema migrations.
 FROM docker.io/library/golang:1.26.2-alpine AS builder
 
 WORKDIR /app

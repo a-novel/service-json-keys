@@ -8,12 +8,10 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
-// KeyUsage determines the intended usage of a token. The usage
-//
-//	determines the token parameters (ttl, issuer, etc.), along with the set of keys used to generate it.
-//
-// Note that each service willing to produce tokens must register its own unique usages
-// and configure them directly on this service.
+// KeyUsage identifies the intended purpose of a token. It selects the signing key and full
+// token configuration the service uses when signing, and the corresponding public keys and
+// parameters used to verify. Each producer service owns one or more usages, registered in
+// the service configuration.
 type KeyUsage = string
 
 const (
@@ -23,22 +21,28 @@ const (
 	KeyUsageAuthRefresh KeyUsage = "auth-refresh"
 )
 
+// VerifyClaimsOptions configures optional behavior for a [ClaimsVerifier.VerifyClaims] call.
 type VerifyClaimsOptions struct {
-	// Ignore the expiration date check. This can be used to validate expired tokens.
+	// IgnoreExpired, when true, allows expired tokens to pass verification.
 	IgnoreExpired bool
 }
 
+// VerifyClaimsRequest holds the parameters for a [ClaimsVerifier.VerifyClaims] call.
 type VerifyClaimsRequest struct {
-	// See KeyUsage.
+	// Usage is the key usage the token was signed for; must match the value used at signing time. See [KeyUsage].
 	Usage KeyUsage
-	// The token to verify.
+	// AccessToken is the compact JWT to verify: the dot-separated base64url string
+	// (header.payload.signature) returned by the ClaimsSign RPC.
 	AccessToken string
-	// Validation options. Check VerifyClaimsOptions for more information.
+	// Options configures optional verification behavior for this call; nil means all defaults apply.
 	Options *VerifyClaimsOptions
 }
 
-// ClaimsVerifier is a service used to verify and decode a token. It returns the decoded claims.
+// A ClaimsVerifier verifies a compact JWT and deserializes its payload into C.
+// Verification is performed locally using public keys sourced from the [Client]; no network
+// call is made per verification. Obtain one with [NewClaimsVerifier].
 type ClaimsVerifier[C any] interface {
+	// VerifyClaims verifies the compact JWT in req and, if valid, returns the decoded claims.
 	VerifyClaims(ctx context.Context, req *VerifyClaimsRequest) (*C, error)
 }
 
@@ -46,6 +50,9 @@ type claimsVerifier[C any] struct {
 	service *services.ClaimsVerify[C]
 }
 
+// NewClaimsVerifier creates a token verifier backed by the key material and configuration
+// carried by c. C must be JSON-serializable and match the claims type used when signing
+// for the same usage.
 func NewClaimsVerifier[C any](c Client) ClaimsVerifier[C] {
 	service := services.NewClaimsVerify[C](c.Recipients(), c.Keys())
 

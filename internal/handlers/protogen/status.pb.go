@@ -25,13 +25,13 @@ type DependencyStatus int32
 
 const (
 	// DEPENDENCY_STATUS_UNSPECIFIED means the application has failed to, or has not yet
-	// assess the status of the given dependency.
+	// assessed the status of the given dependency.
 	DependencyStatus_DEPENDENCY_STATUS_UNSPECIFIED DependencyStatus = 0
 	// DEPENDENCY_STATUS_UP means the dependency was successfully pinged, and
 	// should serve normally.
 	DependencyStatus_DEPENDENCY_STATUS_UP DependencyStatus = 1
-	// DEPENDENCY_STATUS_DOWN means the application has contacted the dependency, but it
-	// failed to respond with a proper status.
+	// DEPENDENCY_STATUS_DOWN means the dependency health check failed; the dependency
+	// may be unavailable or unreachable.
 	DependencyStatus_DEPENDENCY_STATUS_DOWN DependencyStatus = 2
 )
 
@@ -76,10 +76,12 @@ func (DependencyStatus) EnumDescriptor() ([]byte, []int) {
 	return file_status_proto_rawDescGZIP(), []int{0}
 }
 
+// DependencyHealth reports the health of a single external dependency.
 type DependencyHealth struct {
-	state  protoimpl.MessageState `protogen:"open.v1"`
-	Status DependencyStatus       `protobuf:"varint,1,opt,name=status,proto3,enum=DependencyStatus" json:"status,omitempty"`
-	// The error that occurred when checking for the dependency status, if any.
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The dependency's current operational status.
+	Status DependencyStatus `protobuf:"varint,1,opt,name=status,proto3,enum=DependencyStatus" json:"status,omitempty"`
+	// The error that occurred when checking the dependency status, if any.
 	Err           string `protobuf:"bytes,2,opt,name=err,proto3" json:"err,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -165,9 +167,11 @@ func (*StatusRequest) Descriptor() ([]byte, []int) {
 	return file_status_proto_rawDescGZIP(), []int{1}
 }
 
+// StatusResponse reports the health of all service dependencies checked at request time.
 type StatusResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Postgres      *DependencyHealth      `protobuf:"bytes,1,opt,name=postgres,proto3" json:"postgres,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The health of the PostgreSQL database dependency.
+	Postgres      *DependencyHealth `protobuf:"bytes,1,opt,name=postgres,proto3" json:"postgres,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

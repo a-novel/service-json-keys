@@ -26,8 +26,8 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// JwkGetService returns a public key for the given key id.
-// This key may be used by any recipient to validate / decrypt a token.
+// JwkGetService returns a public JSON Web Key by its key ID.
+// The returned key may be used by any recipient to verify a token.
 type JwkGetServiceClient interface {
 	JwkGet(ctx context.Context, in *JwkGetRequest, opts ...grpc.CallOption) (*JwkGetResponse, error)
 }
@@ -54,8 +54,8 @@ func (c *jwkGetServiceClient) JwkGet(ctx context.Context, in *JwkGetRequest, opt
 // All implementations must embed UnimplementedJwkGetServiceServer
 // for forward compatibility.
 //
-// JwkGetService returns a public key for the given key id.
-// This key may be used by any recipient to validate / decrypt a token.
+// JwkGetService returns a public JSON Web Key by its key ID.
+// The returned key may be used by any recipient to verify a token.
 type JwkGetServiceServer interface {
 	JwkGet(context.Context, *JwkGetRequest) (*JwkGetResponse, error)
 	mustEmbedUnimplementedJwkGetServiceServer()

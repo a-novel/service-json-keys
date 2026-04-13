@@ -1,3 +1,8 @@
+// Command rotate-keys rotates active JSON Web Keys. For each configured usage, it generates
+// a new key if the rotation interval has elapsed, then refreshes the active_keys materialized
+// view so consumers see the updated set immediately.
+//
+// Designed to run as a periodic job (e.g., a Kubernetes CronJob).
 package main
 
 import (
@@ -17,8 +22,8 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
-// Generate new versions for each usage of JSON keys.
 func main() {
+	// --- Bootstrap: load config, init telemetry and context ---
 	cfg := config.JobRotateKeysPresetDefault
 	ctx := context.Background()
 
@@ -33,6 +38,7 @@ func main() {
 	ctx, span := otel.Tracer().Start(ctx, "job.RotateKeys")
 	defer span.End()
 
+	// --- Wire dependencies ---
 	repositoryJwkSearch := dao.NewJwkSearch()
 	repositoryJwkInsert := dao.NewJwkInsert()
 
@@ -44,8 +50,8 @@ func main() {
 		config.JwkPresetDefault,
 	)
 
+	// --- Rotate keys for each usage (inside a transaction for atomicity) ---
 	err := postgres.RunInTx(ctx, nil, func(ctx context.Context, _ bun.IDB) error {
-		// Update keys for each usage.
 		for usage := range config.JwkPresetDefault {
 			_, err := serviceJwkGen.Exec(ctx, &services.JwkGenRequest{Usage: usage})
 			if err != nil {
@@ -60,9 +66,9 @@ func main() {
 		log.Fatalln(err.Error()) //nolint:gocritic
 	}
 
+	// --- Refresh the materialized view so consumers see the updated active keys ---
 	db := lo.Must(postgres.GetContext(ctx))
 
-	// The new keys must also be added to the materialized view.
 	_, err = db.NewRaw("REFRESH MATERIALIZED VIEW active_keys;").Exec(ctx)
 	if err != nil {
 		err = otel.ReportError(span, fmt.Errorf("rotate keys: %w", err))

@@ -15,16 +15,19 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
+// JwkGetService is the service dependency of [JwkGet].
 type JwkGetService interface {
 	Exec(ctx context.Context, request *services.JwkSelectRequest) (*services.Jwk, error)
 }
 
+// JwkGet is the gRPC handler that retrieves a single JSON Web Key by its ID.
 type JwkGet struct {
 	protogen.UnimplementedJwkGetServiceServer
 
 	service JwkGetService
 }
 
+// NewJwkGet returns a new JwkGet handler backed by the given service.
 func NewJwkGet(service JwkGetService) *JwkGet {
 	return &JwkGet{service: service}
 }

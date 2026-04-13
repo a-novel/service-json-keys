@@ -1,3 +1,11 @@
+// Command grpc runs the private gRPC server for the JSON-keys service.
+//
+// This server is the authenticated service-to-service API. It exposes token signing,
+// key retrieval, and health check endpoints. Because signing requires access to private
+// key material, the APP_MASTER_KEY environment variable must be set before starting the
+// server.
+//
+// For the public read-only REST API, see cmd/rest.
 package main
 
 import (
@@ -28,7 +36,6 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
-// Runs the main gRPC server.
 func main() {
 	cfg := config.AppPresetDefault
 	ctx := context.Background()
@@ -59,6 +66,9 @@ func main() {
 	serviceJwkExtract := services.NewJwkExtract()
 	serviceJwkSearch := services.NewJwkSearch(repositoryJwkSearch, serviceJwkExtract)
 	serviceJwkSelect := services.NewJwkSelect(repositoryJwkSelect, serviceJwkExtract)
+
+	// Build the signing chain: a cached private-key source feeds per-usage producer plugins,
+	// which ClaimsSign uses to sign tokens without hitting the database on every request.
 	serviceExportLocal := services.NewJwkExportLocal(serviceJwkSearch)
 	serviceJwkSource := lo.Must(services.NewJwkPrivateSource(serviceExportLocal, config.JwkPresetDefault))
 	serviceJwkProducer := lo.Must(services.NewJwkProducers(serviceJwkSource, config.JwkPresetDefault))

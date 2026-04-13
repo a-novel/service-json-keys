@@ -1,25 +1,24 @@
 CREATE TABLE keys (
   id uuid PRIMARY KEY NOT NULL,
-  /*
-  Contains the ciphered JSON Web Key representation of the private key,
-  as a string.
-  */
+  /* Encrypted private key in JSON Web Key format, base64url-encoded. */
   private_key text NOT NULL CHECK (private_key <> ''),
-  /* Contains the raw JSON Web key public representation, if available. */
+  /* Public key in JSON Web Key format, base64url-encoded. Null for symmetric keys. */
   public_key text,
-  /* Group keys of similar usage */
+  /* Groups keys that serve the same signing purpose (e.g., "auth", "auth-refresh"). */
   usage text NOT NULL,
   created_at timestamp(0) with time zone NOT NULL,
-  /* Sets an expiration date for the key. */
+  /* Hard expiry date. Once passed, the key is excluded from the active view. */
   expires_at timestamp(0) with time zone NOT NULL,
-  /* Use this field to expire a key early, in case it was compromised. */
+  /* Soft-delete timestamp. Set when a key is revoked early (e.g., due to a compromise). */
   deleted_at timestamp(0) with time zone,
-  /* Extra information about the deprecation of the key. */
+  /* Human-readable reason for the early revocation. */
   deleted_comment text
 );
 
 CREATE INDEX keys_usage_idx ON keys (usage);
 
+/* active_keys exposes only keys that have not yet expired and have not been soft-deleted.
+A key is considered active when deleted_at is null (or in the future) AND expires_at is in the future. */
 CREATE VIEW active_keys AS (
   SELECT
     *

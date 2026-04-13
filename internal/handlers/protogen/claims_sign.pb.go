@@ -22,13 +22,15 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// ClaimsSignRequest carries the claims to sign and the usage that selects the signing key
+// and token parameters.
 type ClaimsSignRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Intended usage of the token. This determines the parameters and private key used to
-	// generate (and later validate) the token.
+	// Intended usage of the token. Determines the signing key and token parameters used to
+	// generate (and later verify) the token.
 	Usage string `protobuf:"bytes,1,opt,name=usage,proto3" json:"usage,omitempty"`
-	// The payload to sign with the token. Its inner type should remain consistent for a given
-	// usage.
+	// The claims payload to embed in the token. Its inner type should remain consistent for
+	// a given usage.
 	Payload       *anypb.Any `protobuf:"bytes,2,opt,name=payload,proto3" json:"payload,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -78,9 +80,10 @@ func (x *ClaimsSignRequest) GetPayload() *anypb.Any {
 	return nil
 }
 
+// ClaimsSignResponse carries the signed compact JWT.
 type ClaimsSignResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// The signed token, in JWT format, containing the payload.
+	// The signed compact JWT (base64url header.payload.signature).
 	Token         string `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache

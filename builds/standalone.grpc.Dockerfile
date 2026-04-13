@@ -1,9 +1,6 @@
-# This image exposes our app as a gRPC server.
-#
-# It requires a database instance to run properly. The instance may not be patched.
-#
-# This image will make sure all patches are applied before starting the server. It is a larger
-# version of the base gRPC image, suited for local development rather than full scale production.
+# Standalone gRPC server image for local development. Applies migrations and rotates keys
+# automatically before starting the server, so the database does not need to be pre-initialized.
+# For production deployments, use the base gRPC image (grpc.Dockerfile) instead.
 FROM docker.io/library/golang:1.26.2-alpine AS builder
 
 WORKDIR /app
@@ -57,10 +54,10 @@ HEALTHCHECK --interval=1s --timeout=5s --retries=10 --start-period=1s \
 # Make sure the executable uses the default port.
 ENV GRPC_PORT=8080
 
-# GRPC port.
+# gRPC port.
 EXPOSE 8080
 # TLS port.
 EXPOSE 443
 
-# Run patches before starting the server.
+# Apply migrations and rotate keys, then start the server.
 CMD ["sh", "-c", "/migrations && /rotate-keys && /grpc"]

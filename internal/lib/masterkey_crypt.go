@@ -14,13 +14,17 @@ import (
 )
 
 var (
-	ErrInvalidSecret     = errors.New("invalid secret")
+	// ErrInvalidSecret is returned when decryption fails due to an invalid key or tampered ciphertext.
+	ErrInvalidSecret = errors.New("invalid secret")
+	// ErrInvalidCiphertext is returned when the ciphertext is too short to hold a valid secretbox message.
 	ErrInvalidCiphertext = errors.New("ciphertext too short")
 )
 
+// NonceLength is the length, in bytes, of the NaCl secretbox nonce prepended to each encrypted payload.
 const NonceLength = 24
 
-// EncryptMasterKey encrypts the input using the master key saved in the context.
+// EncryptMasterKey JSON-marshals data and encrypts it using the master key stored in the context.
+// The returned ciphertext includes an embedded nonce and can only be decrypted by [DecryptMasterKey].
 func EncryptMasterKey(ctx context.Context, data any) ([]byte, error) {
 	ctx, span := otel.Tracer().Start(ctx, "lib.EncryptMasterKey")
 	defer span.End()
@@ -39,7 +43,6 @@ func EncryptMasterKey(ctx context.Context, data any) ([]byte, error) {
 
 	span.AddEvent("data.serialized")
 
-	// Generate a random nonce for encryption.
 	var nonce [NonceLength]byte
 
 	_, err = io.ReadFull(rand.Reader, nonce[:])
@@ -56,7 +59,8 @@ func EncryptMasterKey(ctx context.Context, data any) ([]byte, error) {
 	return otel.ReportSuccess(span, encrypted), nil
 }
 
-// DecryptMasterKey decrypts the input using the master key saved in the context.
+// DecryptMasterKey decrypts a ciphertext produced by [EncryptMasterKey] using the master key stored
+// in the context, then JSON-unmarshals the result into output, which must be a non-nil pointer.
 func DecryptMasterKey(ctx context.Context, data []byte, output any) error {
 	ctx, span := otel.Tracer().Start(ctx, "lib.DecryptMasterKey")
 	defer span.End()
@@ -73,7 +77,6 @@ func DecryptMasterKey(ctx context.Context, data []byte, output any) error {
 		return otel.ReportError(span, fmt.Errorf("decrypt data: %w", ErrInvalidCiphertext))
 	}
 
-	// Retrieve the nonce value from the source.
 	var decryptNonce [NonceLength]byte
 	copy(decryptNonce[:], data[:NonceLength])
 

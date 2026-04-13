@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Runs the Go package integration tests against a live gRPC service.
+# Starts the containerized gRPC service via podman-compose, then runs all /pkg packages.
+
 APP_NAME="service-json-keys-integration-test"
 PODMAN_FILE="$PWD/builds/podman-compose.integration-test.grpc.yaml"
 

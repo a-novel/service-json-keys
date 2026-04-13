@@ -21,9 +21,10 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// JwkListRequest filters the active public keys to list by usage.
 type JwkListRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// The intended usage of the key.
+	// The key usage to filter by.
 	Usage         string `protobuf:"bytes,1,opt,name=usage,proto3" json:"usage,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -66,10 +67,10 @@ func (x *JwkListRequest) GetUsage() string {
 	return ""
 }
 
+// JwkListResponse contains the active public keys for the requested usage.
 type JwkListResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// The keys in JSON Web Key (JWK) format. The keys are returned in
-	// creation order (first key in the array is the main key, the rest are legacy).
+	// The active JSON Web Keys for the requested usage, in creation order.
 	Keys          []*Jwk `protobuf:"bytes,1,rep,name=keys,proto3" json:"keys,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache

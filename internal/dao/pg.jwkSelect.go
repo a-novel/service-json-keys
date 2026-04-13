@@ -17,18 +17,19 @@ import (
 //go:embed pg.jwkSelect.sql
 var jwkSelectQuery string
 
+// ErrJwkSelectNotFound is returned when no active key matches the requested ID.
 var ErrJwkSelectNotFound = errors.New("jwk not found")
 
+// JwkSelectRequest holds the parameters for a [JwkSelect.Exec] call.
 type JwkSelectRequest struct {
-	// ID of the key to retrieve. This parameter is usually available under the "kid" field
-	// of a JSON web token claims / headers.
+	// ID is the key to retrieve; it corresponds to the "kid" field in the JWT header.
 	ID uuid.UUID
 }
 
-// JwkSelect retrieves a key from its ID. The key id is usually available under the "kid" field
-// of a JSON web token, but can also appear under different fields.
+// A JwkSelect retrieves a single active key by its ID.
 type JwkSelect struct{}
 
+// NewJwkSelect returns a new JwkSelect repository.
 func NewJwkSelect() *JwkSelect {
 	return &JwkSelect{}
 }

@@ -1,3 +1,11 @@
+// Command rest runs the public REST server for the JSON-keys service.
+//
+// This server exposes read-only JSON Web Key endpoints so that any client can fetch
+// public keys for local token verification. It does not expose
+// signing or any private key material. No authentication is required to access
+// these endpoints.
+//
+// For the private authenticated gRPC API (including token signing), see cmd/grpc.
 package main
 
 import (
@@ -27,7 +35,6 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
-// Runs the main REST server.
 func main() {
 	cfg := config.AppPresetDefault
 	ctx := context.Background()

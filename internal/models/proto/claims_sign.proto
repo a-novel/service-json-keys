@@ -8,16 +8,19 @@ service ClaimsSignService {
   rpc ClaimsSign(ClaimsSignRequest) returns (ClaimsSignResponse);
 }
 
+// ClaimsSignRequest carries the claims to sign and the usage that selects the signing key
+// and token parameters.
 message ClaimsSignRequest {
-  // Intended usage of the token. This determines the parameters and private key used to
-  // generate (and later validate) the token.
+  // Intended usage of the token. Determines the signing key and token parameters used to
+  // generate (and later verify) the token.
   string usage = 1;
-  // The payload to sign with the token. Its inner type should remain consistent for a given
-  // usage.
+  // The claims payload to embed in the token. Its inner type should remain consistent for
+  // a given usage.
   google.protobuf.Any payload = 2;
 }
 
+// ClaimsSignResponse carries the signed compact JWT.
 message ClaimsSignResponse {
-  // The signed token, in JWT format, containing the payload.
+  // The signed compact JWT (base64url header.payload.signature).
   string token = 1;
 }
