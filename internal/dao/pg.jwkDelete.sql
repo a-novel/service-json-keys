@@ -1,8 +1,7 @@
 UPDATE keys
 SET
   deleted_at = ?0,
-  -- This operation is the result of a premature suppression,
-  -- so a comment should indicate why this happened.
+  -- Premature revocation; the comment records the reason.
   deleted_comment = ?1
 WHERE
   id = ?2

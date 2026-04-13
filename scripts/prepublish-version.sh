@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Updates version references in a file using sed, replacing occurrences of <prefix>vX.Y.Z with
+# <prefix>v<current-package-version>. Works on both GNU (Linux) and BSD (macOS) sed.
+# Usage: ./prepublish-version.sh <prefix> <file>
+
 set -e
 
 case "$OSTYPE" in

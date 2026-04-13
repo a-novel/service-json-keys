@@ -12,25 +12,24 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/config"
 )
 
+// ClaimsSignRequest holds the parameters for a [ClaimsSign.Exec] call.
 type ClaimsSignRequest struct {
-	// The claims that will be wrapped by the token.
+	// Claims is the caller-supplied payload to embed in the JWT. Any JSON-serializable value
+	// is accepted; the service adds the standard JWT claim envelope before signing.
 	Claims any
-	// The intended usage of the token. It will be used to select
-	// the relevant Json Web Key and algorithm.
+	// Usage identifies the key and token parameters to use for signing. See [config.Jwk].
 	Usage string
 }
 
-// ClaimsSign is a service used to generate Json Web Tokens from a provided object (claims).
+// A ClaimsSign signs a set of claims and returns a compact JWT. The signing key and all token
+// parameters are determined by the requested usage.
 type ClaimsSign struct {
 	producers  map[string][]jwt.ProducerPlugin
 	keysConfig map[string]*config.Jwk
 }
 
-// NewClaimsSign creates a new ClaimsSign service.
-//
-// The producers are a list of plugins to use depending on the key usage.
-//
-// This method also requires to provide JSON key configuration for each usage.
+// NewClaimsSign creates a ClaimsSign service. Producers provide the per-usage signing plugins
+// (see [NewJwkProducers]); keysConfig provides the token parameters for each usage.
 func NewClaimsSign(
 	producers map[string][]jwt.ProducerPlugin,
 	keysConfig map[string]*config.Jwk,
@@ -49,8 +48,8 @@ func (service *ClaimsSign) Exec(ctx context.Context, request *ClaimsSignRequest)
 		return "", otel.ReportError(span, fmt.Errorf("%w: %s", ErrConfigNotFound, request.Usage))
 	}
 
-	// Wrap the provided claims with basic information. This extra information will be used
-	// to validate the claims along with the token signature.
+	// Attach the standard JWT claim envelope from the usage config; these claims are
+	// checked during verification alongside the token signature.
 	claims, err := jwt.NewBasicClaims(request.Claims, jwt.ClaimsProducerConfig{
 		TargetConfig: jwt.TargetConfig{
 			Issuer:   keyConfig.Token.Issuer,
@@ -70,7 +69,6 @@ func (service *ClaimsSign) Exec(ctx context.Context, request *ClaimsSignRequest)
 
 	producer := jwt.NewProducer(jwt.ProducerConfig{Plugins: producerPlugins})
 
-	// Generate the token.
 	token, err := producer.Issue(ctx, claims, nil)
 	if err != nil {
 		return "", otel.ReportError(span, fmt.Errorf("issue token: %w", err))

@@ -13,16 +13,19 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
+// JwkListService is the service dependency of [JwkList].
 type JwkListService interface {
 	Exec(ctx context.Context, request *services.JwkSearchRequest) ([]*services.Jwk, error)
 }
 
+// JwkList is the gRPC handler that returns the active public keys for a given usage.
 type JwkList struct {
 	protogen.UnimplementedJwkListServiceServer
 
 	service JwkListService
 }
 
+// NewJwkList returns a new JwkList handler backed by the given service.
 func NewJwkList(service JwkListService) *JwkList {
 	return &JwkList{service: service}
 }

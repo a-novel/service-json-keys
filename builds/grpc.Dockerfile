@@ -1,6 +1,4 @@
-# This image exposes our app as a gRPC server.
-#
-# It requires a patched database instance to run properly.
+# Runs the JSON-keys gRPC server. Requires a database with migrations already applied.
 FROM docker.io/library/golang:1.26.2-alpine AS builder
 
 WORKDIR /app
@@ -48,7 +46,7 @@ HEALTHCHECK --interval=1s --timeout=5s --retries=10 --start-period=1s \
 # Make sure the executable uses the default port.
 ENV GRPC_PORT=8080
 
-# GRPC port.
+# gRPC port.
 EXPOSE 8080
 # TLS port.
 EXPOSE 443

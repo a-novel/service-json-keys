@@ -12,6 +12,8 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
 )
 
+// NewGrpcHealthStatus converts an error into a DependencyHealth proto message,
+// mapping nil to DEPENDENCY_STATUS_UP and any non-nil error to DEPENDENCY_STATUS_DOWN.
 func NewGrpcHealthStatus(err error) *protogen.DependencyHealth {
 	errMsg := ""
 	if err != nil {
@@ -28,10 +30,13 @@ func NewGrpcHealthStatus(err error) *protogen.DependencyHealth {
 	}
 }
 
+// GrpcStatus is the gRPC handler that reports the operational health of the service
+// and its dependencies.
 type GrpcStatus struct {
 	protogen.UnimplementedStatusServiceServer
 }
 
+// NewGrpcStatus returns a new GrpcStatus handler.
 func NewGrpcStatus() *GrpcStatus {
 	return new(GrpcStatus)
 }
@@ -56,7 +61,7 @@ func (handler *GrpcStatus) reportPostgres(ctx context.Context) error {
 
 	pgdb, ok := pg.(*bun.DB)
 	if !ok {
-		// Cannot assess db connection if we are running on transaction mode
+		// Cannot assess the DB connection in transaction mode.
 		return nil
 	}
 

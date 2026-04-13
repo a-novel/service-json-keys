@@ -14,27 +14,31 @@ import (
 //go:embed pg.jwkSearch.sql
 var jwkSearchQuery string
 
-// KeysMaxBatchSize is a security used to limit the number of keys retrieved by a search operation.
+// KeysMaxBatchSize is the maximum number of keys returned by a single search operation.
 //
-// Normally, regular key rotation and well configured expiration should limit the number of keys per batch, so the
-// search request has no pagination. Since we can't overrule an issue that would cause the number of keys in a batch
-// to balloon, this value is used as a security measure, to guarantee an upper limit of keys retrieved.
+// Regular key rotation and TTL-based expiration normally keep the number of active keys per usage
+// low, so the search has no pagination. This limit exists as a safeguard in case of misconfiguration
+// or unexpected key accumulation.
 const KeysMaxBatchSize = 100
 
+// ErrJwkSearchTooManyResults is logged (not returned) when a search hits the [KeysMaxBatchSize]
+// limit. Results are still returned, but the condition indicates a likely misconfiguration.
 var ErrJwkSearchTooManyResults = fmt.Errorf("the query returned %d or more results", KeysMaxBatchSize)
 
+// JwkSearchRequest holds the parameters for a [JwkSearch.Exec] call.
 type JwkSearchRequest struct {
-	// See Jwk.Usage.
+	// Usage is the key usage to filter by. See [Jwk.Usage].
 	Usage string
 }
 
-// JwkSearch lists the active keys for a given usage. The keys are returned in
-// creation order (first key in the array is the main key, the rest are legacy).
+// A JwkSearch lists the active keys for a given usage. Keys are returned in
+// creation order: the first element is the main key, the rest are legacy.
 //
-// There is no pagination for this query, as the number of active keys is guaranteed
-// to be lower than KeysMaxBatchSize at any given time.
+// There is no pagination for this query; regular rotation and expiration keep
+// the active key count well below [KeysMaxBatchSize] under normal operation.
 type JwkSearch struct{}
 
+// NewJwkSearch returns a new JwkSearch repository.
 func NewJwkSearch() *JwkSearch {
 	return new(JwkSearch)
 }
@@ -62,8 +66,8 @@ func (repository *JwkSearch) Exec(ctx context.Context, request *JwkSearchRequest
 		attribute.Int("keys.max_batch_size", KeysMaxBatchSize),
 	)
 
-	// Log an error when too many keys are found. This indicates a potential misconfiguration.
-	// This issue should not be blocking, as we still retrieve the main key.
+	// Log an error when too many keys are found, as this indicates a potential misconfiguration.
+	// The results found so far are still returned to the caller.
 	if len(entities) >= KeysMaxBatchSize {
 		err = fmt.Errorf("%w: %d keys found for usage %s", ErrJwkSearchTooManyResults, len(entities), request.Usage)
 

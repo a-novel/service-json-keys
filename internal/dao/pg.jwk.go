@@ -7,33 +7,27 @@ import (
 	"github.com/uptrace/bun"
 )
 
-// Jwk represents a JSON web key stored in the database. Keys are stored as base64 raw URL encoded strings.
+// A Jwk represents a JSON Web Key stored in the database. Keys are stored as base64 raw URL encoded strings.
 //
-// Private keys must be encoded using the environment master key.
+// Private keys must be encrypted with the master key before storage.
 //
-// A Jwk is never hard deleted. Instead, the repositories interact through an "active_keys" view,
-// that contains all keys that have not expired / be deleted yet.
-//
-// Keys are grouped by Usage (see more in the field documentation). For each usage, there is
-// a single main key (the latest) and a bunch of legacy keys (previous owners of the main
-// title). All those keys are part of the active_keys view, as long as they meet the conditions
-// (not expired nor deleted).
+// A Jwk is never hard-deleted. Instead, repositories query through an "active_keys" view that
+// excludes expired and soft-deleted rows. Keys are grouped by [Jwk.Usage]; for each usage there
+// is a single main key (the latest) and zero or more legacy keys (older active versions).
 type Jwk struct {
 	bun.BaseModel `bun:"table:keys,select:active_keys"`
 
-	// ID of the key. Should match the "kid" parameter when working with JSON web tokens.
+	// ID is the key's unique identifier; it corresponds to the "kid" field in the JWT header.
 	ID uuid.UUID `bun:"id,pk,type:uuid"`
 
-	// PrivateKey is the private key in JSON Web Key format.
-	//
-	// This key MUST BE encrypted, and the result of this encryption is stored as a base64 raw URL encoded string.
+	// PrivateKey is the private key in JSON Web Key format, encrypted with the master key
+	// and stored as a base64 raw URL encoded ciphertext.
 	PrivateKey string `bun:"private_key"`
-	// PublicKey is the public key in JSON Web Key format. The key is stored as a base64 raw URL encoded string.
-	//
-	// This value is OPTIONAL for symmetric keys.
+	// PublicKey is the public key in JSON Web Key format, stored as a base64 raw URL encoded string.
+	// It is nil for symmetric keys, which have no public counterpart.
 	PublicKey *string `bun:"public_key"`
 
-	// Usage gives information about the operation this key is intended for.
+	// Usage identifies the signing purpose this key serves.
 	//
 	// A particular Usage value should be registered by a single service, which becomes
 	// the "producer" for this usage. Only the producer should be allowed to perform
@@ -46,22 +40,21 @@ type Jwk struct {
 	// same key. When a new key is registered for a usage, it becomes the "main" key, and
 	// the other keys are converted to "legacy" keys.
 	//
-	// A producer should only ever use the main key for its operations. Recipients
-	// only use legacy keys to validate / decrypt older data from the producer.
+	// A producer signs only with the main key. Recipients can verify tokens signed
+	// by any active key for the usage.
 	Usage string `bun:"usage"`
 
+	// CreatedAt is when the key was generated and persisted; it determines the
+	// rotation schedule — a new key is created when the main key's age exceeds the
+	// configured rotation interval.
 	CreatedAt time.Time `bun:"created_at"`
-	// All keys are required to expire. Once the ExpiresAt date is passed, the key
-	// is removed from the active keys view, becoming accessible only to admins.
+	// ExpiresAt is the hard expiry date. Once passed, the key leaves the active view
+	// and is only accessible via direct database queries.
 	ExpiresAt time.Time `bun:"expires_at"`
 
-	// DeletedAt indicates the key was deleted prematurely, for example, due to a leakage.
-	// More information about this deletion may be found in the DeletedComment field.
-	//
-	// A key that expires naturally does not have a DeletedAt field.
+	// DeletedAt is set when the key is revoked prematurely — for example, due to a compromise.
+	// It is nil for keys that expire naturally. See [Jwk.DeletedComment] for the reason.
 	DeletedAt *time.Time `bun:"deleted_at"`
-	// DeletedComment gives information about the premature deletion of a key.
-	//
-	// See DeletedAt documentation for more information.
+	// DeletedComment is the human-readable reason for the early revocation. See [Jwk.DeletedAt].
 	DeletedComment *string `bun:"deleted_comment"`
 }

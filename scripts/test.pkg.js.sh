@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Runs the TypeScript/JS integration tests against a live REST service.
+# Starts the containerized REST service, waits for it to be ready, then runs pnpm test.
+
 APP_NAME="service-json-keys-integration-test-rest"
 PODMAN_FILE="$PWD/builds/podman-compose.integration-test.rest.yaml"
 

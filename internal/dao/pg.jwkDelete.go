@@ -18,26 +18,28 @@ import (
 //go:embed pg.jwkDelete.sql
 var jwkDeleteQuery string
 
+// ErrJwkDeleteNotFound is returned when no active key matches the delete request.
 var ErrJwkDeleteNotFound = errors.New("key not found")
 
+// JwkDeleteRequest holds the parameters for a [JwkDelete.Exec] call.
 type JwkDeleteRequest struct {
-	// ID of the key to delete.
+	// ID is the identifier of the key to revoke.
 	ID uuid.UUID
-	// Time at which the key will be marked as deleted.
+	// Now is the timestamp recorded as the revocation time.
 	Now time.Time
-	// Comment gives information about why a key was deleted.
+	// Comment is the human-readable reason for the revocation, stored for auditing.
 	Comment string
 }
 
-// JwkDelete prematurely deletes a JSON web key. It performs a soft delete, meaning the key disappears from the API
-// results but remains available for admins.
+// A JwkDelete prematurely soft-deletes a JSON Web Key: the key is removed from the active
+// view and disappears from API results, but is retained in the database for auditing.
 //
-// This repository SHOULD NOT be called when a key expires, as it will naturally be removed from the view anyway.
-//
-// This method only targets active keys. If the key is already deleted or expired, it will throw with
-// ErrJwkDeleteNotFound.
+// Do not call this when a key expires naturally — expired keys are removed from the active view
+// automatically. Only active keys can be targeted; if the key is already deleted or expired,
+// [ErrJwkDeleteNotFound] is returned.
 type JwkDelete struct{}
 
+// NewJwkDelete returns a new JwkDelete repository.
 func NewJwkDelete() *JwkDelete {
 	return new(JwkDelete)
 }

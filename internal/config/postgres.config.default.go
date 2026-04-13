@@ -8,4 +8,5 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/config/env"
 )
 
+// PostgresPresetDefault is the default PostgreSQL configuration populated from environment variables.
 var PostgresPresetDefault = postgrespresets.NewDefault(pgdriver.WithDSN(env.PostgresDsn))

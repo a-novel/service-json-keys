@@ -21,10 +21,10 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// JwkGetRequest identifies the key to retrieve by its key ID.
 type JwkGetRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Id of the key to retrieve. This parameter is usually available under the "kid" field
-	// of a JSON web token claims / headers.
+	// ID of the key to retrieve. Corresponds to the "kid" field in the JWT header.
 	Id            string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -67,9 +67,10 @@ func (x *JwkGetRequest) GetId() string {
 	return ""
 }
 
+// JwkGetResponse contains the public key matching the requested ID.
 type JwkGetResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// The key in JSON Web Key (JWK) format.
+	// The requested public key.
 	Jwk           *Jwk `protobuf:"bytes,1,opt,name=jwk,proto3" json:"jwk,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache

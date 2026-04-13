@@ -21,37 +21,40 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/lib"
 )
 
+// ErrJwkGenUnknownKeyUsage is returned when no key generator is registered for the requested usage's algorithm.
 var ErrJwkGenUnknownKeyUsage = errors.New("unknown key request.Usage")
 
-// KeyGenerator is a generic method that generates a private/public key pair.
+// KeyGenerator is the function type for key-generation callbacks; it generates a private/public key pair.
 type KeyGenerator func() (privateKey, publicKey *jwa.JWK, err error)
 
+// JwkGenRepositorySearch is the DAO search dependency of [JwkGen].
 type JwkGenRepositorySearch interface {
 	Exec(ctx context.Context, request *dao.JwkSearchRequest) ([]*dao.Jwk, error)
 }
 
+// JwkGenRepositoryInsert is the DAO insert dependency of [JwkGen].
 type JwkGenRepositoryInsert interface {
 	Exec(ctx context.Context, request *dao.JwkInsertRequest) (*dao.Jwk, error)
 }
 
+// JwkGenServiceExtract is the service dependency of [JwkGen] for deserializing generated keys.
 type JwkGenServiceExtract interface {
 	Exec(ctx context.Context, request *JwkExtractRequest) (*Jwk, error)
 }
 
+// JwkGenRequest holds the parameters for a [JwkGen.Exec] call.
 type JwkGenRequest struct {
-	// The intended usage of the token. It will be used to select
-	// the relevant Json Web Key configuration.
+	// Usage identifies which key configuration to use for this rotation.
 	Usage string
 }
 
-// JwkGen is the service responsible for generating new keys.
+// A JwkGen generates new keys for a configured usage.
 //
 // It does not force the generation of a key. Instead, when called, it checks the
-// current state of the database to determine if a new main key should be generated
-// or not.
+// current state of the database to determine whether a new main key is needed.
 //
-// If the main key for the target usage is recent enough, this service will return it
-// and skip generation. This will be indicated in traces.
+// If the main key for the target usage is recent enough, this service returns it
+// and skips generation. This is recorded in traces.
 type JwkGen struct {
 	repositorySearch JwkGenRepositorySearch
 	repositoryInsert JwkGenRepositoryInsert
@@ -59,6 +62,7 @@ type JwkGen struct {
 	keysConfig       map[string]*config.Jwk
 }
 
+// NewJwkGen returns a new JwkGen service.
 func NewJwkGen(
 	repositorySearch JwkGenRepositorySearch,
 	repositoryInsert JwkGenRepositoryInsert,
@@ -130,12 +134,11 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 
 		span.AddEvent("key.private.encrypted")
 
-		// Encode values to base64 before saving them.
 		privateKeyEncoded := base64.RawURLEncoding.EncodeToString(privateKeyEncrypted)
 
 		span.AddEvent("key.private.encoded")
 
-		// Extract the KID from the private key. Both public and private key should share the same KID.
+		// Both private and public keys share the same KID.
 		kid, err := uuid.Parse(privateKID)
 		if err != nil {
 			return nil, otel.ReportError(span, fmt.Errorf("parse KID: %w", err))
@@ -144,7 +147,6 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 		var publicKeyEncoded *string
 
 		if publicKey != nil {
-			// Serialize the public key.
 			publicKeySerialized, err := json.Marshal(publicKey)
 			if err != nil {
 				return nil, otel.ReportError(span, fmt.Errorf("serialize public key: %w", err))
@@ -155,7 +157,6 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 			span.AddEvent("key.public.encoded")
 		}
 
-		// Insert the new key in the database.
 		latestKey, err = service.repositoryInsert.Exec(ctx, &dao.JwkInsertRequest{
 			ID:         kid,
 			PrivateKey: privateKeyEncoded,

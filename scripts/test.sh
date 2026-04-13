@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Runs the Go integration test suite in a containerized environment.
+# Brings up the required services via podman-compose, applies migrations, then runs all internal packages.
+
 APP_NAME="service-json-keys-test"
 PODMAN_FILE="$PWD/builds/podman-compose.test.yaml"
 

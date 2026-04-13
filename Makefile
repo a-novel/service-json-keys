@@ -1,5 +1,10 @@
 # ================================================================================
 # Run tests.
+#
+# test-unit:    internal Go integration tests (./internal/...)
+# test-pkg:     Go client package integration tests (./pkg/...)
+# test-pkg-js:  TypeScript/JS REST client integration tests
+# test:         runs all three
 # ================================================================================
 test-unit:
 	bash -c "set -m; bash '$(CURDIR)/scripts/test.sh'"
@@ -28,6 +33,8 @@ lint: lint-go lint-proto lint-node
 
 # ================================================================================
 # Format.
+#
+# format-go also runs go mod tidy and applies auto-fixable lint corrections.
 # ================================================================================
 format-go:
 	go mod tidy

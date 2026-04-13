@@ -15,27 +15,30 @@ import (
 )
 
 const (
+	// OtelFlushTimeout is the maximum time allowed for the OpenTelemetry exporter to
+	// flush pending spans on shutdown.
 	OtelFlushTimeout = 2 * time.Second
 )
 
-// LoggerProdGrpc sends production-ready logs to Google Cloud environment.
+// LoggerProdGrpc sends gRPC request logs to Google Cloud Logging.
 var LoggerProdGrpc = loggingpresets.GrpcGcloud{
 	Component: env.GcloudProjectId,
 }
 
-// LoggerDevGrpc prints logs in the console, pretty formatted.
+// LoggerDevGrpc prints gRPC request logs to the console in a human-readable format.
 var LoggerDevGrpc = loggingpresets.GrpcLocal{}
 
-// LoggerDev prints HTTP-level logs in the console, pretty formatted.
+// LoggerDev prints HTTP request logs to the console in a human-readable format.
 var LoggerDev = &loggingpresets.LogLocal{
 	Out: os.Stdout,
 }
 
-// LoggerProd sends HTTP-level production-ready logs to Google Cloud environment.
+// LoggerProd sends HTTP request logs to Google Cloud Logging.
 var LoggerProd = &loggingpresets.LogGcloud{
 	ProjectId: env.GcloudProjectId,
 }
 
+// AppPresetDefault is the default [App] configuration populated from environment variables.
 var AppPresetDefault = App{
 	App: Main{
 		Name:      env.AppName,

@@ -9,21 +9,24 @@ import (
 	"github.com/a-novel-kit/golib/otel"
 )
 
-// Key used to identify the master key value in a context.
+// masterKeyContext is the context key used to store the master encryption key.
 type masterKeyContext struct{}
 
+// ErrInvalidMasterKey is returned when the master key is absent from the context or malformed.
 var ErrInvalidMasterKey = errors.New("invalid master key")
 
+// MasterKeyLength is the expected length, in bytes, of the master encryption key.
 const MasterKeyLength = 32
 
-// NewMasterKeyContext parses the provided master encryption key, and makes it available in
-// the context. The master key must be provided as an hex encoded string.
+// NewMasterKeyContext parses the provided master encryption key and makes it available in
+// the context. The master key must be provided as a hex-encoded string.
 //
-// The master key is a secure, 32-byte random secret used to encrypt private JSON keys
-// in the database. It must not leak and be random.
+// The master key is a secure, 32-byte random secret used to encrypt private JSON Web Keys
+// in the database. It must be kept secret and generated with a cryptographically secure
+// random source.
 //
-// Note that rotating this secret will doom all the private keys that have been encoded
-// using the older version, so be cautious about updating its value.
+// Rotating this secret permanently invalidates all private keys encrypted with the old value,
+// so update it with care.
 func NewMasterKeyContext(ctx context.Context, masterKeyRaw string) (context.Context, error) {
 	ctx, span := otel.Tracer().Start(ctx, "lib.NewMasterKeyContext")
 	defer span.End()
@@ -41,15 +44,15 @@ func NewMasterKeyContext(ctx context.Context, masterKeyRaw string) (context.Cont
 	}
 
 	// Convert the raw master key to a fixed 32-byte array.
-	// This is required for usage with the secretbox package (see golang.org/x/crypto/nacl/secretbox).
+	// This is required for use with the secretbox package (see golang.org/x/crypto/nacl/secretbox).
 	var masterKey [MasterKeyLength]byte
 	copy(masterKey[:], masterKeyBytes)
 
 	return otel.ReportSuccess(span, context.WithValue(ctx, masterKeyContext{}, masterKey)), nil
 }
 
-// MasterKeyContext returns the master key saved in the current context. If the current context
-// does not contain a master key, ErrInvalidMasterKey is thrown.
+// MasterKeyContext returns the master key stored in the context.
+// If no master key is present, [ErrInvalidMasterKey] is returned.
 func MasterKeyContext(ctx context.Context) ([MasterKeyLength]byte, error) {
 	masterKey, ok := ctx.Value(masterKeyContext{}).([MasterKeyLength]byte)
 

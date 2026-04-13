@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Runs the full application stack locally using podman-compose.
+# Sources setup-env.sh for environment variables, then brings up all services.
+
 set -e
 
 APP_NAME="service-json-keys-local"

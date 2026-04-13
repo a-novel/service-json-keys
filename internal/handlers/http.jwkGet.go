@@ -14,15 +14,19 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
+// JwkGetPublicService is the service dependency of [JwkGetPublic].
 type JwkGetPublicService interface {
 	Exec(ctx context.Context, request *services.JwkSelectRequest) (*services.Jwk, error)
 }
 
+// JwkGetPublic is the HTTP handler that returns a single public JWK by its ID,
+// reading the key ID from the "id" query parameter.
 type JwkGetPublic struct {
 	service JwkGetPublicService
 	logger  logging.Log
 }
 
+// NewJwkGetPublic returns a new JwkGetPublic handler backed by the given service.
 func NewJwkGetPublic(service JwkGetPublicService, logger logging.Log) *JwkGetPublic {
 	return &JwkGetPublic{service: service, logger: logger}
 }

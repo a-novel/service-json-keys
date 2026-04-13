@@ -21,15 +21,13 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// A JSON web key is always generated for a specific usage. Only a single producer should
-// be allowed to produce tokens for a given usage, and any number of recipients can consume
-// them.
+// A JSON Web Key is always generated for a specific usage. Only a single producer should
+// generate tokens for a given usage; any number of recipients can consume them.
 type JwkUsage int32
 
 const (
 	// JWK_USAGE_UNSPECIFIED is the default value required by proto definition.
-	// It MUST NEVER be used with an actual request, attempts to use it will result in an
-	// exception.
+	// It must not be used in an actual request; doing so returns an error.
 	JwkUsage_JWK_USAGE_UNSPECIFIED JwkUsage = 0
 	// JWK_USAGE_AUTH is used to produce access tokens for the authentication service.
 	JwkUsage_JWK_USAGE_AUTH JwkUsage = 1
@@ -78,15 +76,16 @@ func (JwkUsage) EnumDescriptor() ([]byte, []int) {
 	return file_jwk_proto_rawDescGZIP(), []int{0}
 }
 
-// Jwk represents a public JSON web key (private keys SHOULD NEVER be returned).
+// Jwk represents a public JSON Web Key. Private key material is never included.
 type Jwk struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Kty           string                 `protobuf:"bytes,1,opt,name=kty,proto3" json:"kty,omitempty"`
-	Use           string                 `protobuf:"bytes,2,opt,name=use,proto3" json:"use,omitempty"`
-	KeyOps        []string               `protobuf:"bytes,3,rep,name=key_ops,json=keyOps,proto3" json:"key_ops,omitempty"`
-	Alg           string                 `protobuf:"bytes,4,opt,name=alg,proto3" json:"alg,omitempty"`
-	Kid           string                 `protobuf:"bytes,5,opt,name=kid,proto3" json:"kid,omitempty"`
-	Payload       []byte                 `protobuf:"bytes,6,opt,name=payload,proto3" json:"payload,omitempty"`
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	Kty    string                 `protobuf:"bytes,1,opt,name=kty,proto3" json:"kty,omitempty"`
+	Use    string                 `protobuf:"bytes,2,opt,name=use,proto3" json:"use,omitempty"`
+	KeyOps []string               `protobuf:"bytes,3,rep,name=key_ops,json=keyOps,proto3" json:"key_ops,omitempty"`
+	Alg    string                 `protobuf:"bytes,4,opt,name=alg,proto3" json:"alg,omitempty"`
+	Kid    string                 `protobuf:"bytes,5,opt,name=kid,proto3" json:"kid,omitempty"`
+	// Algorithm-specific key parameters (e.g., x and crv for EdDSA keys), encoded as JSON bytes.
+	Payload       []byte `protobuf:"bytes,6,opt,name=payload,proto3" json:"payload,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

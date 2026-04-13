@@ -16,20 +16,20 @@ type RestCors struct {
 	MaxAge           int      `json:"maxAge"           yaml:"maxAge"`
 }
 
-// Main application configuration.
+// Main holds the core application identity and secrets.
 type Main struct {
-	// Name of the application, as it will appear in logs and tracing.
+	// Name is the application name, as it appears in logs and tracing.
 	Name string `json:"name" yaml:"name"`
-	// MasterKey is a secure, 32-byte random secret used to encrypt private JSON keys
+	// MasterKey is a secure, 32-byte random secret used to encrypt private JSON Web Keys
 	// in the database.
 	MasterKey string `json:"masterKey" yaml:"masterKey"`
 }
 
-// Grpc server configuration.
+// Grpc holds the gRPC server configuration.
 type Grpc struct {
-	// Port on which the Grpc server will listen for incoming requests.
+	// Port is the port on which the gRPC server listens for incoming requests.
 	Port int `json:"port" yaml:"port"`
-	// Ping configures the refresh interval for the Grpc server internal healthcheck.
+	// Ping configures the refresh interval for the gRPC server internal healthcheck.
 	Ping time.Duration `json:"ping" yaml:"ping"`
 }
 
@@ -42,11 +42,11 @@ type RestTimeouts struct {
 	Request    time.Duration `json:"request"    yaml:"request"`
 }
 
-// Rest server configuration.
+// Rest holds the REST server configuration.
 type Rest struct {
-	// Port on which the REST server will listen for incoming requests.
+	// Port is the port on which the REST server listens for incoming requests.
 	Port int `json:"port" yaml:"port"`
-	// Timeouts holds the various timeout settings for the REST server.
+	// Timeouts holds the REST server timeout configuration.
 	Timeouts RestTimeouts `json:"timeouts" yaml:"timeouts"`
 	// MaxRequestSize is the maximum size of an incoming request body.
 	MaxRequestSize int64 `json:"maxRequestSize" yaml:"maxRequestSize"`
@@ -54,14 +54,23 @@ type Rest struct {
 	Cors RestCors `json:"cors" yaml:"cors"`
 }
 
+// App aggregates the configuration needed to run the gRPC and REST servers.
 type App struct {
-	App  Main `json:"app"  yaml:"app"`
+	// App holds the core application identity and secrets.
+	App Main `json:"app" yaml:"app"`
+	// Grpc holds the gRPC server configuration.
 	Grpc Grpc `json:"grpc" yaml:"grpc"`
+	// Rest holds the REST server configuration.
 	Rest Rest `json:"rest" yaml:"rest"`
 
-	Otel       otel.Config        `json:"otel"       yaml:"otel"`
-	Logger     logging.Log        `json:"logger"     yaml:"logger"`
-	GrpcLogger logging.RpcConfig  `json:"grpclogger" yaml:"grpclogger"`
+	// Otel configures the OpenTelemetry exporter for traces and metrics.
+	Otel otel.Config `json:"otel" yaml:"otel"`
+	// Logger is the base application logger used for general output.
+	Logger logging.Log `json:"logger" yaml:"logger"`
+	// GrpcLogger configures the gRPC request logging middleware.
+	GrpcLogger logging.RpcConfig `json:"grpclogger" yaml:"grpclogger"`
+	// HttpLogger configures the HTTP request logging middleware.
 	HttpLogger logging.HttpConfig `json:"httpLogger" yaml:"httpLogger"`
-	Postgres   postgres.Config    `json:"postgres"   yaml:"postgres"`
+	// Postgres configures the PostgreSQL connection.
+	Postgres postgres.Config `json:"postgres" yaml:"postgres"`
 }

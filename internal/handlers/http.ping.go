@@ -9,8 +9,10 @@ import (
 	"github.com/a-novel-kit/golib/otel"
 )
 
+// Ping is the HTTP handler that responds with "pong" for liveness checks.
 type Ping struct{}
 
+// NewPing returns a new Ping handler.
 func NewPing() *Ping {
 	return new(Ping)
 }

@@ -14,16 +14,19 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
+// ClaimsSignService is the service dependency of [ClaimsSign].
 type ClaimsSignService interface {
 	Exec(ctx context.Context, request *services.ClaimsSignRequest) (string, error)
 }
 
+// ClaimsSign is the gRPC handler that signs a set of claims and returns a compact JWT.
 type ClaimsSign struct {
 	protogen.UnimplementedClaimsSignServiceServer
 
 	service ClaimsSignService
 }
 
+// NewClaimsSign returns a new ClaimsSign handler backed by the given service.
 func NewClaimsSign(service ClaimsSignService) *ClaimsSign {
 	return &ClaimsSign{service: service}
 }

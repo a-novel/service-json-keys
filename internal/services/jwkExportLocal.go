@@ -6,15 +6,16 @@ import (
 	"github.com/a-novel-kit/jwt/jwa"
 )
 
-// JwkExportLocal is a service used to wrap the local application so it can be used as a
-// cached jwk.Source to reduce load on the database.
+// A JwkExportLocal wraps the local JwkSearch service as a jwk.Source, so private keys can
+// be cached in memory and served without hitting the database on every request.
 //
-// This exporter is meant for internal usage only. The pkg defines its own exporter using the
-// grpc api. See pkg.jwkExportGrpc.
+// This exporter is for internal (server-side) use only. The public client package uses its
+// own gRPC-backed exporter instead.
 type JwkExportLocal struct {
 	service *JwkSearch
 }
 
+// NewJwkExportLocal returns a new JwkExportLocal service backed by the given search service.
 func NewJwkExportLocal(service *JwkSearch) *JwkExportLocal {
 	return &JwkExportLocal{service: service}
 }

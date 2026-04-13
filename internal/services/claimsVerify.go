@@ -13,28 +13,25 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/config"
 )
 
+// ClaimsVerifyRequest holds the parameters for a [ClaimsVerify.Exec] call.
 type ClaimsVerifyRequest struct {
-	// The full token to verify.
+	// Token is the compact JWT to verify.
 	Token string
-	// The intended usage of the token. It must match the usage that has been used for its
-	// creation.
+	// Usage is the key usage the token was signed under; must match the value used at signing time.
 	Usage string
-	// Tell the service to ignore expiry date verification. This can be used to validate
-	// expired tokens and perform operations like token refresh.
+	// IgnoreExpired allows expired tokens to pass verification. Useful for refresh flows.
 	IgnoreExpired bool
 }
 
-// ClaimsVerify is a service used to verify and decode a token. It returns the decoded claims.
+// A ClaimsVerify verifies a signed JWT and decodes its claims into Out, validating
+// all token claims against the configuration registered for the given usage.
 type ClaimsVerify[Out any] struct {
 	recipients map[string][]jwt.RecipientPlugin
 	keysConfig map[string]*config.Jwk
 }
 
-// NewClaimsVerify creates a new ClaimsVerify service.
-//
-// The recipients are a list of plugins to use depending on the key usage.
-//
-// This method also requires to provide JSON key configuration for each usage.
+// NewClaimsVerify creates a ClaimsVerify service. Recipients provide the per-usage verification
+// plugins (see [NewJwkRecipients]); keysConfig provides the token parameters for each usage.
 func NewClaimsVerify[Out any](
 	recipients map[string][]jwt.RecipientPlugin,
 	keysConfig map[string]*config.Jwk,

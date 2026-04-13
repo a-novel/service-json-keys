@@ -12,31 +12,33 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 )
 
+// JwkSearchRepository is the DAO dependency of [JwkSearch].
 type JwkSearchRepository interface {
 	Exec(ctx context.Context, request *dao.JwkSearchRequest) ([]*dao.Jwk, error)
 }
 
+// JwkSearchServiceExtract is the service dependency of [JwkSearch] for deserializing DAO entities.
 type JwkSearchServiceExtract interface {
 	Exec(ctx context.Context, request *JwkExtractRequest) (*Jwk, error)
 }
 
+// JwkSearchRequest holds the parameters for a [JwkSearch.Exec] call.
 type JwkSearchRequest struct {
-	// The intended usage of the key.
+	// Usage is the key usage to filter by.
 	Usage string
-	// Whether to return private or public keys.
-	//
-	// Note: if this option is set to true, make sure the query comes from the
-	// correct producer.
+	// Private controls whether to return the private key material. Set to true only for the signing
+	// path (gRPC ClaimsSign); public key endpoints must leave this false.
 	Private bool
 }
 
-// JwkSearch lists the active keys for a given usage. The keys are returned in
-// creation order (first key in the array is the main key, the rest are legacy).
+// A JwkSearch lists the active keys for a given usage. Keys are returned in
+// creation order: the first element is the main key, the rest are legacy.
 type JwkSearch struct {
 	repository     JwkSearchRepository
 	serviceExtract JwkSearchServiceExtract
 }
 
+// NewJwkSearch returns a new JwkSearch service.
 func NewJwkSearch(
 	repository JwkSearchRepository,
 	serviceExtract JwkSearchServiceExtract,

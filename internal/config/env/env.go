@@ -7,16 +7,16 @@ import (
 	"github.com/a-novel-kit/golib/config"
 )
 
-// Prefix allows to set a custom prefix to all configuration environment variables.
-// This is useful when importing the package in another project, when env variable names
-// might conflict with the source project.
+// prefix is the value of SERVICE_JSON_KEYS_ENV_PREFIX, prepended to all environment
+// variable names read by this package. Set it to avoid conflicts when multiple instances
+// of this service run in the same environment.
 var prefix = os.Getenv("SERVICE_JSON_KEYS_ENV_PREFIX")
 
 func getEnv(name string) string {
 	return os.Getenv(prefix + name)
 }
 
-// Default values for environment variables, if applicable.
+// Default values used when the corresponding environment variable is absent.
 const (
 	AppNameDefault = "service-json-keys"
 
@@ -34,7 +34,7 @@ const (
 	CorsMaxAgeDefault            = 3600
 )
 
-// Default values for environment variables, if applicable.
+// Default values used when the corresponding environment variable is absent.
 var (
 	CorsAllowedOriginsDefault = []string{"*"}
 	CorsAllowedHeadersDefault = []string{"*"}
@@ -69,29 +69,26 @@ var (
 )
 
 var (
-	// PostgresDsn is the url used to connect to the postgres database instance.
-	// Typically formatted as:
+	// PostgresDsn is the URL used to connect to the Postgres database instance:
 	//	postgres://<user>:<password>@<host>:<port>/<database>
 	PostgresDsn = postgresDsn
 
-	// AppName is the name of the application, as it will appear in logs and tracing.
+	// AppName is the application name, as it appears in logs and tracing.
 	AppName = config.LoadEnv(appName, AppNameDefault, config.StringParser)
-	// AppMasterKey is a secure, 32-byte random secret used to encrypt private JSON keys
+	// AppMasterKey is a secure, 32-byte random secret used to encrypt private JSON Web Keys
 	// in the database.
 	AppMasterKey = appMasterKey
-	// Otel flag configures whether to use Open Telemetry or not.
-	//
-	// See: https://opentelemetry.io/
+	// Otel configures whether to enable OpenTelemetry tracing.
 	Otel = config.LoadEnv(otel, false, config.BoolParser)
 
-	// GrpcPort is the port on which the Grpc server will listen for incoming requests.
+	// GrpcPort is the port on which the gRPC server listens for incoming requests.
 	GrpcPort = config.LoadEnv(grpcPort, GrpcPortDefault, config.IntParser)
-	// GrpcUrl is the url of the Grpc service, typically <host>:<port>.
+	// GrpcUrl is the address of the gRPC service, in the form <host>:<port>.
 	GrpcUrl = grpcUrl
-	// GrpcPing configures the refresh interval for the Grpc server internal healthcheck.
+	// GrpcPing configures the refresh interval for the gRPC server internal healthcheck.
 	GrpcPing = config.LoadEnv(grpcPing, GrpcDefaultPing, config.DurationParser)
 
-	// RestPort is the port on which the REST server will listen for incoming requests.
+	// RestPort is the port on which the REST server listens for incoming requests.
 	RestPort = config.LoadEnv(restPort, RestPortDefault, config.IntParser)
 	// RestTimeoutRead is the maximum duration for reading an incoming REST request.
 	RestTimeoutRead = config.LoadEnv(restTimeoutRead, RestTimeoutReadDefault, config.DurationParser)
@@ -116,11 +113,11 @@ var (
 	)
 	// CorsAllowCredentials configures whether CORS requests can include credentials.
 	CorsAllowCredentials = config.LoadEnv(corsAllowCredentials, CorsAllowCredentialsDefault, config.BoolParser)
-	// CorsMaxAge sets the maximum age (in seconds) for CORS preflight cache.
+	// CorsMaxAge is the maximum age, in seconds, of CORS preflight cache results.
 	CorsMaxAge = config.LoadEnv(corsMaxAge, CorsMaxAgeDefault, config.IntParser)
 
-	// GcloudProjectId configures the server for Google Cloud environment.
-	//
-	// See: https://docs.cloud.google.com/resource-manager/docs/creating-managing-projects
+	// GcloudProjectId is the Google Cloud project ID. When set, the service switches to
+	// Google Cloud Logging and Google Cloud Trace for observability. When empty, it falls
+	// back to local-development logging and disabled tracing.
 	GcloudProjectId = gcloudProjectId
 )
