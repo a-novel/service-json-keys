@@ -8,8 +8,8 @@ tool (
 )
 
 require (
-	github.com/a-novel-kit/golib v0.20.23
-	github.com/a-novel-kit/jwt v1.1.49
+	github.com/a-novel-kit/golib v0.20.24
+	github.com/a-novel-kit/jwt v1.1.50
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/go-chi/cors v1.2.2
 	github.com/goccy/go-yaml v1.19.2
@@ -82,8 +82,8 @@ require (
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
-	github.com/getsentry/sentry-go v0.44.1 // indirect
-	github.com/getsentry/sentry-go/otel v0.44.1 // indirect
+	github.com/getsentry/sentry-go v0.45.0 // indirect
+	github.com/getsentry/sentry-go/otel v0.45.0 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
