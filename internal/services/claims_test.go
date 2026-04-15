@@ -18,7 +18,7 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
-func TestSignAndVerifyClaims(t *testing.T) {
+func TestClaimsSignAndVerify(t *testing.T) {
 	t.Parallel()
 
 	privateKeys, publicKeys := generateAuthTokenKeySet(t, 1)
@@ -100,15 +100,13 @@ func TestSignAndVerifyClaims(t *testing.T) {
 			signer := services.NewClaimsSign(producers, testConfig)
 			verifier := services.NewClaimsVerify[testClaims](recipients, testConfig)
 
-			ctx := context.Background()
-
-			signedClaims, err := signer.Exec(ctx, &services.ClaimsSignRequest{
+			signedClaims, err := signer.Exec(t.Context(), &services.ClaimsSignRequest{
 				Claims: testCase.claims,
 				Usage:  "test-usage",
 			})
 			require.NoError(t, err)
 
-			verifiedClaims, err := verifier.Exec(ctx, &services.ClaimsVerifyRequest{
+			verifiedClaims, err := verifier.Exec(t.Context(), &services.ClaimsVerifyRequest{
 				Token: signedClaims,
 				Usage: "test-usage",
 			})

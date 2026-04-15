@@ -33,15 +33,15 @@ func NewJwkExtract() *JwkExtract {
 }
 
 func (service *JwkExtract) Exec(ctx context.Context, request *JwkExtractRequest) (*Jwk, error) {
-	ctx, span := otel.Tracer().Start(ctx, "service.JwkExtract")
+	ctx, span := otel.Tracer().Start(ctx, "services.JwkExtract")
 	defer span.End()
 
 	span.SetAttributes(
-		attribute.Bool("request.Jwk.request.Private", request.Private),
-		attribute.String("request.Jwk.ID", request.Jwk.ID.String()),
-		attribute.String("request.Jwk.Usage", request.Jwk.Usage),
-		attribute.Int64("request.Jwk.CreatedAt", request.Jwk.CreatedAt.Unix()),
-		attribute.Int64("request.Jwk.ExpiresAt", request.Jwk.ExpiresAt.Unix()),
+		attribute.Bool("key.private", request.Private),
+		attribute.String("key.id", request.Jwk.ID.String()),
+		attribute.String("key.usage", request.Jwk.Usage),
+		attribute.Int64("key.created_at", request.Jwk.CreatedAt.Unix()),
+		attribute.Int64("key.expires_at", request.Jwk.ExpiresAt.Unix()),
 	)
 
 	decoded, err := base64.RawURLEncoding.DecodeString(

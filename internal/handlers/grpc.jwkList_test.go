@@ -18,7 +18,7 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
-func TestJwkList(t *testing.T) {
+func TestGrpcJwkList(t *testing.T) {
 	t.Parallel()
 
 	errFoo := errors.New("foo")
@@ -93,7 +93,7 @@ func TestJwkList(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			service := handlersmocks.NewMockJwkListService(t)
+			service := handlersmocks.NewMockGrpcJwkListService(t)
 
 			if testCase.serviceMock != nil {
 				service.EXPECT().
@@ -103,7 +103,7 @@ func TestJwkList(t *testing.T) {
 					Return(testCase.serviceMock.resp, testCase.serviceMock.err)
 			}
 
-			handler := handlers.NewJwkList(service)
+			handler := handlers.NewGrpcJwkList(service)
 
 			res, err := handler.JwkList(t.Context(), testCase.request)
 			resSt, ok := status.FromError(err)

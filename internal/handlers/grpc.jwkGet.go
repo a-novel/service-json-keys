@@ -10,30 +10,31 @@ import (
 
 	"github.com/a-novel-kit/golib/otel"
 
-	"github.com/a-novel/service-json-keys/v2/internal/dao"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
 	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
-// JwkGetService is the service dependency of [JwkGet].
-type JwkGetService interface {
+// GrpcJwkGetService is the service dependency of [GrpcJwkGet].
+type GrpcJwkGetService interface {
 	Exec(ctx context.Context, request *services.JwkSelectRequest) (*services.Jwk, error)
 }
 
-// JwkGet is the gRPC handler that retrieves a single JSON Web Key by its ID.
-type JwkGet struct {
+// GrpcJwkGet is the gRPC handler that retrieves a single JSON Web Key by its ID.
+type GrpcJwkGet struct {
 	protogen.UnimplementedJwkGetServiceServer
 
-	service JwkGetService
+	service GrpcJwkGetService
 }
 
-// NewJwkGet returns a new JwkGet handler backed by the given service.
-func NewJwkGet(service JwkGetService) *JwkGet {
-	return &JwkGet{service: service}
+// NewGrpcJwkGet returns a new GrpcJwkGet handler backed by the given service.
+func NewGrpcJwkGet(service GrpcJwkGetService) *GrpcJwkGet {
+	return &GrpcJwkGet{service: service}
 }
 
-func (handler *JwkGet) JwkGet(ctx context.Context, request *protogen.JwkGetRequest) (*protogen.JwkGetResponse, error) {
-	ctx, span := otel.Tracer().Start(ctx, "handler.JwkGet")
+func (handler *GrpcJwkGet) JwkGet(
+	ctx context.Context, request *protogen.JwkGetRequest,
+) (*protogen.JwkGetResponse, error) {
+	ctx, span := otel.Tracer().Start(ctx, "grpc.JwkGet")
 	defer span.End()
 
 	keyId, err := uuid.Parse(request.GetId())
@@ -46,9 +47,7 @@ func (handler *JwkGet) JwkGet(ctx context.Context, request *protogen.JwkGetReque
 	jwk, err := handler.service.Exec(ctx, &services.JwkSelectRequest{
 		ID: keyId,
 	})
-	if errors.Is(err, dao.ErrJwkSelectNotFound) {
-		_ = otel.ReportError(span, err)
-
+	if errors.Is(err, services.ErrJwkNotFound) {
 		return nil, status.Error(codes.NotFound, "key not found")
 	}
 

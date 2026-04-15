@@ -1,7 +1,6 @@
 package lib_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -59,7 +58,7 @@ func TestNewMasterKeyContext(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, testCase.expect, value)
 
-			nCtx := context.TODO()
+			nCtx := t.Context()
 			nCtx = lib.TransferMasterKeyContext(ctx, nCtx)
 
 			transferredValue, err := lib.MasterKeyContext(nCtx)
@@ -73,7 +72,7 @@ func TestMasterKeyContextMissing(t *testing.T) {
 	t.Parallel()
 
 	// Context without a master key should return ErrInvalidMasterKey.
-	ctx := context.Background()
+	ctx := t.Context()
 
 	_, err := lib.MasterKeyContext(ctx)
 	require.ErrorIs(t, err, lib.ErrInvalidMasterKey)

@@ -16,7 +16,7 @@ import (
 //go:embed pg.jwkInsert.sql
 var jwkInsertQuery string
 
-// JwkInsertRequest holds the parameters for a [JwkInsert.Exec] call.
+// JwkInsertRequest holds the parameters for a [PgJwkInsert.Exec] call.
 type JwkInsertRequest struct {
 	// ID is the key's unique identifier; it must not collide with any existing key.
 	ID uuid.UUID
@@ -34,17 +34,17 @@ type JwkInsertRequest struct {
 	Expiration time.Time
 }
 
-// A JwkInsert inserts a new key for a given usage. If the creation time is greater
+// A PgJwkInsert inserts a new key for a given usage. If the creation time is greater
 // than any existing key for this usage, the new key becomes the main key.
-type JwkInsert struct{}
+type PgJwkInsert struct{}
 
-// NewJwkInsert returns a new JwkInsert repository.
-func NewJwkInsert() *JwkInsert {
-	return new(JwkInsert)
+// NewPgJwkInsert returns a new PgJwkInsert repository.
+func NewPgJwkInsert() *PgJwkInsert {
+	return new(PgJwkInsert)
 }
 
-func (repository *JwkInsert) Exec(ctx context.Context, request *JwkInsertRequest) (*Jwk, error) {
-	ctx, span := otel.Tracer().Start(ctx, "dao.JwkInsert")
+func (repository *PgJwkInsert) Exec(ctx context.Context, request *JwkInsertRequest) (*Jwk, error) {
+	ctx, span := otel.Tracer().Start(ctx, "dao.PgJwkInsert")
 	defer span.End()
 
 	span.SetAttributes(

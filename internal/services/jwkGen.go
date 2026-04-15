@@ -22,7 +22,7 @@ import (
 )
 
 // ErrJwkGenUnknownKeyUsage is returned when no key generator is registered for the requested usage's algorithm.
-var ErrJwkGenUnknownKeyUsage = errors.New("unknown key request.Usage")
+var ErrJwkGenUnknownKeyUsage = errors.New("unknown key usage")
 
 // KeyGenerator is the function type for key-generation callbacks; it generates a private/public key pair.
 type KeyGenerator func() (privateKey, publicKey *jwa.JWK, err error)
@@ -78,10 +78,10 @@ func NewJwkGen(
 }
 
 func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, error) {
-	ctx, span := otel.Tracer().Start(ctx, "service.JwkGen")
+	ctx, span := otel.Tracer().Start(ctx, "services.JwkGen")
 	defer span.End()
 
-	span.SetAttributes(attribute.String("request.Usage", request.Usage))
+	span.SetAttributes(attribute.String("key.usage", request.Usage))
 
 	// Check the last time a key was inserted for the target usage, and compare to config. If the last key is too
 	// recent, return without generating a new key.

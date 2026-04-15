@@ -11,25 +11,25 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
-// JwkListPublicService is the service dependency of [JwkListPublic].
-type JwkListPublicService interface {
+// RestJwkListService is the service dependency of [RestJwkList].
+type RestJwkListService interface {
 	Exec(ctx context.Context, request *services.JwkSearchRequest) ([]*services.Jwk, error)
 }
 
-// JwkListPublic is the HTTP handler that returns the active public keys for a given usage,
+// RestJwkList is the REST handler that returns the active public keys for a given usage,
 // reading the usage from the "usage" query parameter.
-type JwkListPublic struct {
-	service JwkListPublicService
+type RestJwkList struct {
+	service RestJwkListService
 	logger  logging.Log
 }
 
-// NewJwkListPublic returns a new JwkListPublic handler backed by the given service.
-func NewJwkListPublic(service JwkListPublicService, logger logging.Log) *JwkListPublic {
-	return &JwkListPublic{service: service, logger: logger}
+// NewRestJwkList returns a new RestJwkList handler backed by the given service.
+func NewRestJwkList(service RestJwkListService, logger logging.Log) *RestJwkList {
+	return &RestJwkList{service: service, logger: logger}
 }
 
-func (handler *JwkListPublic) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ctx, span := otel.Tracer().Start(r.Context(), "handler.JwkListPublic")
+func (handler *RestJwkList) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ctx, span := otel.Tracer().Start(r.Context(), "rest.JwkList")
 	defer span.End()
 
 	usage := r.URL.Query().Get("usage")

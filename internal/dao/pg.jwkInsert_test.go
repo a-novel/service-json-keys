@@ -16,7 +16,9 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/models/migrations"
 )
 
-func TestJwkInsert(t *testing.T) {
+func TestPgJwkInsert(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		name string
 
@@ -47,7 +49,7 @@ func TestJwkInsert(t *testing.T) {
 		},
 	}
 
-	repository := dao.NewJwkInsert()
+	repository := dao.NewPgJwkInsert()
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {

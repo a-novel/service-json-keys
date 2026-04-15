@@ -55,8 +55,8 @@ func main() {
 	// DAO
 	// =================================================================================================================
 
-	repositoryJwkSearch := dao.NewJwkSearch()
-	repositoryJwkSelect := dao.NewJwkSelect()
+	repositoryJwkSearch := dao.NewPgJwkSearch()
+	repositoryJwkSelect := dao.NewPgJwkSelect()
 
 	// =================================================================================================================
 	// SERVICES
@@ -70,10 +70,10 @@ func main() {
 	// HANDLERS
 	// =================================================================================================================
 
-	handlerPing := handlers.NewPing()
+	handlerPing := handlers.NewRestPing()
 	handlerHealth := handlers.NewRestHealth()
-	handlerJwkList := handlers.NewJwkListPublic(serviceJwkSearch, cfg.Logger)
-	handlerJwkGet := handlers.NewJwkGetPublic(serviceJwkSelect, cfg.Logger)
+	handlerJwkList := handlers.NewRestJwkList(serviceJwkSearch, cfg.Logger)
+	handlerJwkGet := handlers.NewRestJwkGet(serviceJwkSelect, cfg.Logger)
 
 	// =================================================================================================================
 	// ROUTER
@@ -96,7 +96,7 @@ func main() {
 		},
 		MaxAge: cfg.Rest.Cors.MaxAge,
 	}))
-	router.Use(cfg.HttpLogger.Logger())
+	router.Use(cfg.RestLogger.Logger())
 
 	router.Get("/ping", handlerPing.ServeHTTP)
 	router.Get("/healthcheck", handlerHealth.ServeHTTP)

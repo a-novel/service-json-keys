@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
@@ -19,13 +20,13 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
-func TestJwkListPublic(t *testing.T) {
+func TestRestJwkGet(t *testing.T) {
 	t.Parallel()
 
 	errFoo := errors.New("foo")
 
 	type serviceMock struct {
-		resp []*services.Jwk
+		resp *services.Jwk
 		err  error
 	}
 
@@ -42,50 +43,73 @@ func TestJwkListPublic(t *testing.T) {
 		{
 			name: "Success",
 
-			request: httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/jwks?usage=test-usage", nil),
+			request: httptest.NewRequestWithContext(
+				t.Context(),
+				http.MethodGet,
+				"/jwk?id=00000000-0000-0000-0000-000000000001",
+				nil,
+			),
 
 			serviceMock: &serviceMock{
-				resp: []*services.Jwk{
-					{
-						JWKCommon: jwa.JWKCommon{
-							KTY:    "test-kty",
-							Use:    "test-use",
-							KeyOps: jwa.KeyOps{jwa.KeyOpSign, jwa.KeyOpVerify},
-							Alg:    "test-alg",
-							KID:    "00000000-0000-0000-0000-000000000001",
-						},
-						Payload: json.RawMessage(`{"x":"test-x"}`),
+				resp: &services.Jwk{
+					JWKCommon: jwa.JWKCommon{
+						KTY:    "test-kty",
+						Use:    "test-use",
+						KeyOps: jwa.KeyOps{jwa.KeyOpSign, jwa.KeyOpVerify},
+						Alg:    "test-alg",
+						KID:    "00000000-0000-0000-0000-000000000001",
 					},
+					Payload: json.RawMessage(`{"x":"test-x"}`),
 				},
 			},
 
 			expectStatus: http.StatusOK,
-			expectResponse: []any{
-				map[string]any{
-					"kty":     "test-kty",
-					"use":     "test-use",
-					"key_ops": []any{"sign", "verify"},
-					"alg":     "test-alg",
-					"kid":     "00000000-0000-0000-0000-000000000001",
-					"x":       "test-x",
-				},
+			expectResponse: map[string]any{
+				"kty":     "test-kty",
+				"use":     "test-use",
+				"key_ops": []any{"sign", "verify"},
+				"alg":     "test-alg",
+				"kid":     "00000000-0000-0000-0000-000000000001",
+				"x":       "test-x",
 			},
 		},
 		{
-			name: "Success/Empty",
+			name: "Error/InvalidID",
 
-			request: httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/jwks?usage=test-usage", nil),
+			request: httptest.NewRequestWithContext(
+				t.Context(),
+				http.MethodGet,
+				"/jwk?id=not-a-uuid",
+				nil,
+			),
+
+			expectStatus: http.StatusBadRequest,
+		},
+		{
+			name: "Error/NotFound",
+
+			request: httptest.NewRequestWithContext(
+				t.Context(),
+				http.MethodGet,
+				"/jwk?id=00000000-0000-0000-0000-000000000001",
+				nil,
+			),
 
 			serviceMock: &serviceMock{
-				resp: []*services.Jwk{},
+				err: services.ErrJwkNotFound,
 			},
 
-			expectStatus: http.StatusOK,
+			expectStatus: http.StatusNotFound,
 		},
 		{
 			name: "Error/Internal",
 
-			request: httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/jwks?usage=test-usage", nil),
+			request: httptest.NewRequestWithContext(
+				t.Context(),
+				http.MethodGet,
+				"/jwk?id=00000000-0000-0000-0000-000000000001",
+				nil,
+			),
 
 			serviceMock: &serviceMock{
 				err: errFoo,
@@ -99,17 +123,17 @@ func TestJwkListPublic(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			service := handlersmocks.NewMockJwkListPublicService(t)
+			service := handlersmocks.NewMockRestJwkGetService(t)
 
 			if testCase.serviceMock != nil {
 				service.EXPECT().
-					Exec(mock.Anything, &services.JwkSearchRequest{
-						Usage: testCase.request.URL.Query().Get("usage"),
+					Exec(mock.Anything, &services.JwkSelectRequest{
+						ID: uuid.MustParse(testCase.request.URL.Query().Get("id")),
 					}).
 					Return(testCase.serviceMock.resp, testCase.serviceMock.err)
 			}
 
-			handler := handlers.NewJwkListPublic(service, config.LoggerDev)
+			handler := handlers.NewRestJwkGet(service, config.LoggerDev)
 			w := httptest.NewRecorder()
 
 			handler.ServeHTTP(w, testCase.request)

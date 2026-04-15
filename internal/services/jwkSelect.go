@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -49,7 +50,7 @@ func NewJwkSelect(
 }
 
 func (service *JwkSelect) Exec(ctx context.Context, request *JwkSelectRequest) (*Jwk, error) {
-	ctx, span := otel.Tracer().Start(ctx, "service.JwkSelect")
+	ctx, span := otel.Tracer().Start(ctx, "services.JwkSelect")
 	defer span.End()
 
 	span.SetAttributes(
@@ -61,6 +62,10 @@ func (service *JwkSelect) Exec(ctx context.Context, request *JwkSelectRequest) (
 		ID: request.ID,
 	})
 	if err != nil {
+		if errors.Is(err, dao.ErrJwkSelectNotFound) {
+			return nil, ErrJwkNotFound
+		}
+
 		return nil, otel.ReportError(span, fmt.Errorf("select key: %w", err))
 	}
 

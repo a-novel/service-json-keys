@@ -13,7 +13,7 @@ import (
 	"github.com/a-novel/service-json-keys/v2/pkg/go"
 )
 
-func TestClaims(t *testing.T) {
+func TestClaimsVerifier(t *testing.T) {
 	t.Parallel()
 
 	client, err := servicejsonkeys.NewClient(env.GrpcUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))

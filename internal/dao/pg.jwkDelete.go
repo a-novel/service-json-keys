@@ -21,7 +21,7 @@ var jwkDeleteQuery string
 // ErrJwkDeleteNotFound is returned when no active key matches the delete request.
 var ErrJwkDeleteNotFound = errors.New("key not found")
 
-// JwkDeleteRequest holds the parameters for a [JwkDelete.Exec] call.
+// JwkDeleteRequest holds the parameters for a [PgJwkDelete.Exec] call.
 type JwkDeleteRequest struct {
 	// ID is the identifier of the key to revoke.
 	ID uuid.UUID
@@ -31,26 +31,26 @@ type JwkDeleteRequest struct {
 	Comment string
 }
 
-// A JwkDelete prematurely soft-deletes a JSON Web Key: the key is removed from the active
+// A PgJwkDelete prematurely soft-deletes a JSON Web Key: the key is removed from the active
 // view and disappears from API results, but is retained in the database for auditing.
 //
 // Do not call this when a key expires naturally — expired keys are removed from the active view
 // automatically. Only active keys can be targeted; if the key is already deleted or expired,
 // [ErrJwkDeleteNotFound] is returned.
-type JwkDelete struct{}
+type PgJwkDelete struct{}
 
-// NewJwkDelete returns a new JwkDelete repository.
-func NewJwkDelete() *JwkDelete {
-	return new(JwkDelete)
+// NewPgJwkDelete returns a new PgJwkDelete repository.
+func NewPgJwkDelete() *PgJwkDelete {
+	return new(PgJwkDelete)
 }
 
-func (repository *JwkDelete) Exec(ctx context.Context, request *JwkDeleteRequest) (*Jwk, error) {
-	ctx, span := otel.Tracer().Start(ctx, "dao.JwkDelete")
+func (repository *PgJwkDelete) Exec(ctx context.Context, request *JwkDeleteRequest) (*Jwk, error) {
+	ctx, span := otel.Tracer().Start(ctx, "dao.PgJwkDelete")
 	defer span.End()
 
 	span.SetAttributes(
 		attribute.String("key.id", request.ID.String()),
-		attribute.Int64("key.expires_at", request.Now.Unix()),
+		attribute.Int64("key.deleted_at", request.Now.Unix()),
 		attribute.String("key.comment", request.Comment),
 	)
 
@@ -64,7 +64,7 @@ func (repository *JwkDelete) Exec(ctx context.Context, request *JwkDeleteRequest
 	err = tx.NewRaw(jwkDeleteQuery, request.Now, request.Comment, request.ID).Scan(ctx, entity)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			err = errors.Join(err, ErrJwkDeleteNotFound)
+			return nil, ErrJwkDeleteNotFound
 		}
 
 		return nil, otel.ReportError(span, fmt.Errorf("execute query: %w", err))

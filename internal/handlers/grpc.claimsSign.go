@@ -14,27 +14,27 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
-// ClaimsSignService is the service dependency of [ClaimsSign].
-type ClaimsSignService interface {
+// GrpcClaimsSignService is the service dependency of [GrpcClaimsSign].
+type GrpcClaimsSignService interface {
 	Exec(ctx context.Context, request *services.ClaimsSignRequest) (string, error)
 }
 
-// ClaimsSign is the gRPC handler that signs a set of claims and returns a compact JWT.
-type ClaimsSign struct {
+// GrpcClaimsSign is the gRPC handler that signs a set of claims and returns a compact JWT.
+type GrpcClaimsSign struct {
 	protogen.UnimplementedClaimsSignServiceServer
 
-	service ClaimsSignService
+	service GrpcClaimsSignService
 }
 
-// NewClaimsSign returns a new ClaimsSign handler backed by the given service.
-func NewClaimsSign(service ClaimsSignService) *ClaimsSign {
-	return &ClaimsSign{service: service}
+// NewGrpcClaimsSign returns a new GrpcClaimsSign handler backed by the given service.
+func NewGrpcClaimsSign(service GrpcClaimsSignService) *GrpcClaimsSign {
+	return &GrpcClaimsSign{service: service}
 }
 
-func (handler *ClaimsSign) ClaimsSign(
+func (handler *GrpcClaimsSign) ClaimsSign(
 	ctx context.Context, request *protogen.ClaimsSignRequest,
 ) (*protogen.ClaimsSignResponse, error) {
-	ctx, span := otel.Tracer().Start(ctx, "handler.ClaimsSign")
+	ctx, span := otel.Tracer().Start(ctx, "grpc.ClaimsSign")
 	defer span.End()
 
 	extractedClaims, err := grpcf.ProtoAnyToInterface(request.GetPayload())

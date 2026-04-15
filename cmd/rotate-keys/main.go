@@ -39,8 +39,8 @@ func main() {
 	defer span.End()
 
 	// --- Wire dependencies ---
-	repositoryJwkSearch := dao.NewJwkSearch()
-	repositoryJwkInsert := dao.NewJwkInsert()
+	repositoryJwkSearch := dao.NewPgJwkSearch()
+	repositoryJwkInsert := dao.NewPgJwkInsert()
 
 	serviceJwkExtract := services.NewJwkExtract()
 	serviceJwkGen := services.NewJwkGen(

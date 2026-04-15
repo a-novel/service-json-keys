@@ -10,29 +10,28 @@ import (
 	"github.com/a-novel-kit/golib/logging"
 	"github.com/a-novel-kit/golib/otel"
 
-	"github.com/a-novel/service-json-keys/v2/internal/dao"
 	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
-// JwkGetPublicService is the service dependency of [JwkGetPublic].
-type JwkGetPublicService interface {
+// RestJwkGetService is the service dependency of [RestJwkGet].
+type RestJwkGetService interface {
 	Exec(ctx context.Context, request *services.JwkSelectRequest) (*services.Jwk, error)
 }
 
-// JwkGetPublic is the HTTP handler that returns a single public JWK by its ID,
+// RestJwkGet is the REST handler that returns a single public JWK by its ID,
 // reading the key ID from the "id" query parameter.
-type JwkGetPublic struct {
-	service JwkGetPublicService
+type RestJwkGet struct {
+	service RestJwkGetService
 	logger  logging.Log
 }
 
-// NewJwkGetPublic returns a new JwkGetPublic handler backed by the given service.
-func NewJwkGetPublic(service JwkGetPublicService, logger logging.Log) *JwkGetPublic {
-	return &JwkGetPublic{service: service, logger: logger}
+// NewRestJwkGet returns a new RestJwkGet handler backed by the given service.
+func NewRestJwkGet(service RestJwkGetService, logger logging.Log) *RestJwkGet {
+	return &RestJwkGet{service: service, logger: logger}
 }
 
-func (handler *JwkGetPublic) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ctx, span := otel.Tracer().Start(r.Context(), "handler.JwkGetPublic")
+func (handler *RestJwkGet) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ctx, span := otel.Tracer().Start(r.Context(), "rest.JwkGet")
 	defer span.End()
 
 	rawID := r.URL.Query().Get("id")
@@ -47,7 +46,7 @@ func (handler *JwkGetPublic) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	jwk, err := handler.service.Exec(ctx, &services.JwkSelectRequest{ID: keyID})
 	if err != nil {
 		httpf.HandleError(ctx, handler.logger, w, span, httpf.ErrMap{
-			dao.ErrJwkSelectNotFound: http.StatusNotFound,
+			services.ErrJwkNotFound: http.StatusNotFound,
 		}, err)
 
 		return
