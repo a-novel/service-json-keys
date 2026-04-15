@@ -26,7 +26,7 @@ RUN go build -o /grpc cmd/grpc/main.go
 # Used for healthcheck.
 RUN GOBIN=/grpcurl go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
 
-FROM docker.io/library/alpine:3.23.3
+FROM docker.io/library/alpine:3.23.4
 
 WORKDIR /
 
