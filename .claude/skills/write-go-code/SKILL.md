@@ -242,6 +242,46 @@ func NewUserSelect() *UserSelectRepository {
 
 ---
 
+## Transaction Scoping
+
+`postgres.GetContext(ctx)` returns the current database handle from the context — either a `*bun.DB`
+(plain connection, auto-commit per statement) or a `bun.Tx` (open transaction). DAOs never start
+transactions themselves; they participate in whatever is already in the context.
+
+**Where to start a transaction:**
+
+- **Services**: when two or more DAO calls must succeed or fail together (atomic unit of work).
+- **`cmd/`**: for batch operations (e.g., key rotation, seeding) where the whole job should be
+  rolled back on failure.
+- **Handlers**: never. Transactions are a persistence concern, not a transport concern.
+
+**Scoping rules:**
+
+| Too small                                                                                                                                       | Too broad                                                         |
+| ----------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Each individual SQL query in its own implicit transaction when they form a logical unit (e.g., insert + cascade update that must be consistent) | Spanning a transaction across an external HTTP or gRPC call       |
+|                                                                                                                                                 | Wrapping two unrelated service operations in a single transaction |
+|                                                                                                                                                 | Holding a transaction open during long computation or file I/O    |
+
+**Detecting transaction context:**
+
+Operations that cannot run inside a transaction (e.g., `DB.Ping()` in health handlers) must check
+the concrete type before proceeding:
+
+```go
+pgdb, ok := pg.(*bun.DB)
+if !ok {
+    // Running inside a transaction (e.g., test isolation) — skip the ping.
+    return nil
+}
+err = pgdb.Ping()
+```
+
+This pattern appears in health/status handlers to handle the case where the test harness injects a
+transaction via `postgres.RunIsolatedTransactionalTest`.
+
+---
+
 ## Services Layer (`internal/services/`)
 
 Responsibilities: business logic, validation, orchestration of DAO calls. No HTTP concerns,
@@ -302,15 +342,15 @@ HTTP error codes, JSON marshalling/unmarshalling, and gRPC status codes live her
 ```go
 // rest.userList.go
 
-type UserListService interface {
+type RestUserListService interface {
     Exec(ctx context.Context, request *services.UserSearchRequest) ([]*services.User, error)
 }
 
-type UserList struct {
-    service UserListService
+type RestUserList struct {
+    service RestUserListService
 }
 
-func (h *UserList) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *RestUserList) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     name := r.URL.Query().Get("name")
 
     users, err := h.service.Exec(r.Context(), &services.UserSearchRequest{Name: name})
@@ -329,8 +369,8 @@ func (h *UserList) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     }
 }
 
-func NewUserList(service UserListService) *UserList {
-    return &UserList{service: service}
+func NewRestUserList(service RestUserListService) *RestUserList {
+    return &RestUserList{service: service}
 }
 ```
 
@@ -339,7 +379,8 @@ func NewUserList(service UserListService) *UserList {
   Always have a final fallback for unmapped errors.
 - Use `w http.ResponseWriter` and `r *http.Request` as the conventional short names.
 - Use `json.NewEncoder(w).Encode(...)` for JSON responses; set `Content-Type` header first.
-- Handler dependency interfaces are named `<Entity><Operation>Service` (e.g., `UserListService`).
+- Handler type names include the protocol prefix: `RestUserList`, not `UserList`. The service
+  interface mirrors the handler type name: `RestUserList` → `RestUserListService`.
 - **File naming:** `rest.<entity><Operation>.go`. Rename any legacy `http.*` files when touched.
 
 ### gRPC Handlers
@@ -347,12 +388,16 @@ func NewUserList(service UserListService) *UserList {
 ```go
 // grpc.orderCreate.go
 
-type OrderCreateHandler struct {
-    protogen.UnimplementedOrderCreateServiceServer
-    service OrderCreateInternalService
+type GrpcOrderCreateService interface {
+    Exec(ctx context.Context, request *services.OrderCreateRequest) (*services.Order, error)
 }
 
-func (h *OrderCreateHandler) OrderCreate(ctx context.Context, req *protogen.OrderCreateRequest) (*protogen.OrderCreateResponse, error) {
+type GrpcOrderCreate struct {
+    protogen.UnimplementedOrderCreateServiceServer
+    service GrpcOrderCreateService
+}
+
+func (h *GrpcOrderCreate) OrderCreate(ctx context.Context, req *protogen.OrderCreateRequest) (*protogen.OrderCreateResponse, error) {
     result, err := h.service.Exec(ctx, &services.OrderCreateRequest{
         UserID: req.GetUserId(),
     })
@@ -365,6 +410,10 @@ func (h *OrderCreateHandler) OrderCreate(ctx context.Context, req *protogen.Orde
 
     return &protogen.OrderCreateResponse{OrderId: result.ID.String()}, nil
 }
+
+func NewGrpcOrderCreate(service GrpcOrderCreateService) *GrpcOrderCreate {
+    return &GrpcOrderCreate{service: service}
+}
 ```
 
 - **gRPC handlers are internal** (service-to-service only). Never expose gRPC publicly.
@@ -374,7 +423,8 @@ func (h *OrderCreateHandler) OrderCreate(ctx context.Context, req *protogen.Orde
   and would be misleading. Use `errors.Is` before constructing the status to pick the right code.
 - Convert between service types and proto types in the handler. Never pass proto types into
   the service layer.
-- Handler dependency interfaces are named `<Entity><Operation>Service` (e.g., `OrderCreateInternalService`).
+- Handler type names include the protocol prefix: `GrpcOrderCreate`, not `OrderCreate`. The service
+  interface mirrors the handler type name: `GrpcOrderCreate` → `GrpcOrderCreateService`.
 
 ---
 
@@ -474,15 +524,16 @@ Each `cmd/<name>/main.go` wires the full dependency graph and starts a server or
 
 ### Types
 
-| Kind                         | Pattern                      | Example                                 |
-| ---------------------------- | ---------------------------- | --------------------------------------- |
-| Operation interface + struct | `<Entity><Operation>`        | `UserSearch`, `OrderCreate`             |
-| DAO dependency interface     | `<Operation>Repository`      | `UserSearchRepository`                  |
-| Service dependency interface | `<Operation>Service`         | `UserListService`, `OrderCreateService` |
-| Request struct               | `<Entity><Operation>Request` | `UserSearchRequest`                     |
-| Config struct                | Domain-named                 | `App`, `RestTimeouts`, `Database`       |
-| DAO entity (bun model)       | Entity name, singular        | `User`, `Order`                         |
-| Proto-generated              | As generated by protoc       | —                                       |
+| Kind                                       | Pattern                                | Example                                       |
+| ------------------------------------------ | -------------------------------------- | --------------------------------------------- |
+| Operation interface + struct               | `<Entity><Operation>`                  | `UserSearch`, `OrderCreate`                   |
+| DAO dependency interface (in services)     | `<Entity><Operation>Repository`        | `UserSearchRepository`, `JwkSelectRepository` |
+| Service dependency interface (in handlers) | `<Protocol><Entity><Operation>Service` | `RestJwkGetService`, `GrpcJwkListService`     |
+| Service dependency interface (in services) | `<Entity><Operation>Service<Role>`     | `JwkSearchServiceExtract`                     |
+| Request struct                             | `<Entity><Operation>Request`           | `UserSearchRequest`                           |
+| Config struct                              | Domain-named                           | `App`, `RestTimeouts`, `Database`             |
+| DAO entity (bun model)                     | Entity name, singular                  | `User`, `Order`                               |
+| Proto-generated                            | As generated by protoc                 | —                                             |
 
 ### Variables and Fields
 
