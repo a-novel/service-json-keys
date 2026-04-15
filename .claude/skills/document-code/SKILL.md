@@ -14,6 +14,13 @@ description: >
 This skill governs how to write, improve, and maintain code documentation. The goal is always to help the reader
 understand **what** something does and **how to use it** — not to narrate the implementation.
 
+**Document at the element level.** Every exposed element — type, function, target, value, field — documents
+itself directly. Never describe elements in an aggregate block above them. A section header that lists its
+targets, a type doc that enumerates its variants, a struct doc that itemizes its fields: all of these put
+documentation in the wrong place. The reader looks at a target and finds no comment; the description is buried
+paragraphs above with all the others. Put it on the element. This applies everywhere: Makefile targets, enum
+values, interface methods, struct fields.
+
 ---
 
 ## What to Document
@@ -120,6 +127,9 @@ For files that describe a sequence of actions (shell scripts, `main.go`, job run
 - Errors: always document exported error variables (`ErrFoo`). Callers check them by identity;
   the doc should say what condition causes the error to be returned, not just restate the name.
   Note whether the error is returned or only logged — the distinction matters to callers.
+- Enums (typed string/int constants): document the type itself with what the enum conceptually represents
+  and how it's used — not a list of its values. Document each constant individually, explaining what that
+  specific value means or selects. Never describe the values in the type doc.
 - Interfaces: document the interface type and its methods. Implementations can reference the interface instead
   of duplicating doc.
 - Cross-references: use `[Symbol]` or `[Type.Field]` godoc link syntax. Never reference unexported symbols
@@ -138,10 +148,17 @@ For files that describe a sequence of actions (shell scripts, `main.go`, job run
   what it does or how it differs from similar targets (e.g., `test-unit` vs `test-pkg`).
 - Document aggregate targets (targets that call other targets) only when the composition isn't
   obvious from the dependency list. Usually the target name and its dependencies speak for themselves.
-- Use section separators and section-level comments to explain the purpose of a group and any
-  non-obvious behavior shared across the group (e.g., "format-go also runs go mod tidy").
+- Use section separators (`# === Section Name ===`) as visual dividers only — a short label, no body text.
+  Non-obvious behavior (e.g., "also runs go mod tidy") belongs on the individual target, not in the header.
+- Never enumerate targets in a section header block. That's the anti-pattern: the reader lands on a target
+  and finds no comment; the description is buried lines above inside a listing with all the others.
 - A file-level comment is warranted when the Makefile covers multiple unrelated workflows. Skip it
   if the section headers already tell the full story.
+- Target comments should answer **when to run this** and **what to expect**, not describe the tool's
+  internals. A developer reading the comment is deciding whether to run the target, not studying the
+  implementation. Prefer: "Run after editing .proto files." over "Invokes buf's formatter on the
+  protobuf module graph." Side effects that change behavior (e.g., a format target that also updates
+  a lock file, or a lint target whose auto-fix modifies sources) are worth calling out explicitly.
 
 ### YAML (config files)
 
@@ -235,11 +252,14 @@ Documentation is as much a liability as an asset when it's wrong. Every time you
 - Documenting obvious setters/getters unless there's a real invariant to explain.
 - Noise comments that just make the file longer without adding information.
 - Copying the same description from an interface down to the struct method — reference or omit instead.
-- **Enumerating anything in a list** — fields, parameters, behaviors, checks, steps, etc. Lists stale
+- **Enumerating anything in a list** — fields, parameters, behaviors, checks, steps, etc. Lists go stale
   as soon as any item changes, and they push implementation details into docs that should describe intent.
   _Bad_: _"It validates signature, expiry, issuer, audience, and subject against the config."_
   _Good_: _"It validates all token claims against the configuration registered for the given usage."_
   When an example helps, give one representative item, not a complete inventory.
+- **Section-level enumerations**: describing elements in a block header above them. The reader looks at
+  the element and finds no comment; the description is buried in a listing with all the others.
+  Document each element directly instead.
 - **British English spelling**: use American English throughout (e.g., "initialize" not "initialise",
   "behavior" not "behaviour").
 - **Incorrect acronym casing**: write acronyms as they are conventionally styled in the language ecosystem

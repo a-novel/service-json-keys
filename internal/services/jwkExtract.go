@@ -19,7 +19,8 @@ import (
 type JwkExtractRequest struct {
 	// Jwk is the DAO entity to extract key material from.
 	Jwk *dao.Jwk
-	// Private indicates whether to return the private key; when false, the public key is returned.
+	// Private indicates whether to return private key material. For symmetric algorithms, which have
+	// no separate public key, private material is always returned regardless of this flag.
 	Private bool
 }
 
