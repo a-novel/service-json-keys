@@ -69,8 +69,8 @@ type App struct {
 	Logger logging.Log `json:"logger" yaml:"logger"`
 	// GrpcLogger configures the gRPC request logging middleware.
 	GrpcLogger logging.RpcConfig `json:"grpclogger" yaml:"grpclogger"`
-	// HttpLogger configures the HTTP request logging middleware.
-	HttpLogger logging.HttpConfig `json:"httpLogger" yaml:"httpLogger"`
+	// RestLogger configures the REST request logging middleware.
+	RestLogger logging.HttpConfig `json:"restLogger" yaml:"restLogger"`
 	// Postgres configures the PostgreSQL connection.
 	Postgres postgres.Config `json:"postgres" yaml:"postgres"`
 }

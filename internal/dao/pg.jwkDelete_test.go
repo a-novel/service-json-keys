@@ -16,7 +16,9 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/models/migrations"
 )
 
-func TestJwkDelete(t *testing.T) {
+func TestPgJwkDelete(t *testing.T) {
+	t.Parallel()
+
 	hourAgo := time.Now().Add(-time.Hour).UTC().Round(time.Second)
 	now := time.Now().UTC().Round(time.Second)
 	hourLater := time.Now().Add(time.Hour).UTC().Round(time.Second)
@@ -70,7 +72,7 @@ func TestJwkDelete(t *testing.T) {
 			},
 		},
 		{
-			name: "NotFound",
+			name: "Error/NotFound",
 
 			request: &dao.JwkDeleteRequest{
 				ID:      uuid.MustParse("00000000-0000-0000-0000-000000000002"),
@@ -92,7 +94,7 @@ func TestJwkDelete(t *testing.T) {
 			expectErr: dao.ErrJwkDeleteNotFound,
 		},
 		{
-			name: "AlreadyExpired",
+			name: "Error/AlreadyExpired",
 
 			request: &dao.JwkDeleteRequest{
 				ID:      uuid.MustParse("00000000-0000-0000-0000-000000000002"),
@@ -122,7 +124,7 @@ func TestJwkDelete(t *testing.T) {
 			expectErr: dao.ErrJwkDeleteNotFound,
 		},
 		{
-			name: "DeleteMultipleTimes",
+			name: "Error/AlreadyDeleted",
 
 			request: &dao.JwkDeleteRequest{
 				ID:      uuid.MustParse("00000000-0000-0000-0000-000000000002"),
@@ -155,7 +157,7 @@ func TestJwkDelete(t *testing.T) {
 		},
 	}
 
-	repository := dao.NewJwkDelete()
+	repository := dao.NewPgJwkDelete()
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {

@@ -134,6 +134,8 @@ func NewClient(addr string, opts ...grpc.DialOption) (Client, error) {
 
 	sources, err := services.NewJwkPublicSource(adapter, config.JwkPresetDefault)
 	if err != nil {
+		_ = conn.Close()
+
 		return nil, fmt.Errorf("new jwk public source: %w", err)
 	}
 
@@ -141,6 +143,8 @@ func NewClient(addr string, opts ...grpc.DialOption) (Client, error) {
 
 	recipients, err := services.NewJwkRecipients(sources, config.JwkPresetDefault)
 	if err != nil {
+		_ = conn.Close()
+
 		return nil, fmt.Errorf("new jwk recipients: %w", err)
 	}
 

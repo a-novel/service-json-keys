@@ -16,7 +16,7 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
-func TestConsumeDAOKey(t *testing.T) {
+func TestJwkExtract(t *testing.T) {
 	t.Parallel()
 
 	ctx, err := lib.NewMasterKeyContext(t.Context(), testutils.TestMasterKey)

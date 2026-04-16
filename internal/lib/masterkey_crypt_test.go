@@ -8,7 +8,9 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/lib"
 )
 
-func TestMasterKeyCrypt(t *testing.T) { //nolint:tparallel
+func TestMasterKeyCrypt(t *testing.T) {
+	t.Parallel()
+
 	// 32-byte keys (64 hex chars).
 	masterKey := "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
 	fakeMasterKey := "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"

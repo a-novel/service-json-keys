@@ -202,9 +202,8 @@ func NewJwkPrivateSource(
 	}
 
 	for usage, keyConfig := range keys {
-		currentUsage := usage
 		fetch := func(ctx context.Context) ([]*jwa.JWK, error) {
-			return source.SearchKeys(ctx, currentUsage)
+			return source.SearchKeys(ctx, usage)
 		}
 
 		sourceConfig := jwk.SourceConfig{
@@ -214,13 +213,13 @@ func NewJwkPrivateSource(
 
 		switch keyConfig.Alg {
 		case jwa.EdDSA:
-			output.EdDSA[currentUsage] = jwk.NewED25519PrivateSource(sourceConfig)
+			output.EdDSA[usage] = jwk.NewED25519PrivateSource(sourceConfig)
 		case jwa.HS256, jwa.HS384, jwa.HS512:
-			output.HMAC[currentUsage] = jwk.NewHMACSource(sourceConfig, JwkPresetsHMAC[keyConfig.Alg])
+			output.HMAC[usage] = jwk.NewHMACSource(sourceConfig, JwkPresetsHMAC[keyConfig.Alg])
 		case jwa.ES256, jwa.ES384, jwa.ES512:
-			output.ES[currentUsage] = jwk.NewECDSAPrivateSource(sourceConfig, JwkPresetsEcdsa[keyConfig.Alg])
+			output.ES[usage] = jwk.NewECDSAPrivateSource(sourceConfig, JwkPresetsEcdsa[keyConfig.Alg])
 		case jwa.RS256, jwa.RS384, jwa.RS512, jwa.PS256, jwa.PS384, jwa.PS512:
-			output.RSA[currentUsage] = jwk.NewRSAPrivateSource(sourceConfig, JwkPresetsRsa[keyConfig.Alg])
+			output.RSA[usage] = jwk.NewRSAPrivateSource(sourceConfig, JwkPresetsRsa[keyConfig.Alg])
 		default:
 			return nil, fmt.Errorf("%w: %s", ErrJwkPresetUnknownAlgorithm, keyConfig.Alg)
 		}
@@ -259,9 +258,8 @@ func NewJwkPublicSource(
 	}
 
 	for usage, keyConfig := range keys {
-		currentUsage := usage
 		fetch := func(ctx context.Context) ([]*jwa.JWK, error) {
-			return source.SearchKeys(ctx, currentUsage)
+			return source.SearchKeys(ctx, usage)
 		}
 		sourceConfig := jwk.SourceConfig{
 			CacheDuration: keyConfig.Key.Cache,
@@ -270,13 +268,13 @@ func NewJwkPublicSource(
 
 		switch keyConfig.Alg {
 		case jwa.EdDSA:
-			output.EdDSA[currentUsage] = jwk.NewED25519PublicSource(sourceConfig)
+			output.EdDSA[usage] = jwk.NewED25519PublicSource(sourceConfig)
 		case jwa.HS256, jwa.HS384, jwa.HS512:
-			output.HMAC[currentUsage] = jwk.NewHMACSource(sourceConfig, JwkPresetsHMAC[keyConfig.Alg])
+			output.HMAC[usage] = jwk.NewHMACSource(sourceConfig, JwkPresetsHMAC[keyConfig.Alg])
 		case jwa.ES256, jwa.ES384, jwa.ES512:
-			output.ES[currentUsage] = jwk.NewECDSAPublicSource(sourceConfig, JwkPresetsEcdsa[keyConfig.Alg])
+			output.ES[usage] = jwk.NewECDSAPublicSource(sourceConfig, JwkPresetsEcdsa[keyConfig.Alg])
 		case jwa.RS256, jwa.RS384, jwa.RS512, jwa.PS256, jwa.PS384, jwa.PS512:
-			output.RSA[currentUsage] = jwk.NewRSAPublicSource(sourceConfig, JwkPresetsRsa[keyConfig.Alg])
+			output.RSA[usage] = jwk.NewRSAPublicSource(sourceConfig, JwkPresetsRsa[keyConfig.Alg])
 		default:
 			return nil, fmt.Errorf("%w: %s", ErrJwkPresetUnknownAlgorithm, keyConfig.Alg)
 		}

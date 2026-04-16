@@ -116,6 +116,20 @@ func TestJwkSelect(t *testing.T) {
 			expectErr: errFoo,
 		},
 		{
+			name: "Error/NotFound",
+
+			request: &services.JwkSelectRequest{
+				ID:      uuid.MustParse("00000000-0000-0000-0000-000000000002"),
+				Private: true,
+			},
+
+			repositorySelectMock: &repositorySelectMock{
+				err: dao.ErrJwkSelectNotFound,
+			},
+
+			expectErr: services.ErrJwkNotFound,
+		},
+		{
 			name: "Error/Select",
 
 			request: &services.JwkSelectRequest{

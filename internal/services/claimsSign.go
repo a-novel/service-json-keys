@@ -38,10 +38,10 @@ func NewClaimsSign(
 }
 
 func (service *ClaimsSign) Exec(ctx context.Context, request *ClaimsSignRequest) (string, error) {
-	ctx, span := otel.Tracer().Start(ctx, "service.ClaimsSign")
+	ctx, span := otel.Tracer().Start(ctx, "services.ClaimsSign")
 	defer span.End()
 
-	span.SetAttributes(attribute.String("usage", request.Usage))
+	span.SetAttributes(attribute.String("key.usage", request.Usage))
 
 	keyConfig, ok := service.keysConfig[request.Usage]
 	if !ok {

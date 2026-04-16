@@ -16,7 +16,7 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
 )
 
-func TestHealth(t *testing.T) {
+func TestRestHealth(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -30,7 +30,7 @@ func TestHealth(t *testing.T) {
 		{
 			name: "Success",
 
-			request: httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/", nil),
+			request: httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/healthcheck", nil),
 
 			expectResponse: map[string]any{
 				"client:postgres": map[string]any{

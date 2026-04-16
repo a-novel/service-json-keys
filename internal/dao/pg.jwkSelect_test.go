@@ -16,7 +16,9 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/models/migrations"
 )
 
-func TestJwkSelect(t *testing.T) {
+func TestPgJwkSelect(t *testing.T) {
+	t.Parallel()
+
 	hourAgo := time.Now().Add(-time.Hour).UTC().Round(time.Second)
 	hourLater := time.Now().Add(time.Hour).UTC().Round(time.Second)
 
@@ -66,7 +68,7 @@ func TestJwkSelect(t *testing.T) {
 			},
 		},
 		{
-			name: "NotFound",
+			name: "Error/NotFound",
 
 			request: &dao.JwkSelectRequest{
 				ID: uuid.MustParse("00000000-0000-0000-0000-000000000002"),
@@ -86,7 +88,7 @@ func TestJwkSelect(t *testing.T) {
 			expectErr: dao.ErrJwkSelectNotFound,
 		},
 		{
-			name: "IgnoreExpired",
+			name: "Error/Expired",
 
 			request: &dao.JwkSelectRequest{
 				ID: uuid.MustParse("00000000-0000-0000-0000-000000000002"),
@@ -115,7 +117,7 @@ func TestJwkSelect(t *testing.T) {
 		},
 	}
 
-	repository := dao.NewJwkSelect()
+	repository := dao.NewPgJwkSelect()
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {

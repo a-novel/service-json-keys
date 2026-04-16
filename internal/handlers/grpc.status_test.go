@@ -14,7 +14,7 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
 )
 
-func TestStatus(t *testing.T) {
+func TestGrpcStatus(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -26,6 +26,7 @@ func TestStatus(t *testing.T) {
 		{
 			name: "Success",
 
+			expectStatus: codes.OK,
 			expect: &protogen.StatusResponse{
 				Postgres: &protogen.DependencyHealth{
 					Status: protogen.DependencyStatus_DEPENDENCY_STATUS_UP,

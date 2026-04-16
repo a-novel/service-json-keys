@@ -18,7 +18,7 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
-func TestClaimsSign(t *testing.T) {
+func TestGrpcClaimsSign(t *testing.T) {
 	t.Parallel()
 
 	errFoo := errors.New("foo")
@@ -93,7 +93,7 @@ func TestClaimsSign(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			service := handlersmocks.NewMockClaimsSignService(t)
+			service := handlersmocks.NewMockGrpcClaimsSignService(t)
 
 			if testCase.serviceMock != nil {
 				service.EXPECT().
@@ -104,7 +104,7 @@ func TestClaimsSign(t *testing.T) {
 					Return(testCase.serviceMock.resp, testCase.serviceMock.err)
 			}
 
-			handler := handlers.NewClaimsSign(service)
+			handler := handlers.NewGrpcClaimsSign(service)
 
 			res, err := handler.ClaimsSign(t.Context(), testCase.request)
 			resSt, ok := status.FromError(err)

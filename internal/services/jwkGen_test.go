@@ -64,7 +64,9 @@ func checkGeneratedPublicKey(t *testing.T, key string) (*jwa.JWK, error) {
 	return &deserialized, nil
 }
 
-func TestGenerateKeys(t *testing.T) { //nolint:paralleltest
+func TestJwkGen(t *testing.T) {
+	t.Parallel()
+
 	ctx, err := lib.NewMasterKeyContext(t.Context(), testutils.TestMasterKey)
 	require.NoError(t, err)
 
@@ -398,8 +400,10 @@ func TestGenerateKeys(t *testing.T) { //nolint:paralleltest
 		})
 	}
 
-	for _, testCase := range testCases { //nolint:paralleltest
+	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
 			repositorySearch := servicesmocks.NewMockJwkGenRepositorySearch(t)
 			repositoryInsert := servicesmocks.NewMockJwkGenRepositoryInsert(t)
 			serviceExtract := servicesmocks.NewMockJwkGenServiceExtract(t)
@@ -426,7 +430,7 @@ func TestGenerateKeys(t *testing.T) { //nolint:paralleltest
 				}
 
 				// Ensure private key is encrypted.
-				_, err = checkGeneratedPrivateKey(ctx, t, request.PrivateKey)
+				_, err := checkGeneratedPrivateKey(ctx, t, request.PrivateKey)
 				if err != nil {
 					t.Errorf("checking private key: %s", err)
 

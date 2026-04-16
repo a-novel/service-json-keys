@@ -16,7 +16,9 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/models/migrations"
 )
 
-func TestJwkSearch(t *testing.T) {
+func TestPgJwkSearch(t *testing.T) {
+	t.Parallel()
+
 	hourAgo := time.Now().Add(-time.Hour).UTC().Round(time.Second)
 	hourLater := time.Now().Add(time.Hour).UTC().Round(time.Second)
 
@@ -157,7 +159,7 @@ func TestJwkSearch(t *testing.T) {
 		},
 	}
 
-	repository := dao.NewJwkSearch()
+	repository := dao.NewPgJwkSearch()
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {

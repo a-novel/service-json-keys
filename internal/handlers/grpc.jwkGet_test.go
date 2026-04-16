@@ -13,14 +13,13 @@ import (
 
 	"github.com/a-novel-kit/jwt/jwa"
 
-	"github.com/a-novel/service-json-keys/v2/internal/dao"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
 	handlersmocks "github.com/a-novel/service-json-keys/v2/internal/handlers/mocks"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
 	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
-func TestJwkGet(t *testing.T) {
+func TestGrpcJwkGet(t *testing.T) {
 	t.Parallel()
 
 	errFoo := errors.New("foo")
@@ -80,7 +79,7 @@ func TestJwkGet(t *testing.T) {
 			},
 
 			serviceMock: &serviceMock{
-				err: dao.ErrJwkSelectNotFound,
+				err: services.ErrJwkNotFound,
 			},
 
 			expectStatus: codes.NotFound,
@@ -104,7 +103,7 @@ func TestJwkGet(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			service := handlersmocks.NewMockJwkGetService(t)
+			service := handlersmocks.NewMockGrpcJwkGetService(t)
 
 			if testCase.serviceMock != nil {
 				service.EXPECT().
@@ -114,7 +113,7 @@ func TestJwkGet(t *testing.T) {
 					Return(testCase.serviceMock.resp, testCase.serviceMock.err)
 			}
 
-			handler := handlers.NewJwkGet(service)
+			handler := handlers.NewGrpcJwkGet(service)
 
 			res, err := handler.JwkGet(t.Context(), testCase.request)
 			resSt, ok := status.FromError(err)

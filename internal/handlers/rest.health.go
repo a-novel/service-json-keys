@@ -60,7 +60,7 @@ func (handler *RestHealth) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (handler *RestHealth) reportPostgres(ctx context.Context) error {
-	ctx, span := otel.Tracer().Start(ctx, "rest.RestHealth(reportPostgres)")
+	ctx, span := otel.Tracer().Start(ctx, "rest.Health(reportPostgres)")
 	defer span.End()
 
 	pg, err := postgres.GetContext(ctx)

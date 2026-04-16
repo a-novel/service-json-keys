@@ -13,27 +13,27 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
-// JwkListService is the service dependency of [JwkList].
-type JwkListService interface {
+// GrpcJwkListService is the service dependency of [GrpcJwkList].
+type GrpcJwkListService interface {
 	Exec(ctx context.Context, request *services.JwkSearchRequest) ([]*services.Jwk, error)
 }
 
-// JwkList is the gRPC handler that returns the active public keys for a given usage.
-type JwkList struct {
+// GrpcJwkList is the gRPC handler that returns the active public keys for a given usage.
+type GrpcJwkList struct {
 	protogen.UnimplementedJwkListServiceServer
 
-	service JwkListService
+	service GrpcJwkListService
 }
 
-// NewJwkList returns a new JwkList handler backed by the given service.
-func NewJwkList(service JwkListService) *JwkList {
-	return &JwkList{service: service}
+// NewGrpcJwkList returns a new GrpcJwkList handler backed by the given service.
+func NewGrpcJwkList(service GrpcJwkListService) *GrpcJwkList {
+	return &GrpcJwkList{service: service}
 }
 
-func (handler *JwkList) JwkList(
+func (handler *GrpcJwkList) JwkList(
 	ctx context.Context, request *protogen.JwkListRequest,
 ) (*protogen.JwkListResponse, error) {
-	ctx, span := otel.Tracer().Start(ctx, "handler.JwkList")
+	ctx, span := otel.Tracer().Start(ctx, "grpc.JwkList")
 	defer span.End()
 
 	jwks, err := handler.service.Exec(ctx, &services.JwkSearchRequest{

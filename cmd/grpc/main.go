@@ -56,8 +56,8 @@ func main() {
 	// DAO
 	// =================================================================================================================
 
-	repositoryJwkSearch := dao.NewJwkSearch()
-	repositoryJwkSelect := dao.NewJwkSelect()
+	repositoryJwkSearch := dao.NewPgJwkSearch()
+	repositoryJwkSelect := dao.NewPgJwkSelect()
 
 	// =================================================================================================================
 	// SERVICES
@@ -79,9 +79,9 @@ func main() {
 	// =================================================================================================================
 
 	handlerStatus := handlers.NewGrpcStatus()
-	handlerClaimsSign := handlers.NewClaimsSign(serviceClaimsSign)
-	handlersJwkGet := handlers.NewJwkGet(serviceJwkSelect)
-	handlersJwkList := handlers.NewJwkList(serviceJwkSearch)
+	handlerClaimsSign := handlers.NewGrpcClaimsSign(serviceClaimsSign)
+	handlerJwkGet := handlers.NewGrpcJwkGet(serviceJwkSelect)
+	handlerJwkList := handlers.NewGrpcJwkList(serviceJwkSearch)
 
 	// =================================================================================================================
 	// SERVER
@@ -115,8 +115,8 @@ func main() {
 
 	protogen.RegisterStatusServiceServer(server, handlerStatus)
 	protogen.RegisterClaimsSignServiceServer(server, handlerClaimsSign)
-	protogen.RegisterJwkGetServiceServer(server, handlersJwkGet)
-	protogen.RegisterJwkListServiceServer(server, handlersJwkList)
+	protogen.RegisterJwkGetServiceServer(server, handlerJwkGet)
+	protogen.RegisterJwkListServiceServer(server, handlerJwkList)
 
 	reflection.Register(server)
 

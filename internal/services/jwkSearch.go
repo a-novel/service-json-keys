@@ -50,7 +50,7 @@ func NewJwkSearch(
 }
 
 func (service *JwkSearch) Exec(ctx context.Context, request *JwkSearchRequest) ([]*Jwk, error) {
-	ctx, span := otel.Tracer().Start(ctx, "service.JwkSearch")
+	ctx, span := otel.Tracer().Start(ctx, "services.JwkSearch")
 	defer span.End()
 
 	span.SetAttributes(

@@ -25,26 +25,26 @@ const KeysMaxBatchSize = 100
 // limit. Results are still returned, but the condition indicates a likely misconfiguration.
 var ErrJwkSearchTooManyResults = fmt.Errorf("the query returned %d or more results", KeysMaxBatchSize)
 
-// JwkSearchRequest holds the parameters for a [JwkSearch.Exec] call.
+// JwkSearchRequest holds the parameters for a [PgJwkSearch.Exec] call.
 type JwkSearchRequest struct {
 	// Usage is the key usage to filter by. See [Jwk.Usage].
 	Usage string
 }
 
-// A JwkSearch lists the active keys for a given usage. Keys are returned in
+// A PgJwkSearch lists the active keys for a given usage. Keys are returned in
 // creation order: the first element is the main key, the rest are legacy.
 //
 // There is no pagination for this query; regular rotation and expiration keep
 // the active key count well below [KeysMaxBatchSize] under normal operation.
-type JwkSearch struct{}
+type PgJwkSearch struct{}
 
-// NewJwkSearch returns a new JwkSearch repository.
-func NewJwkSearch() *JwkSearch {
-	return new(JwkSearch)
+// NewPgJwkSearch returns a new PgJwkSearch repository.
+func NewPgJwkSearch() *PgJwkSearch {
+	return new(PgJwkSearch)
 }
 
-func (repository *JwkSearch) Exec(ctx context.Context, request *JwkSearchRequest) ([]*Jwk, error) {
-	ctx, span := otel.Tracer().Start(ctx, "dao.JwkSearch")
+func (repository *PgJwkSearch) Exec(ctx context.Context, request *JwkSearchRequest) ([]*Jwk, error) {
+	ctx, span := otel.Tracer().Start(ctx, "dao.PgJwkSearch")
 	defer span.End()
 
 	span.SetAttributes(attribute.String("key.usage", request.Usage))

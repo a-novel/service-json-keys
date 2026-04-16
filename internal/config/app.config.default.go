@@ -76,7 +76,7 @@ var AppPresetDefault = App{
 		}),
 	Logger:     lo.Ternary[logging.Log](env.GcloudProjectId == "", LoggerDev, LoggerProd),
 	GrpcLogger: lo.Ternary[logging.RpcConfig](env.GcloudProjectId == "", &LoggerDevGrpc, &LoggerProdGrpc),
-	HttpLogger: lo.Ternary[logging.HttpConfig](
+	RestLogger: lo.Ternary[logging.HttpConfig](
 		env.GcloudProjectId == "",
 		&loggingpresets.HttpLocal{BaseLogger: LoggerDev},
 		&loggingpresets.HttpGcloud{BaseLogger: LoggerProd},
