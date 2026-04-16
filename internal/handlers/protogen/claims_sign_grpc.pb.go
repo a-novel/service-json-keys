@@ -29,6 +29,9 @@ const (
 // ClaimsSignService remotely generates a signed token from claims. The parameters used to
 // sign a token depend on the intended usage.
 type ClaimsSignServiceClient interface {
+	// Signs the provided claims and returns a compact JWT. The signing key and all token
+	// parameters are determined by the requested usage. Returns UNAVAILABLE if the usage is
+	// not configured on the server.
 	ClaimsSign(ctx context.Context, in *ClaimsSignRequest, opts ...grpc.CallOption) (*ClaimsSignResponse, error)
 }
 
@@ -57,6 +60,9 @@ func (c *claimsSignServiceClient) ClaimsSign(ctx context.Context, in *ClaimsSign
 // ClaimsSignService remotely generates a signed token from claims. The parameters used to
 // sign a token depend on the intended usage.
 type ClaimsSignServiceServer interface {
+	// Signs the provided claims and returns a compact JWT. The signing key and all token
+	// parameters are determined by the requested usage. Returns UNAVAILABLE if the usage is
+	// not configured on the server.
 	ClaimsSign(context.Context, *ClaimsSignRequest) (*ClaimsSignResponse, error)
 	mustEmbedUnimplementedClaimsSignServiceServer()
 }

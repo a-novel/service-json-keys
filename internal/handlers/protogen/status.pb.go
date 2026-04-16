@@ -21,6 +21,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// DependencyStatus classifies the result of a health check for a single external dependency.
 type DependencyStatus int32
 
 const (
@@ -131,6 +132,7 @@ func (x *DependencyHealth) GetErr() string {
 	return ""
 }
 
+// StatusRequest carries no parameters; the server checks all dependencies automatically.
 type StatusRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields

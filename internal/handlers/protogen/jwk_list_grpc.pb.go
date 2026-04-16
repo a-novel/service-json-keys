@@ -29,6 +29,8 @@ const (
 // JwkListService lists the active keys for a given usage. The keys are returned in
 // creation order (first key in the array is the main key, the rest are legacy).
 type JwkListServiceClient interface {
+	// Returns the active public keys for the given usage in creation order.
+	// The first key is the current main key; the rest are legacy keys not yet expired.
 	JwkList(ctx context.Context, in *JwkListRequest, opts ...grpc.CallOption) (*JwkListResponse, error)
 }
 
@@ -57,6 +59,8 @@ func (c *jwkListServiceClient) JwkList(ctx context.Context, in *JwkListRequest, 
 // JwkListService lists the active keys for a given usage. The keys are returned in
 // creation order (first key in the array is the main key, the rest are legacy).
 type JwkListServiceServer interface {
+	// Returns the active public keys for the given usage in creation order.
+	// The first key is the current main key; the rest are legacy keys not yet expired.
 	JwkList(context.Context, *JwkListRequest) (*JwkListResponse, error)
 	mustEmbedUnimplementedJwkListServiceServer()
 }

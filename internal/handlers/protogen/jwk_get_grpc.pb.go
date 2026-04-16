@@ -29,6 +29,8 @@ const (
 // JwkGetService returns a public JSON Web Key by its key ID.
 // The returned key may be used by any recipient to verify a token.
 type JwkGetServiceClient interface {
+	// Returns a single public key matching the provided key ID.
+	// Returns NOT_FOUND if no active key with that ID exists.
 	JwkGet(ctx context.Context, in *JwkGetRequest, opts ...grpc.CallOption) (*JwkGetResponse, error)
 }
 
@@ -57,6 +59,8 @@ func (c *jwkGetServiceClient) JwkGet(ctx context.Context, in *JwkGetRequest, opt
 // JwkGetService returns a public JSON Web Key by its key ID.
 // The returned key may be used by any recipient to verify a token.
 type JwkGetServiceServer interface {
+	// Returns a single public key matching the provided key ID.
+	// Returns NOT_FOUND if no active key with that ID exists.
 	JwkGet(context.Context, *JwkGetRequest) (*JwkGetResponse, error)
 	mustEmbedUnimplementedJwkGetServiceServer()
 }
