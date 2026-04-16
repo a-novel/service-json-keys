@@ -75,6 +75,22 @@ func TestGrpcJwkList(t *testing.T) {
 			},
 		},
 		{
+			name: "Success/Empty",
+
+			request: &protogen.JwkListRequest{
+				Usage: "test-usage",
+			},
+
+			serviceMock: &serviceMock{
+				resp: []*services.Jwk{},
+			},
+
+			expectStatus: codes.OK,
+			expect: &protogen.JwkListResponse{
+				Keys: []*protogen.Jwk{},
+			},
+		},
+		{
 			name: "Error/Internal",
 
 			request: &protogen.JwkListRequest{

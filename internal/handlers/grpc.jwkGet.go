@@ -57,7 +57,7 @@ func (handler *GrpcJwkGet) JwkGet(
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	return &protogen.JwkGetResponse{
+	return otel.ReportSuccess(span, &protogen.JwkGetResponse{
 		Jwk: &protogen.Jwk{
 			Kty:     jwk.KTY.String(),
 			Use:     jwk.Use.String(),
@@ -66,5 +66,5 @@ func (handler *GrpcJwkGet) JwkGet(
 			Kid:     jwk.KID,
 			Payload: jwk.Payload,
 		},
-	}, nil
+	}), nil
 }

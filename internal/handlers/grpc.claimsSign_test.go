@@ -58,6 +58,16 @@ func TestGrpcClaimsSign(t *testing.T) {
 			},
 		},
 		{
+			name: "Error/InvalidPayload",
+
+			request: &protogen.ClaimsSignRequest{
+				// Payload not set — grpcf.ProtoAnyToInterface(nil) returns an error.
+				Usage: "test-usage",
+			},
+
+			expectStatus: codes.InvalidArgument,
+		},
+		{
 			name: "Error/BadConfig",
 
 			request: &protogen.ClaimsSignRequest{

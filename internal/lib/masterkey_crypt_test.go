@@ -26,7 +26,7 @@ func TestMasterKeyCrypt(t *testing.T) {
 	encrypted, err := lib.EncryptMasterKey(ctxReal, data)
 	require.NoError(t, err)
 
-	t.Run("DecryptOK", func(t *testing.T) {
+	t.Run("Success", func(t *testing.T) {
 		t.Parallel()
 
 		var decrypted map[string]any
@@ -35,7 +35,7 @@ func TestMasterKeyCrypt(t *testing.T) {
 		require.Equal(t, data, decrypted)
 	})
 
-	t.Run("DecryptKO", func(t *testing.T) {
+	t.Run("Error/WrongKey", func(t *testing.T) {
 		t.Parallel()
 
 		var decrypted map[string]any
@@ -44,7 +44,7 @@ func TestMasterKeyCrypt(t *testing.T) {
 		require.Nil(t, decrypted)
 	})
 
-	t.Run("DecryptTooShort", func(t *testing.T) {
+	t.Run("Error/TooShort", func(t *testing.T) {
 		t.Parallel()
 
 		var decrypted map[string]any

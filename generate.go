@@ -1,4 +1,4 @@
-package authentication
+package servicejsonkeys
 
 // Generate mocks.
 //go:generate go tool mockery

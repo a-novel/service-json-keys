@@ -24,6 +24,12 @@ info:
     name: AGPL-3.0
     url: "https://raw.githubusercontent.com/a-novel/service-json-keys/refs/heads/master/LICENSE"
 
+tags:
+  - name: health
+    description: Endpoints for checking server and dependency health.
+  - name: jwk
+    description: Endpoints for retrieving public JSON Web Keys used to verify signed tokens.
+
 paths:
   /ping:
     get:
@@ -39,8 +45,6 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/pong"
-        "418":
-          $ref: "#/components/responses/teapot"
         default:
           $ref: "#/components/responses/internalError"
 
@@ -49,14 +53,12 @@ paths:
       operationId: healthcheck
       summary: Health diagnosis of the server.
       description: |
-        Performs a complete health diagnosis of the server dependencies, by trying to reach them each.
+        Performs a complete health diagnosis of the server dependencies, by pinging each in turn.
       tags: [health]
       security: []
       responses:
         "200":
           $ref: "#/components/responses/health"
-        "418":
-          $ref: "#/components/responses/teapot"
         default:
           $ref: "#/components/responses/internalError"
 
@@ -65,8 +67,8 @@ paths:
       operationId: jwkList
       summary: List public JSON Web Keys.
       description: |
-        Returns the list of public JSON Web Keys (JWK) for a given usage. This can be used by other
-        services to verify signatures on tokens issued by this service.
+        Returns the list of public JSON Web Keys (JWK) for a given usage. This can be used by any
+        recipient to verify signatures on tokens issued by this service.
       tags: [jwk]
       security: []
       parameters:
@@ -100,7 +102,7 @@ paths:
 components:
   responses:
     pong:
-      description: "101100001100101011001010"
+      description: Server is alive.
       content:
         text/plain:
           schema:
@@ -114,12 +116,16 @@ components:
           schema:
             type: object
             required: ["client:postgres"]
+            additionalProperties:
+              $ref: "#/components/schemas/healthStatus"
             properties:
               "client:postgres":
                 $ref: "#/components/schemas/healthStatus"
-            examples:
-              - { "client:postgres": { "status": "up" } }
-              - { "client:postgres": { "status": "down", "err": "Connection to host refused" } }
+          examples:
+            healthy:
+              value: { "client:postgres": { "status": "up" } }
+            degraded:
+              value: { "client:postgres": { "status": "down", "err": "Connection to host refused" } }
 
     jwkList:
       description: A list of public JSON Web Keys.
@@ -129,6 +135,17 @@ components:
             type: array
             items:
               $ref: "#/components/schemas/jwk"
+          examples:
+            withKeys:
+              value:
+                - kty: OKP
+                  use: sig
+                  key_ops: [verify]
+                  alg: EdDSA
+                  kid: "44de7cd7-aff1-e6c4-4204-74e8341d792c"
+                  x: "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo"
+            empty:
+              value: []
 
     jwkGet:
       description: A single public JSON Web Key.
@@ -136,6 +153,15 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/jwk"
+          examples:
+            example:
+              value:
+                kty: OKP
+                use: sig
+                key_ops: [verify]
+                alg: EdDSA
+                kid: "44de7cd7-aff1-e6c4-4204-74e8341d792c"
+                x: "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo"
 
     notFound:
       description: |
@@ -147,9 +173,6 @@ components:
 
     internalError:
       description: Something unexpected happened.
-
-    teapot:
-      description: I'm a teapot!
 
   schemas:
     healthStatus:
@@ -229,8 +252,11 @@ components:
     usage:
       name: usage
       in: query
-      description: Filter keys by their intended usage.
       required: false
+      description: |
+        Filter keys by their intended usage. A usage is a named signing configuration
+        registered on the server (e.g., `auth` for access tokens, `auth-refresh` for
+        refresh tokens). An unrecognized or omitted value returns an empty list.
       schema:
         type: string
-        examples: [sig, enc]
+        examples: [auth, auth-refresh]

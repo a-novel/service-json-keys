@@ -1,31 +1,21 @@
 # Runs the migrations job: applies pending database schema migrations.
 FROM docker.io/library/golang:1.26.2-alpine AS builder
 
+ENV CGO_ENABLED=0
+
 WORKDIR /app
 
-# ======================================================================================================================
-# Copy build files.
-# ======================================================================================================================
-COPY ./go.mod ./go.mod
-COPY ./go.sum ./go.sum
-COPY "./cmd/migrations" "./cmd/migrations"
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY ./cmd/migrations ./cmd/migrations
 COPY ./internal/config ./internal/config
 COPY ./internal/models/migrations ./internal/models/migrations
 
-RUN go mod download
-
-# ======================================================================================================================
-# Build executables.
-# ======================================================================================================================
-RUN go build -o /migrations cmd/migrations/main.go
+RUN go build -ldflags="-s -w" -trimpath -o /migrations ./cmd/migrations/
 
 FROM docker.io/library/alpine:3.23.4
 
-WORKDIR /
-
 COPY --from=builder /migrations /migrations
 
-ARG DEBIAN_FRONTEND=noninteractive
-
-# Applies the migrations to a linked database instance.
 CMD ["/migrations"]

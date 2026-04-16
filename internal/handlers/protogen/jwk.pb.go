@@ -78,12 +78,22 @@ func (JwkUsage) EnumDescriptor() ([]byte, []int) {
 
 // Jwk represents a public JSON Web Key. Private key material is never included.
 type Jwk struct {
-	state  protoimpl.MessageState `protogen:"open.v1"`
-	Kty    string                 `protobuf:"bytes,1,opt,name=kty,proto3" json:"kty,omitempty"`
-	Use    string                 `protobuf:"bytes,2,opt,name=use,proto3" json:"use,omitempty"`
-	KeyOps []string               `protobuf:"bytes,3,rep,name=key_ops,json=keyOps,proto3" json:"key_ops,omitempty"`
-	Alg    string                 `protobuf:"bytes,4,opt,name=alg,proto3" json:"alg,omitempty"`
-	Kid    string                 `protobuf:"bytes,5,opt,name=kid,proto3" json:"kid,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Key type identifier. Corresponds to the "kty" JWK parameter (RFC 7517 §4.1).
+	// Identifies the cryptographic algorithm family (e.g., "OKP" for EdDSA, "RSA", "EC", "oct" for HMAC).
+	Kty string `protobuf:"bytes,1,opt,name=kty,proto3" json:"kty,omitempty"`
+	// Intended public key use. Corresponds to the "use" JWK parameter (RFC 7517 §4.2).
+	// Typically "sig" for signing keys used to produce or verify JWTs.
+	Use string `protobuf:"bytes,2,opt,name=use,proto3" json:"use,omitempty"`
+	// Permitted key operations. Corresponds to the "key_ops" JWK parameter (RFC 7517 §4.3).
+	// Common values are "sign" (private key) and "verify" (public key).
+	KeyOps []string `protobuf:"bytes,3,rep,name=key_ops,json=keyOps,proto3" json:"key_ops,omitempty"`
+	// Algorithm. Corresponds to the "alg" JWK parameter (RFC 7517 §4.4).
+	// Identifies the specific signing algorithm (e.g., "EdDSA", "RS256", "ES384").
+	Alg string `protobuf:"bytes,4,opt,name=alg,proto3" json:"alg,omitempty"`
+	// Key ID. Corresponds to the "kid" JWK parameter (RFC 7517 §4.5).
+	// Carried in the JWT header to identify which key was used to sign the token.
+	Kid string `protobuf:"bytes,5,opt,name=kid,proto3" json:"kid,omitempty"`
 	// Algorithm-specific key parameters (e.g., x and crv for EdDSA keys), encoded as JSON bytes.
 	Payload       []byte `protobuf:"bytes,6,opt,name=payload,proto3" json:"payload,omitempty"`
 	unknownFields protoimpl.UnknownFields

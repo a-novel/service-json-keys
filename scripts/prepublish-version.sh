@@ -6,13 +6,18 @@
 
 set -e
 
+if [ $# -ne 2 ]; then
+    printf "Usage: %s <prefix> <file>\n" "$0" >&2
+    exit 1
+fi
+
+VERSION="$(node -p "require('./package.json').version")"
+
 case "$OSTYPE" in
-  darwin*|bsd*)
-    echo "Using BSD sed style"
-    sed -i '' -E "s|($1)v[0-9.]+|\1v$(node -p -e "require('./package.json').version")|g" $2
-    ;;
-  *)
-    echo "Using GNU sed style"
-    sed -i -E "s|($1)v[0-9.]+|\1v$(node -p -e "require('./package.json').version")|g" $2
-    ;;
+    darwin*|bsd*)
+        sed -i '' -E "s|($1)v[0-9.]+|\1v${VERSION}|g" "$2"
+        ;;
+    *)
+        sed -i -E "s|($1)v[0-9.]+|\1v${VERSION}|g" "$2"
+        ;;
 esac

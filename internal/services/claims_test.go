@@ -87,7 +87,7 @@ func TestClaimsSignAndVerify(t *testing.T) {
 		claims *testClaims
 	}{
 		{
-			name: "SimpleClaims",
+			name: "Success",
 
 			claims: &testClaims{Foo: "bar"},
 		},

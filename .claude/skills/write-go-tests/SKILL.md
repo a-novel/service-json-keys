@@ -345,6 +345,9 @@ serviceExtract.AssertExpectations(t)
 - When a mock argument cannot be fully specified in advance (e.g., a generated UUID or encrypted
   key), use `mock.MatchedBy(func(r *dao.SomeRequest) bool { ... })` with a validation function
   that calls `t.Error` (not `require`) and returns a bool.
+- For services that return a collection, add a `"Success/Empty"` case with `expect: []*services.Jwk{}`
+  (non-nil empty slice). Services that use `make([]*T, len(entities))` always return a non-nil slice
+  — a nil `expect` would diverge from the real return value and mask a regression.
 
 ### REST Handler Tests
 
@@ -379,6 +382,10 @@ if testCase.expectResponse != nil {
 - Always test: the success path, each mapped error sentinel (e.g., 404), and the generic fallback
   (500). Test invalid input (e.g., unparseable ID) if the handler parses input before calling the
   service.
+- Assert the response body for every success case, including empty collection responses. Use
+  `expectResponse: []any{}` (not nil) for empty list results — Go encodes a nil slice as `null`
+  and a non-nil empty slice as `[]`, which are distinct API contracts. Leaving the body unchecked
+  allows a nil-vs-empty regression to pass silently.
 - Do not assert on the response body for error cases — only the status code matters.
 
 ### gRPC Handler Tests
@@ -403,6 +410,13 @@ require.Equal(t, testCase.expect, res)
 - Set `expectStatus: codes.OK` explicitly on success cases; do not leave it zero-valued.
 - Set `expect` (the response) to nil for all error cases — the handler returns nil on error by
   convention.
+- Always test: the success path, each mapped error sentinel (e.g., `codes.NotFound`), and the
+  generic fallback (`codes.Internal`). Test invalid input (e.g., `"Error/InvalidID"` with a
+  non-UUID string) if the handler parses input before calling the service.
+- For gRPC list handlers, add a `"Success/Empty"` case. Handlers use `lo.Map` which always
+  returns a non-nil empty slice, so `expect` must set the repeated field explicitly:
+  `expect: &protogen.JwkListResponse{Keys: []*protogen.Jwk{}}`. Using `&protogen.JwkListResponse{}`
+  (nil Keys) would fail because `nil != []*protogen.Jwk{}`.
 
 ### lib Tests
 

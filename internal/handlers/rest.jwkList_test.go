@@ -80,7 +80,8 @@ func TestRestJwkList(t *testing.T) {
 				resp: []*services.Jwk{},
 			},
 
-			expectStatus: http.StatusOK,
+			expectStatus:   http.StatusOK,
+			expectResponse: []any{},
 		},
 		{
 			name: "Error/Internal",
@@ -116,6 +117,7 @@ func TestRestJwkList(t *testing.T) {
 
 			res := w.Result()
 
+			service.AssertExpectations(t)
 			require.Equal(t, testCase.expectStatus, res.StatusCode)
 
 			if testCase.expectResponse != nil {

@@ -45,9 +45,9 @@ func (handler *GrpcStatus) Status(ctx context.Context, _ *protogen.StatusRequest
 	ctx, span := otel.Tracer().Start(ctx, "grpc.Status")
 	defer span.End()
 
-	return &protogen.StatusResponse{
+	return otel.ReportSuccess(span, &protogen.StatusResponse{
 		Postgres: NewGrpcHealthStatus(handler.reportPostgres(ctx)),
-	}, nil
+	}), nil
 }
 
 func (handler *GrpcStatus) reportPostgres(ctx context.Context) error {
