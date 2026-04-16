@@ -31,7 +31,7 @@ func TestJwkExtract(t *testing.T) {
 		expectErr error
 	}{
 		{
-			name: "PublicKey",
+			name: "Success/PublicKey",
 
 			request: &services.JwkExtractRequest{
 				Jwk: &dao.Jwk{
@@ -74,7 +74,7 @@ func TestJwkExtract(t *testing.T) {
 			},
 		},
 		{
-			name: "SymmetricKey",
+			name: "Success/SymmetricKey",
 
 			request: &services.JwkExtractRequest{
 				Jwk: &dao.Jwk{
@@ -107,7 +107,7 @@ func TestJwkExtract(t *testing.T) {
 			},
 		},
 		{
-			name: "Private",
+			name: "Success/Private",
 
 			request: &services.JwkExtractRequest{
 				Jwk: &dao.Jwk{

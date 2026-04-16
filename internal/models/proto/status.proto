@@ -2,9 +2,11 @@ syntax = "proto3";
 
 // StatusService returns the health of the gRPC server dependencies.
 service StatusService {
+  // Returns the current health of all server dependencies checked at request time.
   rpc Status(StatusRequest) returns (StatusResponse);
 }
 
+// DependencyStatus classifies the result of a health check for a single external dependency.
 enum DependencyStatus {
   // DEPENDENCY_STATUS_UNSPECIFIED means the application has failed to, or has not yet
   // assessed the status of the given dependency.
@@ -25,6 +27,7 @@ message DependencyHealth {
   string err = 2;
 }
 
+// StatusRequest carries no parameters; the server checks all dependencies automatically.
 message StatusRequest {}
 
 // StatusResponse reports the health of all service dependencies checked at request time.

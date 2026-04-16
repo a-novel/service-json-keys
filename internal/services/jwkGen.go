@@ -14,7 +14,6 @@ import (
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/a-novel-kit/golib/otel"
-	"github.com/a-novel-kit/jwt/jwa"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
@@ -23,9 +22,6 @@ import (
 
 // ErrJwkGenUnknownKeyUsage is returned when no key generator is registered for the requested usage's algorithm.
 var ErrJwkGenUnknownKeyUsage = errors.New("unknown key usage")
-
-// KeyGenerator is the function type for key-generation callbacks; it generates a private/public key pair.
-type KeyGenerator func() (privateKey, publicKey *jwa.JWK, err error)
 
 // JwkGenRepositorySearch is the DAO search dependency of [JwkGen].
 type JwkGenRepositorySearch interface {
@@ -103,8 +99,8 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 	}
 
 	span.SetAttributes(
-		attribute.Int64("lastCreated", lastCreated.Unix()),
-		attribute.Float64("rotationInterval", keyConfig.Key.Rotation.Seconds()),
+		attribute.Int64("key.last_created", lastCreated.Unix()),
+		attribute.Float64("key.rotation_interval", keyConfig.Key.Rotation.Seconds()),
 	)
 
 	var latestKey *dao.Jwk
@@ -120,7 +116,7 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 			return nil, otel.ReportError(span, fmt.Errorf("generate key: %w", err))
 		}
 
-		span.AddEvent("keyGenerated", trace.WithAttributes(
+		span.AddEvent("key.generated", trace.WithAttributes(
 			attribute.String("key.private.kid", privateKID),
 			attribute.String("key.public.kid", publicKID),
 			attribute.String("key.alg", string(keyConfig.Alg)),

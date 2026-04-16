@@ -14,6 +14,8 @@ test-pkg:
 test-pkg-js:
 	bash -c "set -m; bash '$(CURDIR)/scripts/test.pkg.js.sh'"
 
+# Runs the complete test suite (unit, Go pkg, JS pkg). Reserved for pre-commit validation —
+# use test-unit or test-pkg during incremental development.
 test: test-unit test-pkg test-pkg-js
 
 # ================================================================================
@@ -28,6 +30,7 @@ lint-go:
 lint-proto:
 	go tool buf lint
 
+# Validates TypeScript/JS source and the OpenAPI spec. Run before committing JS changes.
 lint-node:
 	pnpm lint
 
@@ -48,6 +51,7 @@ format-proto:
 	go tool buf format -w
 	go tool buf dep update
 
+# Formats TypeScript/JS source and the OpenAPI spec with Prettier.
 format-node:
 	pnpm format
 

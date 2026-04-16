@@ -1,8 +1,6 @@
 SELECT
   cron.unschedule ('refresh-active-keys');
 
-DROP EXTENSION IF EXISTS pg_cron;
-
 --bun:split
 DROP INDEX IF EXISTS active_keys_usage_idx;
 

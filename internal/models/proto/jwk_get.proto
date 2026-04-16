@@ -5,6 +5,8 @@ import "jwk.proto";
 // JwkGetService returns a public JSON Web Key by its key ID.
 // The returned key may be used by any recipient to verify a token.
 service JwkGetService {
+  // Returns a single public key matching the provided key ID.
+  // Returns NOT_FOUND if no active key with that ID exists.
   rpc JwkGet(JwkGetRequest) returns (JwkGetResponse);
 }
 

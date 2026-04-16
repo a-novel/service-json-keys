@@ -25,7 +25,7 @@ func TestPgJwkInsert(t *testing.T) {
 		request *dao.JwkInsertRequest
 	}{
 		{
-			name: "WithPublicKey",
+			name: "Success/WithPublicKey",
 
 			request: &dao.JwkInsertRequest{
 				ID:         uuid.MustParse("00000000-0000-0000-0000-000000000001"),
@@ -37,7 +37,7 @@ func TestPgJwkInsert(t *testing.T) {
 			},
 		},
 		{
-			name: "WithoutPublicKey",
+			name: "Success/WithoutPublicKey",
 
 			request: &dao.JwkInsertRequest{
 				ID:         uuid.MustParse("00000000-0000-0000-0000-000000000001"),

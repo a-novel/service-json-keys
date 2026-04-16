@@ -2,10 +2,20 @@ syntax = "proto3";
 
 // Jwk represents a public JSON Web Key. Private key material is never included.
 message Jwk {
+  // Key type identifier. Corresponds to the "kty" JWK parameter (RFC 7517 §4.1).
+  // Identifies the cryptographic algorithm family (e.g., "OKP" for EdDSA, "RSA", "EC", "oct" for HMAC).
   string kty = 1;
+  // Intended public key use. Corresponds to the "use" JWK parameter (RFC 7517 §4.2).
+  // Typically "sig" for signing keys used to produce or verify JWTs.
   string use = 2;
+  // Permitted key operations. Corresponds to the "key_ops" JWK parameter (RFC 7517 §4.3).
+  // Common values are "sign" (private key) and "verify" (public key).
   repeated string key_ops = 3;
+  // Algorithm. Corresponds to the "alg" JWK parameter (RFC 7517 §4.4).
+  // Identifies the specific signing algorithm (e.g., "EdDSA", "RS256", "ES384").
   string alg = 4;
+  // Key ID. Corresponds to the "kid" JWK parameter (RFC 7517 §4.5).
+  // Carried in the JWT header to identify which key was used to sign the token.
   string kid = 5;
   // Algorithm-specific key parameters (e.g., x and crv for EdDSA keys), encoded as JSON bytes.
   bytes payload = 6;

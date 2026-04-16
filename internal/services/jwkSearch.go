@@ -7,7 +7,6 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 
 	"github.com/a-novel-kit/golib/otel"
-	"github.com/a-novel-kit/jwt/jwa"
 
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 )
@@ -68,7 +67,7 @@ func (service *JwkSearch) Exec(ctx context.Context, request *JwkSearchRequest) (
 	span.SetAttributes(attribute.Int("entities.count", len(entities)))
 
 	// Don't use lo so we can handle errors properly.
-	deserialized := make([]*jwa.JWK, len(entities))
+	deserialized := make([]*Jwk, len(entities))
 
 	for i, entity := range entities {
 		deserialized[i], err = service.serviceExtract.Exec(ctx, &JwkExtractRequest{

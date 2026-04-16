@@ -60,5 +60,5 @@ func (handler *GrpcClaimsSign) ClaimsSign(
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	return &protogen.ClaimsSignResponse{Token: signed}, nil
+	return otel.ReportSuccess(span, &protogen.ClaimsSignResponse{Token: signed}), nil
 }

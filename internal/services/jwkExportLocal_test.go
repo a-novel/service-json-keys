@@ -81,6 +81,8 @@ func TestJwkExportLocal(t *testing.T) {
 			result, err := service.SearchKeys(t.Context(), testCase.usage)
 			require.ErrorIs(t, err, testCase.expectErr)
 			require.Equal(t, testCase.expect, result)
+
+			source.AssertExpectations(t)
 		})
 	}
 }

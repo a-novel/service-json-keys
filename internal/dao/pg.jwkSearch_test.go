@@ -32,7 +32,7 @@ func TestPgJwkSearch(t *testing.T) {
 		expectErr error
 	}{
 		{
-			name: "FilterUsage",
+			name: "Success/FilterUsage",
 
 			request: &dao.JwkSearchRequest{
 				Usage: "test-usage",
@@ -69,7 +69,7 @@ func TestPgJwkSearch(t *testing.T) {
 			},
 		},
 		{
-			name: "OrderCreation",
+			name: "Success/OrderCreation",
 
 			request: &dao.JwkSearchRequest{
 				Usage: "test-usage",
@@ -128,7 +128,7 @@ func TestPgJwkSearch(t *testing.T) {
 			},
 		},
 		{
-			name: "IgnoreExpiredAndDeleted",
+			name: "Success/IgnoreExpiredAndDeleted",
 
 			request: &dao.JwkSearchRequest{
 				Usage: "test-usage",

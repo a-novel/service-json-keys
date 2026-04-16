@@ -6,7 +6,7 @@
 //   - gRPC handlers: the private API for authenticated service-to-service calls. They
 //     cover token signing, key retrieval, and health checks. Wired by cmd/grpc.
 //
-//   - HTTP handlers: the public read-only API for token verification. They expose
+//   - REST handlers: the public read-only API for token verification. They expose
 //     JSON Web Key endpoints without requiring authentication. Wired by cmd/rest.
 //
 // All handlers translate incoming requests into service-layer calls and map the results

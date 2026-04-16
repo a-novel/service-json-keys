@@ -328,6 +328,21 @@ func TestJwkGen(t *testing.T) {
 
 			expectErr: errFoo,
 		},
+		{
+			name: "Error/ConfigNotFound",
+
+			request: &services.JwkGenRequest{
+				Usage: "test-usage",
+			},
+
+			keys: map[string]*config.Jwk{},
+
+			repositorySearchMock: &repositorySearchMock{
+				resp: []*dao.Jwk{},
+			},
+
+			expectErr: services.ErrConfigNotFound,
+		},
 	}
 
 	for _, alg := range []jwa.Alg{

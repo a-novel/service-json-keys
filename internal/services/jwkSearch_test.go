@@ -125,6 +125,20 @@ func TestJwkSearch(t *testing.T) {
 			},
 		},
 		{
+			name: "Success/Empty",
+
+			request: &services.JwkSearchRequest{
+				Usage:   "test-usage",
+				Private: true,
+			},
+
+			repositorySearchMock: &repositorySearchMock{
+				resp: []*dao.Jwk{},
+			},
+
+			expect: []*services.Jwk{},
+		},
+		{
 			name: "Error/Extract",
 
 			request: &services.JwkSearchRequest{

@@ -5,6 +5,9 @@ import "google/protobuf/any.proto";
 // ClaimsSignService remotely generates a signed token from claims. The parameters used to
 // sign a token depend on the intended usage.
 service ClaimsSignService {
+  // Signs the provided claims and returns a compact JWT. The signing key and all token
+  // parameters are determined by the requested usage. Returns UNAVAILABLE if the usage is
+  // not configured on the server.
   rpc ClaimsSign(ClaimsSignRequest) returns (ClaimsSignResponse);
 }
 

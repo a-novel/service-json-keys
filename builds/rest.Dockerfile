@@ -1,14 +1,14 @@
 # Runs the JSON-keys REST server. Requires a database with migrations already applied.
 FROM docker.io/library/golang:1.26.2-alpine AS builder
 
+ENV CGO_ENABLED=0
+
 WORKDIR /app
 
-# ======================================================================================================================
-# Copy build files.
-# ======================================================================================================================
-COPY ./go.mod ./go.mod
-COPY ./go.sum ./go.sum
-COPY "./cmd/rest" "./cmd/rest"
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY ./cmd/rest ./cmd/rest
 COPY ./internal/handlers ./internal/handlers
 COPY ./internal/dao ./internal/dao
 COPY ./internal/lib ./internal/lib
@@ -16,31 +16,16 @@ COPY ./internal/services ./internal/services
 COPY ./internal/models ./internal/models
 COPY ./internal/config ./internal/config
 
-RUN go mod download
-
-# ======================================================================================================================
-# Build executables.
-# ======================================================================================================================
-RUN go build -o /rest cmd/rest/main.go
+RUN go build -ldflags="-s -w" -trimpath -o /rest ./cmd/rest/
 
 FROM docker.io/library/alpine:3.23.4
 
-WORKDIR /
-
 COPY --from=builder /rest /rest
 
-# ======================================================================================================================
-# Healthcheck.
-# ======================================================================================================================
-RUN apk --update add curl
-
+# Alpine ships BusyBox wget — no extra package needed for the healthcheck.
 HEALTHCHECK --interval=1s --timeout=5s --retries=10 --start-period=1s \
-  CMD curl -f http://localhost:8080/ping || exit 1
+  CMD wget -qO /dev/null http://localhost:8080/ping || exit 1
 
-# ======================================================================================================================
-# Finish setup.
-# ======================================================================================================================
-# Make sure the executable uses the default port.
 ENV REST_PORT=8080
 
 # REST API port.

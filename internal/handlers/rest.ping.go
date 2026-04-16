@@ -3,9 +3,6 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/samber/lo"
-	"go.opentelemetry.io/otel/codes"
-
 	"github.com/a-novel-kit/golib/otel"
 )
 
@@ -23,8 +20,13 @@ func (handler *RestPing) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusOK)
-	_, err := w.Write([]byte("pong"))
 
-	span.RecordError(err)
-	span.SetStatus(lo.Ternary(err == nil, codes.Ok, codes.Error), "")
+	_, err := w.Write([]byte("pong"))
+	if err != nil {
+		_ = otel.ReportError(span, err)
+
+		return
+	}
+
+	otel.ReportSuccessNoContent(span)
 }

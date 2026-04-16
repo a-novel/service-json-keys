@@ -20,7 +20,7 @@ func TestNewMasterKeyContext(t *testing.T) {
 		expectErr error
 	}{
 		{
-			name:     "ValidKey",
+			name:     "Success",
 			envValue: "1f0f29d72e880eec55360ea14bc18dfcbcc1a771dcd45fa03f0e5c181fdb368c",
 			expect: [32]byte{
 				31, 15, 41, 215, 46, 136, 14, 236, 85, 54, 14, 161, 75, 193, 141, 252, 188, 193, 167, 113, 220, 212,
@@ -28,13 +28,13 @@ func TestNewMasterKeyContext(t *testing.T) {
 			},
 		},
 		{
-			name: "LongerKey",
+			name: "Error/TooLong",
 			envValue: "1f0f29d72e880eec55360ea14bc18dfcbcc1a771dcd45fa03f0e5c181fdb368c664fb4329736f23566d4d5a2ba8af" +
 				"98375a88a0907ba34bf715901942df2b580",
 			expectErr: lib.ErrInvalidMasterKey,
 		},
 		{
-			name:      "ShorterKey",
+			name:      "Error/TooShort",
 			envValue:  "087a92fbcde7afd24bab23ba428df42e1eb8d6197b677509",
 			expectErr: lib.ErrInvalidMasterKey,
 		},

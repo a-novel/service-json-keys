@@ -72,6 +72,15 @@ func TestGrpcJwkGet(t *testing.T) {
 			},
 		},
 		{
+			name: "Error/InvalidID",
+
+			request: &protogen.JwkGetRequest{
+				Id: "not-a-uuid",
+			},
+
+			expectStatus: codes.InvalidArgument,
+		},
+		{
 			name: "Error/NotFound",
 
 			request: &protogen.JwkGetRequest{
