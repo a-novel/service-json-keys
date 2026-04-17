@@ -223,7 +223,9 @@ One `describe` block per exported function or class method:
 
 ```typescript
 describe("jwkList", () => {
-  it("returns a list of public keys", async () => { ... });
+  it("returns keys for a known usage", async () => { ... });
+  it("returns an empty list when usage is omitted", async () => { ... });
+  it("returns an empty list for an unrecognized usage", async () => { ... });
   it("filters by usage", async () => { ... });
 });
 
@@ -235,7 +237,7 @@ describe("jwkGet", () => {
 ```
 
 Test names use plain sentences, not the `"Success"` / `"Error/X"` convention used in Go tests.
-Describe the observable behaviour: `"returns a list of public keys"`, `"returns 404 for non-existent key"`.
+Describe the observable behaviour: `"returns keys for a known usage"`, `"returns 404 for non-existent key"`.
 
 ### Instantiation
 
@@ -282,7 +284,7 @@ When testing a retrieve-by-id operation, first list with a known usage to get a 
 ```typescript
 const keys = await jwkList(api, "auth");
 expect(keys.length).toBeGreaterThan(0);
-const key = await jwkGet(api, keys[0].kid as string);
+const key = await jwkGet(api, keys[0].kid);
 expect(key.kid).toBe(keys[0].kid);
 ```
 

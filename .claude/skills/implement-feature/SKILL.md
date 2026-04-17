@@ -53,7 +53,7 @@ change**, or **not affected**.
 | Proto           | A gRPC message or service interface changes                  |
 | OpenAPI         | A REST endpoint contract changes                             |
 | pkg/go          | The exported Go client API changes                           |
-| pkg/js          | The exported JS client API changes (always with OpenAPI)     |
+| pkg/js          | A REST endpoint is added, changed, or removed                |
 
 **OpenAPI / REST / JS synchronization rule**: the OpenAPI spec (`openapi.yaml`), the Go REST
 handlers, and the JS client (`pkg/js/rest/`) are three representations of the same contract.
