@@ -114,10 +114,11 @@ Decompose the feature into **one branch per layer boundary**. A branch is the sm
 Skip layers that are not affected. A feature that only adds a new service method and handler may
 start at step 4.
 
-**When a single branch is enough**: if the feature touches only one layer, creates no migration,
-and involves no proto changes, a single branch is appropriate. Improvement rounds (multi-layer
-bug fixes, test additions, doc updates, code cleanup) that contain no user-facing behavior change
-also stay on a single branch — splitting them would be churn with no review benefit.
+**When a single branch is enough**: if the feature touches only one layer (or the coupled
+OpenAPI + pkg/js pair, which always moves as one unit), creates no migration, and involves no
+proto changes, a single branch is appropriate. Improvement rounds (multi-layer bug fixes, test
+additions, doc updates, code cleanup) that contain no user-facing behavior change also stay on a
+single branch — splitting them would be churn with no review benefit.
 
 **Present the plan to the developer before starting.** Show:
 
@@ -254,8 +255,9 @@ developer.
 **One concern per commit.** A commit should answer exactly one "what changed?" question. If you
 cannot describe a commit in a single conventional-commit line, it contains more than one concern.
 
-**Test every branch.** `make test-unit` must pass on every branch, not just the final one. A
-branch that compiles but fails tests is not ready for review.
+**Test every branch.** The relevant test target must pass on every branch, not just the final
+one: `make test-unit` for Go layers, `make test-pkg-js` for pkg/js. A branch that compiles but
+fails tests is not ready for review.
 
 **Verify before proposing.** Never propose a plan based on assumed file locations or signatures.
 Read the code first. A plan built on wrong assumptions wastes the developer's review time.

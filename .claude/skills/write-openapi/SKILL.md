@@ -328,8 +328,8 @@ handler disagree, fix the spec (or the handler if it is wrong), but never let th
 
 ### Error responses
 
-Use a `default` response for unmapped 5xx errors. Use specific 4xx responses only for
-error conditions the handler explicitly checks and returns.
+Use a `default` response for any status code not explicitly listed. Use specific 4xx
+responses only for error conditions the handler explicitly checks and returns.
 
 ```yaml
 responses:
