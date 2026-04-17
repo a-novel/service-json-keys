@@ -174,7 +174,7 @@ explain _what it does and why_, not just restate the name. Include:
 
 - A first-line summary sentence (shown in IDE tooltips).
 - Descriptions for every non-obvious parameter.
-- A note on error conditions (what HTTP status causes a throw).
+- A note on error conditions (what HTTP status causes a throw), if the function can fail on a specific HTTP status.
 
 ```typescript
 /**

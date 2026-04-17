@@ -70,6 +70,7 @@ Breaking changes include:
 
 - Removing or renaming a protobuf field, message, or service
 - Removing or renaming an exported symbol in `pkg/go`
+- Removing or renaming an exported TypeScript type or function in `pkg/js`
 - Removing a REST endpoint or changing its URL/method
 - Changing a response field type or removing a response field
 - Adding a required field to an existing request
@@ -107,7 +108,7 @@ Decompose the feature into **one branch per layer boundary**. A branch is the sm
 4. Services — handlers depend on the service interface
 5. Handlers (gRPC + REST) — pkg/go depends on the gRPC handler
 6. pkg/go — depends on the gRPC contract
-7. OpenAPI / docs — depends on the final REST contract
+7. OpenAPI + pkg/js — depend on the final REST contract and must always change together
 ```
 
 Skip layers that are not affected. A feature that only adds a new service method and handler may
@@ -176,8 +177,9 @@ compile without the parent's changes.
 Run the narrowest target that covers the changed layer:
 
 ```bash
-make test-unit   # DAO, services, handlers, lib
-make test-pkg    # pkg/go (requires running service)
+make test-unit    # DAO, services, handlers, lib
+make test-pkg     # pkg/go (requires running service)
+make test-pkg-js  # pkg/js (requires containerised service)
 ```
 
 Tests must pass before declaring the branch ready. Never mark a branch done with failing tests.
@@ -261,12 +263,12 @@ Read the code first. A plan built on wrong assumptions wastes the developer's re
 
 ## Quick Reference: Feature Triage
 
-| Signal                                | Implication                                       |
-| ------------------------------------- | ------------------------------------------------- |
-| "Add a new RPC/endpoint"              | Proto → handler → pkg/go (at minimum)             |
-| "Add a new column / store new data"   | Migration → DAO → service (at minimum)            |
-| "Change what an existing API returns" | Potential breaking change — flag it               |
-| "Remove something"                    | Breaking change — get explicit developer approval |
-| "Internal only, no API change"        | Services/lib only, single branch likely fine      |
-| "Fix a bug in existing behaviour"     | Fix the failing layer; test the contract          |
-| "The client should be able to do X"   | Start from pkg/go and trace down to what's needed |
+| Signal                                | Implication                                                      |
+| ------------------------------------- | ---------------------------------------------------------------- |
+| "Add a new RPC/endpoint"              | Proto → handler → pkg/go (at minimum)                            |
+| "Add a new column / store new data"   | Migration → DAO → service (at minimum)                           |
+| "Change what an existing API returns" | Potential breaking change — flag it                              |
+| "Remove something"                    | Breaking change — get explicit developer approval                |
+| "Internal only, no API change"        | Services/lib only, single branch likely fine                     |
+| "Fix a bug in existing behaviour"     | Fix the failing layer; test the contract                         |
+| "The client should be able to do X"   | Start from the relevant client (pkg/go or pkg/js) and trace down |

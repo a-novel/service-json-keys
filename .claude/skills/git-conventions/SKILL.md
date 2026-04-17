@@ -120,6 +120,7 @@ refactor/services/extract-key-rotation-logic
 chore/builds/add-rotate-keys-dockerfile
 chore/skills/feature-workflow
 docs/pkg/update-client-examples
+feat/pkg-js/add-rotate-endpoint
 ```
 
 Branch names are lowercase kebab-case only. No underscores, no slashes inside a segment, no
