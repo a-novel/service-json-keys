@@ -163,8 +163,8 @@ When adding a new domain file, add a corresponding `export * from "./<domain>";`
 - Strict mode is on. All types must be explicit — no `any`. The `Jwk` type uses
   `[key: string]: unknown` for algorithm-specific fields; that is `unknown`, not `any`.
 - Use `type` imports (`import type { ... }`) for types that are only used in type positions.
-- Use `interface` for object shapes that may be extended; use `type` for unions, intersections,
-  and type aliases.
+- Use `type` for domain object shapes — all domain types in this package are sealed contracts,
+  not designed for inheritance. Use `type` for unions, intersections, and type aliases too.
 - ES modules only — no CommonJS (`require`, `module.exports`).
 - Target: ESNext. No polyfills; the published package targets Node ≥ 23 and modern browsers.
 

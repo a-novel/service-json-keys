@@ -146,8 +146,8 @@ git checkout feat/<parent-area>/<parent-description>
 git checkout -b feat/<area>/<description>
 ```
 
-Branch from master whenever possible. Only branch from a sibling when the work literally cannot
-compile without the parent's changes.
+Branch from master whenever possible. Only branch from a parent branch when the work literally
+cannot compile without that branch's changes.
 
 ### 3.2 Implement
 
