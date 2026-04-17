@@ -68,7 +68,7 @@ To add a `redocly.yaml` for rule overrides:
 ```yaml
 extends: [recommended]
 rules:
-  operation-4xx-response: warn # downgrade to warning for endpoints with no 4xx
+  operation-4xx-response: off # suppress for endpoints with no 4xx
 ```
 
 ---
@@ -389,7 +389,7 @@ To suppress these warnings globally, add a `redocly.yaml` at the project root:
 ```yaml
 extends: [recommended]
 rules:
-  operation-4xx-response: warn
+  operation-4xx-response: off
 ```
 
 ---
