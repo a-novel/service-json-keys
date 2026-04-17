@@ -167,7 +167,7 @@ compile without the parent's changes.
   | Git operations                            | `git-conventions`    |
 
 - **After any proto or interface change, run `make generate`** to regenerate protobuf Go bindings
-  and mocks. Commit the generated files (`internal/models/proto/gen/`, `internal/handlers/mocks/`, `internal/services/mocks/`)
+  and Go interface mocks. Commit the generated files (`internal/models/proto/gen/`, `internal/handlers/mocks/`, `internal/services/mocks/`)
   in the same commit as the change that necessitated them — never in a separate cleanup commit.
 - **Only change what the feature requires.** No refactoring, no style fixes, no "while we're here"
   improvements alongside feature work. Those are separate commits on a separate branch.

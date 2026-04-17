@@ -127,7 +127,7 @@ directly into URL strings.
 const params = new URLSearchParams();
 if (filter) params.set("filter", filter);
 const query = params.toString();
-return await api.fetch(`/resource${query ? `?${query}` : ""}`, { method: "GET" });
+return await api.fetch(`/resource${query ? `?${query}` : ""}`, { method: "GET", headers: HTTP_HEADERS.JSON });
 ```
 
 **Headers**: use constants from `@a-novel-kit/nodelib-browser/http` — `HTTP_HEADERS.JSON` for
