@@ -53,7 +53,7 @@ change**, or **not affected**.
 | Proto           | A gRPC message or service interface changes                  |
 | OpenAPI         | A REST endpoint contract changes                             |
 | pkg/go          | The exported Go client API changes                           |
-| pkg/js          | A REST endpoint is added, changed, or removed                |
+| pkg/js          | The REST endpoint contract changes (same trigger as OpenAPI) |
 
 **OpenAPI / REST / JS synchronization rule**: the OpenAPI spec (`openapi.yaml`), the Go REST
 handlers, and the JS client (`pkg/js/rest/`) are three representations of the same contract.
@@ -240,7 +240,7 @@ make the final PR harder to review.
 
 ## Key Principles
 
-**Chirurgical changes.** Every line changed must be required by the feature. If you find yourself
+**Surgical changes.** Every line changed must be required by the feature. If you find yourself
 fixing an unrelated issue, stop: note it as a separate improvement and continue on the feature.
 
 **No side-effects.** Refactoring, style fixes, and "improvements" that are not part of the feature
@@ -266,7 +266,8 @@ Read the code first. A plan built on wrong assumptions wastes the developer's re
 
 | Signal                                | Implication                                                      |
 | ------------------------------------- | ---------------------------------------------------------------- |
-| "Add a new RPC/endpoint"              | Proto → handler → pkg/go (at minimum)                            |
+| "Add a new gRPC RPC"                  | Proto → handler → pkg/go (at minimum)                            |
+| "Add a new REST endpoint"             | handler → OpenAPI + pkg/js (at minimum)                          |
 | "Add a new column / store new data"   | Migration → DAO → service (at minimum)                           |
 | "Change what an existing API returns" | Potential breaking change — flag it                              |
 | "Remove something"                    | Breaking change — get explicit developer approval                |

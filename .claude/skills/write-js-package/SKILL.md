@@ -56,8 +56,9 @@ make lint-node      # check format (Prettier) + lint (ESLint + TypeScript typech
 make test-pkg-js    # integration tests against a live containerised service
 ```
 
-`make lint-node` covers both formatting and linting — run it first so type errors surface before
-running the heavier integration suite.
+`make lint-node` checks formatting and runs all linters — run it first so type errors surface
+before the heavier integration suite. If Prettier reports issues, fix them with `pnpm format`
+first, then re-run `make lint-node`.
 
 `make test-pkg-js` orchestrates the full integration environment (container startup, port
 allocation, readiness wait) via `scripts/test.pkg.js.sh`. Never run vitest directly for the

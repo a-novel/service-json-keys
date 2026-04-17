@@ -26,8 +26,8 @@ handler source.
 Run these in order after any change to `openapi.yaml`:
 
 ```bash
-pnpm lint:openapi   # validates the spec with Redocly
 pnpm format         # runs Prettier over the YAML file
+pnpm lint:openapi   # validates the spec with Redocly
 ```
 
 Never ship a change that fails `pnpm lint:openapi`. Warnings are not errors, but
@@ -382,8 +382,8 @@ Affected: /ping GET, /healthcheck GET, /jwks GET
 - `/healthcheck` — always returns 200 regardless of dependency status (callers read the body to assess health).
 - `/jwks` — accepts any string for `usage` and returns an empty list for an unrecognized usage; it never validates input with a 400.
 
-All three warnings are false positives. Do not add spurious 4xx responses to the spec just
-to silence them — that would document behavior the server does not have.
+Do not add spurious 4xx responses to silence these warnings — that would document behavior
+the server does not have.
 
 These warnings are suppressed by the `redocly.yaml` at the project root:
 
