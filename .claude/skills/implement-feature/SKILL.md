@@ -52,7 +52,14 @@ change**, or **not affected**.
 | Handlers (REST) | A new endpoint is added or an existing one changes behaviour |
 | Proto           | A gRPC message or service interface changes                  |
 | OpenAPI         | A REST endpoint contract changes                             |
-| pkg/go          | The exported client API changes                              |
+| pkg/go          | The exported Go client API changes                           |
+| pkg/js          | The exported JS client API changes (always with OpenAPI)     |
+
+**OpenAPI / REST / JS synchronization rule**: the OpenAPI spec (`openapi.yaml`), the Go REST
+handlers, and the JS client (`pkg/js/rest/`) are three representations of the same contract.
+Whenever any one of them changes, all three must be updated in the same feature. A PR that
+updates one without the others must explicitly justify the omission. Divergence between these
+three is a bug.
 
 ### Does it break anything?
 
@@ -150,8 +157,9 @@ compile without the parent's changes.
   | Schema / SQL                      | `write-sql`          |
   | Proto                             | `write-proto`        |
   | DAO, services, handlers, lib, cmd | `write-go-code`      |
-  | Tests (all layers)                | `write-go-tests`     |
+  | Tests (Go, all layers)            | `write-go-tests`     |
   | OpenAPI / docs                    | `write-openapi`      |
+  | pkg/js (JS/TS client + tests)     | `write-js-package`   |
   | Dockerfiles                       | `write-dockerfiles`  |
   | Shell scripts                     | `write-bash-scripts` |
   | Git operations                    | `git-conventions`    |
