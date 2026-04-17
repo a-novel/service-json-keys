@@ -58,12 +58,12 @@ $ref: "#/components/parameters/jwkID"
 
 ## Toolchain
 
-Linting is done with **Redocly CLI** via `pnpm redocly lint openapi.yaml`. No
-`redocly.yaml` config file is present; Redocly runs its `recommended` ruleset by
-default. The `recommended` ruleset is opinionated but not maximally strict — some
-rules produce warnings rather than errors.
+Linting is done with **Redocly CLI** via `pnpm redocly lint openapi.yaml`. A `redocly.yaml`
+at the project root extends the `recommended` ruleset with project-specific overrides.
+The `recommended` ruleset is opinionated but not maximally strict — some rules produce warnings
+rather than errors.
 
-To add a `redocly.yaml` for rule overrides:
+To add or change rule overrides, edit `redocly.yaml`:
 
 ```yaml
 extends: [recommended]
@@ -384,7 +384,7 @@ Affected: /ping GET, /healthcheck GET, /jwks GET
 All three warnings are false positives. Do not add spurious 4xx responses to the spec just
 to silence them — that would document behavior the server does not have.
 
-To suppress these warnings globally, add a `redocly.yaml` at the project root:
+These warnings are suppressed by the `redocly.yaml` at the project root:
 
 ```yaml
 extends: [recommended]

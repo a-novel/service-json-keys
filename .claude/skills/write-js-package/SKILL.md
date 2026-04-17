@@ -159,8 +159,8 @@ When adding a new domain file, add a corresponding `export * from "./<domain>";`
 
 ### TypeScript Rules
 
-- Strict mode is on. All types must be explicit — no `any` except at established boundary points
-  (e.g., the `[key: string]: unknown` index signature on `Jwk` for algorithm-specific fields).
+- Strict mode is on. All types must be explicit — no `any`. The `Jwk` type uses
+  `[key: string]: unknown` for algorithm-specific fields; that is `unknown`, not `any`.
 - Use `type` imports (`import type { ... }`) for types that are only used in type positions.
 - Use `interface` for object shapes that may be extended; use `type` for unions, intersections,
   and type aliases.

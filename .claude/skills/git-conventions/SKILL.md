@@ -173,10 +173,12 @@ gh pr create --title "<type>(<scope>): <description>" --body "$(cat <<'EOF'
 
 ## Layers changed
 
-- **DAO**: <what changed, or "not affected">
-- **Services**: <what changed, or "not affected">
-- **Handlers**: <what changed, or "not affected">
-- **Proto / OpenAPI**: <what changed, or "not affected">
+- **DAO**: <what changed>
+- **Services**: <what changed>
+- **Handlers**: <what changed>
+- **Proto / OpenAPI**: <what changed>
+- **pkg/go**: <what changed>
+- **pkg/js**: <what changed>
 
 ## Breaking changes
 
