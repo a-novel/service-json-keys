@@ -63,7 +63,7 @@ at the project root extends the `recommended` ruleset with project-specific over
 The `recommended` ruleset is opinionated but not maximally strict — some rules produce warnings
 rather than errors.
 
-To add or change rule overrides, edit `redocly.yaml`:
+To change rule overrides, edit `redocly.yaml`:
 
 ```yaml
 extends: [recommended]
@@ -249,7 +249,7 @@ generators to name functions — treat them like function names.
 
 `camelCase` for the `$ref` key under `components/parameters`; `snake_case` for the
 actual `name` in the query string (to match what the Go handler reads with
-`r.URL.Query().Get("usage")`):
+`r.URL.Query().Get("id")`):
 
 ```yaml
 components:

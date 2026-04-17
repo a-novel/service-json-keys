@@ -11,8 +11,8 @@ description: >
 # Feature Implementation Workflow
 
 This skill governs how Claude plans and delivers features in Agora backend services. Every
-non-trivial change goes through the same four phases: **Assess → Plan → Implement → Validate**.
-Each phase has a gate before proceeding.
+non-trivial change goes through the same phases: **Assess → Plan → Implement**. Each phase
+has a gate before the next begins. Phase 4 covers recovery when an earlier branch needs to change.
 
 ---
 
@@ -153,20 +153,20 @@ compile without the parent's changes.
 - Read the existing files in the layer before touching them
 - Use the relevant skill for the layer:
 
-  | Layer                             | Skill                |
-  | --------------------------------- | -------------------- |
-  | Schema / SQL                      | `write-sql`          |
-  | Proto                             | `write-proto`        |
-  | DAO, services, handlers, lib, cmd | `write-go-code`      |
-  | Tests (Go, all layers)            | `write-go-tests`     |
-  | OpenAPI / docs                    | `write-openapi`      |
-  | pkg/js (JS/TS client + tests)     | `write-js-package`   |
-  | Dockerfiles                       | `write-dockerfiles`  |
-  | Shell scripts                     | `write-bash-scripts` |
-  | Git operations                    | `git-conventions`    |
+  | Layer                                     | Skill                |
+  | ----------------------------------------- | -------------------- |
+  | Schema / SQL                              | `write-sql`          |
+  | Proto                                     | `write-proto`        |
+  | DAO, services, handlers, lib, cmd, pkg/go | `write-go-code`      |
+  | Tests (Go, all layers)                    | `write-go-tests`     |
+  | OpenAPI / docs                            | `write-openapi`      |
+  | pkg/js (JS/TS client + tests)             | `write-js-package`   |
+  | Dockerfiles                               | `write-dockerfiles`  |
+  | Shell scripts                             | `write-bash-scripts` |
+  | Git operations                            | `git-conventions`    |
 
 - **After any proto or interface change, run `make generate`** to regenerate protobuf Go bindings
-  and mocks. Commit the generated files (`internal/models/proto/gen/`, `internal/handlers/mocks/`)
+  and mocks. Commit the generated files (`internal/models/proto/gen/`, `internal/handlers/mocks/`, `internal/services/mocks/`)
   in the same commit as the change that necessitated them — never in a separate cleanup commit.
 - **Only change what the feature requires.** No refactoring, no style fixes, no "while we're here"
   improvements alongside feature work. Those are separate commits on a separate branch.
