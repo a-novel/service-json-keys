@@ -192,6 +192,7 @@ Follow `git-conventions`. One commit per logical unit within the branch:
 - DAO file + its test → one commit
 - Service file + its test → one commit
 - Handler file + its test + mock update → one commit
+- `openapi.yaml` + pkg/js changes → one commit (they always change together)
 
 ```bash
 git add <specific files>

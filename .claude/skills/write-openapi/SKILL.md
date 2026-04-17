@@ -25,13 +25,13 @@ handler source.
 
 Run these in order after any change to `openapi.yaml`:
 
-```
+```bash
 pnpm lint:openapi   # validates the spec with Redocly
 pnpm format         # runs Prettier over the YAML file
 ```
 
 Never ship a change that fails `pnpm lint:openapi`. Warnings are not errors, but
-document any known, intentional warnings (see the Known Warnings section below).
+document any known, intentional warnings (see the Suppressed Warnings section below).
 
 Then check the JS client in `pkg/js/rest/src/` to see if any TypeScript types need
 updating to reflect the spec change. Run `pnpm lint:typecheck` to confirm.
@@ -366,9 +366,10 @@ responses:
 
 ---
 
-## Known Pre-existing Warnings
+## Suppressed Warnings
 
-The following Redocly warning applies to three operations and is intentional for all of them:
+Three operations intentionally have no 4xx responses. Without `operation-4xx-response: off`
+in `redocly.yaml`, Redocly would flag them with:
 
 ```
 openapi.yaml: Operation must have at least one `4XX` response. [operation-4xx-response]

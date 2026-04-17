@@ -52,7 +52,7 @@ test file. Never merge unrelated domains into a single file.
 Run these two targets before declaring the work done:
 
 ```bash
-make lint-node      # format (Prettier) + lint (ESLint + TypeScript typecheck)
+make lint-node      # check format (Prettier) + lint (ESLint + TypeScript typecheck)
 make test-pkg-js    # integration tests against a live containerised service
 ```
 

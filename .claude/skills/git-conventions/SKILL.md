@@ -104,7 +104,7 @@ Flag any change that:
 ```
 
 - **type**: same vocabulary as commit types (`feat`, `fix`, `refactor`, `chore`, `ci`, `docs`)
-- **area**: the layer or subsystem being changed (same as scope above, but singular)
+- **area**: the layer or subsystem being changed — use the scope name from the table above
 - **short-description**: kebab-case, 2–5 words, describes what the branch achieves
 
 ### Examples
