@@ -231,8 +231,9 @@ git rebase feat/<parent-area>/<description>
 git rebase --continue
 ```
 
-If more than one child branch depends on the updated parent, rebase them in order (deepest-first
-avoids repeated conflict resolution).
+If more than one child branch depends on the updated parent, rebase them shallowest-first (direct
+child onto the updated parent first, then its children in order). Each branch is touched exactly
+once; deepest-first would require re-rebasing intermediate branches after their own parents move.
 
 Never merge a parent branch into a child — always rebase. Merges add noise to the history and
 make the final PR harder to review.
