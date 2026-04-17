@@ -58,6 +58,7 @@ The scope is the area of the codebase affected. Use the layer name, not the feat
 | `config`     | Configuration (`internal/config/`)              |
 | `lib`        | Shared utilities (`internal/lib/`)              |
 | `pkg`        | Exported Go client (`pkg/go/`)                  |
+| `pkg-js`     | Exported JS/TS client (`pkg/js/`)               |
 | `cmd`        | Entrypoints (`cmd/`)                            |
 | `builds`     | Dockerfiles and compose files (`builds/`)       |
 | `scripts`    | Shell scripts (`scripts/`)                      |
@@ -90,6 +91,7 @@ Flag any change that:
 
 - Removes or renames a protobuf field/message/service
 - Removes or renames an exported Go type, function, or constant in `pkg/go`
+- Removes or renames an exported TypeScript type or function in `pkg/js`
 - Removes or changes the semantics of a REST endpoint path or response shape
 - Changes a database column type or removes a column
 
@@ -184,6 +186,7 @@ None. / <List any breaking changes with migration steps.>
 
 - [ ] `make test-unit` passes
 - [ ] `make test-pkg` passes (if pkg/go changed)
+- [ ] `make test-pkg-js` passes (if pkg/js changed)
 - [ ] <Any manual verification steps>
 EOF
 )"

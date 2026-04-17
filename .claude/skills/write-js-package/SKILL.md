@@ -333,6 +333,6 @@ contract: what goes in, what comes out, which HTTP errors are surfaced.
 - **Skipping JSDoc on exported symbols.** Every public export needs a JSDoc comment — the
   published package is consumed by other services, and IDE tooltips are the first line of
   documentation.
-- **Hard-coding `any` types.** The only sanctioned use of `unknown` / `any` is the index
-  signature on `Jwk` (`[key: string]: unknown`) for algorithm-specific fields. Everywhere else,
-  types must be explicit.
+- **Using `any` types.** Never use `any` in this package. The `Jwk` type carries an
+  `[key: string]: unknown` index signature for algorithm-specific fields — that is `unknown`,
+  not `any`. Everywhere else, types must be fully explicit.

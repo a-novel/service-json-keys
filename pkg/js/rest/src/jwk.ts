@@ -50,6 +50,9 @@ export async function jwkList(api: JsonKeysApi, usage?: string): Promise<Jwk[]> 
  *
  * The `id` parameter corresponds to the `kid` field in a JWT header. Use this to
  * retrieve the specific key needed to verify a token when the full key set is not cached.
+ *
+ * Throws with HTTP 400 if `id` is not a valid UUID format.
+ * Throws with HTTP 404 if no key with the given `id` exists.
  */
 export async function jwkGet(api: JsonKeysApi, id: string): Promise<Jwk> {
   const params = new URLSearchParams();
