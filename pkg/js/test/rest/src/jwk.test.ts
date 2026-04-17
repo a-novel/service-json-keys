@@ -4,11 +4,12 @@ import { expectStatus } from "@a-novel-kit/nodelib-test/http";
 import { JsonKeysApi, jwkGet, jwkList } from "@a-novel/service-json-keys-rest";
 
 describe("jwkList", () => {
-  it("returns a list of public keys", async () => {
+  it("returns keys for a known usage", async () => {
     const api = new JsonKeysApi(process.env.REST_URL!);
-    const keys = await jwkList(api);
+    const keys = await jwkList(api, "auth");
 
     expect(Array.isArray(keys)).toBe(true);
+    expect(keys.length).toBeGreaterThan(0);
     for (const key of keys) {
       expect(key.kty).toBeTruthy();
       expect(key.kid).toBeTruthy();
@@ -17,18 +18,29 @@ describe("jwkList", () => {
     }
   });
 
+  it("returns an empty list when usage is omitted", async () => {
+    const api = new JsonKeysApi(process.env.REST_URL!);
+    const keys = await jwkList(api);
+
+    expect(keys).toEqual([]);
+  });
+
+  it("returns an empty list for an unrecognized usage", async () => {
+    const api = new JsonKeysApi(process.env.REST_URL!);
+    const keys = await jwkList(api, "nonexistent-usage");
+
+    expect(keys).toEqual([]);
+  });
+
   it("filters by usage", async () => {
     const api = new JsonKeysApi(process.env.REST_URL!);
-    const allKeys = await jwkList(api);
+    const authKeys = await jwkList(api, "auth");
+    const refreshKeys = await jwkList(api, "auth-refresh");
 
-    if (allKeys.length > 0) {
-      const usage = allKeys[0].use as string;
-      const filtered = await jwkList(api, usage);
-
-      expect(Array.isArray(filtered)).toBe(true);
-      for (const key of filtered) {
-        expect(key.use).toBe(usage);
-      }
+    expect(authKeys.length).toBeGreaterThan(0);
+    expect(refreshKeys.length).toBeGreaterThan(0);
+    for (const key of authKeys) {
+      expect(refreshKeys.every((k) => k.kid !== key.kid)).toBe(true);
     }
   });
 });
@@ -46,11 +58,11 @@ describe("jwkGet", () => {
 
   it("retrieves an existing key by ID", async () => {
     const api = new JsonKeysApi(process.env.REST_URL!);
-    const keys = await jwkList(api);
+    const keys = await jwkList(api, "auth");
 
-    if (keys.length === 0) return;
+    expect(keys.length).toBeGreaterThan(0);
 
-    const key = await jwkGet(api, keys[0].kid as string);
+    const key = await jwkGet(api, keys[0].kid);
     expect(key.kid).toBe(keys[0].kid);
     expect(key.kty).toBeTruthy();
     expect(key.alg).toBeTruthy();

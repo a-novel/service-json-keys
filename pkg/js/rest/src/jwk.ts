@@ -33,10 +33,10 @@ export type Jwk = {
 };
 
 /**
- * Returns all active public keys from the service, optionally filtered by usage.
+ * Returns all active public keys for the given usage.
  *
  * A usage identifies a named signing configuration (e.g., `"auth"`, `"auth-refresh"`).
- * Omit `usage` to receive keys for all registered usages.
+ * Omitting `usage`, or passing an unrecognized value, returns an empty list.
  */
 export async function jwkList(api: JsonKeysApi, usage?: string): Promise<Jwk[]> {
   const params = new URLSearchParams();
