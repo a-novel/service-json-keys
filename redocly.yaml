@@ -1,0 +1,9 @@
+extends: [recommended]
+
+rules:
+  # /ping, /healthcheck, and /jwks intentionally have no 4xx responses:
+  # - /ping and /healthcheck accept no input, so 400 is unreachable.
+  # - /jwks accepts any string for `usage` and returns an empty list for unrecognized
+  #   values rather than a 400, so 400 is also unreachable there.
+  # /jwk does have explicit 400/404 responses and is unaffected by this override.
+  operation-4xx-response: off

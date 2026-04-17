@@ -179,6 +179,7 @@ components:
       type: object
       description: Summary of a server's dependencies status.
       required: [status]
+      additionalProperties: false
       examples:
         - { "status": "up" }
         - { "status": "down", "err": "Connection to host refused" }
