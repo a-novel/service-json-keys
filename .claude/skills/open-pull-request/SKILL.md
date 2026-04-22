@@ -232,8 +232,9 @@ Rules:
 ### 5.4 Do NOT pass these flags
 
 - `--assignee` / `--reviewer` — the `auto-assign-author` workflow handles assignees; the
-  repo decides reviewers via CODEOWNERS or team routing. Manual assignment duplicates or
-  conflicts with automation.
+  repo decides reviewers via its `CODEOWNERS` file (at repo root) or team routing. Do not
+  set reviewers manually unless the user explicitly requests a specific person; manual
+  assignment duplicates or conflicts with that automation.
 - `--label` — labels are derived from the title's Conventional-Commits type by downstream
   automation. Do not add them manually unless the user requests a specific one.
 - `--milestone` — project management concern; leave to humans.
