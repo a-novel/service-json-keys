@@ -50,8 +50,12 @@ git log master..HEAD --oneline
 ```
 
 Every line must parse as `<type>(<scope>): <description>`. If any commit is malformed,
-fix it before pushing (typically via `git commit --amend` if it is the last commit, or ask
-the user before rewriting earlier history).
+fix it **before the branch's first push**. Use `git commit --amend` only when the
+malformed commit is the last one on the branch *and* it has not yet been pushed; after
+the branch is pushed, `git-conventions`' "never amend a pushed commit" rule applies and
+the fix becomes a follow-up commit instead (or, for a cosmetic title fix, a PR-title
+adjustment the author can squash at merge time). For any earlier malformed commit — even
+if unpushed — ask the user before rewriting history.
 
 ### 1.4 Local tests pass
 
@@ -78,8 +82,11 @@ git status --porcelain
 ```
 
 Any newly-modified files under `internal/models/proto/gen/`, `internal/handlers/mocks/`, or
-`internal/services/mocks/` must be amended into the commit that caused them. CI has a
-`generated-go` job that will fail if these are stale.
+`internal/services/mocks/` belong with the source change that caused them. Before the
+branch's first push, amend them into the relevant commit. After the branch has been
+pushed, do not rewrite published history — add a follow-up `chore(gen): ...` commit
+instead (per `monitor-ci`). CI has a `generated-go` job that will fail if these are
+stale.
 
 ---
 
