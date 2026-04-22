@@ -26,7 +26,7 @@ handler source.
 Run these in order after any change to `openapi.yaml`:
 
 ```bash
-pnpm format         # runs Prettier over the YAML file
+pnpm format         # runs Prettier over all files
 pnpm lint:openapi   # validates the spec with Redocly
 ```
 

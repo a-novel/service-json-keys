@@ -257,8 +257,8 @@ developer.
 cannot describe a commit in a single conventional-commit line, it contains more than one concern.
 
 **Test every branch.** The relevant test target must pass on every branch, not just the final
-one: `make test-unit` for Go layers, `make test-pkg-js` for pkg/js. A branch that compiles but
-fails tests is not ready for review.
+one: `make test-unit` for Go layers, `make test-pkg` for pkg/go, `make test-pkg-js` for pkg/js.
+A branch that compiles but fails tests is not ready for review.
 
 **Verify before proposing.** Never propose a plan based on assumed file locations or signatures.
 Read the code first. A plan built on wrong assumptions wastes the developer's review time.
