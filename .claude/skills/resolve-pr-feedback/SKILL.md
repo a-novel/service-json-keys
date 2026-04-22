@@ -146,7 +146,9 @@ gh pr checks <number>
 CI failures are feedback too. When a CI failure overlaps with a reviewer's concern (same
 lint rule, same missing test, same typo), fold the fix into the thread response so the
 reviewer can see it addressed in one place. For isolated CI failures — or anything that
-needs flake-vs-real classification — hand off to `monitor-ci`.
+needs flake-vs-real classification — hand off to `monitor-ci` when that skill is on
+master (pending, tracked in #533). Until then, summarize the failing checks to the user
+and ask how they want to proceed.
 
 ### 1.5 Report the survey
 
@@ -356,7 +358,8 @@ ID.
 Only after:
 
 - Every accepted fix has been pushed.
-- CI is green (hand off to `monitor-ci` while it runs if needed).
+- CI is green (hand off to `monitor-ci` while it runs if that skill is available on
+  master — pending, tracked in #533 — otherwise watch `gh pr checks <n>` manually).
 - Any decline replies have been posted so the reviewer has context when they look again.
 
 Then:
