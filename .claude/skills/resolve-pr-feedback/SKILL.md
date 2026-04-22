@@ -162,12 +162,12 @@ For every unresolved thread, fit it into one of four buckets. Read the full thre
 (including prior replies), read the code it points at, and reason about each thread
 independently — do not classify in bulk.
 
-| Bucket | When to use |
-| --- | --- |
-| **Accept** | The comment is correct and actionable; a straightforward change implements its intent. |
-| **Accept-with-deviation** | The core concern is valid but the specific suggestion is wrong, partial, or better served by a different approach. |
-| **Decline** | The comment misunderstands the change, conflicts with a repo guideline (CLAUDE.md, a skill file, a documented decision), would reintroduce a security or correctness regression, or is out of scope for this PR. |
-| **Unsure** | You cannot confidently place the comment into one of the above. |
+| Bucket                    | When to use                                                                                                                                                                                                      |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Accept**                | The comment is correct and actionable; a straightforward change implements its intent.                                                                                                                           |
+| **Accept-with-deviation** | The core concern is valid but the specific suggestion is wrong, partial, or better served by a different approach.                                                                                               |
+| **Decline**               | The comment misunderstands the change, conflicts with a repo guideline (CLAUDE.md, a skill file, a documented decision), would reintroduce a security or correctness regression, or is out of scope for this PR. |
+| **Unsure**                | You cannot confidently place the comment into one of the above.                                                                                                                                                  |
 
 Signals that push toward **decline** specifically:
 
@@ -420,22 +420,22 @@ overall direction).
   thread response rather than pushing twice.
 - **To `git-conventions`** — every review-driven commit. No exceptions.
 - **To the layer-specific skills** — `write-go-code`, `write-go-tests`, `write-openapi`,
-  `write-js-package`, etc. Phase 4 writes code; those skills govern *how*.
+  `write-js-package`, etc. Phase 4 writes code; those skills govern _how_.
 
 ---
 
 ## Quick reference
 
-| Situation | Command |
-| --- | --- |
-| PR envelope | `gh pr view <n> --json state,isDraft,reviewDecision,baseRefName,headRefName,reviews,commits` |
-| Inline review comments | `gh api repos/<o>/<r>/pulls/<n>/comments` |
-| Top-level PR comments | `gh api repos/<o>/<r>/issues/<n>/comments` |
-| Review envelopes | `gh api repos/<o>/<r>/pulls/<n>/reviews` |
-| Thread resolution state (node IDs) | GraphQL `reviewThreads` query (Phase 1.3) |
-| CI status | `gh pr checks <n>` |
-| Reply on an inline thread | `gh api repos/<o>/<r>/pulls/<n>/comments/<cid>/replies -f body="..."` |
-| Resolve a thread | GraphQL `resolveReviewThread` mutation (Phase 5.2) |
-| Start a new inline thread | `POST .../pulls/<n>/comments` with `commit_id`, `path`, `line`, `side` |
-| Top-level PR comment | `gh pr comment <n> --body "..."` |
-| Re-request review | `POST .../pulls/<n>/requested_reviewers` with `reviewers=[...]` |
+| Situation                          | Command                                                                                      |
+| ---------------------------------- | -------------------------------------------------------------------------------------------- |
+| PR envelope                        | `gh pr view <n> --json state,isDraft,reviewDecision,baseRefName,headRefName,reviews,commits` |
+| Inline review comments             | `gh api repos/<o>/<r>/pulls/<n>/comments`                                                    |
+| Top-level PR comments              | `gh api repos/<o>/<r>/issues/<n>/comments`                                                   |
+| Review envelopes                   | `gh api repos/<o>/<r>/pulls/<n>/reviews`                                                     |
+| Thread resolution state (node IDs) | GraphQL `reviewThreads` query (Phase 1.3)                                                    |
+| CI status                          | `gh pr checks <n>`                                                                           |
+| Reply on an inline thread          | `gh api repos/<o>/<r>/pulls/<n>/comments/<cid>/replies -f body="..."`                        |
+| Resolve a thread                   | GraphQL `resolveReviewThread` mutation (Phase 5.2)                                           |
+| Start a new inline thread          | `POST .../pulls/<n>/comments` with `commit_id`, `path`, `line`, `side`                       |
+| Top-level PR comment               | `gh pr comment <n> --body "..."`                                                             |
+| Re-request review                  | `POST .../pulls/<n>/requested_reviewers` with `reviewers=[...]`                              |
