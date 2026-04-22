@@ -356,7 +356,7 @@ confidence-building.
 | Situation                             | Command                                                                             |
 | ------------------------------------- | ----------------------------------------------------------------------------------- |
 | Overall status (PR open)              | `gh pr checks --watch=false`                                                        |
-| Overall status (no PR)                | `gh run list --branch <br> --limit 1 --json databaseId,status,conclusion,name`      |
+| Overall status (no PR)                | `gh run list --branch <branch> --limit 1 --json databaseId,status,conclusion,name`  |
 | List failing jobs in a run            | `gh run view <run-id> --json jobs --jq '.jobs[] \| select(.conclusion=="failure")'` |
 | Read only failed-step logs of one job | `gh run view <run-id> --log-failed --job <job-id>`                                  |
 | Narrow noisy logs                     | `... \| tail -n 200` or `... \| grep -E "FAIL\|Error" \| head -n 50`                |
