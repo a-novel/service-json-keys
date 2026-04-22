@@ -298,7 +298,6 @@ Install the dependencies:
 ```bash
 make install
 ```
-````
 
 ### Common Commands
 
@@ -419,7 +418,7 @@ Agora service:
    ```bash
    cp -r /path/to/this-repo/.claude/skills/write-project-docs \
          /path/to/new-repo/.claude/skills/
-````
+   ```
 
 2. In the new repo, invoke the skill (Claude picks it up once the file exists). Phase 1
    will collect the new project's inputs.
