@@ -178,9 +178,10 @@ components:
     healthStatus:
       type: object
       description: |
-        Summary of a server's dependency status. The shape is intentionally minimal
-        so that an unauthenticated caller cannot infer infrastructure details from a
-        degraded dependency; richer diagnostics are recorded on server-side traces.
+        Status of a single dependency entry, as observed by the server. The shape is
+        intentionally minimal so that an unauthenticated caller cannot infer
+        infrastructure details from a degraded dependency; richer diagnostics are
+        recorded on server-side traces.
       required: [status]
       additionalProperties: false
       examples:
