@@ -50,7 +50,9 @@ Must return empty. Uncommitted changes mean the branch is not ready. Either comm
 # name for a stacked PR (see Phase 2.3). Using master for a stacked branch would
 # include the parent's commits and validate/rewrite commits that aren't this
 # branch's responsibility.
-git log <base>..HEAD --oneline
+# %s emits the commit subject only — no abbreviated hash prefix — so each output
+# line is directly comparable against the Conventional Commits grammar below.
+git log <base>..HEAD --format=%s
 ```
 
 Every line must parse as a `git-conventions`-compliant Conventional Commit: either
