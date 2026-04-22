@@ -683,6 +683,15 @@ or raw `error.Error()` output in HTTP responses. Map to a generic status text:
 http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 ```
 
+This rule applies to **structured response bodies** too, not just `http.Error` shortcuts. A health,
+status, or diagnostic endpoint that returns JSON must not embed `err.Error()` in any field — the
+public shape should carry a binary state (e.g. `"up"` / `"down"`) and at most a stable error _code_,
+never the raw message. Wrapped database errors routinely contain hostnames, ports, or internal
+schema names; one call to `err.Error()` on a downed dependency is enough to leak infrastructure
+topology to an unauthenticated caller. Log or trace the full error instead; return only the shape
+an external client is entitled to see. If operators need richer detail, expose it on a separate,
+auth-gated endpoint — not the public one.
+
 gRPC handlers are internal (service-to-service), so slightly more context in status messages is
 acceptable, but still avoid leaking raw database errors or cryptographic details.
 
@@ -723,9 +732,46 @@ When this service or any Agora service handles key material:
 - **`context.Context` stored in a struct.** Always pass it as a method argument.
 - **New packages without asking.** Always get explicit developer approval before adding to `go.mod`.
 - **Returning raw error details in REST responses.** Always map to a generic HTTP status text.
+  The rule covers structured response fields too: a health/status JSON body must never include
+  `err.Error()` — it leaks infrastructure detail (hostnames, schema names) to unauthenticated callers.
 - **Logging or tracing sensitive material.** Only record identifiers, never key ciphertexts, tokens, or credentials.
 - **String-formatted SQL.** All SQL must use parameterized queries via bun — no `fmt.Sprintf` in query construction.
 - **Validation in handlers instead of services.** Business-rule checks belong in services. Handlers only reject structurally invalid input (e.g., unparseable UUID).
+- **Multiple `time.Now()` calls in one operation.** When an operation writes or returns several
+  timestamps that should share the same instant (created-at + expires-at, start + deadline),
+  capture `now := time.Now()` once and reuse it. Independent calls drift by nanoseconds, break
+  tests that assert exact TTLs, and muddy the semantics of the record.
+
+---
+
+## Time Capture
+
+When an operation derives more than one timestamp from "now" — a created-at plus an expires-at,
+a start plus a deadline, paired audit fields — capture `time.Now()` **once** at the top of the
+operation and reuse the variable:
+
+```go
+// WRONG — two independent wall-clock reads; the deltas between derived
+// timestamps are not exactly the configured TTL.
+repo.Exec(ctx, &dao.InsertRequest{
+    Now:        time.Now(),
+    Expiration: time.Now().Add(cfg.TTL),
+})
+
+// CORRECT — one logical instant, reused.
+now := time.Now()
+repo.Exec(ctx, &dao.InsertRequest{
+    Now:        now,
+    Expiration: now.Add(cfg.TTL),
+})
+```
+
+Two reasons: correctness (the second `time.Now()` is measurably later, so a row's
+`expires_at - created_at` is not exactly the TTL), and testability (a single captured value is
+easier to freeze or assert against than two independent wall-clock reads). The rule extends to any
+pair of values that should share the same "now": audit logs with both `started_at` and `recorded_at`,
+request traces that emit `begin` and `finish` attributes, etc. Only call `time.Now()` multiple
+times when you genuinely want distinct measurements (e.g., computing a duration).
 
 ---
 
