@@ -198,6 +198,17 @@ classify their comments with the same rigor — bots miss context routinely, and
 acceptance is how insecure or incorrect changes land. Weight your reply toward the
 **human** reviewer who will read the thread later.
 
+A bot repeating the same claim across several comments is **not** independent evidence
+of correctness; it is one opinion with a megaphone. Verify the underlying fact once —
+official docs, a spec, or an empirical test (the latter is often one `gh api` call
+away) — and cite that source in your reply. Treating repetition as confirmation is how
+a confidently wrong bot propagates an error from the review into the codebase.
+
+Bots are especially prone to confident errors about **external specs** — API endpoint
+paths, header names, status code semantics, protocol details. When a comment asserts a
+factual claim about a third-party system, the correct first move is to check that
+system's authoritative source, not to argue from plausibility.
+
 ---
 
 ## Phase 3: Act on each thread
@@ -399,6 +410,13 @@ overall direction).
   the thread — they have to hunt. Always pair a resolve with a reply linking to the SHA.
 - **Blanket acceptance of bot comments.** Copilot can be wrong. Classify every comment;
   the failure mode of over-trust is insecure or incorrect code landing in main.
+- **Treating repeated bot claims as confirmation.** Three identical comments from one
+  bot are one opinion amplified, not three independent signals. Verify the underlying
+  fact once against an authoritative source before accepting or declining.
+- **Accepting a reviewer's spec claim without checking the spec.** When a comment
+  asserts a specific API shape, endpoint path, header name, or protocol detail, verify
+  it against the upstream docs — or make a single empirical call — before editing.
+  Plausibility is not evidence.
 - **Using the wrong endpoint for replies.** Top-level PR comments (`gh pr comment`) do
   not thread with inline review comments. A reply to an inline comment must go through
   `POST /pulls/:n/comments/:id/replies`.
