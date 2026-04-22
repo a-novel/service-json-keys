@@ -12,7 +12,7 @@ description: >
 
 This skill governs how Claude plans and delivers features in Agora backend services. Every
 non-trivial change goes through the same phases: **Assess → Plan → Implement**. Each phase
-has a gate before the next begins. Phase 4 covers recovery when an earlier branch needs to change.
+has a gate before the next begins. A later section covers recovery when an earlier branch needs to change.
 
 ---
 
