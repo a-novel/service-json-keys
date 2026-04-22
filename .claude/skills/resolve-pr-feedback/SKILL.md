@@ -436,10 +436,10 @@ overall direction).
 
 ## Hand-offs
 
-- **From `open-pull-request`** *(skill pending, tracked in #533)* — once that skill is
+- **From `open-pull-request`** _(skill pending, tracked in #533)_ — once that skill is
   on master, the push-and-open flow hands off here when reviewers comment. Until then,
   enter directly via user request on any already-open PR.
-- **To `monitor-ci`** *(skill pending, tracked in #533)* — for failing checks that need
+- **To `monitor-ci`** _(skill pending, tracked in #533)_ — for failing checks that need
   flake-vs-real classification or a retry loop. When CI agrees with a reviewer (same
   root cause), fold the fix into the thread response rather than pushing twice.
 - **To `git-conventions`** — every review-driven commit. No exceptions.
