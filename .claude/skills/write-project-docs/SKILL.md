@@ -197,8 +197,9 @@ done through environment variables. Below is a list of available configurations:
 
 **README section guidance:**
 
-- The six badges in the catalog always appear in the order shown (socials, then repo metrics,
-  then CI/coverage). Deviating breaks the visual rhythm across services.
+- The nine entries in the catalog (two socials + three repo metrics + four CI/coverage,
+  counting the Codecov sunburst) always appear in the order shown. Deviating breaks the
+  visual rhythm across services.
 - The `<hr />` literal (not `---`) separates the social badges from the repo metrics — this
   matches the existing Agora convention.
 - Docker compose examples must pin images by tag (e.g., `:v2.2.6`), never `:latest`. When
@@ -391,15 +392,15 @@ path segments). Parameters are clearly marked with `{{…}}`.
 
 | Badge                    | Markdown pattern                                                                                                                         |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Twitter follow           | `[![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/{{handle}})](https://twitter.com/{{handle}})`                     |
-| Discord                  | `[![Discord](https://img.shields.io/discord/{{discord-id}}?logo=discord)](https://discord.gg/{{invite-code}})`                           |
+| Twitter follow           | `[![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/{{twitter-handle}})](https://twitter.com/{{twitter-handle}})`     |
+| Discord                  | `[![Discord](https://img.shields.io/discord/{{discord-id}}?logo=discord)](https://discord.gg/{{discord-invite-code}})`                   |
 | Go version (from go.mod) | `![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/{{repo-path}})`                                             |
 | File count               | `![GitHub repo file or directory count](https://img.shields.io/github/directory-file-count/{{repo-path}})`                               |
 | Code size                | `![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/{{repo-path}})`                                          |
 | CI workflow status       | `![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/{{repo-path}}/{{main-workflow-file}})`          |
 | Go Report Card           | `[![Go Report Card](https://goreportcard.com/badge/github.com/{{repo-path}})](https://goreportcard.com/report/github.com/{{repo-path}})` |
-| Codecov badge            | `[![codecov](https://codecov.io/gh/{{repo-path}}/graph/badge.svg?token={{codecov-graph-token}})](https://codecov.io/gh/{{repo-path}})`   |
-| Codecov sunburst         | `![Coverage graph](https://codecov.io/gh/{{repo-path}}/graphs/sunburst.svg?token={{codecov-graph-token}})`                               |
+| Codecov badge            | Default (no token): `[![codecov](https://codecov.io/gh/{{repo-path}}/graph/badge.svg)](https://codecov.io/gh/{{repo-path}})` — add `?token={{codecov-graph-token}}` to the badge URL only when the repo requires a tokenized variant |
+| Codecov sunburst         | Default (no token): `![Coverage graph](https://codecov.io/gh/{{repo-path}}/graphs/sunburst.svg)` — add `?token={{codecov-graph-token}}` to the image URL only when a tokenized variant is required                                  |
 
 **Codecov graph token — not a secret.** It is the public badge token from
 `codecov.io/gh/<repo>/settings > Badge`. Committing it is intentional. The private upload
