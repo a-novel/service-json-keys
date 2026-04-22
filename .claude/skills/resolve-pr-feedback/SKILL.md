@@ -8,9 +8,8 @@ description: >
   resolving a thread after a fix, starting your own thread to flag a concern, or re-requesting
   review after changes. Always invoke it when the user mentions PR review comments, a reviewer's
   name, a failing check on an open PR, or asks anything that involves reading + responding to
-  feedback on a pull request — even if the word "resolve" is not used. Pairs with monitor-ci (for
-  CI deep-dives and retry/fix loops), open-pull-request (hands off here after a push when reviews
-  arrive), and git-conventions (for the format of review-driven fix commits).
+  feedback on a pull request — even if the word "resolve" is not used. Pairs with git-conventions
+  (for the format of review-driven fix commits).
 ---
 
 # Resolve PR Feedback
@@ -412,12 +411,12 @@ overall direction).
 
 ## Hand-offs
 
-- **From `open-pull-request`** — after a push that went through that skill, this skill
-  takes over once reviewers comment. If both a review and a CI failure land, address
-  the review-facing one through this skill; let `monitor-ci` handle the CI-only ones.
-- **To `monitor-ci`** — for failing checks that need flake-vs-real classification or a
-  retry loop. When CI agrees with a reviewer (same root cause), fold the fix into the
-  thread response rather than pushing twice.
+- **From `open-pull-request`** *(skill pending, tracked in #533)* — once that skill is
+  on master, the push-and-open flow hands off here when reviewers comment. Until then,
+  enter directly via user request on any already-open PR.
+- **To `monitor-ci`** *(skill pending, tracked in #533)* — for failing checks that need
+  flake-vs-real classification or a retry loop. When CI agrees with a reviewer (same
+  root cause), fold the fix into the thread response rather than pushing twice.
 - **To `git-conventions`** — every review-driven commit. No exceptions.
 - **To the layer-specific skills** — `write-go-code`, `write-go-tests`, `write-openapi`,
   `write-js-package`, etc. Phase 4 writes code; those skills govern _how_.
