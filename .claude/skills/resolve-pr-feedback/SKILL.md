@@ -106,7 +106,7 @@ The REST API does not expose whether a review thread is resolved. Use GraphQL:
 
 ```bash
 gh api graphql -f query='
-query($owner:String!, $repo:String!, $number:Int!, $threadCursor:String, $commentCursor:String) {
+query($owner:String!, $repo:String!, $number:Int!, $threadCursor:String) {
   repository(owner:$owner, name:$repo) {
     pullRequest(number:$number) {
       reviewThreads(first:100, after:$threadCursor) {
@@ -115,7 +115,7 @@ query($owner:String!, $repo:String!, $number:Int!, $threadCursor:String, $commen
           id
           isResolved
           isOutdated
-          comments(first:50, after:$commentCursor) {
+          comments(first:50) {
             pageInfo { hasNextPage endCursor }
             nodes { databaseId author{login} path line body url }
           }
@@ -131,11 +131,35 @@ You need it for Phase 5.2 to resolve the thread. Save it.
 
 `reviewThreads(first:100)` and `comments(first:50)` cover the vast majority of PRs, but
 long-lived or high-traffic PRs can exceed either limit. The authoritative truncation
-signal is `pageInfo.hasNextPage` — when it is `true`, re-query with `after: $endCursor`
-until it is `false`. (An exact-100 or exact-50 result count can coincidentally match the
-page size, so it is a weaker heuristic than `hasNextPage` — treat it as a hint to check,
-not a signal on its own.) Missing a thread at survey time means silently missing
-feedback during classification, which is the worst failure mode for this phase.
+signal is `pageInfo.hasNextPage`; pagination is **two-level** because GraphQL cursors
+are scoped to the specific connection instance that produced them:
+
+1. **Outer — threads.** If `reviewThreads.pageInfo.hasNextPage` is `true`, re-issue the
+   query above with `-F threadCursor=<endCursor>` and loop until it is `false`.
+2. **Inner — comments on a specific thread.** Each thread exposes its own
+   `comments.pageInfo`. If a thread reports `comments.pageInfo.hasNextPage == true`,
+   that thread's `endCursor` is meaningful **only for that thread** — it cannot be
+   reused across threads. Paginate per-thread via a `node(id:)` follow-up, using the
+   `thread.id` saved above:
+
+   ```bash
+   gh api graphql -f query='
+   query($threadId:ID!, $cursor:String) {
+     node(id:$threadId) {
+       ... on PullRequestReviewThread {
+         comments(first:50, after:$cursor) {
+           pageInfo { hasNextPage endCursor }
+           nodes { databaseId author{login} path line body url }
+         }
+       }
+     }
+   }' -F threadId=<thread-node-id> -F cursor=<endCursor>
+   ```
+
+(An exact-100 or exact-50 result count can coincidentally match the page size, so it is
+a weaker heuristic than `hasNextPage` — treat it as a hint to check, not a signal on its
+own.) Missing a thread or a comment at survey time means silently missing feedback
+during classification, which is the worst failure mode for this phase.
 
 `isOutdated: true` means the comment anchored to code that has since changed; the
 reviewer's concern may already be addressed by a later push. Confirm before closing.
