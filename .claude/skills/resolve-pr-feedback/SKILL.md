@@ -369,8 +369,15 @@ Then:
 
 ```bash
 gh api repos/<owner>/<repo>/pulls/<number>/requested_reviewers \
-  -X POST -f reviewers='["<reviewer-login>"]'
+  -X POST -F 'reviewers[]=<reviewer-login>'
 ```
+
+Note the `reviewers[]=...` syntax: `gh api` sends `-f` and `-F` values as scalar strings
+by default (or, for `-F`, does type inference only on literal `true`/`false`/`null`/ints).
+Neither `-f reviewers='["alice"]'` nor `-F reviewers='["alice"]'` produces a JSON array —
+both send a string. The documented way to build an array is repeated `key[]=value`
+entries, one per element; the GitHub API then receives an actual `reviewers: [...]`
+payload.
 
 Re-requesting mid-exchange, while declines are unresolved, or with failing CI burns
 reviewer attention and signals carelessness. Don't.
@@ -468,4 +475,4 @@ overall direction).
 | Resolve a thread                   | GraphQL `resolveReviewThread` mutation (Phase 5.2)                                           |
 | Start a new inline thread          | `POST .../pulls/<n>/comments` with `commit_id`, `path`, `line`, `side`                       |
 | Top-level PR comment               | `gh pr comment <n> --body "..."`                                                             |
-| Re-request review                  | `POST .../pulls/<n>/requested_reviewers` with `reviewers=[...]`                              |
+| Re-request review                  | `gh api .../pulls/<n>/requested_reviewers -X POST -F 'reviewers[]=<login>'`                  |
