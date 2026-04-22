@@ -142,20 +142,22 @@ determines the fix path.
 **Root cause**: a `.proto` file or Go interface (used by a mock) changed without `make
 generate` being run afterward.
 
-**Fix**:
+**Fix**: the original commit is already pushed, so a new commit is the only option —
+`git-conventions` forbids amending pushed history. The regenerated files land as their
+own follow-up:
 
 ```bash
 make generate
 git status --porcelain
-# Stage the regenerated files into the commit that changed the proto/interface:
 git add internal/models/proto/gen/ internal/handlers/mocks/ internal/services/mocks/
-git commit --amend --no-edit
-git push --force-with-lease
+git commit -m "chore(gen): regenerate Go bindings for <scope>"
+git push
 ```
 
-If the offending commit is not the most recent, use an interactive rebase — but prefer to
-surface the situation to the user first, since rewriting earlier history is unusual and the
-user may want to handle it differently.
+This produces two commits for what would ideally be one (the proto/interface change
+plus its regen), but that is the cost of noticing after push. The "generated files
+belong in the same commit" guidance in `git-conventions` is a structure preference;
+the "never amend a pushed commit" rule is categorical and wins here.
 
 ### 2.2 `lint-go` / `lint-proto` / `lint-node` failure
 
@@ -173,9 +175,11 @@ git commit -m "fix(<scope>): resolve lint findings"
 git push
 ```
 
-When the lint fix is a trivial mechanical change in the same commit's scope, prefer
-`--amend` into the original commit rather than adding a noisy `fix(lint): ...` follow-up.
-When the fix is more invasive, use a new commit with a `refactor` or `fix` type.
+Use a `fix(<scope>): resolve lint findings` commit for trivial mechanical changes and a
+`refactor` or `fix` commit for more invasive rewrites. A noisy `fix(lint): ...` follow-up
+on a pushed branch is still better than an amend — `git-conventions` forbids amending
+pushed commits unconditionally, and the lint-fix commit can be squashed or absorbed by
+the PR author at merge time if the branch uses squash-merge.
 
 ### 2.3 `test` (Go unit) failure
 
