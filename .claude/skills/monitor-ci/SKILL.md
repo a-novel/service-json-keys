@@ -41,7 +41,8 @@ The `main` workflow runs on every push to any branch. Jobs and their fix targets
 | `build-rest`                                     | Docker build for REST service image        | (none)                                   | Go build error                                      |
 | `build-standalone-rest`                          | Docker build for standalone REST dev image | (none)                                   | Go build error                                      |
 | `build-js`                                       | `pnpm build:rest` for pkg/js               | `pnpm -C pkg/js build:rest`              | TS compile error or broken export                   |
-| `report-grc` / `report-codecov` / `publish-docs` | Post-success reporting (master only)       | (none)                                   | Rarely actionable; usually transient                |
+| `report-grc` / `publish-docs`                    | Post-success reporting, **master only**    | (none)                                   | Rarely actionable; usually transient                |
+| `report-codecov`                                 | Coverage upload, runs on **every branch**  | (none)                                   | Upload failure can still mark the run failed in PR checks; usually transient |
 
 `test` blocks most application `build-*` jobs (`build-grpc`, `build-rest`,
 `build-standalone-*`, `build-job-rotate-keys`). When `test` fails those downstream jobs
@@ -312,8 +313,12 @@ regression, service crash at boot) — switch to Phase 2.4 "real" investigation.
 - The failure involves a secret or credential (never debug secrets autonomously)
 - The workflow file itself is failing to parse (YAML error) — check with the user before
   editing workflow files
-- The failure is on a reporting-only job (`report-codecov`, `publish-docs`) that does not
-  affect merge readiness — surface but do not fix unless asked
+- The failure is on a master-only reporting job (`publish-docs`, `report-grc`) that does
+  not gate merges — surface but do not fix unless asked
+- The failure is on `report-codecov` — it runs on every branch and can make the workflow
+  run appear failed in PR checks even when branch protection does not gate on it. Surface
+  it; investigate only if the user asks, or if the same failure reproduces across
+  consecutive runs (a real upload or config regression rather than a transient)
 - CI is failing _only on master_ after a merge — something slipped past review;
   surface immediately, never push an autonomous fix to master
 - The same fix would require editing files outside the current branch's scope — stop and
