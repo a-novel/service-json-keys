@@ -4,8 +4,6 @@ import { handleHttpResponse } from "@a-novel-kit/nodelib-browser/http";
 export type HealthDependency = {
   /** Whether the dependency is reachable. */
   status: "up" | "down";
-  /** Human-readable error message when status is `"down"`. */
-  err?: string;
 };
 
 /**
