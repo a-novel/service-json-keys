@@ -202,9 +202,12 @@ the PR author at merge time if the branch uses squash-merge.
    - Test assertion out of date vs. new intended behaviour → fix the test
    - Follow `write-go-code` / `write-go-tests` for the actual fix
 
-3. Re-run until green locally, then commit. Commit style follows `git-conventions`:
-   - If the fix belongs with the feature: `--amend` into the feature commit
-   - If it's a genuine separate fix: new `fix(<scope>)` commit
+3. Re-run until green locally, then commit. `monitor-ci` always runs on an
+   already-pushed branch, so `git-conventions`' "never amend a pushed commit" rule
+   applies unconditionally:
+   - If the fix belongs with the feature: add a follow-up commit on the branch —
+     squash-merge at PR merge time (if configured) will collapse it.
+   - If it's a genuine separate fix: new `fix(<scope>)` commit.
 
 4. Push and go back to Phase 1.
 
@@ -279,7 +282,9 @@ After applying a fix:
 
 1. Re-run the relevant local target to confirm green (`make test-unit`, `make lint-go`,
    `make generate`, etc.)
-2. Commit per `git-conventions` — amend vs. new commit per the rules above
+2. Create a new fix commit per `git-conventions`. Do not amend or rewrite history on
+   this already-pushed branch — doing so strands CI run logs and review threads
+   anchored to the old SHAs.
 3. Push. A push to the branch automatically triggers a new CI run.
 4. Return to Phase 1.
 
@@ -357,7 +362,7 @@ confidence-building.
 
 | CI Job         | Local fix target            |
 | -------------- | --------------------------- |
-| `generated-go` | `make generate` + amend     |
+| `generated-go` | `make generate` + follow-up commit |
 | `lint-go`      | `make lint-go`              |
 | `lint-proto`   | `make lint-proto`           |
 | `lint-node`    | `make lint-node`            |
