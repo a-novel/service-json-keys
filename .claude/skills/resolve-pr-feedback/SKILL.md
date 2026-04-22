@@ -489,7 +489,7 @@ overall direction).
 
 | Situation                          | Command                                                                                      |
 | ---------------------------------- | -------------------------------------------------------------------------------------------- |
-| PR envelope                        | `gh pr view <n> --json state,isDraft,reviewDecision,baseRefName,headRefName,reviews,commits` |
+| PR envelope                        | `gh pr view <n> --json number,title,state,isDraft,mergeable,reviewDecision,baseRefName,headRefName,reviews,commits` |
 | Inline review comments             | `gh api repos/<o>/<r>/pulls/<n>/comments`                                                    |
 | Top-level PR comments              | `gh api repos/<o>/<r>/issues/<n>/comments`                                                   |
 | Review envelopes                   | `gh api repos/<o>/<r>/pulls/<n>/reviews`                                                     |
