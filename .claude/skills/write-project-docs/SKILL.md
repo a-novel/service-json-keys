@@ -163,9 +163,9 @@ with the inputs from Phase 1 before writing the file. Do not leave `{{…}}` in 
 
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/{{repo-path}}/{{main-workflow-file}})
 [![Go Report Card](https://goreportcard.com/badge/github.com/{{repo-path}})](https://goreportcard.com/report/github.com/{{repo-path}})
-[![codecov](https://codecov.io/gh/{{repo-path}}/graph/badge.svg?token={{codecov-graph-token}})](https://codecov.io/gh/{{repo-path}})
+[![codecov](https://codecov.io/gh/{{repo-path}}/graph/badge.svg)](https://codecov.io/gh/{{repo-path}}) <!-- TODO(project-docs): if this repo requires a tokenized Codecov badge, append `?token=<codecov-graph-token>` to the badge URL above using the value from codecov.io/gh/{{repo-path}}/settings > Badge -->
 
-![Coverage graph](https://codecov.io/gh/{{repo-path}}/graphs/sunburst.svg?token={{codecov-graph-token}})
+![Coverage graph](https://codecov.io/gh/{{repo-path}}/graphs/sunburst.svg) <!-- TODO(project-docs): if this repo requires a tokenized Codecov sunburst, append `?token=<codecov-graph-token>` to the image URL above -->
 
 ## Usage
 
