@@ -340,7 +340,6 @@ If you have questions or run into issues:
 - Open an issue at https://github.com/{{repo-path}}/issues
 - Check existing issues for similar problems
 - Include relevant logs and environment details
-
 ````
 
 **CONTRIBUTING section guidance:**
@@ -362,14 +361,14 @@ section that needs changing. Do not rewrite the file.
 
 ### Typical update operations
 
-| Request                               | Action                                                                   |
-| ------------------------------------- | ------------------------------------------------------------------------ |
-| "Bump the Docker image tags in README"| Edit every `image: ghcr.io/.../…:vX.Y.Z` line to the new version        |
-| "Add env var FOO to README"           | Add a new row to the matching config-vars table                          |
-| "Change security contact"             | Edit `{{security-email}}` occurrence in SECURITY.md                      |
-| "New gRPC service added"              | Add row to the gRPC services table in CONTRIBUTING.md                    |
-| "Project got a JS client"             | Add the JS usage section to README, add JS client section to CONTRIBUTING, flip `has-js-client` on |
-| "Remove deprecated ENV var"           | Delete the table row in README; surface to user since removal may be breaking |
+| Request                                | Action                                                                                             |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| "Bump the Docker image tags in README" | Edit every `image: ghcr.io/.../…:vX.Y.Z` line to the new version                                   |
+| "Add env var FOO to README"            | Add a new row to the matching config-vars table                                                    |
+| "Change security contact"              | Edit `{{security-email}}` occurrence in SECURITY.md                                                |
+| "New gRPC service added"               | Add row to the gRPC services table in CONTRIBUTING.md                                              |
+| "Project got a JS client"              | Add the JS usage section to README, add JS client section to CONTRIBUTING, flip `has-js-client` on |
+| "Remove deprecated ENV var"            | Delete the table row in README; surface to user since removal may be breaking                      |
 
 ### Update rules
 
@@ -390,17 +389,17 @@ section that needs changing. Do not rewrite the file.
 Copy these patterns verbatim — the exact URL format matters (shields.io is strict about
 path segments). Parameters are clearly marked with `{{…}}`.
 
-| Badge                    | Markdown pattern                                                                                                                                        |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Twitter follow           | `[![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/{{handle}})](https://twitter.com/{{handle}})`                                    |
-| Discord                  | `[![Discord](https://img.shields.io/discord/{{discord-id}}?logo=discord)](https://discord.gg/{{invite-code}})`                                          |
-| Go version (from go.mod) | `![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/{{repo-path}})`                                                            |
-| File count               | `![GitHub repo file or directory count](https://img.shields.io/github/directory-file-count/{{repo-path}})`                                              |
-| Code size                | `![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/{{repo-path}})`                                                         |
-| CI workflow status       | `![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/{{repo-path}}/{{main-workflow-file}})`                         |
-| Go Report Card           | `[![Go Report Card](https://goreportcard.com/badge/github.com/{{repo-path}})](https://goreportcard.com/report/github.com/{{repo-path}})`                |
-| Codecov badge            | `[![codecov](https://codecov.io/gh/{{repo-path}}/graph/badge.svg?token={{codecov-graph-token}})](https://codecov.io/gh/{{repo-path}})`                  |
-| Codecov sunburst         | `![Coverage graph](https://codecov.io/gh/{{repo-path}}/graphs/sunburst.svg?token={{codecov-graph-token}})`                                              |
+| Badge                    | Markdown pattern                                                                                                                         |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Twitter follow           | `[![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/{{handle}})](https://twitter.com/{{handle}})`                     |
+| Discord                  | `[![Discord](https://img.shields.io/discord/{{discord-id}}?logo=discord)](https://discord.gg/{{invite-code}})`                           |
+| Go version (from go.mod) | `![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/{{repo-path}})`                                             |
+| File count               | `![GitHub repo file or directory count](https://img.shields.io/github/directory-file-count/{{repo-path}})`                               |
+| Code size                | `![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/{{repo-path}})`                                          |
+| CI workflow status       | `![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/{{repo-path}}/{{main-workflow-file}})`          |
+| Go Report Card           | `[![Go Report Card](https://goreportcard.com/badge/github.com/{{repo-path}})](https://goreportcard.com/report/github.com/{{repo-path}})` |
+| Codecov badge            | `[![codecov](https://codecov.io/gh/{{repo-path}}/graph/badge.svg?token={{codecov-graph-token}})](https://codecov.io/gh/{{repo-path}})`   |
+| Codecov sunburst         | `![Coverage graph](https://codecov.io/gh/{{repo-path}}/graphs/sunburst.svg?token={{codecov-graph-token}})`                               |
 
 **Codecov graph token — not a secret.** It is the public badge token from
 `codecov.io/gh/<repo>/settings > Badge`. Committing it is intentional. The private upload
