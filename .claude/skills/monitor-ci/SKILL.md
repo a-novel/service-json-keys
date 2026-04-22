@@ -149,7 +149,7 @@ own follow-up:
 ```bash
 make generate
 git status --porcelain
-git add internal/models/proto/gen/ internal/handlers/mocks/ internal/services/mocks/
+git add internal/handlers/protogen/ internal/handlers/mocks/ internal/services/mocks/
 git commit -m "chore(gen): regenerate Go bindings for <scope>"
 git push
 ```

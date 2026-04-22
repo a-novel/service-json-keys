@@ -81,7 +81,7 @@ make generate
 git status --porcelain
 ```
 
-Any newly-modified files under `internal/models/proto/gen/`, `internal/handlers/mocks/`, or
+Any newly-modified files under `internal/handlers/protogen/`, `internal/handlers/mocks/`, or
 `internal/services/mocks/` belong with the source change that caused them. Before the
 branch's first push, amend them into the relevant commit. After the branch has been
 pushed, do not rewrite published history — add a follow-up `chore(gen): ...` commit
