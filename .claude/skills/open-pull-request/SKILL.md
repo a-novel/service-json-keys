@@ -51,7 +51,7 @@ git log master..HEAD --oneline
 
 Every line must parse as `<type>(<scope>): <description>`. If any commit is malformed,
 fix it **before the branch's first push**. Use `git commit --amend` only when the
-malformed commit is the last one on the branch *and* it has not yet been pushed; after
+malformed commit is the last one on the branch _and_ it has not yet been pushed; after
 the branch is pushed, `git-conventions`' "never amend a pushed commit" rule applies and
 the fix becomes a follow-up commit instead (or, for a cosmetic title fix, a PR-title
 adjustment the author can squash at merge time). For any earlier malformed commit — even

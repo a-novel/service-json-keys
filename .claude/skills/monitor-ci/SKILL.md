@@ -360,14 +360,14 @@ confidence-building.
 | Rerun failed jobs only (flake retry)  | `gh run rerun <run-id> --failed`                                                    |
 | Wait for in-progress run              | Bash `sleep 90` with `run_in_background=true`, then re-check                        |
 
-| CI Job         | Local fix target            |
-| -------------- | --------------------------- |
+| CI Job         | Local fix target                   |
+| -------------- | ---------------------------------- |
 | `generated-go` | `make generate` + follow-up commit |
-| `lint-go`      | `make lint-go`              |
-| `lint-proto`   | `make lint-proto`           |
-| `lint-node`    | `make lint-node`            |
-| `test`         | `make test-unit`            |
-| `test-pkg`     | `make test-pkg`             |
-| `test-pkg-js`  | `make test-pkg-js`          |
-| `build-js`     | `pnpm -C pkg/js build:rest` |
-| `build-*` (Go) | `go build ./...`            |
+| `lint-go`      | `make lint-go`                     |
+| `lint-proto`   | `make lint-proto`                  |
+| `lint-node`    | `make lint-node`                   |
+| `test`         | `make test-unit`                   |
+| `test-pkg`     | `make test-pkg`                    |
+| `test-pkg-js`  | `make test-pkg-js`                 |
+| `build-js`     | `pnpm -C pkg/js build:rest`        |
+| `build-*` (Go) | `go build ./...`                   |
