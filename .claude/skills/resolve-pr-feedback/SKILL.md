@@ -127,6 +127,13 @@ query($owner:String!, $repo:String!, $number:Int!) {
 The `id` returned here is the **thread node ID** — distinct from the REST `comment.id`.
 You need it for Phase 5.2 to resolve the thread. Save it.
 
+`reviewThreads(first:100)` and `comments(first:50)` cover the vast majority of PRs, but
+long-lived or high-traffic PRs can exceed either limit. If the returned thread list has
+exactly 100 entries, or any thread reports exactly 50 comments, the result is truncated.
+Paginate via `pageInfo { hasNextPage endCursor }` and re-query with `after: $cursor`
+until `hasNextPage` is false. Missing a thread at survey time means silently missing
+feedback during classification — a worse failure mode than a slightly longer query.
+
 `isOutdated: true` means the comment anchored to code that has since changed; the
 reviewer's concern may already be addressed by a later push. Confirm before closing.
 
