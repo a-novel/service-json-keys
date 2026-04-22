@@ -29,7 +29,7 @@ The `main` workflow runs on every push to any branch. Jobs and their fix targets
 | `generated-go`                                   | `go generate ./...` is up to date          | `make generate`                          | Forgot to run `make generate` after proto/interface |
 | `lint-go`                                        | `golangci-lint run` clean                  | `make lint-go`                           | New Go code violates style or has a bug             |
 | `lint-proto`                                     | `buf lint` clean                           | `make lint-proto`                        | Proto file violates buf style                       |
-| `lint-node`                                      | `pnpm lint:ci` clean                       | `make lint-node`                         | JS/TS code violates eslint/prettier                 |
+| `lint-node`                                      | `pnpm lint:ci` clean                       | `pnpm lint:ci`                           | JS/TS code violates eslint/prettier                 |
 | `test`                                           | Go unit tests in `/internal`               | `make test-unit`                         | Broken Go code or test                              |
 | `test-pkg`                                       | Go integration tests in `/pkg/go`          | `make test-pkg`                          | gRPC contract mismatch OR flake                     |
 | `test-pkg-js`                                    | JS integration tests in `/pkg/js`          | `make test-pkg-js`                       | REST contract mismatch OR flake                     |
@@ -43,8 +43,11 @@ The `main` workflow runs on every push to any branch. Jobs and their fix targets
 | `build-js`                                       | `pnpm build:rest` for pkg/js               | `pnpm -C pkg/js build:rest`              | TS compile error or broken export                   |
 | `report-grc` / `report-codecov` / `publish-docs` | Post-success reporting (master only)       | (none)                                   | Rarely actionable; usually transient                |
 
-`test` blocks all `build-*` jobs. If `test` fails, every build job is also cancelled — do
-not try to fix them in isolation; fix `test` first.
+`test` blocks most application `build-*` jobs (`build-grpc`, `build-rest`,
+`build-standalone-*`, `build-job-rotate-keys`). When `test` fails those downstream jobs
+are cancelled — fix `test` first before looking at them. However, `build-database` does
+**not** depend on `test`, and `build-migrations` depends only on `build-database`, so
+failures in those two surface independently and need their own diagnosis.
 
 ---
 
@@ -365,7 +368,7 @@ confidence-building.
 | `generated-go` | `make generate` + follow-up commit |
 | `lint-go`      | `make lint-go`                     |
 | `lint-proto`   | `make lint-proto`                  |
-| `lint-node`    | `make lint-node`                   |
+| `lint-node`    | `pnpm lint:ci`                     |
 | `test`         | `make test-unit`                   |
 | `test-pkg`     | `make test-pkg`                    |
 | `test-pkg-js`  | `make test-pkg-js`                 |
