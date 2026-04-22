@@ -487,16 +487,16 @@ overall direction).
 
 ## Quick reference
 
-| Situation                          | Command                                                                                      |
-| ---------------------------------- | -------------------------------------------------------------------------------------------- |
+| Situation                          | Command                                                                                                             |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | PR envelope                        | `gh pr view <n> --json number,title,state,isDraft,mergeable,reviewDecision,baseRefName,headRefName,reviews,commits` |
-| Inline review comments             | `gh api repos/<o>/<r>/pulls/<n>/comments`                                                    |
-| Top-level PR comments              | `gh api repos/<o>/<r>/issues/<n>/comments`                                                   |
-| Review envelopes                   | `gh api repos/<o>/<r>/pulls/<n>/reviews`                                                     |
-| Thread resolution state (node IDs) | GraphQL `reviewThreads` query (Phase 1.3)                                                    |
-| CI status                          | `gh pr checks <n>`                                                                           |
-| Reply on an inline thread          | `gh api repos/<o>/<r>/pulls/<n>/comments/<cid>/replies -f body="..."`                        |
-| Resolve a thread                   | GraphQL `resolveReviewThread` mutation (Phase 5.2)                                           |
-| Start a new inline thread          | `POST .../pulls/<n>/comments` with `commit_id`, `path`, `line`, `side`                       |
-| Top-level PR comment               | `gh pr comment <n> --body "..."`                                                             |
-| Re-request review                  | `gh api .../pulls/<n>/requested_reviewers -X POST -F 'reviewers[]=<login>'`                  |
+| Inline review comments             | `gh api repos/<o>/<r>/pulls/<n>/comments`                                                                           |
+| Top-level PR comments              | `gh api repos/<o>/<r>/issues/<n>/comments`                                                                          |
+| Review envelopes                   | `gh api repos/<o>/<r>/pulls/<n>/reviews`                                                                            |
+| Thread resolution state (node IDs) | GraphQL `reviewThreads` query (Phase 1.3)                                                                           |
+| CI status                          | `gh pr checks <n>`                                                                                                  |
+| Reply on an inline thread          | `gh api repos/<o>/<r>/pulls/<n>/comments/<cid>/replies -f body="..."`                                               |
+| Resolve a thread                   | GraphQL `resolveReviewThread` mutation (Phase 5.2)                                                                  |
+| Start a new inline thread          | `POST .../pulls/<n>/comments` with `commit_id`, `path`, `line`, `side`                                              |
+| Top-level PR comment               | `gh pr comment <n> --body "..."`                                                                                    |
+| Re-request review                  | `gh api .../pulls/<n>/requested_reviewers -X POST -F 'reviewers[]=<login>'`                                         |
