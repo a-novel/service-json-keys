@@ -25,13 +25,13 @@ handler source.
 
 Run these in order after any change to `openapi.yaml`:
 
-```
+```bash
+pnpm format         # runs Prettier over all files
 pnpm lint:openapi   # validates the spec with Redocly
-pnpm format         # runs Prettier over the YAML file
 ```
 
 Never ship a change that fails `pnpm lint:openapi`. Warnings are not errors, but
-document any known, intentional warnings (see the Known Warnings section below).
+document any known, intentional warnings (see the Suppressed Warnings section below).
 
 Then check the JS client in `pkg/js/rest/src/` to see if any TypeScript types need
 updating to reflect the spec change. Run `pnpm lint:typecheck` to confirm.
@@ -58,17 +58,17 @@ $ref: "#/components/parameters/jwkID"
 
 ## Toolchain
 
-Linting is done with **Redocly CLI** via `pnpm redocly lint openapi.yaml`. No
-`redocly.yaml` config file is present; Redocly runs its `recommended` ruleset by
-default. The `recommended` ruleset is opinionated but not maximally strict — some
-rules produce warnings rather than errors.
+Linting is done with **Redocly CLI** via `pnpm redocly lint openapi.yaml`. A `redocly.yaml`
+at the project root extends the `recommended` ruleset with project-specific overrides.
+The `recommended` ruleset is opinionated but not maximally strict — some rules produce warnings
+rather than errors.
 
-To add a `redocly.yaml` for rule overrides:
+To change rule overrides, edit `redocly.yaml`:
 
 ```yaml
 extends: [recommended]
 rules:
-  operation-4xx-response: warn # downgrade to warning for endpoints with no 4xx
+  operation-4xx-response: off # suppress for endpoints with no 4xx
 ```
 
 ---
@@ -249,7 +249,7 @@ generators to name functions — treat them like function names.
 
 `camelCase` for the `$ref` key under `components/parameters`; `snake_case` for the
 actual `name` in the query string (to match what the Go handler reads with
-`r.URL.Query().Get("usage")`):
+`r.URL.Query().Get("id")`):
 
 ```yaml
 components:
@@ -328,8 +328,8 @@ handler disagree, fix the spec (or the handler if it is wrong), but never let th
 
 ### Error responses
 
-Use a `default` response for unmapped 5xx errors. Use specific 4xx responses only for
-error conditions the handler explicitly checks and returns.
+Use a `default` response for any status code not explicitly listed. Use specific 4xx
+responses only for error conditions the handler explicitly checks and returns.
 
 ```yaml
 responses:
@@ -366,9 +366,10 @@ responses:
 
 ---
 
-## Known Pre-existing Warnings
+## Suppressed Warnings
 
-The following Redocly warning applies to three operations and is intentional for all of them:
+Three operations intentionally have no 4xx responses. Without `operation-4xx-response: off`
+in `redocly.yaml`, Redocly would flag them with:
 
 ```
 openapi.yaml: Operation must have at least one `4XX` response. [operation-4xx-response]
@@ -381,15 +382,15 @@ Affected: /ping GET, /healthcheck GET, /jwks GET
 - `/healthcheck` — always returns 200 regardless of dependency status (callers read the body to assess health).
 - `/jwks` — accepts any string for `usage` and returns an empty list for an unrecognized usage; it never validates input with a 400.
 
-All three warnings are false positives. Do not add spurious 4xx responses to the spec just
-to silence them — that would document behavior the server does not have.
+Do not add spurious 4xx responses to silence these warnings — that would document behavior
+the server does not have.
 
-To suppress these warnings globally, add a `redocly.yaml` at the project root:
+These warnings are suppressed by the `redocly.yaml` at the project root:
 
 ```yaml
 extends: [recommended]
 rules:
-  operation-4xx-response: warn
+  operation-4xx-response: off
 ```
 
 ---

@@ -11,8 +11,8 @@ description: >
 # Feature Implementation Workflow
 
 This skill governs how Claude plans and delivers features in Agora backend services. Every
-non-trivial change goes through the same four phases: **Assess → Plan → Implement → Validate**.
-Each phase has a gate before proceeding.
+non-trivial change goes through the same phases: **Assess → Plan → Implement**. Each phase
+has a gate before the next begins. A later section covers recovery when an earlier branch needs to change.
 
 ---
 
@@ -52,7 +52,14 @@ change**, or **not affected**.
 | Handlers (REST) | A new endpoint is added or an existing one changes behaviour |
 | Proto           | A gRPC message or service interface changes                  |
 | OpenAPI         | A REST endpoint contract changes                             |
-| pkg/go          | The exported client API changes                              |
+| pkg/go          | The exported Go client API changes                           |
+| pkg/js          | The REST endpoint contract changes (same trigger as OpenAPI) |
+
+**OpenAPI / REST / JS synchronization rule**: the OpenAPI spec (`openapi.yaml`), the Go REST
+handlers, and the JS client (`pkg/js/rest/`) are three representations of the same contract.
+Whenever any one of them changes, all three must be updated in the same feature. A PR that
+updates one without the others must explicitly justify the omission. Divergence between these
+three is a bug.
 
 ### Does it break anything?
 
@@ -63,6 +70,7 @@ Breaking changes include:
 
 - Removing or renaming a protobuf field, message, or service
 - Removing or renaming an exported symbol in `pkg/go`
+- Removing or renaming an exported TypeScript type or function in `pkg/js`
 - Removing a REST endpoint or changing its URL/method
 - Changing a response field type or removing a response field
 - Adding a required field to an existing request
@@ -100,16 +108,17 @@ Decompose the feature into **one branch per layer boundary**. A branch is the sm
 4. Services — handlers depend on the service interface
 5. Handlers (gRPC + REST) — pkg/go depends on the gRPC handler
 6. pkg/go — depends on the gRPC contract
-7. OpenAPI / docs — depends on the final REST contract
+7. OpenAPI + pkg/js — depend on the final REST contract and must always change together
 ```
 
 Skip layers that are not affected. A feature that only adds a new service method and handler may
 start at step 4.
 
-**When a single branch is enough**: if the feature touches only one layer, creates no migration,
-and involves no proto changes, a single branch is appropriate. Improvement rounds (multi-layer
-bug fixes, test additions, doc updates, code cleanup) that contain no user-facing behavior change
-also stay on a single branch — splitting them would be churn with no review benefit.
+**When a single branch is enough**: if the feature touches only one layer (or the coupled
+OpenAPI + pkg/js pair, which always moves as one unit), creates no migration, and involves no
+proto changes, a single branch is appropriate. Improvement rounds (multi-layer bug fixes, test
+additions, doc updates, code cleanup) that contain no user-facing behavior change also stay on a
+single branch — splitting them would be churn with no review benefit.
 
 **Present the plan to the developer before starting.** Show:
 
@@ -137,27 +146,28 @@ git checkout feat/<parent-area>/<parent-description>
 git checkout -b feat/<area>/<description>
 ```
 
-Branch from master whenever possible. Only branch from a sibling when the work literally cannot
-compile without the parent's changes.
+Branch from master whenever possible. Only branch from a parent branch when the work literally
+cannot compile without that branch's changes.
 
 ### 3.2 Implement
 
 - Read the existing files in the layer before touching them
 - Use the relevant skill for the layer:
 
-  | Layer                             | Skill                |
-  | --------------------------------- | -------------------- |
-  | Schema / SQL                      | `write-sql`          |
-  | Proto                             | `write-proto`        |
-  | DAO, services, handlers, lib, cmd | `write-go-code`      |
-  | Tests (all layers)                | `write-go-tests`     |
-  | OpenAPI / docs                    | `write-openapi`      |
-  | Dockerfiles                       | `write-dockerfiles`  |
-  | Shell scripts                     | `write-bash-scripts` |
-  | Git operations                    | `git-conventions`    |
+  | Layer                                     | Skill                |
+  | ----------------------------------------- | -------------------- |
+  | Schema / SQL                              | `write-sql`          |
+  | Proto                                     | `write-proto`        |
+  | DAO, services, handlers, lib, cmd, pkg/go | `write-go-code`      |
+  | Tests (Go, all layers)                    | `write-go-tests`     |
+  | OpenAPI / docs                            | `write-openapi`      |
+  | pkg/js (JS/TS client + tests)             | `write-js-package`   |
+  | Dockerfiles                               | `write-dockerfiles`  |
+  | Shell scripts                             | `write-bash-scripts` |
+  | Git operations                            | `git-conventions`    |
 
 - **After any proto or interface change, run `make generate`** to regenerate protobuf Go bindings
-  and mocks. Commit the generated files (`internal/models/proto/gen/`, `internal/handlers/mocks/`)
+  and Go interface mocks. Commit the generated files (`internal/models/proto/gen/`, `internal/handlers/mocks/`, `internal/services/mocks/`)
   in the same commit as the change that necessitated them — never in a separate cleanup commit.
 - **Only change what the feature requires.** No refactoring, no style fixes, no "while we're here"
   improvements alongside feature work. Those are separate commits on a separate branch.
@@ -168,8 +178,9 @@ compile without the parent's changes.
 Run the narrowest target that covers the changed layer:
 
 ```bash
-make test-unit   # DAO, services, handlers, lib
-make test-pkg    # pkg/go (requires running service)
+make test-unit    # DAO, services, handlers, lib
+make test-pkg     # pkg/go (requires running service)
+make test-pkg-js  # pkg/js (requires containerised service)
 ```
 
 Tests must pass before declaring the branch ready. Never mark a branch done with failing tests.
@@ -182,6 +193,7 @@ Follow `git-conventions`. One commit per logical unit within the branch:
 - DAO file + its test → one commit
 - Service file + its test → one commit
 - Handler file + its test + mock update → one commit
+- `openapi.yaml` + pkg/js changes → one commit (they always change together)
 
 ```bash
 git add <specific files>
@@ -219,8 +231,9 @@ git rebase feat/<parent-area>/<description>
 git rebase --continue
 ```
 
-If more than one child branch depends on the updated parent, rebase them in order (deepest-first
-avoids repeated conflict resolution).
+If more than one child branch depends on the updated parent, rebase them shallowest-first (direct
+child onto the updated parent first, then its children in order). Each branch is touched exactly
+once; deepest-first would require re-rebasing intermediate branches after their own parents move.
 
 Never merge a parent branch into a child — always rebase. Merges add noise to the history and
 make the final PR harder to review.
@@ -229,7 +242,7 @@ make the final PR harder to review.
 
 ## Key Principles
 
-**Chirurgical changes.** Every line changed must be required by the feature. If you find yourself
+**Surgical changes.** Every line changed must be required by the feature. If you find yourself
 fixing an unrelated issue, stop: note it as a separate improvement and continue on the feature.
 
 **No side-effects.** Refactoring, style fixes, and "improvements" that are not part of the feature
@@ -243,8 +256,9 @@ developer.
 **One concern per commit.** A commit should answer exactly one "what changed?" question. If you
 cannot describe a commit in a single conventional-commit line, it contains more than one concern.
 
-**Test every branch.** `make test-unit` must pass on every branch, not just the final one. A
-branch that compiles but fails tests is not ready for review.
+**Test every branch.** The relevant test target must pass on every branch, not just the final
+one: `make test-unit` for Go layers, `make test-pkg` for pkg/go, `make test-pkg-js` for pkg/js.
+A branch that compiles but fails tests is not ready for review.
 
 **Verify before proposing.** Never propose a plan based on assumed file locations or signatures.
 Read the code first. A plan built on wrong assumptions wastes the developer's review time.
@@ -253,12 +267,13 @@ Read the code first. A plan built on wrong assumptions wastes the developer's re
 
 ## Quick Reference: Feature Triage
 
-| Signal                                | Implication                                       |
-| ------------------------------------- | ------------------------------------------------- |
-| "Add a new RPC/endpoint"              | Proto → handler → pkg/go (at minimum)             |
-| "Add a new column / store new data"   | Migration → DAO → service (at minimum)            |
-| "Change what an existing API returns" | Potential breaking change — flag it               |
-| "Remove something"                    | Breaking change — get explicit developer approval |
-| "Internal only, no API change"        | Services/lib only, single branch likely fine      |
-| "Fix a bug in existing behaviour"     | Fix the failing layer; test the contract          |
-| "The client should be able to do X"   | Start from pkg/go and trace down to what's needed |
+| Signal                                | Implication                                                      |
+| ------------------------------------- | ---------------------------------------------------------------- |
+| "Add a new gRPC RPC"                  | Proto → handler → pkg/go (at minimum)                            |
+| "Add a new REST endpoint"             | handler → OpenAPI + pkg/js (at minimum)                          |
+| "Add a new column / store new data"   | Migration → DAO → service (at minimum)                           |
+| "Change what an existing API returns" | Potential breaking change — flag it                              |
+| "Remove something"                    | Breaking change — get explicit developer approval                |
+| "Internal only, no API change"        | Services/lib only, single branch likely fine                     |
+| "Fix a bug in existing behaviour"     | Fix the failing layer; test the contract                         |
+| "The client should be able to do X"   | Start from the relevant client (pkg/go or pkg/js) and trace down |

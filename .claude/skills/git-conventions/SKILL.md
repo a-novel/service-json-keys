@@ -58,6 +58,7 @@ The scope is the area of the codebase affected. Use the layer name, not the feat
 | `config`     | Configuration (`internal/config/`)              |
 | `lib`        | Shared utilities (`internal/lib/`)              |
 | `pkg`        | Exported Go client (`pkg/go/`)                  |
+| `pkg-js`     | Exported JS/TS client (`pkg/js/`)               |
 | `cmd`        | Entrypoints (`cmd/`)                            |
 | `builds`     | Dockerfiles and compose files (`builds/`)       |
 | `scripts`    | Shell scripts (`scripts/`)                      |
@@ -90,6 +91,7 @@ Flag any change that:
 
 - Removes or renames a protobuf field/message/service
 - Removes or renames an exported Go type, function, or constant in `pkg/go`
+- Removes or renames an exported TypeScript type or function in `pkg/js`
 - Removes or changes the semantics of a REST endpoint path or response shape
 - Changes a database column type or removes a column
 
@@ -102,7 +104,7 @@ Flag any change that:
 ```
 
 - **type**: same vocabulary as commit types (`feat`, `fix`, `refactor`, `chore`, `ci`, `docs`)
-- **area**: the layer or subsystem being changed (same as scope above, but singular)
+- **area**: the layer or subsystem being changed — use the scope name from the table above
 - **short-description**: kebab-case, 2–5 words, describes what the branch achieves
 
 ### Examples
@@ -118,6 +120,7 @@ refactor/services/extract-key-rotation-logic
 chore/builds/add-rotate-keys-dockerfile
 chore/skills/feature-workflow
 docs/pkg/update-client-examples
+feat/pkg-js/add-rotate-endpoint
 ```
 
 Branch names are lowercase kebab-case only. No underscores, no slashes inside a segment, no
@@ -171,10 +174,12 @@ gh pr create --title "<type>(<scope>): <description>" --body "$(cat <<'EOF'
 
 ## Layers changed
 
-- **DAO**: <what changed, or "not affected">
-- **Services**: <what changed, or "not affected">
-- **Handlers**: <what changed, or "not affected">
-- **Proto / OpenAPI**: <what changed, or "not affected">
+- **DAO**: <what changed>
+- **Services**: <what changed>
+- **Handlers**: <what changed>
+- **Proto / OpenAPI**: <what changed>
+- **pkg/go**: <what changed>
+- **pkg/js**: <what changed>
 
 ## Breaking changes
 
@@ -184,6 +189,7 @@ None. / <List any breaking changes with migration steps.>
 
 - [ ] `make test-unit` passes
 - [ ] `make test-pkg` passes (if pkg/go changed)
+- [ ] `make test-pkg-js` passes (if pkg/js changed)
 - [ ] <Any manual verification steps>
 EOF
 )"
