@@ -366,7 +366,7 @@ section that needs changing. Do not rewrite the file.
 | -------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | "Bump the Docker image tags in README" | Edit every `image: ghcr.io/.../…:vX.Y.Z` line to the new version                                   |
 | "Add env var FOO to README"            | Add a new row to the matching config-vars table                                                    |
-| "Change security contact"              | Edit `{{security-email}}` occurrence in SECURITY.md                                                |
+| "Change security contact"              | Edit the existing email address on the `Report security bugs...` line in SECURITY.md              |
 | "New gRPC service added"               | Add row to the gRPC services table in CONTRIBUTING.md                                              |
 | "Project got a JS client"              | Add the JS usage section to README, add JS client section to CONTRIBUTING, flip `has-js-client` on |
 | "Remove deprecated ENV var"            | Delete the table row in README; surface to user since removal may be breaking                      |
