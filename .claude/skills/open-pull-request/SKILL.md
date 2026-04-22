@@ -46,16 +46,22 @@ Must return empty. Uncommitted changes mean the branch is not ready. Either comm
 ### 1.3 Commits follow Conventional Commits
 
 ```bash
-git log master..HEAD --oneline
+# Replace <base> with master for a normal branch, or with the parent feature branch
+# name for a stacked PR (see Phase 2.3). Using master for a stacked branch would
+# include the parent's commits and validate/rewrite commits that aren't this
+# branch's responsibility.
+git log <base>..HEAD --oneline
 ```
 
-Every line must parse as `<type>(<scope>): <description>`. If any commit is malformed,
-fix it **before the branch's first push**. Use `git commit --amend` only when the
-malformed commit is the last one on the branch _and_ it has not yet been pushed; after
-the branch is pushed, `git-conventions`' "never amend a pushed commit" rule applies and
-the fix becomes a follow-up commit instead (or, for a cosmetic title fix, a PR-title
-adjustment the author can squash at merge time). For any earlier malformed commit — even
-if unpushed — ask the user before rewriting history.
+Every line must parse as a `git-conventions`-compliant Conventional Commit: either
+`<type>(<scope>): <description>` or, for genuinely cross-cutting commits where scope is
+intentionally omitted, `<type>: <description>`. If any commit is malformed, fix it
+**before the branch's first push**. Use `git commit --amend` only when the malformed
+commit is the last one on the branch _and_ it has not yet been pushed; after the branch
+is pushed, `git-conventions`' "never amend a pushed commit" rule applies and the fix
+becomes a follow-up commit instead (or, for a cosmetic title fix, a PR-title adjustment
+the author can squash at merge time). For any earlier malformed commit — even if
+unpushed — ask the user before rewriting history.
 
 ### 1.4 Local tests pass
 
