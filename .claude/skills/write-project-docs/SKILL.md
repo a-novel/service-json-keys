@@ -50,12 +50,12 @@ Collect them in a single message rather than asking one question at a time.
 
 ### 1.2 Required for README.md
 
-| Input               | Example                                                   | Default / Fallback                                                              |
-| ------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| Main CI workflow    | `main.yaml`                                               | `main.yaml`                                                                     |
-| Codecov graph token | `almKepuGQE` (public token, safe to commit)               | `<!-- TODO(project-docs): fetch from codecov.io/gh/<repo>/settings > Badge -->` |
-| Twitter handle      | `agorastoryverse`                                         | `agorastoryverse`                                                               |
-| Discord invite ID   | numeric ID `1315240114691248138` + invite code `rp4Qr8cA` | same as existing services                                                       |
+| Input               | Example                                                   | Default / Fallback                                                                                       |
+| ------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Main CI workflow    | `main.yaml`                                               | `main.yaml`                                                                                              |
+| Codecov graph token | `almKepuGQE` (public token, safe to commit)               | Omit the `?token=…` query parameter entirely and leave a `TODO(project-docs)` comment next to the badge. |
+| Twitter handle      | `agorastoryverse`                                         | `agorastoryverse`                                                                                        |
+| Discord invite ID   | numeric ID `1315240114691248138` + invite code `rp4Qr8cA` | same as existing services                                                                                |
 
 The codecov graph token is **public** — it only controls badge/graph rendering, not repo
 access. Safe to commit. The private upload token lives in CI secrets, never in docs.
@@ -129,7 +129,7 @@ grep -rn "TODO(project-docs)" .
 Examples:
 
 ```markdown
-[![codecov](https://codecov.io/gh/a-novel/service-json-keys/graph/badge.svg?token=<!-- TODO(project-docs): codecov graph token from codecov.io/gh/a-novel/service-json-keys/settings > Badge -->)](https://codecov.io/gh/a-novel/service-json-keys)
+[![codecov](https://codecov.io/gh/a-novel/service-json-keys/graph/badge.svg)](https://codecov.io/gh/a-novel/service-json-keys) <!-- TODO(project-docs): add ?token=<graph-token> from codecov.io/gh/a-novel/service-json-keys/settings > Badge if a tokenized badge is required -->
 ```
 
 ```markdown
