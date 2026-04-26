@@ -125,7 +125,7 @@ components:
             healthy:
               value: { "client:postgres": { "status": "up" } }
             degraded:
-              value: { "client:postgres": { "status": "down", "err": "Connection to host refused" } }
+              value: { "client:postgres": { "status": "down" } }
 
     jwkList:
       description: A list of public JSON Web Keys.
@@ -177,20 +177,21 @@ components:
   schemas:
     healthStatus:
       type: object
-      description: Summary of a server's dependencies status.
+      description: |
+        Status of a single dependency entry, as observed by the server. The shape is
+        intentionally minimal so that an unauthenticated caller cannot infer
+        infrastructure details from a degraded dependency; richer diagnostics are
+        recorded on server-side traces.
       required: [status]
       additionalProperties: false
       examples:
         - { "status": "up" }
-        - { "status": "down", "err": "Connection to host refused" }
+        - { "status": "down" }
       properties:
         status:
           type: string
           description: Exposes whether the server managed to connect to the dependency.
           enum: [up, down]
-        err:
-          type: string
-          description: The error message returned by the dependency, if any.
 
     jwk:
       type: object

@@ -153,13 +153,15 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 			span.AddEvent("key.public.encoded")
 		}
 
+		now := time.Now()
+
 		latestKey, err = service.repositoryInsert.Exec(ctx, &dao.JwkInsertRequest{
 			ID:         kid,
 			PrivateKey: privateKeyEncoded,
 			PublicKey:  publicKeyEncoded,
 			Usage:      request.Usage,
-			Now:        time.Now(),
-			Expiration: time.Now().Add(keyConfig.Key.TTL),
+			Now:        now,
+			Expiration: now.Add(keyConfig.Key.TTL),
 		})
 		if err != nil {
 			return nil, otel.ReportError(span, fmt.Errorf("insert key: %w", err))
