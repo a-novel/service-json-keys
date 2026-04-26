@@ -71,6 +71,7 @@ func TestRestHealth(t *testing.T) {
 			rCtx := testCase.request.Context()
 			if !testCase.skipPostgres {
 				var err error
+
 				rCtx, err = postgres.NewContext(rCtx, config.PostgresPresetTest)
 				require.NoError(t, err)
 			}
