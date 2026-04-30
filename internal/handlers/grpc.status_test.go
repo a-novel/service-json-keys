@@ -64,7 +64,7 @@ func TestGrpcStatus(t *testing.T) {
 			if !testCase.skipPostgres {
 				var err error
 
-				ctx, err = postgres.NewContext(ctx, configtest.PostgresPresetTest)
+				ctx, err = postgres.NewContext(ctx, configtest.PostgresPreset)
 				require.NoError(t, err)
 			}
 
