@@ -93,13 +93,13 @@ auth:
     leeway: 5m # clock-skew tolerance when validating expiry
 ```
 
-Adding a usage requires a matching config entry in every consumer that wires it. The `KeyUsageAuth`-style constants pin the usage by name, but the consumer also needs the same per-usage config (algorithm, token claims, cache TTL) to build a verifier — `pkg/go.NewClient` reads `JwkPresetDefault` at startup to do that.
+Adding a usage means updating [`internal/config/jwks.config.yaml`](./internal/config/jwks.config.yaml) in this repo so the new usage is part of the embedded preset. `pkg/go.NewClient` reads `JwkPresetDefault` at startup, so downstream consumers do not add duplicate per-usage config locally; they need a released client-package version that includes the new usage (and, if needed, a new exported `KeyUsageAuth`-style constant) and then upgrade to it.
 
 ### Key rotation
 
 [`cmd/rotate-keys/main.go`](./cmd/rotate-keys/main.go) is a one-shot job. For each configured usage, it generates a new key when the current main key is older than `key.rotation`, then refreshes the `active_keys` materialized view so consumers see the change immediately. Run it on a schedule (cron, Kubernetes CronJob, etc.).
 
-This job is **not optional** for a long-running deployment. Existing keys age out of `active_keys` once they reach `key.ttl`, but nothing inside the gRPC or REST processes generates replacements — so without the job firing on schedule, the active set eventually empties for each usage and signing breaks. The first rotation also runs at deploy time so the database is seeded; otherwise the service starts with no keys to sign with.
+This job is **not optional** for a long-running deployment. Existing keys age out of `active_keys` once they reach `key.ttl`, but nothing inside the gRPC or REST processes generates replacements — so without the job firing on schedule, the active set eventually empties for each usage and signing breaks. Run the job once during deploy/bootstrap as well so the database is seeded before the service is expected to sign anything; otherwise it starts with no keys to sign with. Standalone images do this automatically before starting the server (see `builds/standalone.*.Dockerfile`), but split gRPC/REST deployments must arrange that initial run themselves.
 
 ### Surfaces
 
