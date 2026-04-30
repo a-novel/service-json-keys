@@ -48,7 +48,7 @@ func (handler *GrpcJwkGet) JwkGet(
 		ID: keyId,
 	})
 	if errors.Is(err, services.ErrJwkNotFound) {
-		return nil, status.Error(codes.NotFound, "key not found")
+		return nil, status.Error(codes.NotFound, "jwk not found")
 	}
 
 	if err != nil {

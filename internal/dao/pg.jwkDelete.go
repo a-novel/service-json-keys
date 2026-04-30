@@ -19,7 +19,7 @@ import (
 var jwkDeleteQuery string
 
 // ErrJwkDeleteNotFound is returned when no active key matches the delete request.
-var ErrJwkDeleteNotFound = errors.New("key not found")
+var ErrJwkDeleteNotFound = errors.New("jwk not found")
 
 // JwkDeleteRequest holds the parameters for a [PgJwkDelete.Exec] call.
 type JwkDeleteRequest struct {

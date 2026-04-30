@@ -49,8 +49,6 @@ func (handler *GrpcClaimsSign) ClaimsSign(
 		Usage:  request.GetUsage(),
 	})
 	if errors.Is(err, services.ErrConfigNotFound) {
-		_ = otel.ReportError(span, err)
-
 		return nil, status.Error(codes.Unavailable, "unknown usage")
 	}
 
