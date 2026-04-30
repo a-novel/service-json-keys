@@ -78,12 +78,16 @@ func (DependencyStatus) EnumDescriptor() ([]byte, []int) {
 }
 
 // DependencyHealth reports the health of a single external dependency.
+//
+// The shape is deliberately minimal. Status endpoints are surfaced over an internal-only
+// gRPC API today, but errors raised while checking dependency health routinely embed
+// internal hostnames, ports, or schema names; carrying them in a public-shaped response
+// would leak infrastructure topology if this surface ever became externally reachable.
+// The underlying error is recorded on the trace span for operators instead.
 type DependencyHealth struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The dependency's current operational status.
-	Status DependencyStatus `protobuf:"varint,1,opt,name=status,proto3,enum=DependencyStatus" json:"status,omitempty"`
-	// The error that occurred when checking the dependency status, if any.
-	Err           string `protobuf:"bytes,2,opt,name=err,proto3" json:"err,omitempty"`
+	Status        DependencyStatus `protobuf:"varint,1,opt,name=status,proto3,enum=DependencyStatus" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -123,13 +127,6 @@ func (x *DependencyHealth) GetStatus() DependencyStatus {
 		return x.Status
 	}
 	return DependencyStatus_DEPENDENCY_STATUS_UNSPECIFIED
-}
-
-func (x *DependencyHealth) GetErr() string {
-	if x != nil {
-		return x.Err
-	}
-	return ""
 }
 
 // StatusRequest carries no parameters; the server checks all dependencies automatically.
@@ -219,10 +216,9 @@ var File_status_proto protoreflect.FileDescriptor
 
 const file_status_proto_rawDesc = "" +
 	"\n" +
-	"\fstatus.proto\"O\n" +
+	"\fstatus.proto\"=\n" +
 	"\x10DependencyHealth\x12)\n" +
-	"\x06status\x18\x01 \x01(\x0e2\x11.DependencyStatusR\x06status\x12\x10\n" +
-	"\x03err\x18\x02 \x01(\tR\x03err\"\x0f\n" +
+	"\x06status\x18\x01 \x01(\x0e2\x11.DependencyStatusR\x06status\"\x0f\n" +
 	"\rStatusRequest\"?\n" +
 	"\x0eStatusResponse\x12-\n" +
 	"\bpostgres\x18\x01 \x01(\v2\x11.DependencyHealthR\bpostgres*k\n" +
