@@ -40,7 +40,7 @@ type PgJwkInsert struct{}
 
 // NewPgJwkInsert returns a new PgJwkInsert repository.
 func NewPgJwkInsert() *PgJwkInsert {
-	return new(PgJwkInsert)
+	return &PgJwkInsert{}
 }
 
 func (repository *PgJwkInsert) Exec(ctx context.Context, request *JwkInsertRequest) (*Jwk, error) {

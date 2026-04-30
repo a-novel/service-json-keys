@@ -29,7 +29,7 @@ type JwkExtract struct{}
 
 // NewJwkExtract returns a new JwkExtract service.
 func NewJwkExtract() *JwkExtract {
-	return new(JwkExtract)
+	return &JwkExtract{}
 }
 
 func (service *JwkExtract) Exec(ctx context.Context, request *JwkExtractRequest) (*Jwk, error) {

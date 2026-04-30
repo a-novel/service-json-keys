@@ -19,7 +19,7 @@ import (
 var jwkDeleteQuery string
 
 // ErrJwkDeleteNotFound is returned when no active key matches the delete request.
-var ErrJwkDeleteNotFound = errors.New("key not found")
+var ErrJwkDeleteNotFound = errors.New("jwk not found")
 
 // JwkDeleteRequest holds the parameters for a [PgJwkDelete.Exec] call.
 type JwkDeleteRequest struct {
@@ -41,7 +41,7 @@ type PgJwkDelete struct{}
 
 // NewPgJwkDelete returns a new PgJwkDelete repository.
 func NewPgJwkDelete() *PgJwkDelete {
-	return new(PgJwkDelete)
+	return &PgJwkDelete{}
 }
 
 func (repository *PgJwkDelete) Exec(ctx context.Context, request *JwkDeleteRequest) (*Jwk, error) {
