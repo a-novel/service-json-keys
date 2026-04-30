@@ -8,33 +8,33 @@ For deployment, configuration, and client-package integration, read the [README]
 
 ## Quick local interactions
 
-Once `make run` is up, the gRPC server listens on `${SERVICE_JSON_KEYS_GRPC_PORT}` and the REST server on `${SERVICE_JSON_KEYS_REST_PORT}`.
+Once `make run` is up, the gRPC server listens on `${GRPC_PORT}` and the REST server on `${REST_PORT}`.
 
 ### Health
 
 ```bash
 # REST: liveness
-curl http://localhost:${SERVICE_JSON_KEYS_REST_PORT}/ping
+curl http://localhost:${REST_PORT}/ping
 
 # REST: dependency check (Postgres ping)
-curl http://localhost:${SERVICE_JSON_KEYS_REST_PORT}/healthcheck
+curl http://localhost:${REST_PORT}/healthcheck
 
 # gRPC: dependency check
-grpcurl -plaintext localhost:${SERVICE_JSON_KEYS_GRPC_PORT} StatusService/Status
+grpcurl -plaintext localhost:${GRPC_PORT} StatusService/Status
 ```
 
 ### Reading keys
 
 ```bash
 # REST: list active public keys for a usage
-curl "http://localhost:${SERVICE_JSON_KEYS_REST_PORT}/jwks?usage=auth"
+curl "http://localhost:${REST_PORT}/jwks?usage=auth"
 
 # REST: fetch a single public key by ID
-curl "http://localhost:${SERVICE_JSON_KEYS_REST_PORT}/jwk?id=<key-uuid>"
+curl "http://localhost:${REST_PORT}/jwk?id=<key-uuid>"
 
 # gRPC: same operations through the private surface
-grpcurl -plaintext -d '{"usage":"auth"}' localhost:${SERVICE_JSON_KEYS_GRPC_PORT} JwkListService/JwkList
-grpcurl -plaintext -d '{"id":"<key-uuid>"}' localhost:${SERVICE_JSON_KEYS_GRPC_PORT} JwkGetService/JwkGet
+grpcurl -plaintext -d '{"usage":"auth"}' localhost:${GRPC_PORT} JwkListService/JwkList
+grpcurl -plaintext -d '{"id":"<key-uuid>"}' localhost:${GRPC_PORT} JwkGetService/JwkGet
 ```
 
 ### Signing claims (gRPC only)
@@ -44,7 +44,7 @@ Signing requires the master key (`APP_MASTER_KEY`) and is only exposed over the 
 ```bash
 grpcurl -plaintext \
   -d '{"usage":"auth","payload":{"@type":"type.googleapis.com/google.protobuf.Struct","value":{"userID":"user-1"}}}' \
-  localhost:${SERVICE_JSON_KEYS_GRPC_PORT} \
+  localhost:${GRPC_PORT} \
   ClaimsSignService/ClaimsSign
 ```
 
@@ -101,12 +101,12 @@ Adding a usage requires the same entry in every consumer that uses `pkg/go` — 
 
 ### Surfaces
 
-| Surface           | Audience                | Operations                                                              | Spec                                                 |
-| ----------------- | ----------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------- |
-| gRPC (`cmd/grpc`) | Internal, authenticated | `StatusService`, `JwkGetService`, `JwkListService`, `ClaimsSignService` | [`internal/models/proto/`](./internal/models/proto/) |
-| REST (`cmd/rest`) | Public, unauthenticated | `/ping`, `/healthcheck`, `/jwks`, `/jwk`                                | [`openapi.yaml`](./openapi.yaml)                     |
+| Surface           | Audience                       | Operations                                                              | Spec                                                 |
+| ----------------- | ------------------------------ | ----------------------------------------------------------------------- | ---------------------------------------------------- |
+| gRPC (`cmd/grpc`) | Internal, private network only | `StatusService`, `JwkGetService`, `JwkListService`, `ClaimsSignService` | [`internal/models/proto/`](./internal/models/proto/) |
+| REST (`cmd/rest`) | Public, unauthenticated        | `/ping`, `/healthcheck`, `/jwks`, `/jwk`                                | [`openapi.yaml`](./openapi.yaml)                     |
 
-The REST surface never exposes private keys or signing operations. The split is enforced structurally by registering the signing handler only inside [`cmd/grpc/main.go`](./cmd/grpc/main.go).
+The REST surface never exposes private keys or signing operations. The split is enforced structurally by registering the signing handler only inside [`cmd/grpc/main.go`](./cmd/grpc/main.go). The gRPC server itself implements no application-layer authentication — access control on that surface is enforced entirely by deployment infrastructure (network policy, ingress, service mesh).
 
 ---
 

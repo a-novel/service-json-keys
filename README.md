@@ -21,7 +21,7 @@ JSON Keys is a centralized signing-key manager for the A-Novel platform. Service
 
 The service ships two surfaces:
 
-- A **private gRPC API** (signing, key retrieval, status) for authenticated service-to-service traffic. Anything that touches private key material lives here.
+- A **private gRPC API** (signing, key retrieval, status) for internal, private-network service-to-service traffic. Anything that touches private key material lives here. The server itself implements no application-layer authentication; access control is enforced externally — by network policy, ingress, service mesh, or other deployment infrastructure.
 - A **public REST API** (public-key fetch, health) for any client that needs to verify tokens.
 
 State lives in a PostgreSQL database; both surfaces are stateless and can run as multiple replicas behind a load balancer.
@@ -30,7 +30,7 @@ State lives in a PostgreSQL database; both surfaces are stateless and can run as
 
 The minimal local setup is one Postgres image plus one service image. Pin both to the same release tag (current: `v2.2.6`).
 
-The example below runs the gRPC server in **standalone** mode — the simplest path to a working signing API. Set `SERVICE_JSON_KEYS_GRPC_PORT` to whichever port you want to expose.
+The example below runs the gRPC server in **standalone** mode — the simplest path to a working signing API. Set `GRPC_PORT` to whichever port you want to expose.
 
 ```yaml
 services:
@@ -48,7 +48,7 @@ services:
 
   service-json-keys:
     image: ghcr.io/a-novel/service-json-keys/standalone-grpc:v2.2.6
-    ports: ["${SERVICE_JSON_KEYS_GRPC_PORT}:8080"]
+    ports: ["${GRPC_PORT}:8080"]
     depends_on:
       postgres-json-keys: { condition: service_healthy }
     environment:
@@ -101,7 +101,7 @@ services:
 
   service-json-keys:
     image: ghcr.io/a-novel/service-json-keys/grpc:v2.2.6
-    ports: ["${SERVICE_JSON_KEYS_GRPC_PORT}:8080"]
+    ports: ["${GRPC_PORT}:8080"]
     depends_on:
       postgres-json-keys: { condition: service_healthy }
       migrations-json-keys: { condition: service_completed_successfully }
@@ -132,7 +132,7 @@ Configuration is driven by environment variables.
 | `POSTGRES_DSN`   | PostgreSQL connection string.                                                                                                                                                                                       | `standalone-grpc`<br/>`standalone-rest`<br/>`grpc`<br/>`rest`<br/>`migrations` |
 | `APP_MASTER_KEY` | 32-byte hex-encoded master key used to encrypt private keys at rest. **Never rotate** unless you can afford to invalidate every existing private key — see [CONTRIBUTING](./CONTRIBUTING.md#master-key-encryption). | `standalone-grpc`<br/>`standalone-rest`<br/>`grpc`<br/>`rest`                  |
 
-The gRPC surface exposes private-key operations and must run on an isolated, authenticated network.
+The gRPC surface exposes private-key operations and must run on an isolated, access-controlled network. Access control is enforced by deployment infrastructure (network policy, ingress, service mesh) — the server does not authenticate callers itself.
 
 **Optional — REST tuning**
 
@@ -205,7 +205,10 @@ func main() {
 	defer client.Close()
 
 	// Sign claims under the auth usage.
-	payload, _ := grpcf.InterfaceToProtoAny(MyClaims{UserID: "user-1"})
+	payload, err := grpcf.InterfaceToProtoAny(MyClaims{UserID: "user-1"})
+	if err != nil {
+		log.Fatal(err)
+	}
 	res, err := client.ClaimsSign(ctx, &servicejsonkeys.ClaimsSignRequest{
 		Usage:   servicejsonkeys.KeyUsageAuth,
 		Payload: payload,
