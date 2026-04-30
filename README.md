@@ -33,7 +33,7 @@ The minimal setup is one Postgres image plus one service image — pin both to t
 ```yaml
 services:
   postgres-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/database:v2.2.6
+    image: ghcr.io/a-novel/service-json-keys/database:v2.3.0
     networks: [api]
     environment:
       POSTGRES_PASSWORD: postgres
@@ -45,7 +45,7 @@ services:
       - json-keys-postgres-data:/var/lib/postgresql/
 
   service-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/standalone-grpc:v2.2.6
+    image: ghcr.io/a-novel/service-json-keys/standalone-grpc:v2.3.0
     ports: ["${GRPC_PORT}:8080"]
     depends_on:
       postgres-json-keys: { condition: service_healthy }
@@ -76,7 +76,7 @@ volumes:
 ```yaml
 services:
   postgres-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/database:v2.2.6
+    image: ghcr.io/a-novel/service-json-keys/database:v2.3.0
     networks: [api]
     environment:
       POSTGRES_PASSWORD: postgres
@@ -88,7 +88,7 @@ services:
       - json-keys-postgres-data:/var/lib/postgresql/
 
   migrations-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/migrations:v2.2.6
+    image: ghcr.io/a-novel/service-json-keys/migrations:v2.3.0
     depends_on:
       postgres-json-keys: { condition: service_healthy }
     environment:
@@ -96,7 +96,7 @@ services:
     networks: [api]
 
   service-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/grpc:v2.2.6
+    image: ghcr.io/a-novel/service-json-keys/grpc:v2.3.0
     ports: ["${GRPC_PORT}:8080"]
     depends_on:
       postgres-json-keys: { condition: service_healthy }
