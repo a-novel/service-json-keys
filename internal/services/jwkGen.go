@@ -95,7 +95,7 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 
 	keyConfig, ok := service.keysConfig[request.Usage]
 	if !ok {
-		return nil, otel.ReportError(span, ErrConfigNotFound)
+		return nil, ErrConfigNotFound
 	}
 
 	span.SetAttributes(

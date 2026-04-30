@@ -47,7 +47,7 @@ func (service *ClaimsVerify[Out]) Exec(ctx context.Context, request *ClaimsVerif
 
 	keyConfig, ok := service.keysConfig[request.Usage]
 	if !ok {
-		return nil, otel.ReportError(span, fmt.Errorf("%w: %s", ErrConfigNotFound, request.Usage))
+		return nil, fmt.Errorf("%w: %s", ErrConfigNotFound, request.Usage)
 	}
 
 	var claims Out
@@ -70,9 +70,7 @@ func (service *ClaimsVerify[Out]) Exec(ctx context.Context, request *ClaimsVerif
 
 	recipientPlugins, ok := service.recipients[request.Usage]
 	if !ok {
-		return nil, otel.ReportError(span,
-			fmt.Errorf("%w: no recipients found for usage %s", ErrConfigNotFound, request.Usage),
-		)
+		return nil, fmt.Errorf("%w: no recipients found for usage %s", ErrConfigNotFound, request.Usage)
 	}
 
 	recipient := jwt.NewRecipient(

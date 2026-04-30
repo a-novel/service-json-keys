@@ -45,7 +45,7 @@ func (service *ClaimsSign) Exec(ctx context.Context, request *ClaimsSignRequest)
 
 	keyConfig, ok := service.keysConfig[request.Usage]
 	if !ok {
-		return "", otel.ReportError(span, fmt.Errorf("%w: %s", ErrConfigNotFound, request.Usage))
+		return "", fmt.Errorf("%w: %s", ErrConfigNotFound, request.Usage)
 	}
 
 	// Attach the standard JWT claim envelope from the usage config; these claims are
@@ -64,7 +64,7 @@ func (service *ClaimsSign) Exec(ctx context.Context, request *ClaimsSignRequest)
 
 	producerPlugins, ok := service.producers[request.Usage]
 	if !ok {
-		return "", otel.ReportError(span, fmt.Errorf("%w: %s", ErrConfigNotFound, request.Usage))
+		return "", fmt.Errorf("%w: %s", ErrConfigNotFound, request.Usage)
 	}
 
 	producer := jwt.NewProducer(jwt.ProducerConfig{Plugins: producerPlugins})
