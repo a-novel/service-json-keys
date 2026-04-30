@@ -41,7 +41,7 @@ type PgJwkDelete struct{}
 
 // NewPgJwkDelete returns a new PgJwkDelete repository.
 func NewPgJwkDelete() *PgJwkDelete {
-	return new(PgJwkDelete)
+	return &PgJwkDelete{}
 }
 
 func (repository *PgJwkDelete) Exec(ctx context.Context, request *JwkDeleteRequest) (*Jwk, error) {
