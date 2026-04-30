@@ -1,211 +1,116 @@
 # Contributing to service-json-keys
 
-Welcome to the JSON Keys service for the A-Novel platform. This guide will help you understand the codebase, set
-up your development environment, and contribute effectively.
+For platform-wide setup (Go, Node, Podman), the standard `make` targets, and lint/test conventions, see the [generic A-Novel contribution guidelines](https://github.com/a-novel/.github/blob/master/CONTRIBUTING.md). This file documents what is specific to the JSON Keys service.
 
-Before reading this guide, if you haven't already, please check the
-[generic contribution guidelines](https://github.com/a-novel/.github/blob/master/CONTRIBUTING.md) that are relevant
-to your scope.
+For deployment, configuration, and client-package integration, read the [README](./README.md) first. Contributors are expected to know what the service does and how operators run it before touching the code.
 
 ---
 
-## Quick Start
+## Quick local interactions
 
-### Prerequisites
+Once `make run` is up, the gRPC server listens on `${GRPC_PORT}` and the REST server on `${REST_PORT}`.
 
-The following must be installed on your system.
-
-- [Go](https://go.dev/doc/install)
-- [Node.js](https://nodejs.org/en/download)
-  - [pnpm](https://pnpm.io/installation)
-- [Podman](https://podman.io/docs/installation)
-- (optional) [Direnv](https://direnv.net/)
-- Make
-  - `sudo apt-get install build-essential` (apt)
-  - `sudo pacman -S make` (arch)
-  - `brew install make` (macOS)
-  - [Make for Windows](https://gnuwin32.sourceforge.net/packages/make.htm)
-
-### Bootstrap
-
-Install the dependencies:
+### Health
 
 ```bash
-make install
+# REST: liveness
+curl http://localhost:${REST_PORT}/ping
+
+# REST: dependency check (Postgres ping)
+curl http://localhost:${REST_PORT}/healthcheck
+
+# gRPC: dependency check
+grpcurl -plaintext localhost:${GRPC_PORT} StatusService/Status
 ```
 
-### Common Commands
-
-| Command         | Description                      |
-| --------------- | -------------------------------- |
-| `make run`      | Start all services locally       |
-| `make test`     | Run all tests                    |
-| `make lint`     | Run all linters                  |
-| `make format`   | Format all code                  |
-| `make build`    | Build Docker images locally      |
-| `make generate` | Generate mocks and protobuf code |
-
-### Interacting with the Service
-
-Once the service is running (`make run`), you can interact with it using:
-
-- `curl` or any HTTP client (REST API).
-- `grpcurl` or any gRPC client (gRPC API).
-
-#### Health Checks
+### Reading keys
 
 ```bash
-# REST: Simple ping (is the server up?)
-curl http://localhost:${SERVICE_JSON_KEYS_REST_PORT}/ping
+# REST: list active public keys for a usage
+curl "http://localhost:${REST_PORT}/jwks?usage=auth"
 
-# REST: Detailed health check (checks database, dependencies)
-curl http://localhost:${SERVICE_JSON_KEYS_REST_PORT}/healthcheck
+# REST: fetch a single public key by ID
+curl "http://localhost:${REST_PORT}/jwk?id=<key-uuid>"
 
-# gRPC: Simple ping (is the server up?)
-grpcurl -plaintext localhost:${SERVICE_JSON_KEYS_GRPC_PORT} grpc.health.v1.Health/Check
-
-# gRPC: Check the status of all services.
-grpcurl -plaintext localhost:${SERVICE_JSON_KEYS_GRPC_PORT} StatusService/Status
+# gRPC: same operations through the private surface
+grpcurl -plaintext -d '{"usage":"auth"}' localhost:${GRPC_PORT} JwkListService/JwkList
+grpcurl -plaintext -d '{"id":"<key-uuid>"}' localhost:${GRPC_PORT} JwkGetService/JwkGet
 ```
 
-#### Key Operations
+### Signing claims (gRPC only)
 
-List available keys:
-
-```bash
-# REST
-curl "http://localhost:${SERVICE_JSON_KEYS_REST_PORT}/jwks?usage=auth"
-
-# gRPC
-grpcurl -plaintext -d '{"usage": "auth"}' "localhost:${SERVICE_JSON_KEYS_GRPC_PORT}" JwkListService/JwkList
-```
-
-Get a specific key:
+Signing requires the master key (`APP_MASTER_KEY`) and is only exposed over the private gRPC surface.
 
 ```bash
-# REST
-curl "http://localhost:${SERVICE_JSON_KEYS_REST_PORT}/jwk?id=<key-uuid>"
-
-# gRPC
-grpcurl -plaintext -d '{"id": "<key-uuid>"}' "localhost:${SERVICE_JSON_KEYS_GRPC_PORT}" JwkGetService/JwkGet
+grpcurl -plaintext \
+  -d '{"usage":"auth","payload":{"@type":"type.googleapis.com/google.protobuf.Struct","value":{"userID":"user-1"}}}' \
+  localhost:${GRPC_PORT} \
+  ClaimsSignService/ClaimsSign
 ```
 
 ---
 
-## Project-Specific Guidelines
+## Service-specific concepts
 
-> This section contains patterns specific to this JSON Keys service.
+### Master key encryption
 
-### Master Key Encryption
+Private JWKs are stored encrypted with the application **master key**. The implementation lives in [`internal/lib/masterKeyCrypt.go`](./internal/lib/masterKeyCrypt.go) and uses [NaCl secretbox](https://nacl.cr.yp.to/secretbox.html) — XSalsa20-Poly1305 authenticated encryption with a per-message random 24-byte nonce prepended to the ciphertext.
 
-Private JWKs are stored encrypted using AES-GCM with a master key. The master key is:
+The master key is loaded from the `APP_MASTER_KEY` env var as a hex-encoded 32-byte secret, parsed by `lib.NewMasterKeyContext`, and pulled out via `lib.MasterKeyContext` on every read or write of a private key payload.
 
-- Loaded from `APP_MASTER_KEY` environment variable
-- Stored in context via `lib.NewMasterKeyContext()`
-- Used to encrypt/decrypt private key payloads before storage/retrieval
+> **Rotating `APP_MASTER_KEY` permanently invalidates every existing private key.** New keys can be re-issued via the rotation job, but legacy keys encrypted under the old master key cannot be decrypted by the new one. This is why the README warns operators not to rotate it.
 
-**Critical:** The master key should **never** be rotated unless absolutely necessary — changing it will permanently lose access to all existing encrypted keys.
+### JWK lifecycle and the active view
 
-### JWK Lifecycle
+Each usage has at most one **main** key (the latest by `created_at`) and zero or more **legacy** keys (older versions still within their TTL). Producers sign only with the main key; recipients accept tokens signed by any active key for the usage, so a rolling rotation is non-disruptive for token consumers.
 
-Keys go through the following states:
+The `keys` table — defined in [`internal/models/migrations/`](./internal/models/migrations/) and modelled by `dao.Jwk` in [`internal/dao/pg.jwk.go`](./internal/dao/pg.jwk.go) — records:
 
-1. **Generated**: New key created with expiration time
-2. **Active**: Key is used for signing
-3. **Expired**: Key past expiration, still valid for verification
-4. **Deleted**: Key removed from database
+| Column                          | Meaning                                                            |
+| ------------------------------- | ------------------------------------------------------------------ |
+| `created_at`                    | When the key was generated.                                        |
+| `expires_at`                    | Hard expiry; the key leaves the active view at this point.         |
+| `deleted_at`, `deleted_comment` | Premature revocation (e.g., compromise). `nil` for natural expiry. |
 
-### Key Configuration
+Reads target the `active_keys` materialized view, which excludes expired and soft-deleted rows. The view is refreshed by the rotation job after a write so consumers see the new main key on their next fetch.
 
-Key types and their settings are defined in `internal/config/jwks.config.yaml`:
+### Key configuration
+
+The per-usage configuration ships in [`internal/config/jwks.config.yaml`](./internal/config/jwks.config.yaml). Each top-level key is a usage name; the schema below matches `config.Jwk` in [`internal/config/jwks.config.go`](./internal/config/jwks.config.go):
 
 ```yaml
 auth:
-  algorithm: ES256
-  rotation: 720h
-  expiry: 8760h
+  alg: EdDSA # signing algorithm: HS256/384/512, ES256/384/512, RS256/384/512, PS256/384/512, EdDSA
+  key:
+    ttl: 168h # how long a key version stays active before expiring
+    rotation: 24h # cadence at which a new key is generated; should be << ttl
+    cache: 30m # how long consumers cache fetched public keys before re-fetching
+  token:
+    ttl: 24h # how long a signed token is valid
+    issuer: "..." # JWT iss claim
+    audience: "..." # JWT aud claim
+    subject: "..." # JWT sub claim
+    leeway: 5m # clock-skew tolerance when validating expiry
 ```
 
-Each key usage (e.g., `auth`) can have different algorithms, rotation schedules, and expiry times.
+Adding a usage requires the same entry in every consumer that uses `pkg/go` — the `KeyUsageAuth`-style constants pin the usage by name, but the consumer also needs to know its config to wire the matching verifier.
 
-### Key Rotation
+### Key rotation
 
-The `rotate-keys` job (`cmd/rotate-keys/main.go`) handles automatic key rotation:
+[`cmd/rotate-keys/main.go`](./cmd/rotate-keys/main.go) is a one-shot job. For each configured usage, it generates a new key when the current main key is older than `key.rotation`, then refreshes the `active_keys` materialized view so consumers see the change immediately. Run it on a schedule (cron, Kubernetes CronJob, etc.). Without it, keys still rotate by TTL — the job just keeps the rotation cadence tight.
 
-- Generates new keys when current ones approach expiration
-- Deletes keys past their retention period
-- Should be run as a scheduled job (cron, Kubernetes CronJob, etc.)
+### Surfaces
 
-### gRPC Services
+| Surface           | Audience                       | Operations                                                              | Spec                                                 |
+| ----------------- | ------------------------------ | ----------------------------------------------------------------------- | ---------------------------------------------------- |
+| gRPC (`cmd/grpc`) | Internal, private network only | `StatusService`, `JwkGetService`, `JwkListService`, `ClaimsSignService` | [`internal/models/proto/`](./internal/models/proto/) |
+| REST (`cmd/rest`) | Public, unauthenticated        | `/ping`, `/healthcheck`, `/jwks`, `/jwk`                                | [`openapi.yaml`](./openapi.yaml)                     |
 
-| Service             | Purpose                    |
-| ------------------- | -------------------------- |
-| `StatusService`     | Health and status checks   |
-| `JwkGetService`     | Retrieve single key by ID  |
-| `JwkListService`    | List keys by usage         |
-| `ClaimsSignService` | Sign JWT claims with a key |
-
-### REST API
-
-The REST API serves public JWK data over HTTP. It is documented via an OpenAPI spec:
-
-- `openapi.yaml` — machine-readable spec
-- `openapi.html` — interactive Scalar API Reference viewer (open in a browser)
-
-The published API reference is hosted at [GitHub Pages](https://a-novel.github.io/service-json-keys-v2).
-
-### JavaScript Client Package
-
-Frontend or Node.js consumers can use `@a-novel/service-json-keys-rest` (`pkg/js/rest/`) to call the REST API:
-
-```typescript
-import { JsonKeysApi, jwkGet, jwkList } from "@a-novel/service-json-keys-rest";
-
-const api = new JsonKeysApi("http://localhost:4021");
-
-// Check service health.
-await api.ping();
-
-// Fetch public keys.
-const keys = await jwkList(api, "auth");
-const key = await jwkGet(api, "<key-id>");
-```
-
-Integration tests for the JS client live in `pkg/js/test/rest/`. Run them locally with:
-
-```bash
-make test-pkg-js
-```
-
-### Go Client Package
-
-Other services integrate with json-keys via the `pkg/` package:
-
-```go
-import jkpkg "github.com/a-novel/service-json-keys/v2/pkg/go"
-
-// Create client
-client, err := jkpkg.NewClient("<grpc-address>")
-
-// Sign claims
-token, err := client.ClaimsSign(ctx, &jkpkg.ClaimsSignRequest{
-    Usage:   "auth",
-    Payload: claimsPayload,
-})
-
-// Verify claims
-verifier := jkpkg.NewClaimsVerifier[MyClaims](client)
-claims, err := verifier.VerifyClaims(ctx, &jkpkg.VerifyClaimsRequest{
-    Usage:       "auth",
-    AccessToken: token.GetToken(),
-})
-```
+The REST surface never exposes private keys or signing operations. The split is enforced structurally by registering the signing handler only inside [`cmd/grpc/main.go`](./cmd/grpc/main.go). The gRPC server itself implements no application-layer authentication — access control on that surface is enforced entirely by deployment infrastructure (network policy, ingress, service mesh).
 
 ---
 
 ## Questions?
-
-If you have questions or run into issues:
 
 - Open an issue at https://github.com/a-novel/service-json-keys/issues
 - Check existing issues for similar problems

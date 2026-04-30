@@ -15,22 +15,28 @@
 
 ![Coverage graph](https://codecov.io/gh/a-novel/service-json-keys/graphs/sunburst.svg?token=almKepuGQE)
 
-## Usage
+## What it does
 
-### Docker
+JSON Keys is a centralized signing-key manager for the A-Novel platform. Services register named **usages** (`auth`, `auth-refresh`, etc.); each usage has its own signing algorithm, rotation schedule, and JWT claim parameters. The service holds every private key and signs tokens on behalf of callers — private key material never leaves the server. Consumers fetch the matching public keys through a read-only REST endpoint and verify tokens locally, with no extra network round-trip per token.
 
-Run the service as a containerized application (the below examples use docker-compose syntax).
+The service ships two surfaces:
 
-#### gRPC
+- A **private gRPC API** (signing, key retrieval, status) for internal, private-network service-to-service traffic. Anything that touches private key material lives here. The server itself implements no application-layer authentication; access control is enforced externally — by network policy, ingress, service mesh, or other deployment infrastructure.
+- A **public REST API** (public-key fetch, health) for any client that needs to verify tokens.
 
-> Set the SERVICE_JSON_KEYS_GRPC_PORT env variable to whatever port you want to use for the service.
+State lives in a PostgreSQL database; both surfaces are stateless and can run as multiple replicas behind a load balancer.
+
+## Running it
+
+The minimal local setup is one Postgres image plus one service image. Pin both to the same release tag (current: `v2.2.6`).
+
+The example below runs the gRPC server in **standalone** mode — the simplest path to a working signing API. Set `GRPC_PORT` to whichever port you want to expose.
 
 ```yaml
 services:
   postgres-json-keys:
     image: ghcr.io/a-novel/service-json-keys/database:v2.2.6
-    networks:
-      - api
+    networks: [api]
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
@@ -42,16 +48,13 @@ services:
 
   service-json-keys:
     image: ghcr.io/a-novel/service-json-keys/standalone-grpc:v2.2.6
-    ports:
-      - "${SERVICE_JSON_KEYS_GRPC_PORT}:8080"
+    ports: ["${GRPC_PORT}:8080"]
     depends_on:
-      postgres-json-keys:
-        condition: service_healthy
+      postgres-json-keys: { condition: service_healthy }
     environment:
       POSTGRES_DSN: "postgres://postgres:postgres@postgres-json-keys:5432/postgres?sslmode=disable"
       APP_MASTER_KEY: "<your-master-key-here>"
-    networks:
-      - api
+    networks: [api]
 
 networks:
   api:
@@ -60,16 +63,25 @@ volumes:
   json-keys-postgres-data:
 ```
 
-Note the standalone image is an all-in-one initializer for the application; however, it runs heavy operations such
-as migrations on every launch. Thus, while it comes in handy for local development, it is NOT RECOMMENDED for
-production deployments. Instead, consider using the separate, optimized images for that purpose.
+The four deployment shapes:
+
+| Shape           | When to use                       | Image                                                 |
+| --------------- | --------------------------------- | ----------------------------------------------------- |
+| Standalone gRPC | Local dev, signing experiments    | `service-json-keys/standalone-grpc`                   |
+| Standalone REST | Local dev, public-key access only | `service-json-keys/standalone-rest`                   |
+| gRPC            | Production gRPC tier              | `service-json-keys/grpc` (+ `migrations`, `database`) |
+| REST            | Production REST tier              | `service-json-keys/rest` (+ `migrations`, `database`) |
+
+> Standalone images run migrations on every startup. Convenient for development but unsuitable for production — every replica restart re-runs the migration job. For production, use the split images plus the dedicated `migrations` image.
+
+<details>
+<summary>Production-shape example (split gRPC)</summary>
 
 ```yaml
 services:
   postgres-json-keys:
     image: ghcr.io/a-novel/service-json-keys/database:v2.2.6
-    networks:
-      - api
+    networks: [api]
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
@@ -82,27 +94,21 @@ services:
   migrations-json-keys:
     image: ghcr.io/a-novel/service-json-keys/migrations:v2.2.6
     depends_on:
-      postgres-json-keys:
-        condition: service_healthy
+      postgres-json-keys: { condition: service_healthy }
     environment:
       POSTGRES_DSN: "postgres://postgres:postgres@postgres-json-keys:5432/postgres?sslmode=disable"
-    networks:
-      - api
+    networks: [api]
 
   service-json-keys:
     image: ghcr.io/a-novel/service-json-keys/grpc:v2.2.6
-    ports:
-      - "${SERVICE_JSON_KEYS_GRPC_PORT}:8080"
+    ports: ["${GRPC_PORT}:8080"]
     depends_on:
-      postgres-json-keys:
-        condition: service_healthy
-      migrations-json-keys:
-        condition: service_completed_successfully
+      postgres-json-keys: { condition: service_healthy }
+      migrations-json-keys: { condition: service_completed_successfully }
     environment:
       POSTGRES_DSN: "postgres://postgres:postgres@postgres-json-keys:5432/postgres?sslmode=disable"
       APP_MASTER_KEY: "<your-master-key-here>"
-    networks:
-      - api
+    networks: [api]
 
 networks:
   api:
@@ -111,146 +117,124 @@ volumes:
   json-keys-postgres-data:
 ```
 
-#### REST
+The REST equivalent uses `service-json-keys/rest:v2.2.6` instead of `grpc:v2.2.6`.
 
-> Set the SERVICE_JSON_KEYS_REST_PORT env variable to whatever port you want to use for the service.
+</details>
 
-```yaml
-services:
-  postgres-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/database:v2.2.6
-    networks:
-      - api
-    environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_DB: postgres
-      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
-      POSTGRES_INITDB_ARGS: --auth=scram-sha-256
-    volumes:
-      - json-keys-postgres-data:/var/lib/postgresql/
+### Configuration
 
-  service-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/standalone-rest:v2.2.6
-    ports:
-      - "${SERVICE_JSON_KEYS_REST_PORT}:8080"
-    depends_on:
-      postgres-json-keys:
-        condition: service_healthy
-    environment:
-      POSTGRES_DSN: "postgres://postgres:postgres@postgres-json-keys:5432/postgres?sslmode=disable"
-      APP_MASTER_KEY: "<your-master-key-here>"
-    networks:
-      - api
+Configuration is driven by environment variables.
 
-networks:
-  api:
+**Required**
 
-volumes:
-  json-keys-postgres-data:
+| Name             | Description                                                                                                                                                                                                         | Images                                                                         |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `POSTGRES_DSN`   | PostgreSQL connection string.                                                                                                                                                                                       | `standalone-grpc`<br/>`standalone-rest`<br/>`grpc`<br/>`rest`<br/>`migrations` |
+| `APP_MASTER_KEY` | 32-byte hex-encoded master key used to encrypt private keys at rest. **Never rotate** unless you can afford to invalidate every existing private key — see [CONTRIBUTING](./CONTRIBUTING.md#master-key-encryption). | `standalone-grpc`<br/>`standalone-rest`<br/>`grpc`<br/>`rest`                  |
+
+The gRPC surface exposes private-key operations and must run on an isolated, access-controlled network. Access control is enforced by deployment infrastructure (network policy, ingress, service mesh) — the server does not authenticate callers itself.
+
+**Optional — REST tuning**
+
+| Name                          | Description                          | Default          | Images                       |
+| ----------------------------- | ------------------------------------ | ---------------- | ---------------------------- |
+| `REST_MAX_REQUEST_SIZE`       | Maximum request body size, in bytes. | `2097152` (2MiB) | `standalone-rest`<br/>`rest` |
+| `REST_TIMEOUT_READ`           | Read timeout.                        | `15s`            | `standalone-rest`<br/>`rest` |
+| `REST_TIMEOUT_READ_HEADER`    | Header read timeout.                 | `3s`             | `standalone-rest`<br/>`rest` |
+| `REST_TIMEOUT_WRITE`          | Write timeout.                       | `30s`            | `standalone-rest`<br/>`rest` |
+| `REST_TIMEOUT_IDLE`           | Idle keep-alive timeout.             | `60s`            | `standalone-rest`<br/>`rest` |
+| `REST_TIMEOUT_REQUEST`        | Per-request timeout.                 | `60s`            | `standalone-rest`<br/>`rest` |
+| `REST_CORS_ALLOWED_ORIGINS`   | CORS allowed origins.                | `*`              | `standalone-rest`<br/>`rest` |
+| `REST_CORS_ALLOWED_HEADERS`   | CORS allowed headers.                | `*`              | `standalone-rest`<br/>`rest` |
+| `REST_CORS_ALLOW_CREDENTIALS` | CORS allow-credentials flag.         | `false`          | `standalone-rest`<br/>`rest` |
+| `REST_CORS_MAX_AGE`           | CORS max-age (seconds).              | `3600`           | `standalone-rest`<br/>`rest` |
+
+**Optional — Logs and tracing**
+
+OpenTelemetry currently supports two exporters: stdout and Google Cloud.
+
+| Name                | Description                                                                    | Default             | Images                                                        |
+| ------------------- | ------------------------------------------------------------------------------ | ------------------- | ------------------------------------------------------------- |
+| `OTEL`              | Enable OTel tracing. Use the variables below to pick the exporter.             | `false`             | `standalone-grpc`<br/>`standalone-rest`<br/>`grpc`<br/>`rest` |
+| `GCLOUD_PROJECT_ID` | Google Cloud project ID. When set, switches the OTel exporter to Google Cloud. |                     | `standalone-grpc`<br/>`standalone-rest`<br/>`grpc`<br/>`rest` |
+| `APP_NAME`          | Application name attached to traces and logs.                                  | `service-json-keys` | `standalone-grpc`<br/>`standalone-rest`<br/>`grpc`<br/>`rest` |
+
+## Using the client packages
+
+Two client packages ship with this service:
+
+- **Go** — talks gRPC. Use this from a backend service that needs to sign tokens or verify them with cached public keys.
+- **JavaScript / TypeScript** — talks REST. Use this from a frontend or Node service that only needs public keys for local verification.
+
+Each example below is the **minimum viable call**. The full surface is what your editor's intellisense, [pkg.go.dev](https://pkg.go.dev/github.com/a-novel/service-json-keys/v2), and the [API reference](https://a-novel.github.io/service-json-keys-v2) are for.
+
+### Go (gRPC)
+
+```bash
+go get github.com/a-novel/service-json-keys/v2
 ```
 
-Note the standalone image is an all-in-one initializer for the application; however, it runs heavy operations such
-as migrations on every launch. Thus, while it comes in handy for local development, it is NOT RECOMMENDED for
-production deployments. Instead, consider using the separate, optimized images for that purpose.
+```go
+package main
 
-```yaml
-services:
-  postgres-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/database:v2.2.6
-    networks:
-      - api
-    environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_DB: postgres
-      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
-      POSTGRES_INITDB_ARGS: --auth=scram-sha-256
-    volumes:
-      - json-keys-postgres-data:/var/lib/postgresql/
+import (
+	"context"
+	"log"
 
-  migrations-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/migrations:v2.2.6
-    depends_on:
-      postgres-json-keys:
-        condition: service_healthy
-    environment:
-      POSTGRES_DSN: "postgres://postgres:postgres@postgres-json-keys:5432/postgres?sslmode=disable"
-    networks:
-      - api
+	"github.com/a-novel-kit/golib/grpcf"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
-  service-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/rest:v2.2.6
-    ports:
-      - "${SERVICE_JSON_KEYS_REST_PORT}:8080"
-    depends_on:
-      postgres-json-keys:
-        condition: service_healthy
-      migrations-json-keys:
-        condition: service_completed_successfully
-    environment:
-      POSTGRES_DSN: "postgres://postgres:postgres@postgres-json-keys:5432/postgres?sslmode=disable"
-      APP_MASTER_KEY: "<your-master-key-here>"
-    networks:
-      - api
+	servicejsonkeys "github.com/a-novel/service-json-keys/v2/pkg/go"
+)
 
-networks:
-  api:
+type MyClaims struct {
+	UserID string `json:"userID"`
+}
 
-volumes:
-  json-keys-postgres-data:
+func main() {
+	ctx := context.Background()
+
+	client, err := servicejsonkeys.NewClient(
+		"service-json-keys:8080",
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+
+	// Sign claims under the auth usage.
+	payload, err := grpcf.InterfaceToProtoAny(MyClaims{UserID: "user-1"})
+	if err != nil {
+		log.Fatal(err)
+	}
+	res, err := client.ClaimsSign(ctx, &servicejsonkeys.ClaimsSignRequest{
+		Usage:   servicejsonkeys.KeyUsageAuth,
+		Payload: payload,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Verify locally — no extra network call per token.
+	verifier := servicejsonkeys.NewClaimsVerifier[MyClaims](client)
+	claims, err := verifier.VerifyClaims(ctx, &servicejsonkeys.VerifyClaimsRequest{
+		Usage:       servicejsonkeys.KeyUsageAuth,
+		AccessToken: res.GetToken(),
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	_ = claims // claims.UserID == "user-1"
+}
 ```
 
-Above are the minimal required configuration to run the service locally. Configuration is done through environment
-variables. Below is a list of available configurations:
+### JavaScript / TypeScript (REST)
 
-**Required variables**
+The package is published to GitHub Packages. GitHub requires a Personal Access Token with `repo` and `read:packages` scopes to install from there, even for public packages — see [this discussion](https://github.com/orgs/community/discussions/23386#discussioncomment-3240193).
 
-| Name           | Description                                                                                                                                                                                            | Images                                                                         |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| POSTGRES_DSN   | The Postgres Data Source Name (DSN) used to connect to the database.                                                                                                                                   | `standalone-grpc`<br/>`standalone-rest`<br/>`grpc`<br/>`rest`<br/>`migrations` |
-| APP_MASTER_KEY | Master key used to securely encrypt private keys in the database. This should NEVER be exposed, and should not be rotated unless necessary (changing it will lose access to previous keys permanently) | `standalone-grpc`<br/>`standalone-rest`<br/>`grpc`<br/>`rest`                  |
-
-The gRPC service exposes sensitive data, and should run in an isolated, secure network.
-
-**REST API**
-
-While you should not need to change these values in most cases, the following variables allow you to
-customize the REST API behavior.
-
-| Name                        | Description                                 | Default value    | Images                       |
-| --------------------------- | ------------------------------------------- | ---------------- | ---------------------------- |
-| REST_MAX_REQUEST_SIZE       | Maximum size of incoming requests in bytes  | `2097152` (2MiB) | `standalone-rest`<br/>`rest` |
-| REST_TIMEOUT_READ           | Timeout for read operations                 | `15s`            | `standalone-rest`<br/>`rest` |
-| REST_TIMEOUT_READ_HEADER    | Timeout for header reading operations       | `3s`             | `standalone-rest`<br/>`rest` |
-| REST_TIMEOUT_WRITE          | Timeout for write operations                | `30s`            | `standalone-rest`<br/>`rest` |
-| REST_TIMEOUT_IDLE           | Idle timeout                                | `60s`            | `standalone-rest`<br/>`rest` |
-| REST_TIMEOUT_REQUEST        | Timeout for api requests                    | `60s`            | `standalone-rest`<br/>`rest` |
-| REST_CORS_ALLOWED_ORIGINS   | CORS allowed origins (allow all by default) | `*`              | `standalone-rest`<br/>`rest` |
-| REST_CORS_ALLOWED_HEADERS   | CORS allowed headers (allow all by default) | `*`              | `standalone-rest`<br/>`rest` |
-| REST_CORS_ALLOW_CREDENTIALS | CORS allow credentials                      | `false`          | `standalone-rest`<br/>`rest` |
-| REST_CORS_MAX_AGE           | CORS max age                                | `3600`           | `standalone-rest`<br/>`rest` |
-
-**Logs & Tracing**
-
-For now, OTEL is only provided using 2 exporters: stdout and Google Cloud. Other integrations may come
-in the future.
-
-| Name              | Description                                                                             | Default value       | Images                                                        |
-| ----------------- | --------------------------------------------------------------------------------------- | ------------------- | ------------------------------------------------------------- |
-| OTEL              | Activate OTEL tracing (use options below to switch between exporters)                   | `false`             | `standalone-grpc`<br/>`standalone-rest`<br/>`grpc`<br/>`rest` |
-| GCLOUD_PROJECT_ID | Google Cloud project id for the OTEL exporter. Switch to Google Cloud exporter when set |                     | `standalone-grpc`<br/>`standalone-rest`<br/>`grpc`<br/>`rest` |
-| APP_NAME          | Application name to be used in traces                                                   | `service-json-keys` | `standalone-grpc`<br/>`standalone-rest`<br/>`grpc`<br/>`rest` |
-
-### Javascript (npm)
-
-To interact with a running REST instance of the JSON Keys service, you can use the integrated package.
-
-> ⚠️ **Warning**: Even though the package is public, GitHub registry requires you to have a Personal Access Token
-> with `repo` and `read:packages` scopes to pull it in your project. See
-> [this issue](https://github.com/orgs/community/discussions/23386#discussioncomment-3240193) for more information.
-
-Make sure you have a `.npmrc` with the following content (in your project or in your home directory):
+Add to `.npmrc` (project root or `$HOME`):
 
 ```ini
 @a-novel:registry=https://npm.pkg.github.com
@@ -258,82 +242,19 @@ Make sure you have a `.npmrc` with the following content (in your project or in 
 //npm.pkg.github.com/:_authToken=${YOUR_PERSONAL_ACCESS_TOKEN}
 ```
 
-Then, install the package using pnpm:
+Install and use:
 
 ```bash
-# pnpm config set auto-install-peers true
-#  Or
-# pnpm config set auto-install-peers true --location project
 pnpm add @a-novel/service-json-keys-rest
 ```
 
-To use it, create a `JsonKeysApi` instance. A single instance can be shared across your client.
-
 ```typescript
-import { JsonKeysApi, jwkGet, jwkList } from "@a-novel/service-json-keys-rest";
+import { JsonKeysApi, jwkList } from "@a-novel/service-json-keys-rest";
 
-export const jsonKeysApi = new JsonKeysApi("<base_api_url>");
+const api = new JsonKeysApi("http://service-json-keys:8080");
 
-// (optional) check the status of the api connection.
-await jsonKeysApi.ping();
-await jsonKeysApi.health();
+// Fetch the active public keys for a usage; cache them client-side and verify locally.
+const keys = await jwkList(api, "auth");
 ```
 
-Retrieve JWK keys:
-
-```typescript
-// List all keys for a given usage.
-const keys = await jwkList(jsonKeysApi, "auth");
-
-// Retrieve a specific key by ID.
-const key = await jwkGet(jsonKeysApi, "<key-id>");
-```
-
-The API reference is available at [GitHub Pages](https://a-novel.github.io/service-json-keys-v2).
-
-### Go module
-
-You can integrate the json keys capabilities directly into your Go services by using the provided
-Go module. It requires a connection to a running instance of this service.
-
-```bash
-go get -u github.com/a-novel/service-json-keys/v2
-```
-
-```go
-package main
-
-import (
-  "context"
-
-  "github.com/a-novel-kit/golib/grpcf"
-  "github.com/a-novel/service-json-keys/v2/pkg/go"
-)
-
-type MyClaims struct {
-  UserID string `json:"userID"`
-}
-
-func main() {
-  ctx := context.Background()
-
-  client, _ := servicejsonkeys.NewClient(ctx, "<service-json-keys-url>")
-  claimsVerifier := servicejsonkeys.NewClaimsVerifier[MyClaims](client)
-
-  claims := MyClaims{ UserID: "user-1" }
-  claimsPayload, _ := grpcf.InterfaceToProtoAny(claims)
-
-  // Signed token ready for use.
-  token, _ := client.ClaimsSign(ctx, &servicejsonkeys.ClaimsSignRequest{
-    Usage: servicejsonkeys.KeyUsageAuth,
-    Payload: claimsPayload,
-  })
-
-  decodedClaims, _ := claimsVerifier.VerifyClaims(ctx, &servicejsonkeys.VerifyClaimsRequest{
-    Usage: servicejsonkeys.KeyUsageAuth,
-    AccessToken: token.GetToken(),
-  })
-
-  // decodedClaims should be the same as claims.
-}
-```
+API reference: [a-novel.github.io/service-json-keys-v2](https://a-novel.github.io/service-json-keys-v2)
