@@ -20,6 +20,8 @@ func TestGrpcStatus(t *testing.T) {
 	testCases := []struct {
 		name string
 
+		skipPostgres bool
+
 		expect       *protogen.StatusResponse
 		expectStatus codes.Code
 	}{
@@ -33,6 +35,22 @@ func TestGrpcStatus(t *testing.T) {
 				},
 			},
 		},
+		{
+			// Omitting postgres from the context makes reportPostgres fail, so the
+			// entry reports status=DOWN. The exact-match assertion on expect below
+			// is the regression guard: it fails if any extra field (notably a
+			// re-introduced "err") leaks into the public response shape.
+			name: "Success/Degraded",
+
+			skipPostgres: true,
+
+			expectStatus: codes.OK,
+			expect: &protogen.StatusResponse{
+				Postgres: &protogen.DependencyHealth{
+					Status: protogen.DependencyStatus_DEPENDENCY_STATUS_DOWN,
+				},
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -41,8 +59,14 @@ func TestGrpcStatus(t *testing.T) {
 
 			handler := handlers.NewGrpcStatus()
 
-			ctx, err := postgres.NewContext(t.Context(), config.PostgresPresetTest)
-			require.NoError(t, err)
+			ctx := t.Context()
+
+			if !testCase.skipPostgres {
+				var err error
+
+				ctx, err = postgres.NewContext(ctx, config.PostgresPresetTest)
+				require.NoError(t, err)
+			}
 
 			res, err := handler.Status(ctx, new(protogen.StatusRequest))
 			resSt, ok := status.FromError(err)

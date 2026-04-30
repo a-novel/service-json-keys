@@ -14,19 +14,18 @@ import (
 
 // NewGrpcHealthStatus converts an error into a DependencyHealth proto message,
 // mapping nil to DEPENDENCY_STATUS_UP and any non-nil error to DEPENDENCY_STATUS_DOWN.
+//
+// The error itself is intentionally discarded from the returned message; raw dependency
+// errors routinely embed internal hostnames, ports, or schema names that would leak
+// infrastructure topology. Operators get the underlying error from the trace span the
+// failing health probe records on its way out.
 func NewGrpcHealthStatus(err error) *protogen.DependencyHealth {
-	errMsg := ""
-	if err != nil {
-		errMsg = err.Error()
-	}
-
 	return &protogen.DependencyHealth{
 		Status: lo.Ternary(
 			err == nil,
 			protogen.DependencyStatus_DEPENDENCY_STATUS_UP,
 			protogen.DependencyStatus_DEPENDENCY_STATUS_DOWN,
 		),
-		Err: errMsg,
 	}
 }
 
