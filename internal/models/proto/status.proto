@@ -20,11 +20,15 @@ enum DependencyStatus {
 }
 
 // DependencyHealth reports the health of a single external dependency.
+//
+// The shape is deliberately minimal. Status endpoints are surfaced over an internal-only
+// gRPC API today, but errors raised while checking dependency health routinely embed
+// internal hostnames, ports, or schema names; carrying them in a public-shaped response
+// would leak infrastructure topology if this surface ever became externally reachable.
+// The underlying error is recorded on the trace span for operators instead.
 message DependencyHealth {
   // The dependency's current operational status.
   DependencyStatus status = 1;
-  // The error that occurred when checking the dependency status, if any.
-  string err = 2;
 }
 
 // StatusRequest carries no parameters; the server checks all dependencies automatically.
