@@ -12,7 +12,7 @@ import (
 
 	"github.com/a-novel-kit/golib/postgres"
 
-	"github.com/a-novel/service-json-keys/v2/internal/config"
+	"github.com/a-novel/service-json-keys/v2/internal/config/configtest"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
 )
 
@@ -72,7 +72,7 @@ func TestRestHealth(t *testing.T) {
 			if !testCase.skipPostgres {
 				var err error
 
-				rCtx, err = postgres.NewContext(rCtx, config.PostgresPresetTest)
+				rCtx, err = postgres.NewContext(rCtx, configtest.PostgresPreset)
 				require.NoError(t, err)
 			}
 

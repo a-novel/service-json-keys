@@ -9,7 +9,7 @@ import (
 
 	"github.com/a-novel-kit/golib/postgres"
 
-	"github.com/a-novel/service-json-keys/v2/internal/config"
+	"github.com/a-novel/service-json-keys/v2/internal/config/configtest"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
 )
@@ -64,7 +64,7 @@ func TestGrpcStatus(t *testing.T) {
 			if !testCase.skipPostgres {
 				var err error
 
-				ctx, err = postgres.NewContext(ctx, config.PostgresPresetTest)
+				ctx, err = postgres.NewContext(ctx, configtest.PostgresPreset)
 				require.NoError(t, err)
 			}
 
