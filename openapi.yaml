@@ -1,4 +1,3 @@
-# Created with https://editor.swagger.io/
 openapi: 3.1.0
 
 servers:
@@ -203,7 +202,7 @@ components:
         - {
             "kty": "OKP",
             "use": "sig",
-            "key_ops": ["sign", "verify"],
+            "key_ops": ["verify"],
             "alg": "EdDSA",
             "kid": "44de7cd7-aff1-e6c4-4204-74e8341d792c",
             "x": "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo",
