@@ -11,7 +11,7 @@ type RestPing struct{}
 
 // NewRestPing returns a new RestPing handler.
 func NewRestPing() *RestPing {
-	return new(RestPing)
+	return &RestPing{}
 }
 
 func (handler *RestPing) ServeHTTP(w http.ResponseWriter, r *http.Request) {

@@ -38,7 +38,7 @@ type GrpcStatus struct {
 
 // NewGrpcStatus returns a new GrpcStatus handler.
 func NewGrpcStatus() *GrpcStatus {
-	return new(GrpcStatus)
+	return &GrpcStatus{}
 }
 
 func (handler *GrpcStatus) Status(ctx context.Context, _ *protogen.StatusRequest) (*protogen.StatusResponse, error) {
