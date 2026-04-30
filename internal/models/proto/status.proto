@@ -27,6 +27,13 @@ enum DependencyStatus {
 // would leak infrastructure topology if this surface ever became externally reachable.
 // The underlying error is recorded on the trace span for operators instead.
 message DependencyHealth {
+  // Field number 2 / name "err" was used for an error string; it was removed because raw
+  // dependency errors leak infrastructure topology (see message-level comment above). The
+  // number and name are reserved so a future field cannot accidentally re-introduce the leak
+  // with a different shape on the wire.
+  reserved 2;
+  reserved "err";
+
   // The dependency's current operational status.
   DependencyStatus status = 1;
 }

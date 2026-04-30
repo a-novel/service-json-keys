@@ -216,9 +216,9 @@ var File_status_proto protoreflect.FileDescriptor
 
 const file_status_proto_rawDesc = "" +
 	"\n" +
-	"\fstatus.proto\"=\n" +
+	"\fstatus.proto\"H\n" +
 	"\x10DependencyHealth\x12)\n" +
-	"\x06status\x18\x01 \x01(\x0e2\x11.DependencyStatusR\x06status\"\x0f\n" +
+	"\x06status\x18\x01 \x01(\x0e2\x11.DependencyStatusR\x06statusJ\x04\b\x02\x10\x03R\x03err\"\x0f\n" +
 	"\rStatusRequest\"?\n" +
 	"\x0eStatusResponse\x12-\n" +
 	"\bpostgres\x18\x01 \x01(\v2\x11.DependencyHealthR\bpostgres*k\n" +
