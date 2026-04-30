@@ -61,9 +61,8 @@ func TestClaimsSignAndVerify(t *testing.T) {
 				},
 			}),
 		},
-		HMAC: make(map[string]*jwk.Source[[]byte]),
-		ES:   make(map[string]*jwk.Source[*ecdsa.PrivateKey]),
-		RSA:  make(map[string]*jwk.Source[*rsa.PrivateKey]),
+		ES:  make(map[string]*jwk.Source[*ecdsa.PrivateKey]),
+		RSA: make(map[string]*jwk.Source[*rsa.PrivateKey]),
 	}, testConfig)
 	require.NoError(t, err)
 
@@ -75,9 +74,8 @@ func TestClaimsSignAndVerify(t *testing.T) {
 				},
 			}),
 		},
-		HMAC: make(map[string]*jwk.Source[[]byte]),
-		ES:   make(map[string]*jwk.Source[*ecdsa.PublicKey]),
-		RSA:  make(map[string]*jwk.Source[*rsa.PublicKey]),
+		ES:  make(map[string]*jwk.Source[*ecdsa.PublicKey]),
+		RSA: make(map[string]*jwk.Source[*rsa.PublicKey]),
 	}, testConfig)
 	require.NoError(t, err)
 

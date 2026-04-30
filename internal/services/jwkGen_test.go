@@ -347,9 +347,6 @@ func TestJwkGen(t *testing.T) {
 
 	for _, alg := range []jwa.Alg{
 		jwa.EdDSA,
-		jwa.HS256,
-		jwa.HS384,
-		jwa.HS512,
 		jwa.RS256,
 		jwa.RS384,
 		jwa.RS512,

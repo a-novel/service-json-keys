@@ -20,23 +20,11 @@ var (
 	// ErrJwkPresetUnknown is returned when a requested algorithm has no corresponding preset entry.
 	ErrJwkPresetUnknown = errors.New("unknown jwk preset")
 	// ErrJwkPresetUnknownAlgorithm is returned when a key configuration references an algorithm
-	// for which no key-source builder is registered.
+	// for which no key-source builder is registered. Only asymmetric algorithms (EdDSA, ECDSA,
+	// RSA, RSA-PSS) are supported — symmetric algorithms like HMAC are deliberately excluded
+	// because their secrets cannot be safely separated into a public-key REST surface.
 	ErrJwkPresetUnknownAlgorithm = errors.New("unknown jwk algorithm")
 )
-
-// JwkPresetsHMAC maps HMAC algorithm identifiers to their JWK generation presets.
-var JwkPresetsHMAC = map[jwa.Alg]jwk.HMACPreset{
-	jwa.HS256: jwk.HS256,
-	jwa.HS384: jwk.HS384,
-	jwa.HS512: jwk.HS512,
-}
-
-// JwsPresetsHMAC maps HMAC algorithm identifiers to their JWS signing/verification presets.
-var JwsPresetsHMAC = map[jwa.Alg]jws.HMACPreset{
-	jwa.HS256: jws.HS256,
-	jwa.HS384: jws.HS384,
-	jwa.HS512: jws.HS512,
-}
 
 // JwkPresetsEcdsa maps ECDSA algorithm identifiers to their JWK generation presets.
 var JwkPresetsEcdsa = map[jwa.Alg]jwk.ECDSAPreset{
@@ -76,17 +64,15 @@ var JwsPresetsRsaPss = map[jwa.Alg]jws.RSAPSSPreset{
 	jwa.PS512: jws.PS512,
 }
 
-// JwkGenAny is the common generator signature. It returns a private key, an optional public key
-// (nil for symmetric algorithms), and the KID strings for each, plus any generation error.
+// JwkGenAny is the common generator signature. It returns the private key, the matching
+// public key, the KID strings for each, plus any generation error. Only asymmetric
+// algorithms are supported, so the public key is always non-nil on success.
 type JwkGenAny func() (any, any, string, string, error)
 
 // JwkGenerators is the registry of key generators keyed by algorithm. JwkGen.Exec uses this
 // to look up the correct generator for a given usage's configured algorithm.
 var JwkGenerators = map[jwa.Alg]JwkGenAny{
 	jwa.EdDSA: JwkGeneratorEd25519,
-	jwa.HS256: JwkGeneratorHs(jwa.HS256),
-	jwa.HS384: JwkGeneratorHs(jwa.HS384),
-	jwa.HS512: JwkGeneratorHs(jwa.HS512),
 	jwa.ES256: JwkGeneratorEs(jwa.ES256),
 	jwa.ES384: JwkGeneratorEs(jwa.ES384),
 	jwa.ES512: JwkGeneratorEs(jwa.ES512),
@@ -106,28 +92,6 @@ func JwkGeneratorEd25519() (any, any, string, string, error) {
 	}
 
 	return priv, pub, priv.KID, pub.KID, nil
-}
-
-// JwkGeneratorHs returns a generator for the given HMAC algorithm.
-// HMAC keys are symmetric, so the returned public key is always nil.
-func JwkGeneratorHs(alg jwa.Alg) func() (any, any, string, string, error) {
-	return func() (any, any, string, string, error) {
-		var (
-			preset jwk.HMACPreset
-			ok     bool
-		)
-
-		if preset, ok = JwkPresetsHMAC[alg]; !ok {
-			return nil, nil, "", "", fmt.Errorf("%w (hmac): %s", ErrJwkPresetUnknown, alg)
-		}
-
-		key, err := jwk.GenerateHMAC(preset)
-		if err != nil {
-			return nil, nil, "", "", err
-		}
-
-		return key, nil, key.KID, "", nil
-	}
 }
 
 // JwkGeneratorEs returns a generator for the given ECDSA algorithm.
@@ -173,10 +137,10 @@ func JwkGeneratorRsa(alg jwa.Alg) func() (any, any, string, string, error) {
 }
 
 // JwkPrivateSources holds typed, cached private-key sources for each supported algorithm family,
-// grouped by usage name, and is used to wire signing plugins for JWT production.
+// grouped by usage name, and is used to wire signing plugins for JWT production. Only asymmetric
+// algorithms are supported; symmetric (HMAC) algorithms are not.
 type JwkPrivateSources struct {
 	EdDSA map[string]*jwk.Source[ed25519.PrivateKey]
-	HMAC  map[string]*jwk.Source[[]byte]
 	ES    map[string]*jwk.Source[*ecdsa.PrivateKey]
 	RSA   map[string]*jwk.Source[*rsa.PrivateKey]
 }
@@ -196,7 +160,6 @@ func NewJwkPrivateSource(
 ) (*JwkPrivateSources, error) {
 	output := &JwkPrivateSources{
 		EdDSA: make(map[string]*jwk.Source[ed25519.PrivateKey]),
-		HMAC:  make(map[string]*jwk.Source[[]byte]),
 		ES:    make(map[string]*jwk.Source[*ecdsa.PrivateKey]),
 		RSA:   make(map[string]*jwk.Source[*rsa.PrivateKey]),
 	}
@@ -214,8 +177,6 @@ func NewJwkPrivateSource(
 		switch keyConfig.Alg {
 		case jwa.EdDSA:
 			output.EdDSA[usage] = jwk.NewED25519PrivateSource(sourceConfig)
-		case jwa.HS256, jwa.HS384, jwa.HS512:
-			output.HMAC[usage] = jwk.NewHMACSource(sourceConfig, JwkPresetsHMAC[keyConfig.Alg])
 		case jwa.ES256, jwa.ES384, jwa.ES512:
 			output.ES[usage] = jwk.NewECDSAPrivateSource(sourceConfig, JwkPresetsEcdsa[keyConfig.Alg])
 		case jwa.RS256, jwa.RS384, jwa.RS512, jwa.PS256, jwa.PS384, jwa.PS512:
@@ -229,10 +190,10 @@ func NewJwkPrivateSource(
 }
 
 // JwkPublicSources holds typed, cached public-key sources for each supported algorithm family,
-// grouped by usage name, and is used to wire verification plugins for JWT consumption.
+// grouped by usage name, and is used to wire verification plugins for JWT consumption. Only
+// asymmetric algorithms are supported; symmetric (HMAC) algorithms are not.
 type JwkPublicSources struct {
 	EdDSA map[string]*jwk.Source[ed25519.PublicKey]
-	HMAC  map[string]*jwk.Source[[]byte]
 	ES    map[string]*jwk.Source[*ecdsa.PublicKey]
 	RSA   map[string]*jwk.Source[*rsa.PublicKey]
 }
@@ -252,7 +213,6 @@ func NewJwkPublicSource(
 ) (*JwkPublicSources, error) {
 	output := &JwkPublicSources{
 		EdDSA: make(map[string]*jwk.Source[ed25519.PublicKey]),
-		HMAC:  make(map[string]*jwk.Source[[]byte]),
 		ES:    make(map[string]*jwk.Source[*ecdsa.PublicKey]),
 		RSA:   make(map[string]*jwk.Source[*rsa.PublicKey]),
 	}
@@ -270,8 +230,6 @@ func NewJwkPublicSource(
 		switch keyConfig.Alg {
 		case jwa.EdDSA:
 			output.EdDSA[usage] = jwk.NewED25519PublicSource(sourceConfig)
-		case jwa.HS256, jwa.HS384, jwa.HS512:
-			output.HMAC[usage] = jwk.NewHMACSource(sourceConfig, JwkPresetsHMAC[keyConfig.Alg])
 		case jwa.ES256, jwa.ES384, jwa.ES512:
 			output.ES[usage] = jwk.NewECDSAPublicSource(sourceConfig, JwkPresetsEcdsa[keyConfig.Alg])
 		case jwa.RS256, jwa.RS384, jwa.RS512, jwa.PS256, jwa.PS384, jwa.PS512:
@@ -299,11 +257,6 @@ func NewJwkProducers(
 	for usage, usageConfig := range sources.EdDSA {
 		signer := jws.NewSourcedED25519Signer(usageConfig)
 		output[usage] = []jwt.ProducerPlugin{signer}
-	}
-
-	for usage, usageConfig := range sources.HMAC {
-		signer := jws.NewSourcedHMACSigner(usageConfig, JwsPresetsHMAC[keys[usage].Alg])
-		output[usage] = append(output[usage], signer)
 	}
 
 	for usage, usageConfig := range sources.ES {
@@ -341,11 +294,6 @@ func NewJwkRecipients(
 	for usage, usageConfig := range sources.EdDSA {
 		recipient := jws.NewSourcedED25519Verifier(usageConfig)
 		output[usage] = []jwt.RecipientPlugin{recipient}
-	}
-
-	for usage, usageConfig := range sources.HMAC {
-		recipient := jws.NewSourcedHMACVerifier(usageConfig, JwsPresetsHMAC[keys[usage].Alg])
-		output[usage] = append(output[usage], recipient)
 	}
 
 	for usage, usageConfig := range sources.ES {
