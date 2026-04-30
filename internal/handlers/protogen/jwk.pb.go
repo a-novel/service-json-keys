@@ -21,61 +21,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// A JSON Web Key is always generated for a specific usage. Only a single producer should
-// generate tokens for a given usage; any number of recipients can consume them.
-type JwkUsage int32
-
-const (
-	// JWK_USAGE_UNSPECIFIED is the default value required by proto definition.
-	// It must not be used in an actual request; doing so returns an error.
-	JwkUsage_JWK_USAGE_UNSPECIFIED JwkUsage = 0
-	// JWK_USAGE_AUTH is used to produce access tokens for the authentication service.
-	JwkUsage_JWK_USAGE_AUTH JwkUsage = 1
-	// JWK_USAGE_AUTH_REFRESH is used to produce refresh tokens for the authentication service.
-	JwkUsage_JWK_USAGE_AUTH_REFRESH JwkUsage = 2
-)
-
-// Enum value maps for JwkUsage.
-var (
-	JwkUsage_name = map[int32]string{
-		0: "JWK_USAGE_UNSPECIFIED",
-		1: "JWK_USAGE_AUTH",
-		2: "JWK_USAGE_AUTH_REFRESH",
-	}
-	JwkUsage_value = map[string]int32{
-		"JWK_USAGE_UNSPECIFIED":  0,
-		"JWK_USAGE_AUTH":         1,
-		"JWK_USAGE_AUTH_REFRESH": 2,
-	}
-)
-
-func (x JwkUsage) Enum() *JwkUsage {
-	p := new(JwkUsage)
-	*p = x
-	return p
-}
-
-func (x JwkUsage) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (JwkUsage) Descriptor() protoreflect.EnumDescriptor {
-	return file_jwk_proto_enumTypes[0].Descriptor()
-}
-
-func (JwkUsage) Type() protoreflect.EnumType {
-	return &file_jwk_proto_enumTypes[0]
-}
-
-func (x JwkUsage) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use JwkUsage.Descriptor instead.
-func (JwkUsage) EnumDescriptor() ([]byte, []int) {
-	return file_jwk_proto_rawDescGZIP(), []int{0}
-}
-
 // Jwk represents a public JSON Web Key. Private key material is never included.
 type Jwk struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -183,11 +128,7 @@ const file_jwk_proto_rawDesc = "" +
 	"\akey_ops\x18\x03 \x03(\tR\x06keyOps\x12\x10\n" +
 	"\x03alg\x18\x04 \x01(\tR\x03alg\x12\x10\n" +
 	"\x03kid\x18\x05 \x01(\tR\x03kid\x12\x18\n" +
-	"\apayload\x18\x06 \x01(\fR\apayload*U\n" +
-	"\bJwkUsage\x12\x19\n" +
-	"\x15JWK_USAGE_UNSPECIFIED\x10\x00\x12\x12\n" +
-	"\x0eJWK_USAGE_AUTH\x10\x01\x12\x1a\n" +
-	"\x16JWK_USAGE_AUTH_REFRESH\x10\x02BYB\bJwkProtoP\x01ZKgithub.com/a-novel/service-json-keys/v2/internal/handlers/protogen;protogenb\x06proto3"
+	"\apayload\x18\x06 \x01(\fR\apayloadBYB\bJwkProtoP\x01ZKgithub.com/a-novel/service-json-keys/v2/internal/handlers/protogen;protogenb\x06proto3"
 
 var (
 	file_jwk_proto_rawDescOnce sync.Once
@@ -201,11 +142,9 @@ func file_jwk_proto_rawDescGZIP() []byte {
 	return file_jwk_proto_rawDescData
 }
 
-var file_jwk_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_jwk_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_jwk_proto_goTypes = []any{
-	(JwkUsage)(0), // 0: JwkUsage
-	(*Jwk)(nil),   // 1: Jwk
+	(*Jwk)(nil), // 0: Jwk
 }
 var file_jwk_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -225,14 +164,13 @@ func file_jwk_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_jwk_proto_rawDesc), len(file_jwk_proto_rawDesc)),
-			NumEnums:      1,
+			NumEnums:      0,
 			NumMessages:   1,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_jwk_proto_goTypes,
 		DependencyIndexes: file_jwk_proto_depIdxs,
-		EnumInfos:         file_jwk_proto_enumTypes,
 		MessageInfos:      file_jwk_proto_msgTypes,
 	}.Build()
 	File_jwk_proto = out.File
