@@ -24,13 +24,11 @@ The service ships two surfaces:
 - A **private gRPC API** (signing, key retrieval, status) for internal, private-network service-to-service traffic. Anything that touches private key material lives here. The server itself implements no application-layer authentication; access control is enforced externally — by network policy, ingress, service mesh, or other deployment infrastructure.
 - A **public REST API** (public-key fetch, health) for any client that needs to verify tokens.
 
-State lives in a PostgreSQL database; both surfaces are stateless and can run as multiple replicas behind a load balancer.
-
 ## Running it
 
-The minimal local setup is one Postgres image plus one service image. Pin both to the same release tag (current: `v2.2.6`).
+State lives in PostgreSQL. Both surfaces are stateless and run happily as multiple replicas behind a load balancer.
 
-The example below runs the gRPC server in **standalone** mode — the simplest path to a working signing API. Set `GRPC_PORT` to whichever port you want to expose.
+The minimal setup is one Postgres image plus one service image — pin both to the same release tag (current: `v2.2.6`). The example below runs the gRPC server in **standalone** mode (server + migrations in one image), the shortest path to a working signing API for local dev. Set `GRPC_PORT` to whichever port you want to expose.
 
 ```yaml
 services:
@@ -63,16 +61,14 @@ volumes:
   json-keys-postgres-data:
 ```
 
-The four deployment shapes:
+**Other deployment shapes.** Standalone images bundle migrations and run them on every startup; that is fine for dev and breaks under multi-replica restarts in production. Use the split images plus the dedicated `migrations` image once you ship.
 
-| Shape           | When to use                       | Image                                                 |
-| --------------- | --------------------------------- | ----------------------------------------------------- |
-| Standalone gRPC | Local dev, signing experiments    | `service-json-keys/standalone-grpc`                   |
-| Standalone REST | Local dev, public-key access only | `service-json-keys/standalone-rest`                   |
-| gRPC            | Production gRPC tier              | `service-json-keys/grpc` (+ `migrations`, `database`) |
-| REST            | Production REST tier              | `service-json-keys/rest` (+ `migrations`, `database`) |
-
-> Standalone images run migrations on every startup. Convenient for development but unsuitable for production — every replica restart re-runs the migration job. For production, use the split images plus the dedicated `migrations` image.
+| Shape           | What it does                                    | Image                                                 |
+| --------------- | ----------------------------------------------- | ----------------------------------------------------- |
+| Standalone gRPC | Sign and verify tokens (dev only)               | `service-json-keys/standalone-grpc`                   |
+| Standalone REST | Serve public keys for verification (dev only)   | `service-json-keys/standalone-rest`                   |
+| gRPC            | Sign and verify tokens (production)             | `service-json-keys/grpc` (+ `migrations`, `database`) |
+| REST            | Serve public keys for verification (production) | `service-json-keys/rest` (+ `migrations`, `database`) |
 
 <details>
 <summary>Production-shape example (split gRPC)</summary>
@@ -123,7 +119,7 @@ The REST equivalent uses `service-json-keys/rest:v2.2.6` instead of `grpc:v2.2.6
 
 ### Configuration
 
-Configuration is driven by environment variables.
+Every variable below is read from the process environment.
 
 **Required**
 
@@ -195,6 +191,9 @@ type MyClaims struct {
 func main() {
 	ctx := context.Background()
 
+	// In production, swap insecure.NewCredentials() for a TLS or mTLS credential —
+	// the server has no application-layer auth, so transport security is the only
+	// thing protecting private-key operations from a network adversary.
 	client, err := servicejsonkeys.NewClient(
 		"service-json-keys:8080",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -226,7 +225,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	_ = claims // claims.UserID == "user-1"
+	log.Printf("verified claims for user %s", claims.UserID)
 }
 ```
 
