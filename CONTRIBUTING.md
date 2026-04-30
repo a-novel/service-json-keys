@@ -8,7 +8,7 @@ For deployment, configuration, and client-package integration, read the [README]
 
 ## Quick local interactions
 
-Once `make run` is up, the gRPC server listens on `${GRPC_PORT}` and the REST server on `${REST_PORT}`.
+Once `make run` is up, the gRPC server listens on `${GRPC_PORT}` and the REST server on `${REST_PORT}`. Both ports are picked at random by [`scripts/setup-env.sh`](./scripts/setup-env.sh) (via [`get-port-please`](https://www.npmjs.com/package/get-port-please)) and printed to stdout on startup; pin them by exporting `GRPC_PORT` / `REST_PORT` before `make run` if you want stable values.
 
 ### Health
 
@@ -93,11 +93,13 @@ auth:
     leeway: 5m # clock-skew tolerance when validating expiry
 ```
 
-Adding a usage requires the same entry in every consumer that uses `pkg/go` — the `KeyUsageAuth`-style constants pin the usage by name, but the consumer also needs to know its config to wire the matching verifier.
+Adding a usage requires a matching config entry in every consumer that wires it. The `KeyUsageAuth`-style constants pin the usage by name, but the consumer also needs the same per-usage config (algorithm, token claims, cache TTL) to build a verifier — `pkg/go.NewClient` reads `JwkPresetDefault` at startup to do that.
 
 ### Key rotation
 
-[`cmd/rotate-keys/main.go`](./cmd/rotate-keys/main.go) is a one-shot job. For each configured usage, it generates a new key when the current main key is older than `key.rotation`, then refreshes the `active_keys` materialized view so consumers see the change immediately. Run it on a schedule (cron, Kubernetes CronJob, etc.). Without it, keys still rotate by TTL — the job just keeps the rotation cadence tight.
+[`cmd/rotate-keys/main.go`](./cmd/rotate-keys/main.go) is a one-shot job. For each configured usage, it generates a new key when the current main key is older than `key.rotation`, then refreshes the `active_keys` materialized view so consumers see the change immediately. Run it on a schedule (cron, Kubernetes CronJob, etc.).
+
+This job is **not optional** for a long-running deployment. Existing keys age out of `active_keys` once they reach `key.ttl`, but nothing inside the gRPC or REST processes generates replacements — so without the job firing on schedule, the active set eventually empties for each usage and signing breaks. The first rotation also runs at deploy time so the database is seeded; otherwise the service starts with no keys to sign with.
 
 ### Surfaces
 
