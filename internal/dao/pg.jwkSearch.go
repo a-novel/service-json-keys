@@ -40,7 +40,7 @@ type PgJwkSearch struct{}
 
 // NewPgJwkSearch returns a new PgJwkSearch repository.
 func NewPgJwkSearch() *PgJwkSearch {
-	return new(PgJwkSearch)
+	return &PgJwkSearch{}
 }
 
 func (repository *PgJwkSearch) Exec(ctx context.Context, request *JwkSearchRequest) ([]*Jwk, error) {

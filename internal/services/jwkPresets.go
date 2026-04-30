@@ -139,7 +139,7 @@ func JwkGeneratorEs(alg jwa.Alg) func() (any, any, string, string, error) {
 		)
 
 		if preset, ok = JwkPresetsEcdsa[alg]; !ok {
-			return nil, nil, "", "", fmt.Errorf("%w (es): %s", ErrJwkPresetUnknown, alg)
+			return nil, nil, "", "", fmt.Errorf("%w (ecdsa): %s", ErrJwkPresetUnknown, alg)
 		}
 
 		priv, pub, err := jwk.GenerateECDSA(preset)
@@ -261,6 +261,7 @@ func NewJwkPublicSource(
 		fetch := func(ctx context.Context) ([]*jwa.JWK, error) {
 			return source.SearchKeys(ctx, usage)
 		}
+
 		sourceConfig := jwk.SourceConfig{
 			CacheDuration: keyConfig.Key.Cache,
 			Fetch:         fetch,
