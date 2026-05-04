@@ -61,8 +61,8 @@ github.com/GoogleCloudPlatform/opentelemetry-operations-go/propagator v0.56.0 h1
 github.com/GoogleCloudPlatform/opentelemetry-operations-go/propagator v0.56.0/go.mod h1:sKE2BdlsRRPL7ONGioxJnjUhEA1NbF484vFq8LX6znI=
 github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERoyfY=
 github.com/Microsoft/go-winio v0.6.2/go.mod h1:yd8OoFMLzJbo9gZq8j5qaps8bJ9aShtEA8Ipt1oGCvU=
-github.com/a-novel-kit/golib v0.20.29 h1:gfuqGDzNwhbhy+yfTuuiVkye4X7aXrU4738BKvK+Ke0=
-github.com/a-novel-kit/golib v0.20.29/go.mod h1:3r47KCHHTOYpUJRS+cymcdsF+5S+GCT80fQr7IfXOTs=
+github.com/a-novel-kit/golib v0.20.30 h1:s1epJLNZ/ErdNtW8q44K0W6oJY+Tu9MdZj0y+VoyMoc=
+github.com/a-novel-kit/golib v0.20.30/go.mod h1:3r47KCHHTOYpUJRS+cymcdsF+5S+GCT80fQr7IfXOTs=
 github.com/a-novel-kit/jwt v1.1.56 h1:HSpMpd+LuE2G8bEpQLgLHlW6szXwXHSFBEFDJiIwTmQ=
 github.com/a-novel-kit/jwt v1.1.56/go.mod h1:IegZVa2g9VUei37XMh1ltwtaNQptr+BEfpVXO4nWlJA=
 github.com/antlr4-go/antlr/v4 v4.13.1 h1:SqQKkuVZ+zWkMMNkjy5FZe5mr5WURWnlpmOuzYWrPrQ=
