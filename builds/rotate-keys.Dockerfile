@@ -1,7 +1,7 @@
 # Runs the key rotation job: generates new JSON Web Keys for each usage where the rotation
 # interval has elapsed. Requires a database with migrations already applied; does not
 # require a running server.
-FROM docker.io/library/golang:1.26.2-alpine AS builder
+FROM docker.io/library/golang:1.26.3-alpine AS builder
 
 ENV CGO_ENABLED=0
 

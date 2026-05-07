@@ -1,5 +1,5 @@
 # Runs the JSON-keys gRPC server. Requires a database with migrations already applied.
-FROM docker.io/library/golang:1.26.2-alpine AS builder
+FROM docker.io/library/golang:1.26.3-alpine AS builder
 
 # CGO_ENABLED=0 produces a fully static binary with no C library dependency,
 # which is required for safe execution on Alpine (musl libc).
