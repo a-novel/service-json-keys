@@ -1,6 +1,6 @@
 module github.com/a-novel/service-json-keys/v2/gotestsum
 
-go 1.26.2
+go 1.26.3
 
 tool gotest.tools/gotestsum
 
