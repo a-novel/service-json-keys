@@ -8,7 +8,7 @@ tool (
 )
 
 require (
-	github.com/a-novel-kit/golib v0.20.31
+	github.com/a-novel-kit/golib v0.20.32
 	github.com/a-novel-kit/jwt v1.1.58
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/go-chi/cors v1.2.2
