@@ -1,6 +1,6 @@
 # PostgreSQL image with pg_cron pre-installed at build time.
 # Database migrations are not included; run the migrations image separately after deployment.
-FROM docker.io/library/postgres:18.3 AS builder
+FROM docker.io/library/postgres:18.4 AS builder
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && make \
   && make install
 
-FROM docker.io/library/postgres:18.3
+FROM docker.io/library/postgres:18.4
 
 # Copy only the compiled extension artifacts; build tools stay in the builder stage.
 # Update these paths when bumping the PostgreSQL major version.
