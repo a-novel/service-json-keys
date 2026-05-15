@@ -111,7 +111,7 @@ func main() {
 		),
 	)
 
-	grpcf.SetEchoServers(server, cfg.Grpc.Ping)
+	grpcf.SetEchoServersContext(ctx, server, cfg.Grpc.Ping)
 
 	protogen.RegisterStatusServiceServer(server, handlerStatus)
 	protogen.RegisterClaimsSignServiceServer(server, handlerClaimsSign)

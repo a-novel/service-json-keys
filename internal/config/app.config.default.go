@@ -21,12 +21,12 @@ const (
 )
 
 // LoggerProdGrpc sends gRPC request logs to Google Cloud Logging.
-var LoggerProdGrpc = loggingpresets.GrpcGcloud{
+var LoggerProdGrpc = loggingpresets.GRPCGcloud{
 	Component: env.GcloudProjectId,
 }
 
 // LoggerDevGrpc prints gRPC request logs to the console in a human-readable format.
-var LoggerDevGrpc = loggingpresets.GrpcLocal{}
+var LoggerDevGrpc = loggingpresets.GRPCLocal{}
 
 // LoggerDev prints HTTP request logs to the console in a human-readable format.
 var LoggerDev = &loggingpresets.LogLocal{
@@ -75,11 +75,11 @@ var AppPresetDefault = App{
 			FlushTimeout: OtelFlushTimeout,
 		}),
 	Logger:     lo.Ternary[logging.Log](env.GcloudProjectId == "", LoggerDev, LoggerProd),
-	GrpcLogger: lo.Ternary[logging.RpcConfig](env.GcloudProjectId == "", &LoggerDevGrpc, &LoggerProdGrpc),
-	RestLogger: lo.Ternary[logging.HttpConfig](
+	GrpcLogger: lo.Ternary[logging.RPCConfig](env.GcloudProjectId == "", &LoggerDevGrpc, &LoggerProdGrpc),
+	RestLogger: lo.Ternary[logging.HTTPConfig](
 		env.GcloudProjectId == "",
-		&loggingpresets.HttpLocal{BaseLogger: LoggerDev},
-		&loggingpresets.HttpGcloud{BaseLogger: LoggerProd},
+		&loggingpresets.HTTPLocal{BaseLogger: LoggerDev},
+		&loggingpresets.HTTPGcloud{BaseLogger: LoggerProd},
 	),
 	Postgres: PostgresPresetDefault,
 }
