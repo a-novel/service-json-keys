@@ -37,7 +37,7 @@ func (handler *GrpcClaimsSign) ClaimsSign(
 	ctx, span := otel.Tracer().Start(ctx, "grpc.ClaimsSign")
 	defer span.End()
 
-	extractedClaims, err := grpcf.ProtoAnyToInterface(request.GetPayload())
+	extractedClaims, err := grpcf.UnmarshalJSONFromAny(request.GetPayload())
 	if err != nil {
 		_ = otel.ReportError(span, err)
 

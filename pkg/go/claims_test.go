@@ -29,7 +29,7 @@ func TestClaimsVerifier(t *testing.T) {
 		Foo: "bar",
 	}
 
-	cp, err := grpcf.InterfaceToProtoAny(c)
+	cp, err := grpcf.MarshalJSONAsAny(c)
 	require.NoError(t, err)
 
 	signed, err := client.ClaimsSign(t.Context(), &servicejsonkeys.ClaimsSignRequest{

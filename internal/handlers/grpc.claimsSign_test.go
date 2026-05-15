@@ -43,7 +43,7 @@ func TestGrpcClaimsSign(t *testing.T) {
 			name: "Success",
 
 			request: &protogen.ClaimsSignRequest{
-				Payload: lo.Must(grpcf.InterfaceToProtoAny(map[string]any{"message": "hello world"})),
+				Payload: lo.Must(grpcf.MarshalJSONAsAny(map[string]any{"message": "hello world"})),
 				Usage:   "test-usage",
 			},
 
@@ -61,7 +61,7 @@ func TestGrpcClaimsSign(t *testing.T) {
 			name: "Error/InvalidPayload",
 
 			request: &protogen.ClaimsSignRequest{
-				// Payload not set — grpcf.ProtoAnyToInterface(nil) returns an error.
+				// Payload not set — grpcf.UnmarshalJSONFromAny(nil) returns an error.
 				Usage: "test-usage",
 			},
 
@@ -71,7 +71,7 @@ func TestGrpcClaimsSign(t *testing.T) {
 			name: "Error/BadConfig",
 
 			request: &protogen.ClaimsSignRequest{
-				Payload: lo.Must(grpcf.InterfaceToProtoAny(map[string]any{"message": "hello world"})),
+				Payload: lo.Must(grpcf.MarshalJSONAsAny(map[string]any{"message": "hello world"})),
 				Usage:   "test-usage",
 			},
 
@@ -86,7 +86,7 @@ func TestGrpcClaimsSign(t *testing.T) {
 			name: "Error/Internal",
 
 			request: &protogen.ClaimsSignRequest{
-				Payload: lo.Must(grpcf.InterfaceToProtoAny(map[string]any{"message": "hello world"})),
+				Payload: lo.Must(grpcf.MarshalJSONAsAny(map[string]any{"message": "hello world"})),
 				Usage:   "test-usage",
 			},
 
