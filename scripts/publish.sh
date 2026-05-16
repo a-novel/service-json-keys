@@ -10,7 +10,14 @@ if [ $# -ne 1 ]; then
     exit 1
 fi
 
-pnpm version "$1" --workspaces --workspaces-update=false --no-git-tag-version
+# npm (not pnpm) owns the version bump: --workspaces / --workspaces-update are
+# npm flags. Older pnpm proxied `pnpm version` to npm so they were accepted;
+# pnpm >=11 parses `version` itself and rejects them ("Unknown options:
+# 'workspaces', 'workspaces-update'"). The root package.json declares an npm
+# `workspaces` array (incl. "."), so `npm version --workspaces` bumps the root
+# and every member; --workspaces-update=false keeps interdependency ranges and
+# --no-git-tag-version leaves the commit/tag to this script.
+npm version "$1" --workspaces --workspaces-update=false --no-git-tag-version
 pnpm prepublish:doc
 
 VERSION="$(node -p "require('./package.json').version")"
