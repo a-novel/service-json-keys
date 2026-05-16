@@ -13,7 +13,6 @@ import (
 
 	"github.com/a-novel/service-json-keys/v2/internal/config/configtest"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
-	"github.com/a-novel/service-json-keys/v2/internal/models/migrations"
 )
 
 func TestPgJwkInsert(t *testing.T) {
@@ -55,10 +54,10 @@ func TestPgJwkInsert(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			postgres.RunIsolatedTransactionalTest(
+			postgres.RunDBTest(
 				t,
 				configtest.PostgresPreset,
-				migrations.Migrations,
+				migrationsWithCronStub(t),
 				func(ctx context.Context, t *testing.T) {
 					t.Helper()
 
