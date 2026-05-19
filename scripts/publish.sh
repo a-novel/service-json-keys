@@ -10,7 +10,14 @@ if [ $# -ne 1 ]; then
     exit 1
 fi
 
-pnpm version "$1" --workspaces --workspaces-update=false --no-git-tag-version
+# Bump the root project and every workspace member. --workspaces /
+# --workspaces-update are npm flags; pnpm <11 silently proxied `pnpm version`
+# to npm so they worked, but pnpm >=11 has a native `version` command that
+# rejects them ("Unknown options: 'workspaces', 'workspaces-update'"). The
+# pnpm-native equivalent is --recursive, which versions the workspace root and
+# every member in one pass; pnpm always skips the git commit/tag in recursive
+# mode, so this script still owns the commit/tag/push below.
+pnpm version "$1" --recursive
 pnpm prepublish:doc
 
 VERSION="$(node -p "require('./package.json').version")"
