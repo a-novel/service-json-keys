@@ -6,7 +6,7 @@
 set -e
 
 APP_NAME="service-json-keys-test"
-PODMAN_FILE="$PWD/builds/podman-compose.test.yaml"
+PODMAN_FILE="$PWD/builds/podman-compose.go.internal.test.yaml"
 
 # Ensure containers are properly shut down when the program exits abnormally.
 # Registered on EXIT (covers normal exit, set -e exits, and INT) — ERR is omitted to avoid

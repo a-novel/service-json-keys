@@ -6,7 +6,7 @@
 set -e
 
 APP_NAME="service-json-keys-integration-test-rest"
-PODMAN_FILE="$PWD/builds/podman-compose.integration-test.rest.yaml"
+PODMAN_FILE="$PWD/builds/podman-compose.pnpm.test.yaml"
 
 # Ensure containers are properly shut down when the program exits abnormally.
 cleanup() {
