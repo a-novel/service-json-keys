@@ -16,7 +16,13 @@ services:
     volumes:
       - json-keys-postgres-data:/var/lib/postgresql/
 
+  # Profiled so a plain `podman compose up` does NOT start it: when the CLI
+  # runs this entrypoint locally (go run) it only needs the deps (postgres);
+  # a containerised copy on the same host ${GRPC_PORT} would collide
+  # ("bind: address already in use"). `--profile grpc` opts into the
+  # dockerised copy instead (per-repo dockerised run mode).
   service-json-keys-grpc:
+    profiles: ["grpc"]
     build:
       context: ..
       dockerfile: ./builds/standalone.grpc.Dockerfile
@@ -31,7 +37,11 @@ services:
     networks:
       - api
 
+  # Same rationale as grpc above: profiled out of the default `up` so the
+  # locally-run REST entrypoint owns ${REST_PORT}. `--profile rest` opts
+  # into the dockerised copy.
   service-json-keys-rest:
+    profiles: ["rest"]
     build:
       context: ..
       dockerfile: ./builds/standalone.rest.Dockerfile
