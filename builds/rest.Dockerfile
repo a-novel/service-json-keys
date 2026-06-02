@@ -1,5 +1,5 @@
 # Runs the JSON-keys REST server. Requires a database with migrations already applied.
-FROM docker.io/library/golang:1.26.3-alpine AS builder
+FROM docker.io/library/golang:1.26.4-alpine AS builder
 
 ENV CGO_ENABLED=0
 
