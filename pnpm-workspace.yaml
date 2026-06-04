@@ -16,6 +16,7 @@ linkWorkspacePackages: true
 
 minimumReleaseAgeExclude:
   - "@typescript-eslint/types@8.60.1"
+  - '@types/node@24.13.0'
 
 onlyBuiltDependencies:
   - core-js
