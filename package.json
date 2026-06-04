@@ -53,7 +53,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
     "eslint-plugin-storybook": "^10.2.8",
-    "eslint-plugin-svelte": "^3.15.0",
+    "eslint-plugin-svelte": "^3.19.0",
     "get-port-please": "^3.2.0",
     "globals": "^17.0.0",
     "jiti": "^2.6.1",
