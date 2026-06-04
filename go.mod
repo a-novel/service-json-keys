@@ -1,6 +1,6 @@
 module github.com/a-novel/service-json-keys/v2
 
-go 1.26.3
+go 1.26.4
 
 tool (
 	github.com/bufbuild/buf/cmd/buf
@@ -9,7 +9,7 @@ tool (
 
 require (
 	github.com/a-novel-kit/golib v0.22.5
-	github.com/a-novel-kit/jwt v1.1.64
+	github.com/a-novel-kit/jwt v1.1.65
 	github.com/go-chi/chi/v5 v5.3.0
 	github.com/go-chi/cors v1.2.2
 	github.com/goccy/go-yaml v1.19.2
