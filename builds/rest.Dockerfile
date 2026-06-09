@@ -18,7 +18,7 @@ COPY ./internal/config ./internal/config
 
 RUN go build -ldflags="-s -w" -trimpath -o /rest ./cmd/rest/
 
-FROM docker.io/library/alpine:3.23.4
+FROM docker.io/library/alpine:3.24.0
 
 COPY --from=builder /rest /rest
 

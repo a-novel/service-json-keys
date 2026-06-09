@@ -28,7 +28,7 @@ COPY ./internal/config ./internal/config
 # -trimpath removes local filesystem paths for reproducible builds.
 RUN go build -ldflags="-s -w" -trimpath -o /grpc ./cmd/grpc/
 
-FROM docker.io/library/alpine:3.23.4
+FROM docker.io/library/alpine:3.24.0
 
 COPY --from=builder /grpc /grpc
 COPY --from=builder /usr/local/bin/grpcurl /usr/local/bin/grpcurl
