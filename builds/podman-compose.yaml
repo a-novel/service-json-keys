@@ -12,10 +12,9 @@ services:
     networks:
       - api
     environment:
-      # Spec §12.1: inline test-default credentials. The a-novel daemon
-      # owns dynamic env (ports, derived URLs, cross-service refs) but
-      # NOT constants — those live in the service. Values mirror what
-      # every service's CI workflow already hardcodes.
+      # Inline test-default credentials. The daemon owns dynamic env (ports,
+      # derived URLs, cross-service refs); constants like these belong to the
+      # service. Values mirror what every service's CI workflow hardcodes.
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
       POSTGRES_DB: postgres
@@ -58,8 +57,8 @@ services:
         condition: service_completed_successfully
     environment:
       POSTGRES_DSN: "postgres://postgres:postgres@postgres-json-keys:5432/postgres?sslmode=disable"
-      # Local-dev test key (matches CI workflows). Spec §12.1: constants
-      # live in the service. Never used in production.
+      # Local-dev test key (matches CI workflows); a service-owned constant.
+      # Never used in production.
       APP_MASTER_KEY: fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca
     networks:
       - api
@@ -68,7 +67,7 @@ services:
   # LONG-RUNNER TARGETS (rest, grpc)
   # ====================================================================================================================
 
-  # Profiled so a plain `podman compose up` does NOT start it: when the CLI
+  # Profiled so a plain `podman compose up` does not start it: when the CLI
   # runs this entrypoint locally (go run) it only needs the deps (postgres
   # + the one-shots having succeeded); a containerised copy on the same
   # host ${GRPC_PORT} would collide ("bind: address already in use").
