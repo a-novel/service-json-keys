@@ -1,4 +1,8 @@
 services:
+  # ====================================================================================================================
+  # DATABASE
+  # ====================================================================================================================
+
   postgres-json-keys:
     build:
       context: ..
@@ -8,19 +12,52 @@ services:
     networks:
       - api
     environment:
-      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
-      POSTGRES_USER: "${POSTGRES_USER}"
-      POSTGRES_DB: "${POSTGRES_DB}"
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
       POSTGRES_HOST_AUTH_METHOD: scram-sha-256
       POSTGRES_INITDB_ARGS: --auth=scram-sha-256
     volumes:
       - json-keys-postgres-data:/var/lib/postgresql/
 
-  # Profiled so a plain `podman compose up` does NOT start it: when the CLI
-  # runs this entrypoint locally (go run) it only needs the deps (postgres);
-  # a containerised copy on the same host ${GRPC_PORT} would collide
-  # ("bind: address already in use"). `--profile grpc` opts into the
-  # dockerised copy instead (per-repo dockerised run mode).
+  # ====================================================================================================================
+  # ONE-SHOT TARGETS
+  # ====================================================================================================================
+
+  service-json-keys-migrations:
+    profiles: ["migrations"]
+    build:
+      context: ..
+      dockerfile: ./builds/migrations.Dockerfile
+    depends_on:
+      postgres-json-keys:
+        condition: service_healthy
+    environment:
+      POSTGRES_DSN: "postgres://postgres:postgres@postgres-json-keys:5432/postgres?sslmode=disable"
+    networks:
+      - api
+
+  service-json-keys-rotate-keys:
+    profiles: ["rotate-keys"]
+    build:
+      context: ..
+      dockerfile: ./builds/rotate-keys.Dockerfile
+    depends_on:
+      postgres-json-keys:
+        condition: service_healthy
+      service-json-keys-migrations:
+        condition: service_completed_successfully
+    environment:
+      POSTGRES_DSN: "postgres://postgres:postgres@postgres-json-keys:5432/postgres?sslmode=disable"
+      # Local-dev test key — never used in production.
+      APP_MASTER_KEY: fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca
+    networks:
+      - api
+
+  # ====================================================================================================================
+  # LONG-RUNNER TARGETS
+  # ====================================================================================================================
+
   service-json-keys-grpc:
     profiles: ["grpc"]
     build:
@@ -31,15 +68,16 @@ services:
     depends_on:
       postgres-json-keys:
         condition: service_healthy
+      service-json-keys-migrations:
+        condition: service_completed_successfully
+      service-json-keys-rotate-keys:
+        condition: service_completed_successfully
     environment:
-      POSTGRES_DSN: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres-json-keys:5432/${POSTGRES_DB}?sslmode=disable"
-      APP_MASTER_KEY: "${APP_MASTER_KEY}"
+      POSTGRES_DSN: "postgres://postgres:postgres@postgres-json-keys:5432/postgres?sslmode=disable"
+      APP_MASTER_KEY: fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca
     networks:
       - api
 
-  # Same rationale as grpc above: profiled out of the default `up` so the
-  # locally-run REST entrypoint owns ${REST_PORT}. `--profile rest` opts
-  # into the dockerised copy.
   service-json-keys-rest:
     profiles: ["rest"]
     build:
@@ -50,9 +88,13 @@ services:
     depends_on:
       postgres-json-keys:
         condition: service_healthy
+      service-json-keys-migrations:
+        condition: service_completed_successfully
+      service-json-keys-rotate-keys:
+        condition: service_completed_successfully
     environment:
-      POSTGRES_DSN: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres-json-keys:5432/${POSTGRES_DB}?sslmode=disable"
-      APP_MASTER_KEY: "${APP_MASTER_KEY}"
+      POSTGRES_DSN: "postgres://postgres:postgres@postgres-json-keys:5432/postgres?sslmode=disable"
+      APP_MASTER_KEY: fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca
     networks:
       - api
 

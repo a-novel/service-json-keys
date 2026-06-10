@@ -1,6 +1,6 @@
 # Contributing to service-json-keys
 
-For platform-wide setup (Go, Node, Podman), the standard `make` targets, and lint/test conventions, see the [generic A-Novel contribution guidelines](https://github.com/a-novel/.github/blob/master/CONTRIBUTING.md). This file documents what is specific to the JSON Keys service.
+For platform-wide setup (Go, Node, Podman), the standard `a-novel` / `pnpm` commands, and lint/test conventions, see the [generic A-Novel contribution guidelines](https://github.com/a-novel/.github/blob/master/CONTRIBUTING.md). This file documents what is specific to the JSON Keys service.
 
 For deployment, configuration, and client-package integration, read the [README](./README.md) first. Contributors are expected to know what the service does and how operators run it before touching the code.
 
@@ -8,7 +8,7 @@ For deployment, configuration, and client-package integration, read the [README]
 
 ## Quick local interactions
 
-Once `make run` is up, the gRPC server listens on `${GRPC_PORT}` and the REST server on `${REST_PORT}`. Both ports are picked at random by [`scripts/setup-env.sh`](./scripts/setup-env.sh) (via [`get-port-please`](https://www.npmjs.com/package/get-port-please)) and printed to stdout on startup; pin them by exporting `GRPC_PORT` / `REST_PORT` before `make run` if you want stable values.
+Once the service is up (`a-novel run start service-json-keys/grpc` and/or `.../rest`), the gRPC server listens on `${GRPC_PORT}` and the REST server on `${REST_PORT}`. Both ports are allocated by the `a-novel` daemon; inject them into your shell with `eval "$(a-novel run env service-json-keys)"`.
 
 ### Health
 
