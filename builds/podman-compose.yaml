@@ -12,9 +12,6 @@ services:
     networks:
       - api
     environment:
-      # Inline test-default credentials. The daemon owns dynamic env (ports,
-      # derived URLs, cross-service refs); constants like these belong to the
-      # service. Values mirror what every service's CI workflow hardcodes.
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
       POSTGRES_DB: postgres
@@ -24,12 +21,9 @@ services:
       - json-keys-postgres-data:/var/lib/postgresql/
 
   # ====================================================================================================================
-  # ONE-SHOT TARGETS (run on infra-up, exit when done)
+  # ONE-SHOT TARGETS
   # ====================================================================================================================
 
-  # migrations: applies the schema. Idempotent — safe to re-run every
-  # infra-up. No healthcheck (compose's classifier: long-runners have
-  # HEALTHCHECK, one-shots don't).
   service-json-keys-migrations:
     profiles: ["migrations"]
     build:
@@ -43,8 +37,6 @@ services:
     networks:
       - api
 
-  # rotate-keys: provisions the active key set. Depends on migrations
-  # (schema must exist first). Same one-shot semantics.
   service-json-keys-rotate-keys:
     profiles: ["rotate-keys"]
     build:
@@ -57,21 +49,15 @@ services:
         condition: service_completed_successfully
     environment:
       POSTGRES_DSN: "postgres://postgres:postgres@postgres-json-keys:5432/postgres?sslmode=disable"
-      # Local-dev test key (matches CI workflows); a service-owned constant.
-      # Never used in production.
+      # Local-dev test key — never used in production.
       APP_MASTER_KEY: fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca
     networks:
       - api
 
   # ====================================================================================================================
-  # LONG-RUNNER TARGETS (rest, grpc)
+  # LONG-RUNNER TARGETS
   # ====================================================================================================================
 
-  # Profiled so a plain `podman compose up` does not start it: when the CLI
-  # runs this entrypoint locally (go run) it only needs the deps (postgres
-  # + the one-shots having succeeded); a containerised copy on the same
-  # host ${GRPC_PORT} would collide ("bind: address already in use").
-  # `--profile grpc` opts into the dockerised copy instead.
   service-json-keys-grpc:
     profiles: ["grpc"]
     build:
@@ -92,9 +78,6 @@ services:
     networks:
       - api
 
-  # Same rationale as grpc above: profiled out of the default `up` so the
-  # locally-run REST entrypoint owns ${REST_PORT}. `--profile rest` opts
-  # into the dockerised copy.
   service-json-keys-rest:
     profiles: ["rest"]
     build:
