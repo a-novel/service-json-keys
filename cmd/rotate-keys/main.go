@@ -26,6 +26,7 @@ import (
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lmsgprefix)
 	log.SetPrefix("rotate-keys: ")
+
 	start := time.Now()
 
 	// --- Bootstrap: load config, init telemetry and context ---
@@ -57,14 +58,18 @@ func main() {
 
 	// --- Rotate keys for each usage (inside a transaction for atomicity) ---
 	log.Printf("rotating keys for %d configured usage(s)", len(config.JwkPresetDefault))
+
 	processed := 0
+
 	err := postgres.RunInTx(ctx, nil, func(ctx context.Context, _ bun.IDB) error {
 		for usage := range config.JwkPresetDefault {
 			log.Printf("  · %s: ensuring key (rotated if interval elapsed)", usage)
+
 			_, err := serviceJwkGen.Exec(ctx, &services.JwkGenRequest{Usage: usage})
 			if err != nil {
 				return fmt.Errorf("generate key for usage %s: %w", usage, err)
 			}
+
 			processed++
 		}
 
@@ -77,6 +82,7 @@ func main() {
 
 	// --- Refresh the materialized view so consumers see the updated active keys ---
 	log.Println("refreshing active_keys materialized view...")
+
 	db := lo.Must(postgres.GetContext(ctx))
 
 	// CONCURRENTLY allows reads to continue during the refresh; requires the unique index
