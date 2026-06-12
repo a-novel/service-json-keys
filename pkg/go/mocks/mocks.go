@@ -76,7 +76,7 @@ type MockClaimsVerifier_VerifyClaims_Call[C any] struct {
 // VerifyClaims is a helper method to define mock.On call
 //   - ctx context.Context
 //   - req *servicejsonkeys.VerifyClaimsRequest
-func (_e *MockClaimsVerifier_Expecter[C]) VerifyClaims(ctx interface{}, req interface{}) *MockClaimsVerifier_VerifyClaims_Call[C] {
+func (_e *MockClaimsVerifier_Expecter[C]) VerifyClaims(ctx any, req any) *MockClaimsVerifier_VerifyClaims_Call[C] {
 	return &MockClaimsVerifier_VerifyClaims_Call[C]{Call: _e.mock.On("VerifyClaims", ctx, req)}
 }
 
@@ -178,9 +178,9 @@ type MockBaseClient_ClaimsSign_Call struct {
 //   - ctx context.Context
 //   - req *servicejsonkeys.ClaimsSignRequest
 //   - opts ...grpc.CallOption
-func (_e *MockBaseClient_Expecter) ClaimsSign(ctx interface{}, req interface{}, opts ...interface{}) *MockBaseClient_ClaimsSign_Call {
+func (_e *MockBaseClient_Expecter) ClaimsSign(ctx any, req any, opts ...any) *MockBaseClient_ClaimsSign_Call {
 	return &MockBaseClient_ClaimsSign_Call{Call: _e.mock.On("ClaimsSign",
-		append([]interface{}{ctx, req}, opts...)...)}
+		append([]any{ctx, req}, opts...)...)}
 }
 
 func (_c *MockBaseClient_ClaimsSign_Call) Run(run func(ctx context.Context, req *servicejsonkeys.ClaimsSignRequest, opts ...grpc.CallOption)) *MockBaseClient_ClaimsSign_Call {
@@ -294,9 +294,9 @@ type MockBaseClient_JwkGet_Call struct {
 //   - ctx context.Context
 //   - req *servicejsonkeys.JwkGetRequest
 //   - opts ...grpc.CallOption
-func (_e *MockBaseClient_Expecter) JwkGet(ctx interface{}, req interface{}, opts ...interface{}) *MockBaseClient_JwkGet_Call {
+func (_e *MockBaseClient_Expecter) JwkGet(ctx any, req any, opts ...any) *MockBaseClient_JwkGet_Call {
 	return &MockBaseClient_JwkGet_Call{Call: _e.mock.On("JwkGet",
-		append([]interface{}{ctx, req}, opts...)...)}
+		append([]any{ctx, req}, opts...)...)}
 }
 
 func (_c *MockBaseClient_JwkGet_Call) Run(run func(ctx context.Context, req *servicejsonkeys.JwkGetRequest, opts ...grpc.CallOption)) *MockBaseClient_JwkGet_Call {
@@ -377,9 +377,9 @@ type MockBaseClient_JwkList_Call struct {
 //   - ctx context.Context
 //   - req *servicejsonkeys.JwkListRequest
 //   - opts ...grpc.CallOption
-func (_e *MockBaseClient_Expecter) JwkList(ctx interface{}, req interface{}, opts ...interface{}) *MockBaseClient_JwkList_Call {
+func (_e *MockBaseClient_Expecter) JwkList(ctx any, req any, opts ...any) *MockBaseClient_JwkList_Call {
 	return &MockBaseClient_JwkList_Call{Call: _e.mock.On("JwkList",
-		append([]interface{}{ctx, req}, opts...)...)}
+		append([]any{ctx, req}, opts...)...)}
 }
 
 func (_c *MockBaseClient_JwkList_Call) Run(run func(ctx context.Context, req *servicejsonkeys.JwkListRequest, opts ...grpc.CallOption)) *MockBaseClient_JwkList_Call {
@@ -460,9 +460,9 @@ type MockBaseClient_Status_Call struct {
 //   - ctx context.Context
 //   - req *servicejsonkeys.StatusRequest
 //   - opts ...grpc.CallOption
-func (_e *MockBaseClient_Expecter) Status(ctx interface{}, req interface{}, opts ...interface{}) *MockBaseClient_Status_Call {
+func (_e *MockBaseClient_Expecter) Status(ctx any, req any, opts ...any) *MockBaseClient_Status_Call {
 	return &MockBaseClient_Status_Call{Call: _e.mock.On("Status",
-		append([]interface{}{ctx, req}, opts...)...)}
+		append([]any{ctx, req}, opts...)...)}
 }
 
 func (_c *MockBaseClient_Status_Call) Run(run func(ctx context.Context, req *servicejsonkeys.StatusRequest, opts ...grpc.CallOption)) *MockBaseClient_Status_Call {
@@ -543,9 +543,9 @@ type MockBaseClient_UnaryEcho_Call struct {
 //   - ctx context.Context
 //   - req *golibproto.UnaryEchoRequest
 //   - opts ...grpc.CallOption
-func (_e *MockBaseClient_Expecter) UnaryEcho(ctx interface{}, req interface{}, opts ...interface{}) *MockBaseClient_UnaryEcho_Call {
+func (_e *MockBaseClient_Expecter) UnaryEcho(ctx any, req any, opts ...any) *MockBaseClient_UnaryEcho_Call {
 	return &MockBaseClient_UnaryEcho_Call{Call: _e.mock.On("UnaryEcho",
-		append([]interface{}{ctx, req}, opts...)...)}
+		append([]any{ctx, req}, opts...)...)}
 }
 
 func (_c *MockBaseClient_UnaryEcho_Call) Run(run func(ctx context.Context, req *golibproto.UnaryEchoRequest, opts ...grpc.CallOption)) *MockBaseClient_UnaryEcho_Call {
@@ -653,9 +653,9 @@ type MockClient_ClaimsSign_Call struct {
 //   - ctx context.Context
 //   - req *servicejsonkeys.ClaimsSignRequest
 //   - opts ...grpc.CallOption
-func (_e *MockClient_Expecter) ClaimsSign(ctx interface{}, req interface{}, opts ...interface{}) *MockClient_ClaimsSign_Call {
+func (_e *MockClient_Expecter) ClaimsSign(ctx any, req any, opts ...any) *MockClient_ClaimsSign_Call {
 	return &MockClient_ClaimsSign_Call{Call: _e.mock.On("ClaimsSign",
-		append([]interface{}{ctx, req}, opts...)...)}
+		append([]any{ctx, req}, opts...)...)}
 }
 
 func (_c *MockClient_ClaimsSign_Call) Run(run func(ctx context.Context, req *servicejsonkeys.ClaimsSignRequest, opts ...grpc.CallOption)) *MockClient_ClaimsSign_Call {
@@ -769,9 +769,9 @@ type MockClient_JwkGet_Call struct {
 //   - ctx context.Context
 //   - req *servicejsonkeys.JwkGetRequest
 //   - opts ...grpc.CallOption
-func (_e *MockClient_Expecter) JwkGet(ctx interface{}, req interface{}, opts ...interface{}) *MockClient_JwkGet_Call {
+func (_e *MockClient_Expecter) JwkGet(ctx any, req any, opts ...any) *MockClient_JwkGet_Call {
 	return &MockClient_JwkGet_Call{Call: _e.mock.On("JwkGet",
-		append([]interface{}{ctx, req}, opts...)...)}
+		append([]any{ctx, req}, opts...)...)}
 }
 
 func (_c *MockClient_JwkGet_Call) Run(run func(ctx context.Context, req *servicejsonkeys.JwkGetRequest, opts ...grpc.CallOption)) *MockClient_JwkGet_Call {
@@ -852,9 +852,9 @@ type MockClient_JwkList_Call struct {
 //   - ctx context.Context
 //   - req *servicejsonkeys.JwkListRequest
 //   - opts ...grpc.CallOption
-func (_e *MockClient_Expecter) JwkList(ctx interface{}, req interface{}, opts ...interface{}) *MockClient_JwkList_Call {
+func (_e *MockClient_Expecter) JwkList(ctx any, req any, opts ...any) *MockClient_JwkList_Call {
 	return &MockClient_JwkList_Call{Call: _e.mock.On("JwkList",
-		append([]interface{}{ctx, req}, opts...)...)}
+		append([]any{ctx, req}, opts...)...)}
 }
 
 func (_c *MockClient_JwkList_Call) Run(run func(ctx context.Context, req *servicejsonkeys.JwkListRequest, opts ...grpc.CallOption)) *MockClient_JwkList_Call {
@@ -1073,9 +1073,9 @@ type MockClient_Status_Call struct {
 //   - ctx context.Context
 //   - req *servicejsonkeys.StatusRequest
 //   - opts ...grpc.CallOption
-func (_e *MockClient_Expecter) Status(ctx interface{}, req interface{}, opts ...interface{}) *MockClient_Status_Call {
+func (_e *MockClient_Expecter) Status(ctx any, req any, opts ...any) *MockClient_Status_Call {
 	return &MockClient_Status_Call{Call: _e.mock.On("Status",
-		append([]interface{}{ctx, req}, opts...)...)}
+		append([]any{ctx, req}, opts...)...)}
 }
 
 func (_c *MockClient_Status_Call) Run(run func(ctx context.Context, req *servicejsonkeys.StatusRequest, opts ...grpc.CallOption)) *MockClient_Status_Call {
@@ -1156,9 +1156,9 @@ type MockClient_UnaryEcho_Call struct {
 //   - ctx context.Context
 //   - req *golibproto.UnaryEchoRequest
 //   - opts ...grpc.CallOption
-func (_e *MockClient_Expecter) UnaryEcho(ctx interface{}, req interface{}, opts ...interface{}) *MockClient_UnaryEcho_Call {
+func (_e *MockClient_Expecter) UnaryEcho(ctx any, req any, opts ...any) *MockClient_UnaryEcho_Call {
 	return &MockClient_UnaryEcho_Call{Call: _e.mock.On("UnaryEcho",
-		append([]interface{}{ctx, req}, opts...)...)}
+		append([]any{ctx, req}, opts...)...)}
 }
 
 func (_c *MockClient_UnaryEcho_Call) Run(run func(ctx context.Context, req *golibproto.UnaryEchoRequest, opts ...grpc.CallOption)) *MockClient_UnaryEcho_Call {

@@ -72,7 +72,7 @@ type MockGrpcClaimsSignService_Exec_Call struct {
 // Exec is a helper method to define mock.On call
 //   - ctx context.Context
 //   - request *services.ClaimsSignRequest
-func (_e *MockGrpcClaimsSignService_Expecter) Exec(ctx interface{}, request interface{}) *MockGrpcClaimsSignService_Exec_Call {
+func (_e *MockGrpcClaimsSignService_Expecter) Exec(ctx any, request any) *MockGrpcClaimsSignService_Exec_Call {
 	return &MockGrpcClaimsSignService_Exec_Call{Call: _e.mock.On("Exec", ctx, request)}
 }
 
@@ -167,7 +167,7 @@ type MockGrpcJwkGetService_Exec_Call struct {
 // Exec is a helper method to define mock.On call
 //   - ctx context.Context
 //   - request *services.JwkSelectRequest
-func (_e *MockGrpcJwkGetService_Expecter) Exec(ctx interface{}, request interface{}) *MockGrpcJwkGetService_Exec_Call {
+func (_e *MockGrpcJwkGetService_Expecter) Exec(ctx any, request any) *MockGrpcJwkGetService_Exec_Call {
 	return &MockGrpcJwkGetService_Exec_Call{Call: _e.mock.On("Exec", ctx, request)}
 }
 
@@ -262,7 +262,7 @@ type MockGrpcJwkListService_Exec_Call struct {
 // Exec is a helper method to define mock.On call
 //   - ctx context.Context
 //   - request *services.JwkSearchRequest
-func (_e *MockGrpcJwkListService_Expecter) Exec(ctx interface{}, request interface{}) *MockGrpcJwkListService_Exec_Call {
+func (_e *MockGrpcJwkListService_Expecter) Exec(ctx any, request any) *MockGrpcJwkListService_Exec_Call {
 	return &MockGrpcJwkListService_Exec_Call{Call: _e.mock.On("Exec", ctx, request)}
 }
 
@@ -357,7 +357,7 @@ type MockRestJwkGetService_Exec_Call struct {
 // Exec is a helper method to define mock.On call
 //   - ctx context.Context
 //   - request *services.JwkSelectRequest
-func (_e *MockRestJwkGetService_Expecter) Exec(ctx interface{}, request interface{}) *MockRestJwkGetService_Exec_Call {
+func (_e *MockRestJwkGetService_Expecter) Exec(ctx any, request any) *MockRestJwkGetService_Exec_Call {
 	return &MockRestJwkGetService_Exec_Call{Call: _e.mock.On("Exec", ctx, request)}
 }
 
@@ -452,7 +452,7 @@ type MockRestJwkListService_Exec_Call struct {
 // Exec is a helper method to define mock.On call
 //   - ctx context.Context
 //   - request *services.JwkSearchRequest
-func (_e *MockRestJwkListService_Expecter) Exec(ctx interface{}, request interface{}) *MockRestJwkListService_Exec_Call {
+func (_e *MockRestJwkListService_Expecter) Exec(ctx any, request any) *MockRestJwkListService_Exec_Call {
 	return &MockRestJwkListService_Exec_Call{Call: _e.mock.On("Exec", ctx, request)}
 }
 
