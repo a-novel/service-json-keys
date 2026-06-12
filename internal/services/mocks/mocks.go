@@ -76,7 +76,7 @@ type MockJwkExportLocalSource_Exec_Call struct {
 // Exec is a helper method to define mock.On call
 //   - ctx context.Context
 //   - request *services.JwkSearchRequest
-func (_e *MockJwkExportLocalSource_Expecter) Exec(ctx interface{}, request interface{}) *MockJwkExportLocalSource_Exec_Call {
+func (_e *MockJwkExportLocalSource_Expecter) Exec(ctx any, request any) *MockJwkExportLocalSource_Exec_Call {
 	return &MockJwkExportLocalSource_Exec_Call{Call: _e.mock.On("Exec", ctx, request)}
 }
 
@@ -171,7 +171,7 @@ type MockJwkGenRepositorySearch_Exec_Call struct {
 // Exec is a helper method to define mock.On call
 //   - ctx context.Context
 //   - request *dao.JwkSearchRequest
-func (_e *MockJwkGenRepositorySearch_Expecter) Exec(ctx interface{}, request interface{}) *MockJwkGenRepositorySearch_Exec_Call {
+func (_e *MockJwkGenRepositorySearch_Expecter) Exec(ctx any, request any) *MockJwkGenRepositorySearch_Exec_Call {
 	return &MockJwkGenRepositorySearch_Exec_Call{Call: _e.mock.On("Exec", ctx, request)}
 }
 
@@ -266,7 +266,7 @@ type MockJwkGenRepositoryInsert_Exec_Call struct {
 // Exec is a helper method to define mock.On call
 //   - ctx context.Context
 //   - request *dao.JwkInsertRequest
-func (_e *MockJwkGenRepositoryInsert_Expecter) Exec(ctx interface{}, request interface{}) *MockJwkGenRepositoryInsert_Exec_Call {
+func (_e *MockJwkGenRepositoryInsert_Expecter) Exec(ctx any, request any) *MockJwkGenRepositoryInsert_Exec_Call {
 	return &MockJwkGenRepositoryInsert_Exec_Call{Call: _e.mock.On("Exec", ctx, request)}
 }
 
@@ -361,7 +361,7 @@ type MockJwkGenServiceExtract_Exec_Call struct {
 // Exec is a helper method to define mock.On call
 //   - ctx context.Context
 //   - request *services.JwkExtractRequest
-func (_e *MockJwkGenServiceExtract_Expecter) Exec(ctx interface{}, request interface{}) *MockJwkGenServiceExtract_Exec_Call {
+func (_e *MockJwkGenServiceExtract_Expecter) Exec(ctx any, request any) *MockJwkGenServiceExtract_Exec_Call {
 	return &MockJwkGenServiceExtract_Exec_Call{Call: _e.mock.On("Exec", ctx, request)}
 }
 
@@ -456,7 +456,7 @@ type MockJwkPrivateSource_SearchKeys_Call struct {
 // SearchKeys is a helper method to define mock.On call
 //   - ctx context.Context
 //   - usage string
-func (_e *MockJwkPrivateSource_Expecter) SearchKeys(ctx interface{}, usage interface{}) *MockJwkPrivateSource_SearchKeys_Call {
+func (_e *MockJwkPrivateSource_Expecter) SearchKeys(ctx any, usage any) *MockJwkPrivateSource_SearchKeys_Call {
 	return &MockJwkPrivateSource_SearchKeys_Call{Call: _e.mock.On("SearchKeys", ctx, usage)}
 }
 
@@ -551,7 +551,7 @@ type MockJwkPublicSource_SearchKeys_Call struct {
 // SearchKeys is a helper method to define mock.On call
 //   - ctx context.Context
 //   - usage string
-func (_e *MockJwkPublicSource_Expecter) SearchKeys(ctx interface{}, usage interface{}) *MockJwkPublicSource_SearchKeys_Call {
+func (_e *MockJwkPublicSource_Expecter) SearchKeys(ctx any, usage any) *MockJwkPublicSource_SearchKeys_Call {
 	return &MockJwkPublicSource_SearchKeys_Call{Call: _e.mock.On("SearchKeys", ctx, usage)}
 }
 
@@ -646,7 +646,7 @@ type MockJwkSearchRepository_Exec_Call struct {
 // Exec is a helper method to define mock.On call
 //   - ctx context.Context
 //   - request *dao.JwkSearchRequest
-func (_e *MockJwkSearchRepository_Expecter) Exec(ctx interface{}, request interface{}) *MockJwkSearchRepository_Exec_Call {
+func (_e *MockJwkSearchRepository_Expecter) Exec(ctx any, request any) *MockJwkSearchRepository_Exec_Call {
 	return &MockJwkSearchRepository_Exec_Call{Call: _e.mock.On("Exec", ctx, request)}
 }
 
@@ -741,7 +741,7 @@ type MockJwkSearchServiceExtract_Exec_Call struct {
 // Exec is a helper method to define mock.On call
 //   - ctx context.Context
 //   - request *services.JwkExtractRequest
-func (_e *MockJwkSearchServiceExtract_Expecter) Exec(ctx interface{}, request interface{}) *MockJwkSearchServiceExtract_Exec_Call {
+func (_e *MockJwkSearchServiceExtract_Expecter) Exec(ctx any, request any) *MockJwkSearchServiceExtract_Exec_Call {
 	return &MockJwkSearchServiceExtract_Exec_Call{Call: _e.mock.On("Exec", ctx, request)}
 }
 
@@ -836,7 +836,7 @@ type MockJwkSelectRepository_Exec_Call struct {
 // Exec is a helper method to define mock.On call
 //   - ctx context.Context
 //   - request *dao.JwkSelectRequest
-func (_e *MockJwkSelectRepository_Expecter) Exec(ctx interface{}, request interface{}) *MockJwkSelectRepository_Exec_Call {
+func (_e *MockJwkSelectRepository_Expecter) Exec(ctx any, request any) *MockJwkSelectRepository_Exec_Call {
 	return &MockJwkSelectRepository_Exec_Call{Call: _e.mock.On("Exec", ctx, request)}
 }
 
@@ -931,7 +931,7 @@ type MockJwkSelectServiceExtract_Exec_Call struct {
 // Exec is a helper method to define mock.On call
 //   - ctx context.Context
 //   - request *services.JwkExtractRequest
-func (_e *MockJwkSelectServiceExtract_Expecter) Exec(ctx interface{}, request interface{}) *MockJwkSelectServiceExtract_Exec_Call {
+func (_e *MockJwkSelectServiceExtract_Expecter) Exec(ctx any, request any) *MockJwkSelectServiceExtract_Exec_Call {
 	return &MockJwkSelectServiceExtract_Exec_Call{Call: _e.mock.On("Exec", ctx, request)}
 }
 
