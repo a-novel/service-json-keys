@@ -14,7 +14,7 @@ COPY ./internal/models/migrations ./internal/models/migrations
 
 RUN go build -ldflags="-s -w" -trimpath -o /migrations ./cmd/migrations/
 
-FROM docker.io/library/alpine:3.24.0
+FROM docker.io/library/alpine:3.24.1
 
 COPY --from=builder /migrations /migrations
 
