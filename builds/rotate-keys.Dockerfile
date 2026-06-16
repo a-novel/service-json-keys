@@ -18,7 +18,7 @@ COPY ./internal/lib ./internal/lib
 
 RUN go build -ldflags="-s -w" -trimpath -o /rotate-keys ./cmd/rotate-keys/
 
-FROM docker.io/library/alpine:3.24.0
+FROM docker.io/library/alpine:3.24.1
 
 COPY --from=builder /rotate-keys /rotate-keys
 

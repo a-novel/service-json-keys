@@ -26,7 +26,7 @@ RUN go build -ldflags="-s -w" -trimpath -o /grpc ./cmd/grpc/ && \
     go build -ldflags="-s -w" -trimpath -o /migrations ./cmd/migrations/ && \
     go build -ldflags="-s -w" -trimpath -o /rotate-keys ./cmd/rotate-keys/
 
-FROM docker.io/library/alpine:3.24.0
+FROM docker.io/library/alpine:3.24.1
 
 COPY --from=builder /grpc /grpc
 COPY --from=builder /migrations /migrations
