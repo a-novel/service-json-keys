@@ -13,7 +13,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-go@v6
         with:
           go-version-file: "go.mod"
@@ -37,7 +37,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: bufbuild/buf-action@v1
 
   lint-node:
@@ -80,7 +80,7 @@ jobs:
       POSTGRES_DSN_TEST: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
       POSTGRES_DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/run-migrations
       - uses: a-novel-kit/workflows/go-actions/test-go@master
         id: test
@@ -129,7 +129,7 @@ jobs:
     env:
       GRPC_URL: "localhost:8080"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: a-novel-kit/workflows/go-actions/test-go@master
         id: test
         with:
@@ -278,7 +278,7 @@ jobs:
       POSTGRES_DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/run-migrations
       - uses: a-novel-kit/workflows/build-actions/docker-job@master
         with:
@@ -315,7 +315,7 @@ jobs:
       POSTGRES_DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/run-migrations
       - uses: a-novel-kit/workflows/build-actions/docker@master
         with:
@@ -354,7 +354,7 @@ jobs:
       POSTGRES_DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/run-migrations
       - uses: a-novel-kit/workflows/build-actions/docker@master
         id: build
@@ -392,7 +392,7 @@ jobs:
       POSTGRES_DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/run-migrations
       - uses: a-novel-kit/workflows/build-actions/docker@master
         with:
@@ -431,7 +431,7 @@ jobs:
       POSTGRES_DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/run-migrations
       - uses: a-novel-kit/workflows/build-actions/docker@master
         id: build
@@ -486,7 +486,7 @@ jobs:
       pages: write
       id-token: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - run: |
           mkdir _site
           mv openapi.html _site/index.html
