@@ -32,14 +32,15 @@ The service runs as published OCI images plus a PostgreSQL database. Both surfac
 
 > **OpenTofu modules are the planned canonical deployment path.** Until they land, deploy the images with any container orchestrator — the composition below is the reference for which images to run, how they wire together, and the environment they expect.
 
-| Image                          | Role                                                                        |
-| ------------------------------ | --------------------------------------------------------------------------- |
-| `service-json-keys/grpc`       | Private signing + key-management API. Internal network only.                |
-| `service-json-keys/rest`       | Public key-fetch + health API.                                              |
-| `service-json-keys/migrations` | One-shot schema migration job; runs to completion before the servers start. |
-| `service-json-keys/database`   | Pre-tuned PostgreSQL image — or bring your own Postgres.                    |
+| Image                               | Role                                                                        |
+| ----------------------------------- | --------------------------------------------------------------------------- |
+| `service-json-keys/grpc`            | Private signing + key-management API. Internal network only.                |
+| `service-json-keys/rest`            | Public key-fetch + health API.                                              |
+| `service-json-keys/jobs/migrations` | One-shot schema migration job; runs to completion before the servers start. |
+| `service-json-keys/jobs/rotatekeys` | Scheduled key-rotation job (see [Configuration](#configuration)).           |
+| `service-json-keys/database`        | Pre-tuned PostgreSQL image — or bring your own Postgres.                    |
 
-Pin every image to the same release tag (current: `v2.3.1`). A production deployment runs `database`, then `migrations` to completion, then any number of `grpc` and/or `rest` replicas:
+Pin every image to the same release tag — see the [latest release](https://github.com/a-novel/service-json-keys/releases/latest). A production deployment runs `database`, then the migrations job to completion, then any number of `grpc` and/or `rest` replicas:
 
 ```yaml
 services:
@@ -56,7 +57,7 @@ services:
       - json-keys-postgres-data:/var/lib/postgresql/
 
   migrations-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/migrations:v2.3.1
+    image: ghcr.io/a-novel/service-json-keys/jobs/migrations:v2.3.1
     depends_on:
       postgres-json-keys: { condition: service_healthy }
     environment:
@@ -65,7 +66,7 @@ services:
 
   service-json-keys:
     image: ghcr.io/a-novel/service-json-keys/grpc:v2.3.1 # or .../rest:v2.3.1 for the public surface
-    ports: ["${GRPC_PORT}:8080"]
+    ports: ["${GRPC_PORT}:8080"] # the container always listens on 8080; map ${REST_PORT} for the rest image
     depends_on:
       postgres-json-keys: { condition: service_healthy }
       migrations-json-keys: { condition: service_completed_successfully }
@@ -81,16 +82,16 @@ volumes:
   json-keys-postgres-data:
 ```
 
-Run both surfaces by adding a second service that reuses the same database and migrations with the `rest` image. Key rotation runs as a scheduled job — see [CONTRIBUTING](./CONTRIBUTING.md#key-rotation).
+Run both surfaces by adding a second service that reuses the same database and migrations with the `rest` image. Key rotation is a separate scheduled job — run the `service-json-keys/jobs/rotatekeys` image on a timer (see [CONTRIBUTING](./CONTRIBUTING.md#key-rotation)); without it, active keys eventually age out and signing stops.
 
 ### Configuration
 
 Every variable is read from the process environment.
 
-| Name             | Description                                                                                                                                                                                                                     | Images            |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
-| `POSTGRES_DSN`   | PostgreSQL connection string. **Required.**                                                                                                                                                                                     | all               |
-| `APP_MASTER_KEY` | 32-byte hex-encoded key that encrypts private keys at rest. **Required** on the servers. **Never rotate** unless you can afford to invalidate every existing key — see [CONTRIBUTING](./CONTRIBUTING.md#master-key-encryption). | `grpc`<br/>`rest` |
+| Name             | Description                                                                                                                                                                                                                                               | Images                                                                              |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `POSTGRES_DSN`   | PostgreSQL connection string. **Required.**                                                                                                                                                                                                               | all                                                                                 |
+| `APP_MASTER_KEY` | 32-byte hex-encoded key that encrypts private keys at rest. **Required** by every image that touches private keys. **Never rotate** unless you can afford to invalidate every existing key — see [CONTRIBUTING](./CONTRIBUTING.md#master-key-encryption). | `grpc`<br/>`rest`<br/>`standalone-grpc`<br/>`standalone-rest`<br/>`jobs/rotatekeys` |
 
 The gRPC surface exposes private-key operations and must run on an isolated, access-controlled network — the server does not authenticate callers itself.
 
@@ -237,7 +238,7 @@ services:
 
   service-json-keys:
     image: ghcr.io/a-novel/service-json-keys/standalone-grpc:v2.3.1 # or standalone-rest
-    ports: ["${GRPC_PORT}:8080"]
+    ports: ["${GRPC_PORT}:8080"] # map ${REST_PORT} for the standalone-rest image
     depends_on:
       postgres-json-keys: { condition: service_healthy }
     environment:
