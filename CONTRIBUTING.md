@@ -1,6 +1,6 @@
 # Contributing to service-json-keys
 
-For platform-wide setup (Go, Node, Podman), the standard `a-novel` / `pnpm` commands, and lint/test conventions, see the [generic A-Novel contribution guidelines](https://github.com/a-novel/.github/blob/master/CONTRIBUTING.md). This file documents what is specific to the JSON Keys service.
+For platform-wide setup (Go, Node, Podman, the `a-novel` CLI) and the day-to-day `a-novel` / `pnpm` commands, see the [developer onboarding guide](https://github.com/a-novel-kit/.github/blob/master/README.md). This file documents what is specific to the JSON Keys service.
 
 For deployment, configuration, and client-package integration, read the [README](./README.md) first. Contributors are expected to know what the service does and how operators run it before touching the code.
 
