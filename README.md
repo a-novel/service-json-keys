@@ -19,12 +19,12 @@ Centralized signing-key manager for the A-Novel platform: it holds every private
 
 ## What it does
 
-Services register named **usages** (`auth`, `auth-refresh`, …); each usage owns its signing algorithm, rotation schedule, and JWT claim parameters. JSON Keys holds every private key and signs tokens on behalf of callers — private key material never leaves the server. Consumers fetch the matching public keys through a read-only endpoint and verify tokens locally, with no per-token network round-trip.
+Services register named **usages** (`auth`, `auth-refresh`, …), each with its own signing algorithm, rotation schedule, and claim parameters. JSON Keys holds every private key and signs on callers' behalf — key material never leaves the server. Consumers fetch the matching public keys once and verify tokens locally, with no per-token round-trip.
 
-The service ships two surfaces:
+Two surfaces:
 
-- A **private gRPC API** — signing, key retrieval, status — for internal, private-network service-to-service traffic. Everything that touches private key material lives here. The server implements no application-layer authentication: access control is enforced externally (network policy, ingress, service mesh).
-- A **public REST API** — public-key fetch, health — for any client that needs to verify tokens.
+- **Private gRPC API** — signing, key retrieval, status — for internal service-to-service traffic. Everything touching private keys lives here. The server has no application-layer auth; access control is external (network policy, ingress, service mesh).
+- **Public REST API** — public-key fetch, health — for anyone verifying tokens.
 
 ## Deploying
 
