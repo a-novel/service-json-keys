@@ -254,4 +254,4 @@ Working on the service itself? Use the `a-novel` CLI (`a-novel run start service
 
 ## Contributing
 
-Platform setup — Go, Node, Podman, the `a-novel` CLI — lives in the [developer onboarding guide](https://github.com/a-novel-kit/.github/blob/master/README.md). Service-specific concepts (master-key encryption, the JWK lifecycle, key rotation) and local interactions are in [CONTRIBUTING.md](./CONTRIBUTING.md).
+Platform setup and the day-to-day commands live in the [developer onboarding guide](https://github.com/a-novel-kit/.github/blob/master/README.md). Service-specific concepts and local interactions are in [CONTRIBUTING.md](./CONTRIBUTING.md).
