@@ -1,8 +1,8 @@
 # Contributing to service-json-keys
 
-For platform-wide setup (Go, Node, Podman), the standard `a-novel` / `pnpm` commands, and lint/test conventions, see the [generic A-Novel contribution guidelines](https://github.com/a-novel/.github/blob/master/CONTRIBUTING.md). This file documents what is specific to the JSON Keys service.
+Platform setup and day-to-day commands are in the [developer onboarding guide](https://github.com/a-novel-kit/.github/blob/master/README.md). This file covers what's specific to the JSON Keys service.
 
-For deployment, configuration, and client-package integration, read the [README](./README.md) first. Contributors are expected to know what the service does and how operators run it before touching the code.
+Read the [README](./README.md) first — it covers what the service does and how operators run it.
 
 ---
 
@@ -114,6 +114,4 @@ The REST surface never exposes private keys or signing operations. The split is 
 
 ## Questions?
 
-- Open an issue at https://github.com/a-novel/service-json-keys/issues
-- Check existing issues for similar problems
-- Include relevant logs and environment details
+[Open an issue](https://github.com/a-novel/service-json-keys/issues) — include logs and environment details.
