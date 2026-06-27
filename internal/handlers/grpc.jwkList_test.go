@@ -12,10 +12,10 @@ import (
 
 	"github.com/a-novel-kit/jwt/jwa"
 
+	"github.com/a-novel/service-json-keys/v2/internal/core"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
 	handlersmocks "github.com/a-novel/service-json-keys/v2/internal/handlers/mocks"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
-	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
 func TestGrpcJwkList(t *testing.T) {
@@ -24,7 +24,7 @@ func TestGrpcJwkList(t *testing.T) {
 	errFoo := errors.New("foo")
 
 	type serviceMock struct {
-		resp []*services.Jwk
+		resp []*core.Jwk
 		err  error
 	}
 
@@ -46,7 +46,7 @@ func TestGrpcJwkList(t *testing.T) {
 			},
 
 			serviceMock: &serviceMock{
-				resp: []*services.Jwk{
+				resp: []*core.Jwk{
 					{
 						JWKCommon: jwa.JWKCommon{
 							KTY:    "test-kty",
@@ -82,7 +82,7 @@ func TestGrpcJwkList(t *testing.T) {
 			},
 
 			serviceMock: &serviceMock{
-				resp: []*services.Jwk{},
+				resp: []*core.Jwk{},
 			},
 
 			expectStatus: codes.OK,
@@ -113,7 +113,7 @@ func TestGrpcJwkList(t *testing.T) {
 
 			if testCase.serviceMock != nil {
 				service.EXPECT().
-					Exec(mock.Anything, &services.JwkSearchRequest{
+					Exec(mock.Anything, &core.JwkSearchRequest{
 						Usage: testCase.request.GetUsage(),
 					}).
 					Return(testCase.serviceMock.resp, testCase.serviceMock.err)

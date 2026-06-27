@@ -10,13 +10,13 @@ import (
 	"github.com/a-novel-kit/golib/grpcf"
 	"github.com/a-novel-kit/golib/otel"
 
+	"github.com/a-novel/service-json-keys/v2/internal/core"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
-	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
 // GrpcClaimsSignService is the service dependency of [GrpcClaimsSign].
 type GrpcClaimsSignService interface {
-	Exec(ctx context.Context, request *services.ClaimsSignRequest) (string, error)
+	Exec(ctx context.Context, request *core.ClaimsSignRequest) (string, error)
 }
 
 // GrpcClaimsSign is the gRPC handler that signs a set of claims and returns a compact JWT.
@@ -44,11 +44,11 @@ func (handler *GrpcClaimsSign) ClaimsSign(
 		return nil, status.Error(codes.InvalidArgument, "invalid payload")
 	}
 
-	signed, err := handler.service.Exec(ctx, &services.ClaimsSignRequest{
+	signed, err := handler.service.Exec(ctx, &core.ClaimsSignRequest{
 		Claims: extractedClaims,
 		Usage:  request.GetUsage(),
 	})
-	if errors.Is(err, services.ErrConfigNotFound) {
+	if errors.Is(err, core.ErrConfigNotFound) {
 		return nil, status.Error(codes.Unavailable, "unknown usage")
 	}
 

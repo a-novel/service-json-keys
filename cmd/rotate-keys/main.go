@@ -18,9 +18,9 @@ import (
 	"github.com/a-novel-kit/golib/postgres"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
+	"github.com/a-novel/service-json-keys/v2/internal/core"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 	"github.com/a-novel/service-json-keys/v2/internal/lib"
-	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
 func main() {
@@ -45,13 +45,13 @@ func main() {
 	defer span.End()
 
 	// --- Wire dependencies ---
-	repositoryJwkSearch := dao.NewPgJwkSearch()
-	repositoryJwkInsert := dao.NewPgJwkInsert()
+	daoJwkSearch := dao.NewPgJwkSearch()
+	daoJwkInsert := dao.NewPgJwkInsert()
 
-	serviceJwkExtract := services.NewJwkExtract()
-	serviceJwkGen := services.NewJwkGen(
-		repositoryJwkSearch,
-		repositoryJwkInsert,
+	serviceJwkExtract := core.NewJwkExtract()
+	serviceJwkGen := core.NewJwkGen(
+		daoJwkSearch,
+		daoJwkInsert,
 		serviceJwkExtract,
 		config.JwkPresetDefault,
 	)
@@ -65,7 +65,7 @@ func main() {
 		for usage := range config.JwkPresetDefault {
 			log.Printf("  · %s: ensuring key (rotated if interval elapsed)", usage)
 
-			_, err := serviceJwkGen.Exec(ctx, &services.JwkGenRequest{Usage: usage})
+			_, err := serviceJwkGen.Exec(ctx, &core.JwkGenRequest{Usage: usage})
 			if err != nil {
 				return fmt.Errorf("generate key for usage %s: %w", usage, err)
 			}

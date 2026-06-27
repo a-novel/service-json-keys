@@ -1,4 +1,4 @@
-package services
+package core
 
 import (
 	"context"
@@ -40,7 +40,7 @@ func NewClaimsVerify[Out any](
 }
 
 func (service *ClaimsVerify[Out]) Exec(ctx context.Context, request *ClaimsVerifyRequest) (*Out, error) {
-	ctx, span := otel.Tracer().Start(ctx, "services.ClaimsVerify")
+	ctx, span := otel.Tracer().Start(ctx, "core.ClaimsVerify")
 	defer span.End()
 
 	span.SetAttributes(attribute.String("key.usage", request.Usage))

@@ -1,4 +1,4 @@
-package services
+package core
 
 import "github.com/a-novel-kit/jwt/jwa"
 

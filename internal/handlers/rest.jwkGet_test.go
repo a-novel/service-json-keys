@@ -15,9 +15,9 @@ import (
 	"github.com/a-novel-kit/jwt/jwa"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
+	"github.com/a-novel/service-json-keys/v2/internal/core"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
 	handlersmocks "github.com/a-novel/service-json-keys/v2/internal/handlers/mocks"
-	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
 func TestRestJwkGet(t *testing.T) {
@@ -26,7 +26,7 @@ func TestRestJwkGet(t *testing.T) {
 	errFoo := errors.New("foo")
 
 	type serviceMock struct {
-		resp *services.Jwk
+		resp *core.Jwk
 		err  error
 	}
 
@@ -51,7 +51,7 @@ func TestRestJwkGet(t *testing.T) {
 			),
 
 			serviceMock: &serviceMock{
-				resp: &services.Jwk{
+				resp: &core.Jwk{
 					JWKCommon: jwa.JWKCommon{
 						KTY:    "test-kty",
 						Use:    "test-use",
@@ -96,7 +96,7 @@ func TestRestJwkGet(t *testing.T) {
 			),
 
 			serviceMock: &serviceMock{
-				err: services.ErrJwkNotFound,
+				err: core.ErrJwkNotFound,
 			},
 
 			expectStatus: http.StatusNotFound,
@@ -127,7 +127,7 @@ func TestRestJwkGet(t *testing.T) {
 
 			if testCase.serviceMock != nil {
 				service.EXPECT().
-					Exec(mock.Anything, &services.JwkSelectRequest{
+					Exec(mock.Anything, &core.JwkSelectRequest{
 						ID: uuid.MustParse(testCase.request.URL.Query().Get("id")),
 					}).
 					Return(testCase.serviceMock.resp, testCase.serviceMock.err)

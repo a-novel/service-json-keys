@@ -14,9 +14,9 @@ import (
 	"github.com/a-novel-kit/jwt/jwa"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
+	"github.com/a-novel/service-json-keys/v2/internal/core"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
 	handlersmocks "github.com/a-novel/service-json-keys/v2/internal/handlers/mocks"
-	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
 func TestRestJwkList(t *testing.T) {
@@ -25,7 +25,7 @@ func TestRestJwkList(t *testing.T) {
 	errFoo := errors.New("foo")
 
 	type serviceMock struct {
-		resp []*services.Jwk
+		resp []*core.Jwk
 		err  error
 	}
 
@@ -45,7 +45,7 @@ func TestRestJwkList(t *testing.T) {
 			request: httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/jwks?usage=test-usage", nil),
 
 			serviceMock: &serviceMock{
-				resp: []*services.Jwk{
+				resp: []*core.Jwk{
 					{
 						JWKCommon: jwa.JWKCommon{
 							KTY:    "test-kty",
@@ -77,7 +77,7 @@ func TestRestJwkList(t *testing.T) {
 			request: httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/jwks?usage=test-usage", nil),
 
 			serviceMock: &serviceMock{
-				resp: []*services.Jwk{},
+				resp: []*core.Jwk{},
 			},
 
 			expectStatus:   http.StatusOK,
@@ -104,7 +104,7 @@ func TestRestJwkList(t *testing.T) {
 
 			if testCase.serviceMock != nil {
 				service.EXPECT().
-					Exec(mock.Anything, &services.JwkSearchRequest{
+					Exec(mock.Anything, &core.JwkSearchRequest{
 						Usage: testCase.request.URL.Query().Get("usage"),
 					}).
 					Return(testCase.serviceMock.resp, testCase.serviceMock.err)

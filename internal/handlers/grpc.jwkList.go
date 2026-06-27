@@ -9,13 +9,13 @@ import (
 
 	"github.com/a-novel-kit/golib/otel"
 
+	"github.com/a-novel/service-json-keys/v2/internal/core"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
-	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
 // GrpcJwkListService is the service dependency of [GrpcJwkList].
 type GrpcJwkListService interface {
-	Exec(ctx context.Context, request *services.JwkSearchRequest) ([]*services.Jwk, error)
+	Exec(ctx context.Context, request *core.JwkSearchRequest) ([]*core.Jwk, error)
 }
 
 // GrpcJwkList is the gRPC handler that returns the active public keys for a given usage.
@@ -36,7 +36,7 @@ func (handler *GrpcJwkList) JwkList(
 	ctx, span := otel.Tracer().Start(ctx, "grpc.JwkList")
 	defer span.End()
 
-	jwks, err := handler.service.Exec(ctx, &services.JwkSearchRequest{
+	jwks, err := handler.service.Exec(ctx, &core.JwkSearchRequest{
 		Usage: request.GetUsage(),
 	})
 	if err != nil {
@@ -46,7 +46,7 @@ func (handler *GrpcJwkList) JwkList(
 	}
 
 	return otel.ReportSuccess(span, &protogen.JwkListResponse{
-		Keys: lo.Map(jwks, func(item *services.Jwk, index int) *protogen.Jwk {
+		Keys: lo.Map(jwks, func(item *core.Jwk, index int) *protogen.Jwk {
 			return &protogen.Jwk{
 				Kty:     item.KTY.String(),
 				Use:     item.Use.String(),

@@ -38,12 +38,12 @@ type JwkSearchRequest struct {
 // the active key count well below [KeysMaxBatchSize] under normal operation.
 type PgJwkSearch struct{}
 
-// NewPgJwkSearch returns a new PgJwkSearch repository.
+// NewPgJwkSearch returns a new PgJwkSearch dao.
 func NewPgJwkSearch() *PgJwkSearch {
 	return &PgJwkSearch{}
 }
 
-func (repository *PgJwkSearch) Exec(ctx context.Context, request *JwkSearchRequest) ([]*Jwk, error) {
+func (dao *PgJwkSearch) Exec(ctx context.Context, request *JwkSearchRequest) ([]*Jwk, error) {
 	ctx, span := otel.Tracer().Start(ctx, "dao.PgJwkSearch")
 	defer span.End()
 

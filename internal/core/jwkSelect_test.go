@@ -1,4 +1,4 @@
-package services_test
+package core_test
 
 import (
 	"encoding/json"
@@ -13,11 +13,11 @@ import (
 
 	"github.com/a-novel-kit/jwt/jwa"
 
+	"github.com/a-novel/service-json-keys/v2/internal/core"
+	coremocks "github.com/a-novel/service-json-keys/v2/internal/core/mocks"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 	"github.com/a-novel/service-json-keys/v2/internal/lib"
 	testutils "github.com/a-novel/service-json-keys/v2/internal/lib/test"
-	"github.com/a-novel/service-json-keys/v2/internal/services"
-	servicesmocks "github.com/a-novel/service-json-keys/v2/internal/services/mocks"
 )
 
 func TestJwkSelect(t *testing.T) {
@@ -28,36 +28,36 @@ func TestJwkSelect(t *testing.T) {
 
 	errFoo := errors.New("foo")
 
-	type repositorySelectMock struct {
+	type daoSelectMock struct {
 		resp *dao.Jwk
 		err  error
 	}
 
 	type serviceExtractMock struct {
-		resp *services.Jwk
+		resp *core.Jwk
 		err  error
 	}
 
 	testCases := []struct {
 		name string
 
-		request *services.JwkSelectRequest
+		request *core.JwkSelectRequest
 
-		repositorySelectMock *repositorySelectMock
-		serviceExtractMock   *serviceExtractMock
+		daoSelectMock      *daoSelectMock
+		serviceExtractMock *serviceExtractMock
 
-		expect    *services.Jwk
+		expect    *core.Jwk
 		expectErr error
 	}{
 		{
 			name: "Success",
 
-			request: &services.JwkSelectRequest{
+			request: &core.JwkSelectRequest{
 				ID:      uuid.MustParse("00000000-0000-0000-0000-000000000002"),
 				Private: true,
 			},
 
-			repositorySelectMock: &repositorySelectMock{
+			daoSelectMock: &daoSelectMock{
 				resp: &dao.Jwk{
 					ID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
 					PrivateKey: "cHJpdmF0ZS1rZXktMg",
@@ -69,7 +69,7 @@ func TestJwkSelect(t *testing.T) {
 			},
 
 			serviceExtractMock: &serviceExtractMock{
-				resp: &services.Jwk{
+				resp: &core.Jwk{
 					JWKCommon: jwa.JWKCommon{
 						KTY: "test-kty",
 						Use: "test-use",
@@ -80,7 +80,7 @@ func TestJwkSelect(t *testing.T) {
 				},
 			},
 
-			expect: &services.Jwk{
+			expect: &core.Jwk{
 				JWKCommon: jwa.JWKCommon{
 					KTY: "test-kty",
 					Use: "test-use",
@@ -93,12 +93,12 @@ func TestJwkSelect(t *testing.T) {
 		{
 			name: "Error/Extract",
 
-			request: &services.JwkSelectRequest{
+			request: &core.JwkSelectRequest{
 				ID:      uuid.MustParse("00000000-0000-0000-0000-000000000002"),
 				Private: true,
 			},
 
-			repositorySelectMock: &repositorySelectMock{
+			daoSelectMock: &daoSelectMock{
 				resp: &dao.Jwk{
 					ID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
 					PrivateKey: "cHJpdmF0ZS1rZXktMg",
@@ -118,26 +118,26 @@ func TestJwkSelect(t *testing.T) {
 		{
 			name: "Error/NotFound",
 
-			request: &services.JwkSelectRequest{
+			request: &core.JwkSelectRequest{
 				ID:      uuid.MustParse("00000000-0000-0000-0000-000000000002"),
 				Private: true,
 			},
 
-			repositorySelectMock: &repositorySelectMock{
+			daoSelectMock: &daoSelectMock{
 				err: dao.ErrJwkSelectNotFound,
 			},
 
-			expectErr: services.ErrJwkNotFound,
+			expectErr: core.ErrJwkNotFound,
 		},
 		{
 			name: "Error/Select",
 
-			request: &services.JwkSelectRequest{
+			request: &core.JwkSelectRequest{
 				ID:      uuid.MustParse("00000000-0000-0000-0000-000000000002"),
 				Private: true,
 			},
 
-			repositorySelectMock: &repositorySelectMock{
+			daoSelectMock: &daoSelectMock{
 				err: errFoo,
 			},
 
@@ -149,34 +149,34 @@ func TestJwkSelect(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			repositorySelect := servicesmocks.NewMockJwkSelectRepository(t)
-			serviceExtract := servicesmocks.NewMockJwkSelectServiceExtract(t)
+			daoSelect := coremocks.NewMockJwkSelectDao(t)
+			serviceExtract := coremocks.NewMockJwkSelectServiceExtract(t)
 
-			if testCase.repositorySelectMock != nil {
-				repositorySelect.EXPECT().
+			if testCase.daoSelectMock != nil {
+				daoSelect.EXPECT().
 					Exec(mock.Anything, &dao.JwkSelectRequest{
 						ID: testCase.request.ID,
 					}).
-					Return(testCase.repositorySelectMock.resp, testCase.repositorySelectMock.err)
+					Return(testCase.daoSelectMock.resp, testCase.daoSelectMock.err)
 			}
 
 			if testCase.serviceExtractMock != nil {
 				serviceExtract.EXPECT().
-					Exec(mock.Anything, &services.JwkExtractRequest{
-						Jwk:     testCase.repositorySelectMock.resp,
+					Exec(mock.Anything, &core.JwkExtractRequest{
+						Jwk:     testCase.daoSelectMock.resp,
 						Private: testCase.request.Private,
 					}).
 					Return(testCase.serviceExtractMock.resp, testCase.serviceExtractMock.err).
 					Once()
 			}
 
-			service := services.NewJwkSelect(repositorySelect, serviceExtract)
+			service := core.NewJwkSelect(daoSelect, serviceExtract)
 
 			res, err := service.Exec(ctx, testCase.request)
 			require.ErrorIs(t, err, testCase.expectErr)
 			require.Equal(t, testCase.expect, res)
 
-			repositorySelect.AssertExpectations(t)
+			daoSelect.AssertExpectations(t)
 			serviceExtract.AssertExpectations(t)
 		})
 	}

@@ -9,8 +9,8 @@ import (
 	golibproto "github.com/a-novel-kit/golib/grpcf/proto/gen"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
+	"github.com/a-novel/service-json-keys/v2/internal/core"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
-	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
 type (
@@ -25,10 +25,10 @@ type (
 
 	// JwkPublicSources holds the per-usage public-key sources for all supported algorithm families.
 	// Retrieved via [Client.Sources].
-	JwkPublicSources = services.JwkPublicSources
+	JwkPublicSources = core.JwkPublicSources
 	// JwkRecipients holds the per-usage JWT verification plugins.
 	// Retrieved via [Client.Recipients].
-	JwkRecipients = services.JwkRecipients
+	JwkRecipients = core.JwkRecipients
 	// JwkConfig holds the full configuration for a single key usage: signing algorithm,
 	// key lifetime and caching parameters, and JWT token claim parameters.
 	// Keyed by usage name in the map returned by [Client.Keys].
@@ -132,7 +132,7 @@ func NewClient(addr string, opts ...grpc.DialOption) (Client, error) {
 
 	adapter := newJwkExportGrpc(c)
 
-	sources, err := services.NewJwkPublicSource(adapter, config.JwkPresetDefault)
+	sources, err := core.NewJwkPublicSource(adapter, config.JwkPresetDefault)
 	if err != nil {
 		_ = conn.Close()
 
@@ -141,7 +141,7 @@ func NewClient(addr string, opts ...grpc.DialOption) (Client, error) {
 
 	c.sources = sources
 
-	recipients, err := services.NewJwkRecipients(sources, config.JwkPresetDefault)
+	recipients, err := core.NewJwkRecipients(sources, config.JwkPresetDefault)
 	if err != nil {
 		_ = conn.Close()
 

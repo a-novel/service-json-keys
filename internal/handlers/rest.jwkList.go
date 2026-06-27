@@ -8,12 +8,12 @@ import (
 	"github.com/a-novel-kit/golib/logging"
 	"github.com/a-novel-kit/golib/otel"
 
-	"github.com/a-novel/service-json-keys/v2/internal/services"
+	"github.com/a-novel/service-json-keys/v2/internal/core"
 )
 
 // RestJwkListService is the service dependency of [RestJwkList].
 type RestJwkListService interface {
-	Exec(ctx context.Context, request *services.JwkSearchRequest) ([]*services.Jwk, error)
+	Exec(ctx context.Context, request *core.JwkSearchRequest) ([]*core.Jwk, error)
 }
 
 // RestJwkList is the REST handler that returns the active public keys for a given usage,
@@ -34,7 +34,7 @@ func (handler *RestJwkList) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	usage := r.URL.Query().Get("usage")
 
-	jwks, err := handler.service.Exec(ctx, &services.JwkSearchRequest{Usage: usage})
+	jwks, err := handler.service.Exec(ctx, &core.JwkSearchRequest{Usage: usage})
 	if err != nil {
 		httpf.HandleError(ctx, handler.logger, w, span, httpf.ErrMap{}, err)
 

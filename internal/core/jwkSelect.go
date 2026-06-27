@@ -1,4 +1,4 @@
-package services
+package core
 
 import (
 	"context"
@@ -13,8 +13,8 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 )
 
-// JwkSelectRepository is the DAO dependency of [JwkSelect].
-type JwkSelectRepository interface {
+// JwkSelectDao is the DAO dependency of [JwkSelect].
+type JwkSelectDao interface {
 	Exec(ctx context.Context, request *dao.JwkSelectRequest) (*dao.Jwk, error)
 }
 
@@ -34,23 +34,23 @@ type JwkSelectRequest struct {
 
 // A JwkSelect retrieves a JSON Web Key by its key ID.
 type JwkSelect struct {
-	repository     JwkSelectRepository
+	dao            JwkSelectDao
 	serviceExtract JwkSelectServiceExtract
 }
 
 // NewJwkSelect returns a new JwkSelect service.
 func NewJwkSelect(
-	repository JwkSelectRepository,
+	dao JwkSelectDao,
 	serviceExtract JwkSelectServiceExtract,
 ) *JwkSelect {
 	return &JwkSelect{
-		repository:     repository,
+		dao:            dao,
 		serviceExtract: serviceExtract,
 	}
 }
 
 func (service *JwkSelect) Exec(ctx context.Context, request *JwkSelectRequest) (*Jwk, error) {
-	ctx, span := otel.Tracer().Start(ctx, "services.JwkSelect")
+	ctx, span := otel.Tracer().Start(ctx, "core.JwkSelect")
 	defer span.End()
 
 	span.SetAttributes(
@@ -58,7 +58,7 @@ func (service *JwkSelect) Exec(ctx context.Context, request *JwkSelectRequest) (
 		attribute.Bool("key.private", request.Private),
 	)
 
-	entity, err := service.repository.Exec(ctx, &dao.JwkSelectRequest{
+	entity, err := service.dao.Exec(ctx, &dao.JwkSelectRequest{
 		ID: request.ID,
 	})
 	if err != nil {

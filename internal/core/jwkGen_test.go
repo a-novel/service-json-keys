@@ -1,4 +1,4 @@
-package services_test
+package core_test
 
 import (
 	"context"
@@ -17,11 +17,11 @@ import (
 	"github.com/a-novel-kit/jwt/jwa"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
+	"github.com/a-novel/service-json-keys/v2/internal/core"
+	coremocks "github.com/a-novel/service-json-keys/v2/internal/core/mocks"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 	"github.com/a-novel/service-json-keys/v2/internal/lib"
 	testutils "github.com/a-novel/service-json-keys/v2/internal/lib/test"
-	"github.com/a-novel/service-json-keys/v2/internal/services"
-	servicesmocks "github.com/a-novel/service-json-keys/v2/internal/services/mocks"
 )
 
 func checkGeneratedPrivateKey(ctx context.Context, t *testing.T, key string) (*jwa.JWK, error) {
@@ -72,32 +72,32 @@ func TestJwkGen(t *testing.T) {
 
 	errFoo := errors.New("foo")
 
-	type repositorySearchMock struct {
+	type daoSearchMock struct {
 		resp []*dao.Jwk
 		err  error
 	}
 
-	type repositoryInsertMock struct {
+	type daoInsertMock struct {
 		resp *dao.Jwk
 		err  error
 	}
 
 	type serviceExtractMock struct {
-		resp *services.Jwk
+		resp *core.Jwk
 		err  error
 	}
 
 	type testCaseDef struct {
 		name string
 
-		request *services.JwkGenRequest
+		request *core.JwkGenRequest
 
-		repositorySearchMock *repositorySearchMock
-		repositoryInsertMock *repositoryInsertMock
-		serviceExtractMock   *serviceExtractMock
-		keys                 map[string]*config.Jwk
+		daoSearchMock      *daoSearchMock
+		daoInsertMock      *daoInsertMock
+		serviceExtractMock *serviceExtractMock
+		keys               map[string]*config.Jwk
 
-		expect    *services.Jwk
+		expect    *core.Jwk
 		expectErr error
 	}
 
@@ -105,7 +105,7 @@ func TestJwkGen(t *testing.T) {
 		{
 			name: "Success/OldKeys",
 
-			request: &services.JwkGenRequest{
+			request: &core.JwkGenRequest{
 				Usage: "test-usage",
 			},
 
@@ -120,7 +120,7 @@ func TestJwkGen(t *testing.T) {
 				},
 			},
 
-			repositorySearchMock: &repositorySearchMock{
+			daoSearchMock: &daoSearchMock{
 				resp: []*dao.Jwk{
 					{
 						ID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
@@ -133,7 +133,7 @@ func TestJwkGen(t *testing.T) {
 				},
 			},
 
-			repositoryInsertMock: &repositoryInsertMock{
+			daoInsertMock: &daoInsertMock{
 				resp: &dao.Jwk{
 					ID:         uuid.MustParse("00000000-0000-0000-0000-000000000001"),
 					PrivateKey: "cHJpdmF0ZS1rZXktMQ",
@@ -145,7 +145,7 @@ func TestJwkGen(t *testing.T) {
 			},
 
 			serviceExtractMock: &serviceExtractMock{
-				resp: &services.Jwk{
+				resp: &core.Jwk{
 					JWKCommon: jwa.JWKCommon{
 						KTY: "test-kty",
 						Use: "test-use",
@@ -156,7 +156,7 @@ func TestJwkGen(t *testing.T) {
 				},
 			},
 
-			expect: &services.Jwk{
+			expect: &core.Jwk{
 				JWKCommon: jwa.JWKCommon{
 					KTY: "test-kty",
 					Use: "test-use",
@@ -169,7 +169,7 @@ func TestJwkGen(t *testing.T) {
 		{
 			name: "Success/RecentKeys",
 
-			request: &services.JwkGenRequest{
+			request: &core.JwkGenRequest{
 				Usage: "test-usage",
 			},
 
@@ -184,7 +184,7 @@ func TestJwkGen(t *testing.T) {
 				},
 			},
 
-			repositorySearchMock: &repositorySearchMock{
+			daoSearchMock: &daoSearchMock{
 				resp: []*dao.Jwk{
 					{
 						ID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
@@ -198,7 +198,7 @@ func TestJwkGen(t *testing.T) {
 			},
 
 			serviceExtractMock: &serviceExtractMock{
-				resp: &services.Jwk{
+				resp: &core.Jwk{
 					JWKCommon: jwa.JWKCommon{
 						KTY: "test-kty",
 						Use: "test-use",
@@ -209,7 +209,7 @@ func TestJwkGen(t *testing.T) {
 				},
 			},
 
-			expect: &services.Jwk{
+			expect: &core.Jwk{
 				JWKCommon: jwa.JWKCommon{
 					KTY: "test-kty",
 					Use: "test-use",
@@ -222,7 +222,7 @@ func TestJwkGen(t *testing.T) {
 		{
 			name: "Error/Extract",
 
-			request: &services.JwkGenRequest{
+			request: &core.JwkGenRequest{
 				Usage: "test-usage",
 			},
 
@@ -237,7 +237,7 @@ func TestJwkGen(t *testing.T) {
 				},
 			},
 
-			repositorySearchMock: &repositorySearchMock{
+			daoSearchMock: &daoSearchMock{
 				resp: []*dao.Jwk{
 					{
 						ID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
@@ -250,7 +250,7 @@ func TestJwkGen(t *testing.T) {
 				},
 			},
 
-			repositoryInsertMock: &repositoryInsertMock{
+			daoInsertMock: &daoInsertMock{
 				resp: &dao.Jwk{
 					ID:         uuid.MustParse("00000000-0000-0000-0000-000000000001"),
 					PrivateKey: "cHJpdmF0ZS1rZXktMQ",
@@ -270,7 +270,7 @@ func TestJwkGen(t *testing.T) {
 		{
 			name: "Error/Insert",
 
-			request: &services.JwkGenRequest{
+			request: &core.JwkGenRequest{
 				Usage: "test-usage",
 			},
 
@@ -285,7 +285,7 @@ func TestJwkGen(t *testing.T) {
 				},
 			},
 
-			repositorySearchMock: &repositorySearchMock{
+			daoSearchMock: &daoSearchMock{
 				resp: []*dao.Jwk{
 					{
 						ID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
@@ -298,7 +298,7 @@ func TestJwkGen(t *testing.T) {
 				},
 			},
 
-			repositoryInsertMock: &repositoryInsertMock{
+			daoInsertMock: &daoInsertMock{
 				err: errFoo,
 			},
 
@@ -307,7 +307,7 @@ func TestJwkGen(t *testing.T) {
 		{
 			name: "Error/Search",
 
-			request: &services.JwkGenRequest{
+			request: &core.JwkGenRequest{
 				Usage: "test-usage",
 			},
 
@@ -322,7 +322,7 @@ func TestJwkGen(t *testing.T) {
 				},
 			},
 
-			repositorySearchMock: &repositorySearchMock{
+			daoSearchMock: &daoSearchMock{
 				err: errFoo,
 			},
 
@@ -331,17 +331,17 @@ func TestJwkGen(t *testing.T) {
 		{
 			name: "Error/ConfigNotFound",
 
-			request: &services.JwkGenRequest{
+			request: &core.JwkGenRequest{
 				Usage: "test-usage",
 			},
 
 			keys: map[string]*config.Jwk{},
 
-			repositorySearchMock: &repositorySearchMock{
+			daoSearchMock: &daoSearchMock{
 				resp: []*dao.Jwk{},
 			},
 
-			expectErr: services.ErrConfigNotFound,
+			expectErr: core.ErrConfigNotFound,
 		},
 	}
 
@@ -360,7 +360,7 @@ func TestJwkGen(t *testing.T) {
 		testCases = append(testCases, testCaseDef{
 			name: "Success/" + string(alg),
 
-			request: &services.JwkGenRequest{
+			request: &core.JwkGenRequest{
 				Usage: "test-usage",
 			},
 
@@ -375,9 +375,9 @@ func TestJwkGen(t *testing.T) {
 				},
 			},
 
-			repositorySearchMock: &repositorySearchMock{},
+			daoSearchMock: &daoSearchMock{},
 
-			repositoryInsertMock: &repositoryInsertMock{
+			daoInsertMock: &daoInsertMock{
 				resp: &dao.Jwk{
 					ID:         uuid.MustParse("00000000-0000-0000-0000-000000000001"),
 					PrivateKey: "cHJpdmF0ZS1rZXktMQ",
@@ -389,7 +389,7 @@ func TestJwkGen(t *testing.T) {
 			},
 
 			serviceExtractMock: &serviceExtractMock{
-				resp: &services.Jwk{
+				resp: &core.Jwk{
 					JWKCommon: jwa.JWKCommon{
 						KTY: "test-kty",
 						Use: "test-use",
@@ -400,7 +400,7 @@ func TestJwkGen(t *testing.T) {
 				},
 			},
 
-			expect: &services.Jwk{
+			expect: &core.Jwk{
 				JWKCommon: jwa.JWKCommon{
 					KTY: "test-kty",
 					Use: "test-use",
@@ -416,16 +416,16 @@ func TestJwkGen(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			repositorySearch := servicesmocks.NewMockJwkGenRepositorySearch(t)
-			repositoryInsert := servicesmocks.NewMockJwkGenRepositoryInsert(t)
-			serviceExtract := servicesmocks.NewMockJwkGenServiceExtract(t)
+			daoSearch := coremocks.NewMockJwkGenDaoSearch(t)
+			daoInsert := coremocks.NewMockJwkGenDaoInsert(t)
+			serviceExtract := coremocks.NewMockJwkGenServiceExtract(t)
 
-			if testCase.repositorySearchMock != nil {
-				repositorySearch.EXPECT().
+			if testCase.daoSearchMock != nil {
+				daoSearch.EXPECT().
 					Exec(mock.Anything, &dao.JwkSearchRequest{
 						Usage: testCase.request.Usage,
 					}).
-					Return(testCase.repositorySearchMock.resp, testCase.repositorySearchMock.err)
+					Return(testCase.daoSearchMock.resp, testCase.daoSearchMock.err)
 			}
 
 			checkInsertData := func(request *dao.JwkInsertRequest) bool {
@@ -473,33 +473,33 @@ func TestJwkGen(t *testing.T) {
 				return true
 			}
 
-			if testCase.repositoryInsertMock != nil {
-				repositoryInsert.EXPECT().
+			if testCase.daoInsertMock != nil {
+				daoInsert.EXPECT().
 					Exec(mock.Anything, mock.MatchedBy(checkInsertData)).
-					Return(testCase.repositoryInsertMock.resp, testCase.repositoryInsertMock.err)
+					Return(testCase.daoInsertMock.resp, testCase.daoInsertMock.err)
 			}
 
 			if testCase.serviceExtractMock != nil {
 				var keyToExtract *dao.Jwk
 
-				if testCase.repositoryInsertMock != nil {
-					keyToExtract = testCase.repositoryInsertMock.resp
-				} else if testCase.repositorySearchMock != nil {
-					keyToExtract = testCase.repositorySearchMock.resp[0]
+				if testCase.daoInsertMock != nil {
+					keyToExtract = testCase.daoInsertMock.resp
+				} else if testCase.daoSearchMock != nil {
+					keyToExtract = testCase.daoSearchMock.resp[0]
 				} else {
 					t.Fatal(
-						"expected repositorySearchMock or repositoryInsertMock to be defined for serviceExtractMock",
+						"expected daoSearchMock or daoInsertMock to be defined for serviceExtractMock",
 					)
 				}
 
 				serviceExtract.EXPECT().
-					Exec(mock.Anything, &services.JwkExtractRequest{Jwk: keyToExtract, Private: true}).
+					Exec(mock.Anything, &core.JwkExtractRequest{Jwk: keyToExtract, Private: true}).
 					Return(testCase.serviceExtractMock.resp, testCase.serviceExtractMock.err)
 			}
 
-			service := services.NewJwkGen(
-				repositorySearch,
-				repositoryInsert,
+			service := core.NewJwkGen(
+				daoSearch,
+				daoInsert,
 				serviceExtract,
 				testCase.keys,
 			)
@@ -508,8 +508,8 @@ func TestJwkGen(t *testing.T) {
 			require.ErrorIs(t, err, testCase.expectErr)
 			require.Equal(t, testCase.expect, key)
 
-			repositorySearch.AssertExpectations(t)
-			repositoryInsert.AssertExpectations(t)
+			daoSearch.AssertExpectations(t)
+			daoInsert.AssertExpectations(t)
 			serviceExtract.AssertExpectations(t)
 		})
 	}

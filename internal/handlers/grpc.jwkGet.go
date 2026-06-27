@@ -10,13 +10,13 @@ import (
 
 	"github.com/a-novel-kit/golib/otel"
 
+	"github.com/a-novel/service-json-keys/v2/internal/core"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
-	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
 // GrpcJwkGetService is the service dependency of [GrpcJwkGet].
 type GrpcJwkGetService interface {
-	Exec(ctx context.Context, request *services.JwkSelectRequest) (*services.Jwk, error)
+	Exec(ctx context.Context, request *core.JwkSelectRequest) (*core.Jwk, error)
 }
 
 // GrpcJwkGet is the gRPC handler that retrieves a single JSON Web Key by its ID.
@@ -44,10 +44,10 @@ func (handler *GrpcJwkGet) JwkGet(
 		return nil, status.Error(codes.InvalidArgument, "invalid key id")
 	}
 
-	jwk, err := handler.service.Exec(ctx, &services.JwkSelectRequest{
+	jwk, err := handler.service.Exec(ctx, &core.JwkSelectRequest{
 		ID: keyId,
 	})
-	if errors.Is(err, services.ErrJwkNotFound) {
+	if errors.Is(err, core.ErrJwkNotFound) {
 		return nil, status.Error(codes.NotFound, "jwk not found")
 	}
 
