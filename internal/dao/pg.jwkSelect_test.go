@@ -116,7 +116,7 @@ func TestPgJwkSelect(t *testing.T) {
 		},
 	}
 
-	repository := dao.NewPgJwkSelect()
+	dao := dao.NewPgJwkSelect()
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
@@ -140,7 +140,7 @@ func TestPgJwkSelect(t *testing.T) {
 					_, err = db.NewRaw("REFRESH MATERIALIZED VIEW active_keys;").Exec(ctx)
 					require.NoError(t, err)
 
-					key, err := repository.Exec(ctx, testCase.request)
+					key, err := dao.Exec(ctx, testCase.request)
 					require.ErrorIs(t, err, testCase.expectErr)
 					require.Equal(t, testCase.expect, key)
 				},

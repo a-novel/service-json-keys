@@ -1,4 +1,4 @@
-package services
+package core
 
 import (
 	"context"
@@ -11,8 +11,8 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 )
 
-// JwkSearchRepository is the DAO dependency of [JwkSearch].
-type JwkSearchRepository interface {
+// JwkSearchDao is the DAO dependency of [JwkSearch].
+type JwkSearchDao interface {
 	Exec(ctx context.Context, request *dao.JwkSearchRequest) ([]*dao.Jwk, error)
 }
 
@@ -33,23 +33,23 @@ type JwkSearchRequest struct {
 // A JwkSearch lists the active keys for a given usage. Keys are returned in
 // creation order: the first element is the main key, the rest are legacy.
 type JwkSearch struct {
-	repository     JwkSearchRepository
+	dao            JwkSearchDao
 	serviceExtract JwkSearchServiceExtract
 }
 
 // NewJwkSearch returns a new JwkSearch service.
 func NewJwkSearch(
-	repository JwkSearchRepository,
+	dao JwkSearchDao,
 	serviceExtract JwkSearchServiceExtract,
 ) *JwkSearch {
 	return &JwkSearch{
-		repository:     repository,
+		dao:            dao,
 		serviceExtract: serviceExtract,
 	}
 }
 
 func (service *JwkSearch) Exec(ctx context.Context, request *JwkSearchRequest) ([]*Jwk, error) {
-	ctx, span := otel.Tracer().Start(ctx, "services.JwkSearch")
+	ctx, span := otel.Tracer().Start(ctx, "core.JwkSearch")
 	defer span.End()
 
 	span.SetAttributes(
@@ -57,7 +57,7 @@ func (service *JwkSearch) Exec(ctx context.Context, request *JwkSearchRequest) (
 		attribute.Bool("key.private", request.Private),
 	)
 
-	entities, err := service.repository.Exec(ctx, &dao.JwkSearchRequest{
+	entities, err := service.dao.Exec(ctx, &dao.JwkSearchRequest{
 		Usage: request.Usage,
 	})
 	if err != nil {

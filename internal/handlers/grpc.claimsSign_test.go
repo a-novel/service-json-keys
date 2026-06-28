@@ -12,10 +12,10 @@ import (
 
 	"github.com/a-novel-kit/golib/grpcf"
 
+	"github.com/a-novel/service-json-keys/v2/internal/core"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
 	handlersmocks "github.com/a-novel/service-json-keys/v2/internal/handlers/mocks"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
-	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
 func TestGrpcClaimsSign(t *testing.T) {
@@ -77,7 +77,7 @@ func TestGrpcClaimsSign(t *testing.T) {
 
 			serviceMock: &serviceMock{
 				req: map[string]any{"message": "hello world"},
-				err: services.ErrConfigNotFound,
+				err: core.ErrConfigNotFound,
 			},
 
 			expectStatus: codes.Unavailable,
@@ -107,7 +107,7 @@ func TestGrpcClaimsSign(t *testing.T) {
 
 			if testCase.serviceMock != nil {
 				service.EXPECT().
-					Exec(mock.Anything, &services.ClaimsSignRequest{
+					Exec(mock.Anything, &core.ClaimsSignRequest{
 						Claims: testCase.serviceMock.req,
 						Usage:  testCase.request.GetUsage(),
 					}).

@@ -21,14 +21,14 @@ Centralized signing-key manager for the A-Novel platform: it holds every private
 
 Services register named **usages** (`auth`, `auth-refresh`, …), each with its own signing algorithm, rotation schedule, and claim parameters. JSON Keys holds every private key and signs on callers' behalf — key material never leaves the server. Consumers fetch the matching public keys once and verify tokens locally, with no per-token round-trip.
 
-Two surfaces:
+Two APIs:
 
 - **Private gRPC API** — signing, key retrieval, status — for internal service-to-service traffic. Everything touching private keys lives here. The server has no application-layer auth; access control is external (network policy, ingress, service mesh).
 - **Public REST API** — public-key fetch, health — for anyone verifying tokens.
 
 ## Deploying
 
-The service runs as published OCI images plus a PostgreSQL database. Both surfaces are stateless, so each scales to as many replicas as you need behind a load balancer; all state lives in Postgres.
+The service runs as published OCI images plus a PostgreSQL database. Both servers are stateless, so each scales to as many replicas as you need behind a load balancer; all state lives in Postgres.
 
 > **OpenTofu modules are the planned canonical deployment path.** Until they land, deploy the images with any container orchestrator — the composition below is the reference for which images to run, how they wire together, and the environment they expect.
 
@@ -65,7 +65,7 @@ services:
     networks: [api]
 
   service-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/grpc:v2.3.1 # or .../rest:v2.3.1 for the public surface
+    image: ghcr.io/a-novel/service-json-keys/grpc:v2.3.1 # or .../rest:v2.3.1 for the public REST API
     ports: ["${GRPC_PORT}:8080"] # the container always listens on 8080; map ${REST_PORT} for the rest image
     depends_on:
       postgres-json-keys: { condition: service_healthy }
@@ -82,7 +82,7 @@ volumes:
   json-keys-postgres-data:
 ```
 
-Run both surfaces by adding a second service that reuses the same database and migrations with the `rest` image. Key rotation is a separate scheduled job — run the `service-json-keys/jobs/rotatekeys` image on a timer (see [CONTRIBUTING](./CONTRIBUTING.md#key-rotation)); without it, active keys eventually age out and signing stops.
+Run both servers by adding a second service that reuses the same database and migrations with the `rest` image. Key rotation is a separate scheduled job — run the `service-json-keys/jobs/rotatekeys` image on a timer (see [CONTRIBUTING](./CONTRIBUTING.md#key-rotation)); without it, active keys eventually age out and signing stops.
 
 ### Configuration
 
@@ -93,7 +93,7 @@ Every variable is read from the process environment.
 | `POSTGRES_DSN`   | PostgreSQL connection string. **Required.**                                                                                                                                                                                                               | all                                                                                 |
 | `APP_MASTER_KEY` | 32-byte hex-encoded key that encrypts private keys at rest. **Required** by every image that touches private keys. **Never rotate** unless you can afford to invalidate every existing key — see [CONTRIBUTING](./CONTRIBUTING.md#master-key-encryption). | `grpc`<br/>`rest`<br/>`standalone-grpc`<br/>`standalone-rest`<br/>`jobs/rotatekeys` |
 
-The gRPC surface exposes private-key operations and must run on an isolated, access-controlled network — the server does not authenticate callers itself.
+The gRPC server exposes private-key operations and must run on an isolated, access-controlled network — the server does not authenticate callers itself.
 
 <details>
 <summary>Optional configuration (REST tuning, OpenTelemetry)</summary>

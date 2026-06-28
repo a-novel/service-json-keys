@@ -29,12 +29,12 @@ type JwkSelectRequest struct {
 // A PgJwkSelect retrieves a single active key by its ID.
 type PgJwkSelect struct{}
 
-// NewPgJwkSelect returns a new PgJwkSelect repository.
+// NewPgJwkSelect returns a new PgJwkSelect dao.
 func NewPgJwkSelect() *PgJwkSelect {
 	return &PgJwkSelect{}
 }
 
-func (repository *PgJwkSelect) Exec(ctx context.Context, request *JwkSelectRequest) (*Jwk, error) {
+func (dao *PgJwkSelect) Exec(ctx context.Context, request *JwkSelectRequest) (*Jwk, error) {
 	ctx, span := otel.Tracer().Start(ctx, "dao.PgJwkSelect")
 	defer span.End()
 

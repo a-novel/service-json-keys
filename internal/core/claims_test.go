@@ -1,4 +1,4 @@
-package services_test
+package core_test
 
 import (
 	"context"
@@ -15,7 +15,7 @@ import (
 	"github.com/a-novel-kit/jwt/jwk"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
-	"github.com/a-novel/service-json-keys/v2/internal/services"
+	"github.com/a-novel/service-json-keys/v2/internal/core"
 )
 
 func TestClaimsSignAndVerify(t *testing.T) {
@@ -53,7 +53,7 @@ func TestClaimsSignAndVerify(t *testing.T) {
 		},
 	}
 
-	producers, err := services.NewJwkProducers(&services.JwkPrivateSources{
+	producers, err := core.NewJwkProducers(&core.JwkPrivateSources{
 		EdDSA: map[string]*jwk.Source[ed25519.PrivateKey]{
 			"test-usage": jwk.NewED25519PrivateSource(jwk.SourceConfig{
 				Fetch: func(_ context.Context) ([]*jwa.JWK, error) {
@@ -66,7 +66,7 @@ func TestClaimsSignAndVerify(t *testing.T) {
 	}, testConfig)
 	require.NoError(t, err)
 
-	recipients, err := services.NewJwkRecipients(&services.JwkPublicSources{
+	recipients, err := core.NewJwkRecipients(&core.JwkPublicSources{
 		EdDSA: map[string]*jwk.Source[ed25519.PublicKey]{
 			"test-usage": jwk.NewED25519PublicSource(jwk.SourceConfig{
 				Fetch: func(_ context.Context) ([]*jwa.JWK, error) {
@@ -95,16 +95,16 @@ func TestClaimsSignAndVerify(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			signer := services.NewClaimsSign(producers, testConfig)
-			verifier := services.NewClaimsVerify[testClaims](recipients, testConfig)
+			signer := core.NewClaimsSign(producers, testConfig)
+			verifier := core.NewClaimsVerify[testClaims](recipients, testConfig)
 
-			signedClaims, err := signer.Exec(t.Context(), &services.ClaimsSignRequest{
+			signedClaims, err := signer.Exec(t.Context(), &core.ClaimsSignRequest{
 				Claims: testCase.claims,
 				Usage:  "test-usage",
 			})
 			require.NoError(t, err)
 
-			verifiedClaims, err := verifier.Exec(t.Context(), &services.ClaimsVerifyRequest{
+			verifiedClaims, err := verifier.Exec(t.Context(), &core.ClaimsVerifyRequest{
 				Token: signedClaims,
 				Usage: "test-usage",
 			})

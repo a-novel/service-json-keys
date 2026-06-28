@@ -7,7 +7,7 @@ package handlersmocks
 import (
 	"context"
 
-	"github.com/a-novel/service-json-keys/v2/internal/services"
+	"github.com/a-novel/service-json-keys/v2/internal/core"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -39,7 +39,7 @@ func (_m *MockGrpcClaimsSignService) EXPECT() *MockGrpcClaimsSignService_Expecte
 }
 
 // Exec provides a mock function for the type MockGrpcClaimsSignService
-func (_mock *MockGrpcClaimsSignService) Exec(ctx context.Context, request *services.ClaimsSignRequest) (string, error) {
+func (_mock *MockGrpcClaimsSignService) Exec(ctx context.Context, request *core.ClaimsSignRequest) (string, error) {
 	ret := _mock.Called(ctx, request)
 
 	if len(ret) == 0 {
@@ -48,15 +48,15 @@ func (_mock *MockGrpcClaimsSignService) Exec(ctx context.Context, request *servi
 
 	var r0 string
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *services.ClaimsSignRequest) (string, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *core.ClaimsSignRequest) (string, error)); ok {
 		return returnFunc(ctx, request)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *services.ClaimsSignRequest) string); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *core.ClaimsSignRequest) string); ok {
 		r0 = returnFunc(ctx, request)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *services.ClaimsSignRequest) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *core.ClaimsSignRequest) error); ok {
 		r1 = returnFunc(ctx, request)
 	} else {
 		r1 = ret.Error(1)
@@ -71,20 +71,20 @@ type MockGrpcClaimsSignService_Exec_Call struct {
 
 // Exec is a helper method to define mock.On call
 //   - ctx context.Context
-//   - request *services.ClaimsSignRequest
+//   - request *core.ClaimsSignRequest
 func (_e *MockGrpcClaimsSignService_Expecter) Exec(ctx any, request any) *MockGrpcClaimsSignService_Exec_Call {
 	return &MockGrpcClaimsSignService_Exec_Call{Call: _e.mock.On("Exec", ctx, request)}
 }
 
-func (_c *MockGrpcClaimsSignService_Exec_Call) Run(run func(ctx context.Context, request *services.ClaimsSignRequest)) *MockGrpcClaimsSignService_Exec_Call {
+func (_c *MockGrpcClaimsSignService_Exec_Call) Run(run func(ctx context.Context, request *core.ClaimsSignRequest)) *MockGrpcClaimsSignService_Exec_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 *services.ClaimsSignRequest
+		var arg1 *core.ClaimsSignRequest
 		if args[1] != nil {
-			arg1 = args[1].(*services.ClaimsSignRequest)
+			arg1 = args[1].(*core.ClaimsSignRequest)
 		}
 		run(
 			arg0,
@@ -99,7 +99,7 @@ func (_c *MockGrpcClaimsSignService_Exec_Call) Return(s string, err error) *Mock
 	return _c
 }
 
-func (_c *MockGrpcClaimsSignService_Exec_Call) RunAndReturn(run func(ctx context.Context, request *services.ClaimsSignRequest) (string, error)) *MockGrpcClaimsSignService_Exec_Call {
+func (_c *MockGrpcClaimsSignService_Exec_Call) RunAndReturn(run func(ctx context.Context, request *core.ClaimsSignRequest) (string, error)) *MockGrpcClaimsSignService_Exec_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -132,26 +132,26 @@ func (_m *MockGrpcJwkGetService) EXPECT() *MockGrpcJwkGetService_Expecter {
 }
 
 // Exec provides a mock function for the type MockGrpcJwkGetService
-func (_mock *MockGrpcJwkGetService) Exec(ctx context.Context, request *services.JwkSelectRequest) (*services.Jwk, error) {
+func (_mock *MockGrpcJwkGetService) Exec(ctx context.Context, request *core.JwkSelectRequest) (*core.Jwk, error) {
 	ret := _mock.Called(ctx, request)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Exec")
 	}
 
-	var r0 *services.Jwk
+	var r0 *core.Jwk
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *services.JwkSelectRequest) (*services.Jwk, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *core.JwkSelectRequest) (*core.Jwk, error)); ok {
 		return returnFunc(ctx, request)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *services.JwkSelectRequest) *services.Jwk); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *core.JwkSelectRequest) *core.Jwk); ok {
 		r0 = returnFunc(ctx, request)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*services.Jwk)
+			r0 = ret.Get(0).(*core.Jwk)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *services.JwkSelectRequest) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *core.JwkSelectRequest) error); ok {
 		r1 = returnFunc(ctx, request)
 	} else {
 		r1 = ret.Error(1)
@@ -166,20 +166,20 @@ type MockGrpcJwkGetService_Exec_Call struct {
 
 // Exec is a helper method to define mock.On call
 //   - ctx context.Context
-//   - request *services.JwkSelectRequest
+//   - request *core.JwkSelectRequest
 func (_e *MockGrpcJwkGetService_Expecter) Exec(ctx any, request any) *MockGrpcJwkGetService_Exec_Call {
 	return &MockGrpcJwkGetService_Exec_Call{Call: _e.mock.On("Exec", ctx, request)}
 }
 
-func (_c *MockGrpcJwkGetService_Exec_Call) Run(run func(ctx context.Context, request *services.JwkSelectRequest)) *MockGrpcJwkGetService_Exec_Call {
+func (_c *MockGrpcJwkGetService_Exec_Call) Run(run func(ctx context.Context, request *core.JwkSelectRequest)) *MockGrpcJwkGetService_Exec_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 *services.JwkSelectRequest
+		var arg1 *core.JwkSelectRequest
 		if args[1] != nil {
-			arg1 = args[1].(*services.JwkSelectRequest)
+			arg1 = args[1].(*core.JwkSelectRequest)
 		}
 		run(
 			arg0,
@@ -189,12 +189,12 @@ func (_c *MockGrpcJwkGetService_Exec_Call) Run(run func(ctx context.Context, req
 	return _c
 }
 
-func (_c *MockGrpcJwkGetService_Exec_Call) Return(v *services.Jwk, err error) *MockGrpcJwkGetService_Exec_Call {
+func (_c *MockGrpcJwkGetService_Exec_Call) Return(v *core.Jwk, err error) *MockGrpcJwkGetService_Exec_Call {
 	_c.Call.Return(v, err)
 	return _c
 }
 
-func (_c *MockGrpcJwkGetService_Exec_Call) RunAndReturn(run func(ctx context.Context, request *services.JwkSelectRequest) (*services.Jwk, error)) *MockGrpcJwkGetService_Exec_Call {
+func (_c *MockGrpcJwkGetService_Exec_Call) RunAndReturn(run func(ctx context.Context, request *core.JwkSelectRequest) (*core.Jwk, error)) *MockGrpcJwkGetService_Exec_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -227,26 +227,26 @@ func (_m *MockGrpcJwkListService) EXPECT() *MockGrpcJwkListService_Expecter {
 }
 
 // Exec provides a mock function for the type MockGrpcJwkListService
-func (_mock *MockGrpcJwkListService) Exec(ctx context.Context, request *services.JwkSearchRequest) ([]*services.Jwk, error) {
+func (_mock *MockGrpcJwkListService) Exec(ctx context.Context, request *core.JwkSearchRequest) ([]*core.Jwk, error) {
 	ret := _mock.Called(ctx, request)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Exec")
 	}
 
-	var r0 []*services.Jwk
+	var r0 []*core.Jwk
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *services.JwkSearchRequest) ([]*services.Jwk, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *core.JwkSearchRequest) ([]*core.Jwk, error)); ok {
 		return returnFunc(ctx, request)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *services.JwkSearchRequest) []*services.Jwk); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *core.JwkSearchRequest) []*core.Jwk); ok {
 		r0 = returnFunc(ctx, request)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*services.Jwk)
+			r0 = ret.Get(0).([]*core.Jwk)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *services.JwkSearchRequest) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *core.JwkSearchRequest) error); ok {
 		r1 = returnFunc(ctx, request)
 	} else {
 		r1 = ret.Error(1)
@@ -261,20 +261,20 @@ type MockGrpcJwkListService_Exec_Call struct {
 
 // Exec is a helper method to define mock.On call
 //   - ctx context.Context
-//   - request *services.JwkSearchRequest
+//   - request *core.JwkSearchRequest
 func (_e *MockGrpcJwkListService_Expecter) Exec(ctx any, request any) *MockGrpcJwkListService_Exec_Call {
 	return &MockGrpcJwkListService_Exec_Call{Call: _e.mock.On("Exec", ctx, request)}
 }
 
-func (_c *MockGrpcJwkListService_Exec_Call) Run(run func(ctx context.Context, request *services.JwkSearchRequest)) *MockGrpcJwkListService_Exec_Call {
+func (_c *MockGrpcJwkListService_Exec_Call) Run(run func(ctx context.Context, request *core.JwkSearchRequest)) *MockGrpcJwkListService_Exec_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 *services.JwkSearchRequest
+		var arg1 *core.JwkSearchRequest
 		if args[1] != nil {
-			arg1 = args[1].(*services.JwkSearchRequest)
+			arg1 = args[1].(*core.JwkSearchRequest)
 		}
 		run(
 			arg0,
@@ -284,12 +284,12 @@ func (_c *MockGrpcJwkListService_Exec_Call) Run(run func(ctx context.Context, re
 	return _c
 }
 
-func (_c *MockGrpcJwkListService_Exec_Call) Return(vs []*services.Jwk, err error) *MockGrpcJwkListService_Exec_Call {
+func (_c *MockGrpcJwkListService_Exec_Call) Return(vs []*core.Jwk, err error) *MockGrpcJwkListService_Exec_Call {
 	_c.Call.Return(vs, err)
 	return _c
 }
 
-func (_c *MockGrpcJwkListService_Exec_Call) RunAndReturn(run func(ctx context.Context, request *services.JwkSearchRequest) ([]*services.Jwk, error)) *MockGrpcJwkListService_Exec_Call {
+func (_c *MockGrpcJwkListService_Exec_Call) RunAndReturn(run func(ctx context.Context, request *core.JwkSearchRequest) ([]*core.Jwk, error)) *MockGrpcJwkListService_Exec_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -322,26 +322,26 @@ func (_m *MockRestJwkGetService) EXPECT() *MockRestJwkGetService_Expecter {
 }
 
 // Exec provides a mock function for the type MockRestJwkGetService
-func (_mock *MockRestJwkGetService) Exec(ctx context.Context, request *services.JwkSelectRequest) (*services.Jwk, error) {
+func (_mock *MockRestJwkGetService) Exec(ctx context.Context, request *core.JwkSelectRequest) (*core.Jwk, error) {
 	ret := _mock.Called(ctx, request)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Exec")
 	}
 
-	var r0 *services.Jwk
+	var r0 *core.Jwk
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *services.JwkSelectRequest) (*services.Jwk, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *core.JwkSelectRequest) (*core.Jwk, error)); ok {
 		return returnFunc(ctx, request)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *services.JwkSelectRequest) *services.Jwk); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *core.JwkSelectRequest) *core.Jwk); ok {
 		r0 = returnFunc(ctx, request)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*services.Jwk)
+			r0 = ret.Get(0).(*core.Jwk)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *services.JwkSelectRequest) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *core.JwkSelectRequest) error); ok {
 		r1 = returnFunc(ctx, request)
 	} else {
 		r1 = ret.Error(1)
@@ -356,20 +356,20 @@ type MockRestJwkGetService_Exec_Call struct {
 
 // Exec is a helper method to define mock.On call
 //   - ctx context.Context
-//   - request *services.JwkSelectRequest
+//   - request *core.JwkSelectRequest
 func (_e *MockRestJwkGetService_Expecter) Exec(ctx any, request any) *MockRestJwkGetService_Exec_Call {
 	return &MockRestJwkGetService_Exec_Call{Call: _e.mock.On("Exec", ctx, request)}
 }
 
-func (_c *MockRestJwkGetService_Exec_Call) Run(run func(ctx context.Context, request *services.JwkSelectRequest)) *MockRestJwkGetService_Exec_Call {
+func (_c *MockRestJwkGetService_Exec_Call) Run(run func(ctx context.Context, request *core.JwkSelectRequest)) *MockRestJwkGetService_Exec_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 *services.JwkSelectRequest
+		var arg1 *core.JwkSelectRequest
 		if args[1] != nil {
-			arg1 = args[1].(*services.JwkSelectRequest)
+			arg1 = args[1].(*core.JwkSelectRequest)
 		}
 		run(
 			arg0,
@@ -379,12 +379,12 @@ func (_c *MockRestJwkGetService_Exec_Call) Run(run func(ctx context.Context, req
 	return _c
 }
 
-func (_c *MockRestJwkGetService_Exec_Call) Return(v *services.Jwk, err error) *MockRestJwkGetService_Exec_Call {
+func (_c *MockRestJwkGetService_Exec_Call) Return(v *core.Jwk, err error) *MockRestJwkGetService_Exec_Call {
 	_c.Call.Return(v, err)
 	return _c
 }
 
-func (_c *MockRestJwkGetService_Exec_Call) RunAndReturn(run func(ctx context.Context, request *services.JwkSelectRequest) (*services.Jwk, error)) *MockRestJwkGetService_Exec_Call {
+func (_c *MockRestJwkGetService_Exec_Call) RunAndReturn(run func(ctx context.Context, request *core.JwkSelectRequest) (*core.Jwk, error)) *MockRestJwkGetService_Exec_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -417,26 +417,26 @@ func (_m *MockRestJwkListService) EXPECT() *MockRestJwkListService_Expecter {
 }
 
 // Exec provides a mock function for the type MockRestJwkListService
-func (_mock *MockRestJwkListService) Exec(ctx context.Context, request *services.JwkSearchRequest) ([]*services.Jwk, error) {
+func (_mock *MockRestJwkListService) Exec(ctx context.Context, request *core.JwkSearchRequest) ([]*core.Jwk, error) {
 	ret := _mock.Called(ctx, request)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Exec")
 	}
 
-	var r0 []*services.Jwk
+	var r0 []*core.Jwk
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *services.JwkSearchRequest) ([]*services.Jwk, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *core.JwkSearchRequest) ([]*core.Jwk, error)); ok {
 		return returnFunc(ctx, request)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *services.JwkSearchRequest) []*services.Jwk); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *core.JwkSearchRequest) []*core.Jwk); ok {
 		r0 = returnFunc(ctx, request)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*services.Jwk)
+			r0 = ret.Get(0).([]*core.Jwk)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *services.JwkSearchRequest) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *core.JwkSearchRequest) error); ok {
 		r1 = returnFunc(ctx, request)
 	} else {
 		r1 = ret.Error(1)
@@ -451,20 +451,20 @@ type MockRestJwkListService_Exec_Call struct {
 
 // Exec is a helper method to define mock.On call
 //   - ctx context.Context
-//   - request *services.JwkSearchRequest
+//   - request *core.JwkSearchRequest
 func (_e *MockRestJwkListService_Expecter) Exec(ctx any, request any) *MockRestJwkListService_Exec_Call {
 	return &MockRestJwkListService_Exec_Call{Call: _e.mock.On("Exec", ctx, request)}
 }
 
-func (_c *MockRestJwkListService_Exec_Call) Run(run func(ctx context.Context, request *services.JwkSearchRequest)) *MockRestJwkListService_Exec_Call {
+func (_c *MockRestJwkListService_Exec_Call) Run(run func(ctx context.Context, request *core.JwkSearchRequest)) *MockRestJwkListService_Exec_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 *services.JwkSearchRequest
+		var arg1 *core.JwkSearchRequest
 		if args[1] != nil {
-			arg1 = args[1].(*services.JwkSearchRequest)
+			arg1 = args[1].(*core.JwkSearchRequest)
 		}
 		run(
 			arg0,
@@ -474,12 +474,12 @@ func (_c *MockRestJwkListService_Exec_Call) Run(run func(ctx context.Context, re
 	return _c
 }
 
-func (_c *MockRestJwkListService_Exec_Call) Return(vs []*services.Jwk, err error) *MockRestJwkListService_Exec_Call {
+func (_c *MockRestJwkListService_Exec_Call) Return(vs []*core.Jwk, err error) *MockRestJwkListService_Exec_Call {
 	_c.Call.Return(vs, err)
 	return _c
 }
 
-func (_c *MockRestJwkListService_Exec_Call) RunAndReturn(run func(ctx context.Context, request *services.JwkSearchRequest) ([]*services.Jwk, error)) *MockRestJwkListService_Exec_Call {
+func (_c *MockRestJwkListService_Exec_Call) RunAndReturn(run func(ctx context.Context, request *core.JwkSearchRequest) ([]*core.Jwk, error)) *MockRestJwkListService_Exec_Call {
 	_c.Call.Return(run)
 	return _c
 }

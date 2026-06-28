@@ -1,4 +1,4 @@
-package services
+package core
 
 import (
 	"context"
@@ -23,13 +23,13 @@ import (
 // ErrJwkGenUnknownKeyUsage is returned when no key generator is registered for the requested usage's algorithm.
 var ErrJwkGenUnknownKeyUsage = errors.New("unknown key usage")
 
-// JwkGenRepositorySearch is the DAO search dependency of [JwkGen].
-type JwkGenRepositorySearch interface {
+// JwkGenDaoSearch is the DAO search dependency of [JwkGen].
+type JwkGenDaoSearch interface {
 	Exec(ctx context.Context, request *dao.JwkSearchRequest) ([]*dao.Jwk, error)
 }
 
-// JwkGenRepositoryInsert is the DAO insert dependency of [JwkGen].
-type JwkGenRepositoryInsert interface {
+// JwkGenDaoInsert is the DAO insert dependency of [JwkGen].
+type JwkGenDaoInsert interface {
 	Exec(ctx context.Context, request *dao.JwkInsertRequest) (*dao.Jwk, error)
 }
 
@@ -52,36 +52,36 @@ type JwkGenRequest struct {
 // If the main key for the target usage is recent enough, this service returns it
 // and skips generation. This is recorded in traces.
 type JwkGen struct {
-	repositorySearch JwkGenRepositorySearch
-	repositoryInsert JwkGenRepositoryInsert
-	serviceExtract   JwkGenServiceExtract
-	keysConfig       map[string]*config.Jwk
+	daoSearch      JwkGenDaoSearch
+	daoInsert      JwkGenDaoInsert
+	serviceExtract JwkGenServiceExtract
+	keysConfig     map[string]*config.Jwk
 }
 
 // NewJwkGen returns a new JwkGen service.
 func NewJwkGen(
-	repositorySearch JwkGenRepositorySearch,
-	repositoryInsert JwkGenRepositoryInsert,
+	daoSearch JwkGenDaoSearch,
+	daoInsert JwkGenDaoInsert,
 	serviceExtract JwkGenServiceExtract,
 	keysConfig map[string]*config.Jwk,
 ) *JwkGen {
 	return &JwkGen{
-		repositorySearch: repositorySearch,
-		repositoryInsert: repositoryInsert,
-		serviceExtract:   serviceExtract,
-		keysConfig:       keysConfig,
+		daoSearch:      daoSearch,
+		daoInsert:      daoInsert,
+		serviceExtract: serviceExtract,
+		keysConfig:     keysConfig,
 	}
 }
 
 func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, error) {
-	ctx, span := otel.Tracer().Start(ctx, "services.JwkGen")
+	ctx, span := otel.Tracer().Start(ctx, "core.JwkGen")
 	defer span.End()
 
 	span.SetAttributes(attribute.String("key.usage", request.Usage))
 
 	// Check the last time a key was inserted for the target usage, and compare to config. If the last key is too
 	// recent, return without generating a new key.
-	keys, err := service.repositorySearch.Exec(ctx, &dao.JwkSearchRequest{Usage: request.Usage})
+	keys, err := service.daoSearch.Exec(ctx, &dao.JwkSearchRequest{Usage: request.Usage})
 	if err != nil {
 		return nil, otel.ReportError(span, fmt.Errorf("list keys: %w", err))
 	}
@@ -155,7 +155,7 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 
 		now := time.Now()
 
-		latestKey, err = service.repositoryInsert.Exec(ctx, &dao.JwkInsertRequest{
+		latestKey, err = service.daoInsert.Exec(ctx, &dao.JwkInsertRequest{
 			ID:         kid,
 			PrivateKey: privateKeyEncoded,
 			PublicKey:  publicKeyEncoded,

@@ -1,4 +1,4 @@
-package services
+package core
 
 import (
 	"context"
@@ -33,7 +33,7 @@ func NewJwkExtract() *JwkExtract {
 }
 
 func (service *JwkExtract) Exec(ctx context.Context, request *JwkExtractRequest) (*Jwk, error) {
-	ctx, span := otel.Tracer().Start(ctx, "services.JwkExtract")
+	ctx, span := otel.Tracer().Start(ctx, "core.JwkExtract")
 	defer span.End()
 
 	span.SetAttributes(

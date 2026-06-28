@@ -1,4 +1,4 @@
-package services_test
+package core_test
 
 import (
 	"testing"
@@ -8,8 +8,8 @@ import (
 	"github.com/a-novel-kit/jwt/jwa"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
-	"github.com/a-novel/service-json-keys/v2/internal/services"
-	servicesmocks "github.com/a-novel/service-json-keys/v2/internal/services/mocks"
+	"github.com/a-novel/service-json-keys/v2/internal/core"
+	coremocks "github.com/a-novel/service-json-keys/v2/internal/core/mocks"
 )
 
 func TestNewJwkPrivateSource(t *testing.T) {
@@ -36,7 +36,7 @@ func TestNewJwkPrivateSource(t *testing.T) {
 				"test-usage": {Alg: jwa.Alg("unknown-alg")},
 			},
 
-			expectErr: services.ErrJwkPresetUnknownAlgorithm,
+			expectErr: core.ErrJwkPresetUnknownAlgorithm,
 		},
 	}
 
@@ -44,9 +44,9 @@ func TestNewJwkPrivateSource(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			source := servicesmocks.NewMockJwkPrivateSource(t)
+			source := coremocks.NewMockJwkPrivateSource(t)
 
-			_, err := services.NewJwkPrivateSource(source, testCase.keys)
+			_, err := core.NewJwkPrivateSource(source, testCase.keys)
 			require.ErrorIs(t, err, testCase.expectErr)
 		})
 	}
@@ -76,7 +76,7 @@ func TestNewJwkPublicSource(t *testing.T) {
 				"test-usage": {Alg: jwa.Alg("unknown-alg")},
 			},
 
-			expectErr: services.ErrJwkPresetUnknownAlgorithm,
+			expectErr: core.ErrJwkPresetUnknownAlgorithm,
 		},
 	}
 
@@ -84,9 +84,9 @@ func TestNewJwkPublicSource(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			source := servicesmocks.NewMockJwkPublicSource(t)
+			source := coremocks.NewMockJwkPublicSource(t)
 
-			_, err := services.NewJwkPublicSource(source, testCase.keys)
+			_, err := core.NewJwkPublicSource(source, testCase.keys)
 			require.ErrorIs(t, err, testCase.expectErr)
 		})
 	}

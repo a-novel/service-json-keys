@@ -1,4 +1,4 @@
-package services_test
+package core_test
 
 import (
 	"encoding/json"
@@ -10,10 +10,10 @@ import (
 
 	"github.com/a-novel-kit/jwt/jwa"
 
+	"github.com/a-novel/service-json-keys/v2/internal/core"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 	"github.com/a-novel/service-json-keys/v2/internal/lib"
 	testutils "github.com/a-novel/service-json-keys/v2/internal/lib/test"
-	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
 func TestJwkExtract(t *testing.T) {
@@ -25,15 +25,15 @@ func TestJwkExtract(t *testing.T) {
 	testCases := []struct {
 		name string
 
-		request *services.JwkExtractRequest
+		request *core.JwkExtractRequest
 
-		expect    *services.Jwk
+		expect    *core.Jwk
 		expectErr error
 	}{
 		{
 			name: "Success/PublicKey",
 
-			request: &services.JwkExtractRequest{
+			request: &core.JwkExtractRequest{
 				Jwk: &dao.Jwk{
 					ID: uuid.MustParse("00000000-0000-0000-0000-000000000001"),
 
@@ -62,7 +62,7 @@ func TestJwkExtract(t *testing.T) {
 				},
 			},
 
-			expect: &services.Jwk{
+			expect: &core.Jwk{
 				JWKCommon: jwa.JWKCommon{
 					KTY:    "test-kty",
 					Use:    "test-use",
@@ -76,7 +76,7 @@ func TestJwkExtract(t *testing.T) {
 		{
 			name: "Success/SymmetricKey",
 
-			request: &services.JwkExtractRequest{
+			request: &core.JwkExtractRequest{
 				Jwk: &dao.Jwk{
 					ID: uuid.MustParse("00000000-0000-0000-0000-000000000001"),
 
@@ -109,7 +109,7 @@ func TestJwkExtract(t *testing.T) {
 		{
 			name: "Success/Private",
 
-			request: &services.JwkExtractRequest{
+			request: &core.JwkExtractRequest{
 				Jwk: &dao.Jwk{
 					ID: uuid.MustParse("00000000-0000-0000-0000-000000000001"),
 
@@ -140,7 +140,7 @@ func TestJwkExtract(t *testing.T) {
 				Private: true,
 			},
 
-			expect: &services.Jwk{
+			expect: &core.Jwk{
 				JWKCommon: jwa.JWKCommon{
 					KTY:    "test-kty",
 					Use:    "test-use",
@@ -157,7 +157,7 @@ func TestJwkExtract(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			service := services.NewJwkExtract()
+			service := core.NewJwkExtract()
 
 			result, err := service.Exec(ctx, testCase.request)
 			require.ErrorIs(t, err, testCase.expectErr)

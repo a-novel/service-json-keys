@@ -1,4 +1,4 @@
-package services_test
+package core_test
 
 import (
 	"testing"
@@ -9,10 +9,10 @@ import (
 	"github.com/a-novel-kit/jwt/jwa"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
-	"github.com/a-novel/service-json-keys/v2/internal/services"
+	"github.com/a-novel/service-json-keys/v2/internal/core"
 )
 
-func TestClaimsSign(t *testing.T) {
+func TestClaimsVerify(t *testing.T) {
 	t.Parallel()
 
 	type testClaims struct {
@@ -40,9 +40,9 @@ func TestClaimsSign(t *testing.T) {
 	testCases := []struct {
 		name string
 
-		request *services.ClaimsSignRequest
+		request *core.ClaimsVerifyRequest
 
-		producers  services.JwkProducers
+		recipients core.JwkRecipients
 		keysConfig map[string]*config.Jwk
 
 		expectErr error
@@ -50,28 +50,28 @@ func TestClaimsSign(t *testing.T) {
 		{
 			name: "Error/ConfigNotFound",
 
-			request: &services.ClaimsSignRequest{
-				Claims: &testClaims{Foo: "bar"},
-				Usage:  "unknown-usage",
+			request: &core.ClaimsVerifyRequest{
+				Token: "some.token.value",
+				Usage: "unknown-usage",
 			},
 
 			keysConfig: testConfig,
-			producers:  make(services.JwkProducers),
+			recipients: make(core.JwkRecipients),
 
-			expectErr: services.ErrConfigNotFound,
+			expectErr: core.ErrConfigNotFound,
 		},
 		{
-			name: "Error/NoProducers",
+			name: "Error/NoRecipients",
 
-			request: &services.ClaimsSignRequest{
-				Claims: &testClaims{Foo: "bar"},
-				Usage:  "test-usage",
+			request: &core.ClaimsVerifyRequest{
+				Token: "some.token.value",
+				Usage: "test-usage",
 			},
 
 			keysConfig: testConfig,
-			producers:  make(services.JwkProducers),
+			recipients: make(core.JwkRecipients),
 
-			expectErr: services.ErrConfigNotFound,
+			expectErr: core.ErrConfigNotFound,
 		},
 	}
 
@@ -79,7 +79,7 @@ func TestClaimsSign(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			service := services.NewClaimsSign(testCase.producers, testCase.keysConfig)
+			service := core.NewClaimsVerify[testClaims](testCase.recipients, testCase.keysConfig)
 
 			_, err := service.Exec(t.Context(), testCase.request)
 			require.ErrorIs(t, err, testCase.expectErr)

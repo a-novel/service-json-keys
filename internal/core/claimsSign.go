@@ -1,4 +1,4 @@
-package services
+package core
 
 import (
 	"context"
@@ -38,7 +38,7 @@ func NewClaimsSign(
 }
 
 func (service *ClaimsSign) Exec(ctx context.Context, request *ClaimsSignRequest) (string, error) {
-	ctx, span := otel.Tracer().Start(ctx, "services.ClaimsSign")
+	ctx, span := otel.Tracer().Start(ctx, "core.ClaimsSign")
 	defer span.End()
 
 	span.SetAttributes(attribute.String("key.usage", request.Usage))

@@ -10,12 +10,12 @@ import (
 	"github.com/a-novel-kit/golib/logging"
 	"github.com/a-novel-kit/golib/otel"
 
-	"github.com/a-novel/service-json-keys/v2/internal/services"
+	"github.com/a-novel/service-json-keys/v2/internal/core"
 )
 
 // RestJwkGetService is the service dependency of [RestJwkGet].
 type RestJwkGetService interface {
-	Exec(ctx context.Context, request *services.JwkSelectRequest) (*services.Jwk, error)
+	Exec(ctx context.Context, request *core.JwkSelectRequest) (*core.Jwk, error)
 }
 
 // RestJwkGet is the REST handler that returns a single public JWK by its ID,
@@ -43,10 +43,10 @@ func (handler *RestJwkGet) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jwk, err := handler.service.Exec(ctx, &services.JwkSelectRequest{ID: keyID})
+	jwk, err := handler.service.Exec(ctx, &core.JwkSelectRequest{ID: keyID})
 	if err != nil {
 		httpf.HandleError(ctx, handler.logger, w, span, httpf.ErrMap{
-			services.ErrJwkNotFound: http.StatusNotFound,
+			core.ErrJwkNotFound: http.StatusNotFound,
 		}, err)
 
 		return

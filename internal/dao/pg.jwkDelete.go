@@ -39,12 +39,12 @@ type JwkDeleteRequest struct {
 // [ErrJwkDeleteNotFound] is returned.
 type PgJwkDelete struct{}
 
-// NewPgJwkDelete returns a new PgJwkDelete repository.
+// NewPgJwkDelete returns a new PgJwkDelete dao.
 func NewPgJwkDelete() *PgJwkDelete {
 	return &PgJwkDelete{}
 }
 
-func (repository *PgJwkDelete) Exec(ctx context.Context, request *JwkDeleteRequest) (*Jwk, error) {
+func (dao *PgJwkDelete) Exec(ctx context.Context, request *JwkDeleteRequest) (*Jwk, error) {
 	ctx, span := otel.Tracer().Start(ctx, "dao.PgJwkDelete")
 	defer span.End()
 

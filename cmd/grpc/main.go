@@ -29,11 +29,11 @@ import (
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
 	"github.com/a-novel/service-json-keys/v2/internal/config/env"
+	"github.com/a-novel/service-json-keys/v2/internal/core"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
 	"github.com/a-novel/service-json-keys/v2/internal/lib"
-	"github.com/a-novel/service-json-keys/v2/internal/services"
 )
 
 func main() {
@@ -56,23 +56,23 @@ func main() {
 	// DAO
 	// =================================================================================================================
 
-	repositoryJwkSearch := dao.NewPgJwkSearch()
-	repositoryJwkSelect := dao.NewPgJwkSelect()
+	daoJwkSearch := dao.NewPgJwkSearch()
+	daoJwkSelect := dao.NewPgJwkSelect()
 
 	// =================================================================================================================
 	// SERVICES
 	// =================================================================================================================
 
-	serviceJwkExtract := services.NewJwkExtract()
-	serviceJwkSearch := services.NewJwkSearch(repositoryJwkSearch, serviceJwkExtract)
-	serviceJwkSelect := services.NewJwkSelect(repositoryJwkSelect, serviceJwkExtract)
+	serviceJwkExtract := core.NewJwkExtract()
+	serviceJwkSearch := core.NewJwkSearch(daoJwkSearch, serviceJwkExtract)
+	serviceJwkSelect := core.NewJwkSelect(daoJwkSelect, serviceJwkExtract)
 
 	// Build the signing chain: a cached private-key source feeds per-usage producer plugins,
 	// which ClaimsSign uses to sign tokens without hitting the database on every request.
-	serviceExportLocal := services.NewJwkExportLocal(serviceJwkSearch)
-	serviceJwkSource := lo.Must(services.NewJwkPrivateSource(serviceExportLocal, config.JwkPresetDefault))
-	serviceJwkProducer := lo.Must(services.NewJwkProducers(serviceJwkSource, config.JwkPresetDefault))
-	serviceClaimsSign := services.NewClaimsSign(serviceJwkProducer, config.JwkPresetDefault)
+	serviceExportLocal := core.NewJwkExportLocal(serviceJwkSearch)
+	serviceJwkSource := lo.Must(core.NewJwkPrivateSource(serviceExportLocal, config.JwkPresetDefault))
+	serviceJwkProducer := lo.Must(core.NewJwkProducers(serviceJwkSource, config.JwkPresetDefault))
+	serviceClaimsSign := core.NewClaimsSign(serviceJwkProducer, config.JwkPresetDefault)
 
 	// =================================================================================================================
 	// HANDLERS

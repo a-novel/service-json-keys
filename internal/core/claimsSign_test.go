@@ -1,4 +1,4 @@
-package services_test
+package core_test
 
 import (
 	"testing"
@@ -9,10 +9,10 @@ import (
 	"github.com/a-novel-kit/jwt/jwa"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
-	"github.com/a-novel/service-json-keys/v2/internal/services"
+	"github.com/a-novel/service-json-keys/v2/internal/core"
 )
 
-func TestClaimsVerify(t *testing.T) {
+func TestClaimsSign(t *testing.T) {
 	t.Parallel()
 
 	type testClaims struct {
@@ -40,9 +40,9 @@ func TestClaimsVerify(t *testing.T) {
 	testCases := []struct {
 		name string
 
-		request *services.ClaimsVerifyRequest
+		request *core.ClaimsSignRequest
 
-		recipients services.JwkRecipients
+		producers  core.JwkProducers
 		keysConfig map[string]*config.Jwk
 
 		expectErr error
@@ -50,28 +50,28 @@ func TestClaimsVerify(t *testing.T) {
 		{
 			name: "Error/ConfigNotFound",
 
-			request: &services.ClaimsVerifyRequest{
-				Token: "some.token.value",
-				Usage: "unknown-usage",
+			request: &core.ClaimsSignRequest{
+				Claims: &testClaims{Foo: "bar"},
+				Usage:  "unknown-usage",
 			},
 
 			keysConfig: testConfig,
-			recipients: make(services.JwkRecipients),
+			producers:  make(core.JwkProducers),
 
-			expectErr: services.ErrConfigNotFound,
+			expectErr: core.ErrConfigNotFound,
 		},
 		{
-			name: "Error/NoRecipients",
+			name: "Error/NoProducers",
 
-			request: &services.ClaimsVerifyRequest{
-				Token: "some.token.value",
-				Usage: "test-usage",
+			request: &core.ClaimsSignRequest{
+				Claims: &testClaims{Foo: "bar"},
+				Usage:  "test-usage",
 			},
 
 			keysConfig: testConfig,
-			recipients: make(services.JwkRecipients),
+			producers:  make(core.JwkProducers),
 
-			expectErr: services.ErrConfigNotFound,
+			expectErr: core.ErrConfigNotFound,
 		},
 	}
 
@@ -79,7 +79,7 @@ func TestClaimsVerify(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			service := services.NewClaimsVerify[testClaims](testCase.recipients, testCase.keysConfig)
+			service := core.NewClaimsSign(testCase.producers, testCase.keysConfig)
 
 			_, err := service.Exec(t.Context(), testCase.request)
 			require.ErrorIs(t, err, testCase.expectErr)

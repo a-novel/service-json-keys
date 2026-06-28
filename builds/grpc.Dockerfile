@@ -20,7 +20,7 @@ COPY ./cmd/grpc ./cmd/grpc
 COPY ./internal/handlers ./internal/handlers
 COPY ./internal/dao ./internal/dao
 COPY ./internal/lib ./internal/lib
-COPY ./internal/services ./internal/services
+COPY ./internal/core ./internal/core
 COPY ./internal/models ./internal/models
 COPY ./internal/config ./internal/config
 

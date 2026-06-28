@@ -11,7 +11,7 @@ import (
 //
 // Private keys must be encrypted with the master key before storage.
 //
-// A Jwk is never hard-deleted. Instead, repositories query through an "active_keys" view that
+// A Jwk is never hard-deleted. Instead, DAOs query through an "active_keys" view that
 // excludes expired and soft-deleted rows. Keys are grouped by [Jwk.Usage]; for each usage there
 // is a single main key (the latest) and zero or more legacy keys (older active versions).
 type Jwk struct {

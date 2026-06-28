@@ -1,4 +1,4 @@
-package services_test
+package core_test
 
 import (
 	"errors"
@@ -9,8 +9,8 @@ import (
 
 	"github.com/a-novel-kit/jwt/jwa"
 
-	"github.com/a-novel/service-json-keys/v2/internal/services"
-	servicesmocks "github.com/a-novel/service-json-keys/v2/internal/services/mocks"
+	"github.com/a-novel/service-json-keys/v2/internal/core"
+	coremocks "github.com/a-novel/service-json-keys/v2/internal/core/mocks"
 )
 
 func TestJwkExportLocal(t *testing.T) {
@@ -19,7 +19,7 @@ func TestJwkExportLocal(t *testing.T) {
 	errFoo := errors.New("foo")
 
 	type sourceMock struct {
-		resp []*services.Jwk
+		resp []*core.Jwk
 		err  error
 	}
 
@@ -38,7 +38,7 @@ func TestJwkExportLocal(t *testing.T) {
 			usage: "test-usage",
 
 			sourceMock: &sourceMock{
-				resp: []*services.Jwk{
+				resp: []*core.Jwk{
 					{JWKCommon: jwa.JWKCommon{KID: "kid-1"}},
 					{JWKCommon: jwa.JWKCommon{KID: "kid-2"}},
 				},
@@ -65,18 +65,18 @@ func TestJwkExportLocal(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			source := servicesmocks.NewMockJwkExportLocalSource(t)
+			source := coremocks.NewMockJwkExportLocalSource(t)
 
 			if testCase.sourceMock != nil {
 				source.EXPECT().
-					Exec(mock.Anything, &services.JwkSearchRequest{
+					Exec(mock.Anything, &core.JwkSearchRequest{
 						Usage:   testCase.usage,
 						Private: true,
 					}).
 					Return(testCase.sourceMock.resp, testCase.sourceMock.err)
 			}
 
-			service := services.NewJwkExportLocal(source)
+			service := core.NewJwkExportLocal(source)
 
 			result, err := service.SearchKeys(t.Context(), testCase.usage)
 			require.ErrorIs(t, err, testCase.expectErr)

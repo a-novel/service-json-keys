@@ -38,12 +38,12 @@ type JwkInsertRequest struct {
 // than any existing key for this usage, the new key becomes the main key.
 type PgJwkInsert struct{}
 
-// NewPgJwkInsert returns a new PgJwkInsert repository.
+// NewPgJwkInsert returns a new PgJwkInsert dao.
 func NewPgJwkInsert() *PgJwkInsert {
 	return &PgJwkInsert{}
 }
 
-func (repository *PgJwkInsert) Exec(ctx context.Context, request *JwkInsertRequest) (*Jwk, error) {
+func (dao *PgJwkInsert) Exec(ctx context.Context, request *JwkInsertRequest) (*Jwk, error) {
 	ctx, span := otel.Tracer().Start(ctx, "dao.PgJwkInsert")
 	defer span.End()
 
