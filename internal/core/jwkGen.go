@@ -46,11 +46,11 @@ type JwkGenRequest struct {
 
 // A JwkGen generates new keys for a configured usage.
 //
-// It does not force the generation of a key. Instead, when called, it checks the
-// current state of the database to determine whether a new main key is needed.
+// It does not force generation. When called, it inspects the current state of the
+// database to decide whether the usage is due for a new key.
 //
-// If the main key for the target usage is recent enough, this service returns it
-// and skips generation. This is recorded in traces.
+// If the latest key for the usage is still within its rotation window, that key is
+// returned and generation is skipped; the skip is recorded on the trace span.
 type JwkGen struct {
 	daoSearch      JwkGenDaoSearch
 	daoInsert      JwkGenDaoInsert

@@ -32,13 +32,13 @@ The service runs as published OCI images plus a PostgreSQL database. Both server
 
 > **OpenTofu modules are the planned canonical deployment path.** Until they land, deploy the images with any container orchestrator — the composition below is the reference for which images to run, how they wire together, and the environment they expect.
 
-| Image                               | Role                                                                        |
-| ----------------------------------- | --------------------------------------------------------------------------- |
-| `service-json-keys/grpc`            | Private signing + key-management API. Internal network only.                |
-| `service-json-keys/rest`            | Public key-fetch + health API.                                              |
-| `service-json-keys/jobs/migrations` | One-shot schema migration job; runs to completion before the servers start. |
-| `service-json-keys/jobs/rotatekeys` | Scheduled key-rotation job (see [Configuration](#configuration)).           |
-| `service-json-keys/database`        | Pre-tuned PostgreSQL image — or bring your own Postgres.                    |
+| Image                               | Role                                                                             |
+| ----------------------------------- | -------------------------------------------------------------------------------- |
+| `service-json-keys/grpc`            | Private signing + key-management API. Internal network only.                     |
+| `service-json-keys/rest`            | Public key-fetch + health API.                                                   |
+| `service-json-keys/jobs/migrations` | One-shot schema migration job; runs to completion before the servers start.      |
+| `service-json-keys/jobs/rotatekeys` | Scheduled key-rotation job (see [CONTRIBUTING](./CONTRIBUTING.md#key-rotation)). |
+| `service-json-keys/database`        | Pre-tuned PostgreSQL image — or bring your own Postgres.                         |
 
 Pin every image to the same release tag — see the [latest release](https://github.com/a-novel/service-json-keys/releases/latest). A production deployment runs `database`, then the migrations job to completion, then any number of `grpc` and/or `rest` replicas:
 
@@ -57,7 +57,7 @@ services:
       - json-keys-postgres-data:/var/lib/postgresql/
 
   migrations-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/jobs/migrations:v2.3.1
+    image: ghcr.io/a-novel/service-json-keys/jobs/migrations:v2.3.2
     depends_on:
       postgres-json-keys: { condition: service_healthy }
     environment:
@@ -65,7 +65,7 @@ services:
     networks: [api]
 
   service-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/grpc:v2.3.2 # or .../rest:v2.3.1 for the public REST API
+    image: ghcr.io/a-novel/service-json-keys/grpc:v2.3.2 # or .../rest:v2.3.2 for the public REST API
     ports: ["${GRPC_PORT}:8080"] # the container always listens on 8080; map ${REST_PORT} for the rest image
     depends_on:
       postgres-json-keys: { condition: service_healthy }
@@ -170,7 +170,7 @@ func main() {
 	defer client.Close()
 
 	// Sign claims under the auth usage.
-	payload, err := grpcf.InterfaceToProtoAny(MyClaims{UserID: "user-1"})
+	payload, err := grpcf.MarshalJSONAsAny(MyClaims{UserID: "user-1"})
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -4,7 +4,7 @@ CREATE TABLE keys (
   private_key text NOT NULL CHECK (private_key <> ''),
   /* Public key in JSON Web Key format, base64url-encoded. Null for symmetric keys. */
   public_key text,
-  /* Groups keys that serve the same signing purpose (e.g., "auth", "auth-refresh"). */
+  /* Groups keys that serve the same purpose (e.g., "auth"). */
   usage text NOT NULL,
   created_at timestamp(0) with time zone NOT NULL,
   /* Hard expiry date. Once passed, the key is excluded from the active view. */
@@ -17,8 +17,8 @@ CREATE TABLE keys (
 
 CREATE INDEX keys_usage_idx ON keys (usage);
 
-/* active_keys exposes only keys that have not yet expired and have not been soft-deleted.
-A key is considered active when deleted_at is null (or in the future) AND expires_at is in the future. */
+/* active_keys exposes only keys that are still valid. A key stays visible until its cutoff
+passes: deleted_at when the key has been revoked early, otherwise expires_at. */
 CREATE VIEW active_keys AS (
   SELECT
     *

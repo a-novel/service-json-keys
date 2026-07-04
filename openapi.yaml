@@ -37,8 +37,7 @@ paths:
       description: |
         A simple endpoint to check if the server is up and running. It always returns the same response.
 
-        Note this **DOES NOT** give information about the server dependencies. To get more information about the
-        server actual health, please use the `/healthcheck` endpoint.
+        This does not report on the server's dependencies; use the `/healthcheck` endpoint for that.
       tags: [health]
       security: []
       responses:

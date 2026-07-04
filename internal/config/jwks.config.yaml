@@ -8,7 +8,7 @@ auth:
   alg: EdDSA
   key:
     ttl: 168h # 7 days — how long a key version stays active before expiring
-    rotation: 24h # a new key is generated every 24 h; older keys remain active until their TTL
+    rotation: 24h # a new key is generated every 24h; older keys remain active until their TTL
     cache: 30m # how long public keys are cached locally before re-fetching
   token:
     ttl: 24h

@@ -1,7 +1,6 @@
 UPDATE keys
 SET
   deleted_at = ?0,
-  -- Premature revocation; the comment records the reason.
   deleted_comment = ?1
 WHERE
   id = ?2

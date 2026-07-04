@@ -85,9 +85,9 @@ func main() {
 
 	db := lo.Must(postgres.GetContext(ctx))
 
-	// CONCURRENTLY allows reads to continue during the refresh; requires the unique index
-	// on active_keys.id added by the 20260416000000_active_keys_unique_index migration.
-	// Must run outside any transaction block — postgres.RunInTx has already committed above.
+	// CONCURRENTLY lets reads continue during the refresh, but requires the unique index
+	// on active_keys.id and must run outside any transaction block — postgres.RunInTx has
+	// already committed above.
 	_, err = db.NewRaw("REFRESH MATERIALIZED VIEW CONCURRENTLY active_keys;").Exec(ctx)
 	if err != nil {
 		err = otel.ReportError(span, fmt.Errorf("rotate keys: %w", err))

@@ -29,8 +29,8 @@ type (
 	// JwkRecipients holds the per-usage JWT verification plugins.
 	// Retrieved via [Client.Recipients].
 	JwkRecipients = core.JwkRecipients
-	// JwkConfig holds the full configuration for a single key usage: signing algorithm,
-	// key lifetime and caching parameters, and JWT token claim parameters.
+	// JwkConfig holds the full configuration for a single key usage — the signing algorithm
+	// and the key and token parameters applied to every JWT signed under it.
 	// Keyed by usage name in the map returned by [Client.Keys].
 	JwkConfig = config.Jwk
 )

@@ -1,4 +1,5 @@
-// Package env loads and exposes application configuration from environment variables.
-// Each exported variable corresponds to an environment variable; defaults are applied
-// when the variable is absent or empty.
+// Package env reads the service configuration from environment variables and exposes
+// each setting as a package-level variable, resolved once at package initialization.
+// Settings that have a fallback apply their Default value when the variable is unset
+// or empty; the rest are used as read.
 package env
