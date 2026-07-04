@@ -31,8 +31,8 @@ type JwkSearchRequest struct {
 	Usage string
 }
 
-// A PgJwkSearch lists the active keys for a given usage. Keys are returned in
-// creation order: the first element is the main key, the rest are legacy.
+// A PgJwkSearch lists the active keys for a given usage. Keys are returned
+// newest first: the first element is the main key, the rest are legacy.
 //
 // There is no pagination for this query; regular rotation and expiration keep
 // the active key count well below [KeysMaxBatchSize] under normal operation.

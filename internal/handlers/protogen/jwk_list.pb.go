@@ -70,7 +70,7 @@ func (x *JwkListRequest) GetUsage() string {
 // JwkListResponse contains the active public keys for the requested usage.
 type JwkListResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// The active JSON Web Keys for the requested usage, in creation order.
+	// The active JSON Web Keys for the requested usage, newest first.
 	Keys          []*Jwk `protobuf:"bytes,1,rep,name=keys,proto3" json:"keys,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache

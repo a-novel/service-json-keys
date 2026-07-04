@@ -43,8 +43,7 @@ func NewMasterKeyContext(ctx context.Context, masterKeyRaw string) (context.Cont
 		))
 	}
 
-	// Convert the raw master key to a fixed 32-byte array.
-	// This is required for use with the secretbox package (see golang.org/x/crypto/nacl/secretbox).
+	// secretbox needs the key as a fixed-size array, not a slice.
 	var masterKey [MasterKeyLength]byte
 	copy(masterKey[:], masterKeyBytes)
 

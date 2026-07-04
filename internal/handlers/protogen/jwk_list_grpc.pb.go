@@ -26,11 +26,12 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// JwkListService lists the active keys for a given usage. The keys are returned in
-// creation order (first key in the array is the main key, the rest are legacy).
+// JwkListService lists the active keys for a given usage, newest first: the first key is
+// the current signing key, the rest are older keys still trusted for verification.
 type JwkListServiceClient interface {
-	// Returns the active public keys for the given usage in creation order.
-	// The first key is the current main key; the rest are legacy keys not yet expired.
+	// Returns the active public keys for the given usage, newest first. The first key is the
+	// current signing key; the rest are older keys still trusted for verifying tokens issued
+	// before the last rotation.
 	JwkList(ctx context.Context, in *JwkListRequest, opts ...grpc.CallOption) (*JwkListResponse, error)
 }
 
@@ -56,11 +57,12 @@ func (c *jwkListServiceClient) JwkList(ctx context.Context, in *JwkListRequest, 
 // All implementations must embed UnimplementedJwkListServiceServer
 // for forward compatibility.
 //
-// JwkListService lists the active keys for a given usage. The keys are returned in
-// creation order (first key in the array is the main key, the rest are legacy).
+// JwkListService lists the active keys for a given usage, newest first: the first key is
+// the current signing key, the rest are older keys still trusted for verification.
 type JwkListServiceServer interface {
-	// Returns the active public keys for the given usage in creation order.
-	// The first key is the current main key; the rest are legacy keys not yet expired.
+	// Returns the active public keys for the given usage, newest first. The first key is the
+	// current signing key; the rest are older keys still trusted for verifying tokens issued
+	// before the last rotation.
 	JwkList(context.Context, *JwkListRequest) (*JwkListResponse, error)
 	mustEmbedUnimplementedJwkListServiceServer()
 }

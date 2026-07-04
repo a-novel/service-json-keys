@@ -30,8 +30,9 @@ type JwkSearchRequest struct {
 	Private bool
 }
 
-// A JwkSearch lists the active keys for a given usage. Keys are returned in
-// creation order: the first element is the main key, the rest are legacy.
+// A JwkSearch lists the active keys for a given usage, newest first: the first
+// element is the current signing key and the rest are older keys still trusted
+// for verifying tokens issued before the last rotation.
 type JwkSearch struct {
 	dao            JwkSearchDao
 	serviceExtract JwkSearchServiceExtract
