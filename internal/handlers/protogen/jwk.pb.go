@@ -25,16 +25,16 @@ const (
 type Jwk struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Key type identifier. Corresponds to the "kty" JWK parameter (RFC 7517 §4.1).
-	// Identifies the cryptographic algorithm family (e.g., "OKP" for EdDSA, "RSA", "EC", "oct" for HMAC).
+	// Names the cryptographic algorithm family (e.g., "OKP" for an EdDSA key).
 	Kty string `protobuf:"bytes,1,opt,name=kty,proto3" json:"kty,omitempty"`
 	// Intended public key use. Corresponds to the "use" JWK parameter (RFC 7517 §4.2).
 	// Typically "sig" for signing keys used to produce or verify JWTs.
 	Use string `protobuf:"bytes,2,opt,name=use,proto3" json:"use,omitempty"`
 	// Permitted key operations. Corresponds to the "key_ops" JWK parameter (RFC 7517 §4.3).
-	// Common values are "sign" (private key) and "verify" (public key).
+	// A public verification key carries "verify".
 	KeyOps []string `protobuf:"bytes,3,rep,name=key_ops,json=keyOps,proto3" json:"key_ops,omitempty"`
 	// Algorithm. Corresponds to the "alg" JWK parameter (RFC 7517 §4.4).
-	// Identifies the specific signing algorithm (e.g., "EdDSA", "RS256", "ES384").
+	// Identifies the specific signing algorithm (e.g., "EdDSA").
 	Alg string `protobuf:"bytes,4,opt,name=alg,proto3" json:"alg,omitempty"`
 	// Key ID. Corresponds to the "kid" JWK parameter (RFC 7517 §4.5).
 	// Carried in the JWT header to identify which key was used to sign the token.
