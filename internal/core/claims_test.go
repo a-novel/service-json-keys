@@ -2,17 +2,15 @@ package core_test
 
 import (
 	"context"
-	"crypto/ecdsa"
 	"crypto/ed25519"
-	"crypto/rsa"
 	"testing"
 	"time"
 
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/require"
 
-	"github.com/a-novel-kit/jwt/jwa"
-	"github.com/a-novel-kit/jwt/jwk"
+	"github.com/a-novel-kit/jwt/v2/jwa"
+	"github.com/a-novel-kit/jwt/v2/jwk"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
 	"github.com/a-novel/service-json-keys/v2/internal/core"
@@ -54,28 +52,28 @@ func TestClaimsSignAndVerify(t *testing.T) {
 	}
 
 	producers, err := core.NewJwkProducers(&core.JwkPrivateSources{
-		EdDSA: map[string]*jwk.Source[ed25519.PrivateKey]{
-			"test-usage": jwk.NewED25519PrivateSource(jwk.SourceConfig{
+		EdDSA: map[string]*jwk.Source{
+			"test-usage": jwk.NewSource(jwk.SourceConfig{
 				Fetch: func(_ context.Context) ([]*jwa.JWK, error) {
 					return privateKeysJSON, nil
 				},
 			}),
 		},
-		ES:  make(map[string]*jwk.Source[*ecdsa.PrivateKey]),
-		RSA: make(map[string]*jwk.Source[*rsa.PrivateKey]),
+		ES:  make(map[string]*jwk.Source),
+		RSA: make(map[string]*jwk.Source),
 	}, testConfig)
 	require.NoError(t, err)
 
 	recipients, err := core.NewJwkRecipients(&core.JwkPublicSources{
-		EdDSA: map[string]*jwk.Source[ed25519.PublicKey]{
-			"test-usage": jwk.NewED25519PublicSource(jwk.SourceConfig{
+		EdDSA: map[string]*jwk.Source{
+			"test-usage": jwk.NewSource(jwk.SourceConfig{
 				Fetch: func(_ context.Context) ([]*jwa.JWK, error) {
 					return publicKeysJSON, nil
 				},
 			}),
 		},
-		ES:  make(map[string]*jwk.Source[*ecdsa.PublicKey]),
-		RSA: make(map[string]*jwk.Source[*rsa.PublicKey]),
+		ES:  make(map[string]*jwk.Source),
+		RSA: make(map[string]*jwk.Source),
 	}, testConfig)
 	require.NoError(t, err)
 

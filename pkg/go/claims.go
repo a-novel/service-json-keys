@@ -2,6 +2,7 @@ package servicejsonkeys
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/samber/lo"
 
@@ -50,13 +51,26 @@ type claimsVerifier[C any] struct {
 	service *core.ClaimsVerify[C]
 }
 
-// NewClaimsVerifier creates a token verifier backed by the key material and configuration
-// carried by c. C must be JSON-serializable and match the claims type used when signing
-// for the same usage.
-func NewClaimsVerifier[C any](c Client) ClaimsVerifier[C] {
-	service := core.NewClaimsVerify[C](c.Recipients(), c.Keys())
+// NewClaimsVerifier creates a token verifier backed by the key configuration carried by c. It
+// builds the cached public-key sources used for local verification, returning an error if the
+// configuration references an unsupported algorithm. C must be JSON-serializable and match the
+// claims type used when signing for the same usage.
+func NewClaimsVerifier[C any](c Client) (ClaimsVerifier[C], error) {
+	// Build the cached public-key sources here rather than in the client, so the client's exported
+	// surface never mentions a jwt type. A sign-only consumer that never calls this pays nothing.
+	adapter := newJwkExportGrpc(c)
 
-	return &claimsVerifier[C]{service: service}
+	sources, err := core.NewJwkPublicSource(adapter, c.Keys())
+	if err != nil {
+		return nil, fmt.Errorf("(NewClaimsVerifier) new public sources: %w", err)
+	}
+
+	recipients, err := core.NewJwkRecipients(sources, c.Keys())
+	if err != nil {
+		return nil, fmt.Errorf("(NewClaimsVerifier) new recipients: %w", err)
+	}
+
+	return &claimsVerifier[C]{service: core.NewClaimsVerify[C](recipients, c.Keys())}, nil
 }
 
 func (verifier *claimsVerifier[C]) VerifyClaims(ctx context.Context, req *VerifyClaimsRequest) (*C, error) {

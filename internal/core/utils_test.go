@@ -9,7 +9,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/a-novel-kit/jwt/jwk"
+	"github.com/a-novel-kit/jwt/v2/jwk"
 
 	"github.com/a-novel/service-json-keys/v2/internal/lib"
 )

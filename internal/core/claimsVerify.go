@@ -7,8 +7,9 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 
 	"github.com/a-novel-kit/golib/otel"
-	"github.com/a-novel-kit/jwt"
-	"github.com/a-novel-kit/jwt/jwp"
+	"github.com/a-novel-kit/jwt/v2"
+	"github.com/a-novel-kit/jwt/v2/jwa"
+	"github.com/a-novel-kit/jwt/v2/jwp"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
 )
@@ -56,7 +57,7 @@ func (service *ClaimsVerify[Out]) Exec(ctx context.Context, request *ClaimsVerif
 	checks := []jwp.ClaimsCheck{
 		jwp.NewClaimsCheckTarget(jwt.TargetConfig{
 			Issuer:   keyConfig.Token.Issuer,
-			Audience: keyConfig.Token.Audience,
+			Audience: jwa.Audience{keyConfig.Token.Audience},
 			Subject:  keyConfig.Token.Subject,
 		}),
 	}

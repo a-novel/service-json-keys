@@ -5,7 +5,7 @@ import (
 
 	"github.com/samber/lo"
 
-	"github.com/a-novel-kit/jwt/jwa"
+	"github.com/a-novel-kit/jwt/v2/jwa"
 
 	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
 )

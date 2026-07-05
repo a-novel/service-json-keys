@@ -7,7 +7,8 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 
 	"github.com/a-novel-kit/golib/otel"
-	"github.com/a-novel-kit/jwt"
+	"github.com/a-novel-kit/jwt/v2"
+	"github.com/a-novel-kit/jwt/v2/jwa"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
 )
@@ -53,7 +54,7 @@ func (service *ClaimsSign) Exec(ctx context.Context, request *ClaimsSignRequest)
 	claims, err := jwt.NewBasicClaims(request.Claims, jwt.ClaimsProducerConfig{
 		TargetConfig: jwt.TargetConfig{
 			Issuer:   keyConfig.Token.Issuer,
-			Audience: keyConfig.Token.Audience,
+			Audience: jwa.Audience{keyConfig.Token.Audience},
 			Subject:  keyConfig.Token.Subject,
 		},
 		TTL: keyConfig.Token.TTL,
