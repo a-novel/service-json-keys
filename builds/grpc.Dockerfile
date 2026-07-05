@@ -10,11 +10,14 @@ WORKDIR /app
 # Download dependencies before copying source files so the module cache layer is
 # reused on rebuilds where only source files change.
 COPY go.mod go.sum ./
-RUN go mod download
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
 
 # Install grpcurl for the healthcheck. Placed before source COPY so the cached
 # layer (download + compile) survives source-only rebuilds.
-RUN GOBIN=/usr/local/bin go install github.com/fullstorydev/grpcurl/cmd/grpcurl@v1.9.3
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    GOBIN=/usr/local/bin go install github.com/fullstorydev/grpcurl/cmd/grpcurl@v1.9.3
 
 COPY ./cmd/grpc ./cmd/grpc
 COPY ./internal/handlers ./internal/handlers
@@ -26,7 +29,9 @@ COPY ./internal/config ./internal/config
 
 # -ldflags="-s -w" strips the symbol table and DWARF debug info, shrinking the binary.
 # -trimpath removes local filesystem paths for reproducible builds.
-RUN go build -ldflags="-s -w" -trimpath -o /grpc ./cmd/grpc/
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go build -ldflags="-s -w" -trimpath -o /grpc ./cmd/grpc/
 
 FROM docker.io/library/alpine:3.24.1
 
