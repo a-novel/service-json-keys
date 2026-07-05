@@ -4,7 +4,7 @@ import (
 	_ "embed"
 	"time"
 
-	"github.com/a-novel-kit/jwt/jwa"
+	"github.com/a-novel-kit/jwt/v2/jwa"
 )
 
 // JwkKey holds the lifetime and caching parameters for a JSON Web Key.

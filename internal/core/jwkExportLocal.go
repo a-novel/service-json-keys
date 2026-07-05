@@ -3,7 +3,7 @@ package core
 import (
 	"context"
 
-	"github.com/a-novel-kit/jwt/jwa"
+	"github.com/a-novel-kit/jwt/v2/jwa"
 )
 
 // JwkExportLocalSource is the service dependency of [JwkExportLocal] for fetching private keys.

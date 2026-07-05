@@ -2,16 +2,13 @@ package core
 
 import (
 	"context"
-	"crypto/ecdsa"
-	"crypto/ed25519"
-	"crypto/rsa"
 	"errors"
 	"fmt"
 
-	"github.com/a-novel-kit/jwt"
-	"github.com/a-novel-kit/jwt/jwa"
-	"github.com/a-novel-kit/jwt/jwk"
-	"github.com/a-novel-kit/jwt/jws"
+	"github.com/a-novel-kit/jwt/v2"
+	"github.com/a-novel-kit/jwt/v2/jwa"
+	"github.com/a-novel-kit/jwt/v2/jwk"
+	"github.com/a-novel-kit/jwt/v2/jws"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
 )
@@ -50,15 +47,12 @@ var JwkPresetsRsa = map[jwa.Alg]jwk.RSAPreset{
 	jwa.PS512: jwk.PS512,
 }
 
-// JwsPresetsRsa maps RSA PKCS#1 algorithm identifiers to their JWS signing/verification presets.
+// JwsPresetsRsa maps RSA algorithm identifiers to their JWS signing/verification presets. In jwt v2
+// the RS* and PS* presets share one RSAPreset type, so PKCS#1 and PSS live in the same map.
 var JwsPresetsRsa = map[jwa.Alg]jws.RSAPreset{
 	jwa.RS256: jws.RS256,
 	jwa.RS384: jws.RS384,
 	jwa.RS512: jws.RS512,
-}
-
-// JwsPresetsRsaPss maps RSA-PSS algorithm identifiers to their JWS signing/verification presets.
-var JwsPresetsRsaPss = map[jwa.Alg]jws.RSAPSSPreset{
 	jwa.PS256: jws.PS256,
 	jwa.PS384: jws.PS384,
 	jwa.PS512: jws.PS512,
@@ -140,9 +134,9 @@ func JwkGeneratorRsa(alg jwa.Alg) func() (any, any, string, string, error) {
 // grouped by usage name, and is used to wire signing plugins for JWT production. Only asymmetric
 // algorithms are supported; symmetric (HMAC) algorithms are not.
 type JwkPrivateSources struct {
-	EdDSA map[string]*jwk.Source[ed25519.PrivateKey]
-	ES    map[string]*jwk.Source[*ecdsa.PrivateKey]
-	RSA   map[string]*jwk.Source[*rsa.PrivateKey]
+	EdDSA map[string]*jwk.Source
+	ES    map[string]*jwk.Source
+	RSA   map[string]*jwk.Source
 }
 
 // JwkPrivateSource is the fetch interface required by NewJwkPrivateSource.
@@ -159,9 +153,9 @@ func NewJwkPrivateSource(
 	keys map[string]*config.Jwk,
 ) (*JwkPrivateSources, error) {
 	output := &JwkPrivateSources{
-		EdDSA: make(map[string]*jwk.Source[ed25519.PrivateKey]),
-		ES:    make(map[string]*jwk.Source[*ecdsa.PrivateKey]),
-		RSA:   make(map[string]*jwk.Source[*rsa.PrivateKey]),
+		EdDSA: make(map[string]*jwk.Source),
+		ES:    make(map[string]*jwk.Source),
+		RSA:   make(map[string]*jwk.Source),
 	}
 
 	for usage, keyConfig := range keys {
@@ -169,18 +163,20 @@ func NewJwkPrivateSource(
 			return source.SearchKeys(ctx, usage)
 		}
 
-		sourceConfig := jwk.SourceConfig{
+		keySource := jwk.NewSource(jwk.SourceConfig{
 			CacheDuration: keyConfig.Key.Cache,
 			Fetch:         fetch,
-		}
+		})
 
+		// One algorithm-agnostic source per usage; the bucket only records which signer plugin to
+		// wire later (jwt v2 decodes the key type at the plugin, not the source).
 		switch keyConfig.Alg {
 		case jwa.EdDSA:
-			output.EdDSA[usage] = jwk.NewED25519PrivateSource(sourceConfig)
+			output.EdDSA[usage] = keySource
 		case jwa.ES256, jwa.ES384, jwa.ES512:
-			output.ES[usage] = jwk.NewECDSAPrivateSource(sourceConfig, JwkPresetsEcdsa[keyConfig.Alg])
+			output.ES[usage] = keySource
 		case jwa.RS256, jwa.RS384, jwa.RS512, jwa.PS256, jwa.PS384, jwa.PS512:
-			output.RSA[usage] = jwk.NewRSAPrivateSource(sourceConfig, JwkPresetsRsa[keyConfig.Alg])
+			output.RSA[usage] = keySource
 		default:
 			return nil, fmt.Errorf("%w: %s", ErrJwkPresetUnknownAlgorithm, keyConfig.Alg)
 		}
@@ -193,9 +189,9 @@ func NewJwkPrivateSource(
 // grouped by usage name, and is used to wire verification plugins for JWT consumption. Only
 // asymmetric algorithms are supported; symmetric (HMAC) algorithms are not.
 type JwkPublicSources struct {
-	EdDSA map[string]*jwk.Source[ed25519.PublicKey]
-	ES    map[string]*jwk.Source[*ecdsa.PublicKey]
-	RSA   map[string]*jwk.Source[*rsa.PublicKey]
+	EdDSA map[string]*jwk.Source
+	ES    map[string]*jwk.Source
+	RSA   map[string]*jwk.Source
 }
 
 // JwkPublicSource is the fetch interface required by NewJwkPublicSource.
@@ -212,9 +208,9 @@ func NewJwkPublicSource(
 	keys map[string]*config.Jwk,
 ) (*JwkPublicSources, error) {
 	output := &JwkPublicSources{
-		EdDSA: make(map[string]*jwk.Source[ed25519.PublicKey]),
-		ES:    make(map[string]*jwk.Source[*ecdsa.PublicKey]),
-		RSA:   make(map[string]*jwk.Source[*rsa.PublicKey]),
+		EdDSA: make(map[string]*jwk.Source),
+		ES:    make(map[string]*jwk.Source),
+		RSA:   make(map[string]*jwk.Source),
 	}
 
 	for usage, keyConfig := range keys {
@@ -222,18 +218,20 @@ func NewJwkPublicSource(
 			return source.SearchKeys(ctx, usage)
 		}
 
-		sourceConfig := jwk.SourceConfig{
+		keySource := jwk.NewSource(jwk.SourceConfig{
 			CacheDuration: keyConfig.Key.Cache,
 			Fetch:         fetch,
-		}
+		})
 
+		// One algorithm-agnostic source per usage; the bucket only records which verifier plugin to
+		// wire later (jwt v2 decodes the key type at the plugin, not the source).
 		switch keyConfig.Alg {
 		case jwa.EdDSA:
-			output.EdDSA[usage] = jwk.NewED25519PublicSource(sourceConfig)
+			output.EdDSA[usage] = keySource
 		case jwa.ES256, jwa.ES384, jwa.ES512:
-			output.ES[usage] = jwk.NewECDSAPublicSource(sourceConfig, JwkPresetsEcdsa[keyConfig.Alg])
+			output.ES[usage] = keySource
 		case jwa.RS256, jwa.RS384, jwa.RS512, jwa.PS256, jwa.PS384, jwa.PS512:
-			output.RSA[usage] = jwk.NewRSAPublicSource(sourceConfig, JwkPresetsRsa[keyConfig.Alg])
+			output.RSA[usage] = keySource
 		default:
 			return nil, fmt.Errorf("%w: %s", ErrJwkPresetUnknownAlgorithm, keyConfig.Alg)
 		}
@@ -265,15 +263,13 @@ func NewJwkProducers(
 	}
 
 	for usage, usageConfig := range sources.RSA {
-		if rsaPreset, ok := JwsPresetsRsa[keys[usage].Alg]; ok {
-			signer := jws.NewSourcedRSASigner(usageConfig, rsaPreset)
-			output[usage] = append(output[usage], signer)
-		} else if rsapssPreset, ok := JwsPresetsRsaPss[keys[usage].Alg]; ok {
-			signer := jws.NewSourcedRSAPSSSigner(usageConfig, rsapssPreset)
-			output[usage] = append(output[usage], signer)
-		} else {
+		rsaPreset, ok := JwsPresetsRsa[keys[usage].Alg]
+		if !ok {
 			return nil, fmt.Errorf("%w (rsa) for usage: %s", ErrJwkPresetUnknown, usage)
 		}
+
+		signer := jws.NewSourcedRSASigner(usageConfig, rsaPreset)
+		output[usage] = append(output[usage], signer)
 	}
 
 	return output, nil
@@ -302,15 +298,13 @@ func NewJwkRecipients(
 	}
 
 	for usage, usageConfig := range sources.RSA {
-		if rsaPreset, ok := JwsPresetsRsa[keys[usage].Alg]; ok {
-			recipient := jws.NewSourcedRSAVerifier(usageConfig, rsaPreset)
-			output[usage] = append(output[usage], recipient)
-		} else if rsapssPreset, ok := JwsPresetsRsaPss[keys[usage].Alg]; ok {
-			recipient := jws.NewSourcedRSAPSSVerifier(usageConfig, rsapssPreset)
-			output[usage] = append(output[usage], recipient)
-		} else {
+		rsaPreset, ok := JwsPresetsRsa[keys[usage].Alg]
+		if !ok {
 			return nil, fmt.Errorf("%w (rsa) for usage: %s", ErrJwkPresetUnknown, usage)
 		}
+
+		recipient := jws.NewSourcedRSAVerifier(usageConfig, rsaPreset)
+		output[usage] = append(output[usage], recipient)
 	}
 
 	return output, nil

@@ -39,7 +39,8 @@ func TestClaimsVerifier(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, signed)
 
-	verifier := servicejsonkeys.NewClaimsVerifier[claims](client)
+	verifier, err := servicejsonkeys.NewClaimsVerifier[claims](client)
+	require.NoError(t, err)
 
 	res, err := verifier.VerifyClaims(t.Context(), &servicejsonkeys.VerifyClaimsRequest{
 		Usage:       servicejsonkeys.KeyUsageAuth,

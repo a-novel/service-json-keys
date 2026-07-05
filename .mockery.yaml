@@ -1,17 +1,17 @@
 packages:
-  github.com/a-novel/service-json-keys/v2/internal/core:
+  github.com/a-novel/service-json-keys/v3/internal/core:
     config:
       all: true
       pkgname: coremocks
       dir: internal/core/mocks
       filename: mocks.go
-  github.com/a-novel/service-json-keys/v2/internal/handlers:
+  github.com/a-novel/service-json-keys/v3/internal/handlers:
     config:
       all: true
       pkgname: handlersmocks
       dir: internal/handlers/mocks
       filename: mocks.go
-  github.com/a-novel/service-json-keys/v2/pkg/go:
+  github.com/a-novel/service-json-keys/v3/pkg/go:
     config:
       all: true
       pkgname: pkgmocks

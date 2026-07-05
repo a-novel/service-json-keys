@@ -9,7 +9,6 @@ import (
 	golibproto "github.com/a-novel-kit/golib/grpcf/proto/gen"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
-	"github.com/a-novel/service-json-keys/v2/internal/core"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
 )
 
@@ -23,12 +22,6 @@ type (
 	ClaimsSignRequest  = protogen.ClaimsSignRequest
 	ClaimsSignResponse = protogen.ClaimsSignResponse
 
-	// JwkPublicSources holds the per-usage public-key sources for all supported algorithm families.
-	// Retrieved via [Client.Sources].
-	JwkPublicSources = core.JwkPublicSources
-	// JwkRecipients holds the per-usage JWT verification plugins.
-	// Retrieved via [Client.Recipients].
-	JwkRecipients = core.JwkRecipients
 	// JwkConfig holds the full configuration for a single key usage — the signing algorithm
 	// and the key and token parameters applied to every JWT signed under it.
 	// Keyed by usage name in the map returned by [Client.Keys].
@@ -62,21 +55,14 @@ type BaseClient interface {
 	Close()
 }
 
-// Client extends [BaseClient] with pre-built JWT verification infrastructure. On creation,
-// it initializes typed, cached key sources for each configured usage, enabling local token
-// verification without a network call per token. Keys are fetched lazily on first use
-// and refreshed according to each usage's configured cache duration.
+// Client extends [BaseClient] with the JWK configuration needed to build local token verifiers.
 //
-// Obtain a Client with [NewClient]. Pass it to [NewClaimsVerifier] to verify tokens.
+// Obtain a Client with [NewClient]. Pass it to [NewClaimsVerifier], which builds the cached
+// public-key sources for local verification — so the client's own exported surface stays free of
+// jwt types, and a sign-only consumer never pays for verifier setup.
 type Client interface {
 	BaseClient
 
-	// Sources returns the per-usage public key sources initialized at construction time.
-	// Keys are fetched lazily on first use and cached for each usage's configured cache duration.
-	Sources() *JwkPublicSources
-	// Recipients returns the per-usage JWT recipient plugins for local token verification,
-	// keyed by usage name (e.g., [KeyUsageAuth]).
-	Recipients() JwkRecipients
 	// Keys returns the JWK configuration map this client was built with, keyed by usage name.
 	Keys() map[string]*JwkConfig
 }
@@ -88,19 +74,9 @@ type client struct {
 	protogen.JwkListServiceClient
 	protogen.ClaimsSignServiceClient
 
-	sources    *JwkPublicSources
-	recipients JwkRecipients
-	keys       map[string]*JwkConfig
+	keys map[string]*JwkConfig
 
 	conn *grpc.ClientConn
-}
-
-func (c *client) Sources() *JwkPublicSources {
-	return c.sources
-}
-
-func (c *client) Recipients() JwkRecipients {
-	return c.recipients
 }
 
 func (c *client) Keys() map[string]*JwkConfig {
@@ -129,26 +105,6 @@ func NewClient(addr string, opts ...grpc.DialOption) (Client, error) {
 		keys:                    config.JwkPresetDefault,
 		conn:                    conn,
 	}
-
-	adapter := newJwkExportGrpc(c)
-
-	sources, err := core.NewJwkPublicSource(adapter, config.JwkPresetDefault)
-	if err != nil {
-		_ = conn.Close()
-
-		return nil, fmt.Errorf("new jwk public source: %w", err)
-	}
-
-	c.sources = sources
-
-	recipients, err := core.NewJwkRecipients(sources, config.JwkPresetDefault)
-	if err != nil {
-		_ = conn.Close()
-
-		return nil, fmt.Errorf("new jwk recipients: %w", err)
-	}
-
-	c.recipients = recipients
 
 	return c, nil
 }
