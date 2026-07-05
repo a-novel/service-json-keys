@@ -8,7 +8,8 @@ ENV CGO_ENABLED=0
 WORKDIR /app
 
 COPY go.mod go.sum ./
-RUN go mod download
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
 
 COPY ./cmd/rotate-keys ./cmd/rotate-keys
 COPY ./internal/config ./internal/config
@@ -16,7 +17,9 @@ COPY ./internal/dao ./internal/dao
 COPY ./internal/core ./internal/core
 COPY ./internal/lib ./internal/lib
 
-RUN go build -ldflags="-s -w" -trimpath -o /rotate-keys ./cmd/rotate-keys/
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go build -ldflags="-s -w" -trimpath -o /rotate-keys ./cmd/rotate-keys/
 
 FROM docker.io/library/alpine:3.24.1
 

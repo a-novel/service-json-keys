@@ -6,7 +6,8 @@ ENV CGO_ENABLED=0
 WORKDIR /app
 
 COPY go.mod go.sum ./
-RUN go mod download
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
 
 COPY ./cmd/rest ./cmd/rest
 COPY ./internal/handlers ./internal/handlers
@@ -16,7 +17,9 @@ COPY ./internal/core ./internal/core
 COPY ./internal/models ./internal/models
 COPY ./internal/config ./internal/config
 
-RUN go build -ldflags="-s -w" -trimpath -o /rest ./cmd/rest/
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go build -ldflags="-s -w" -trimpath -o /rest ./cmd/rest/
 
 FROM docker.io/library/alpine:3.24.1
 

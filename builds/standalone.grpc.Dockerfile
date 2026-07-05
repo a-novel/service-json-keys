@@ -8,9 +8,12 @@ ENV CGO_ENABLED=0
 WORKDIR /app
 
 COPY go.mod go.sum ./
-RUN go mod download
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
 
-RUN GOBIN=/usr/local/bin go install github.com/fullstorydev/grpcurl/cmd/grpcurl@v1.9.3
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    GOBIN=/usr/local/bin go install github.com/fullstorydev/grpcurl/cmd/grpcurl@v1.9.3
 
 COPY ./cmd/grpc ./cmd/grpc
 COPY ./cmd/migrations ./cmd/migrations
@@ -22,7 +25,9 @@ COPY ./internal/core ./internal/core
 COPY ./internal/models ./internal/models
 COPY ./internal/config ./internal/config
 
-RUN go build -ldflags="-s -w" -trimpath -o /grpc ./cmd/grpc/ && \
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go build -ldflags="-s -w" -trimpath -o /grpc ./cmd/grpc/ && \
     go build -ldflags="-s -w" -trimpath -o /migrations ./cmd/migrations/ && \
     go build -ldflags="-s -w" -trimpath -o /rotate-keys ./cmd/rotate-keys/
 
