@@ -1,5 +1,5 @@
 # Runs the migrations job: applies pending database schema migrations.
-FROM docker.io/library/golang:1.26.4-alpine AS builder
+FROM docker.io/library/golang:1.26.5-alpine AS builder
 
 ENV CGO_ENABLED=0
 
