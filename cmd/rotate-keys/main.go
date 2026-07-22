@@ -1,6 +1,6 @@
 // Command rotate-keys rotates active JSON Web Keys. For each configured usage, it generates
-// a new key if the rotation interval has elapsed, then refreshes the active_keys materialized
-// view so consumers see the updated set immediately.
+// a new key if the rotation interval has elapsed. Consumers see it on their next fetch:
+// active_keys is a plain view, so there is no snapshot to refresh.
 //
 // Designed to run as a periodic job (e.g., a Kubernetes CronJob).
 package main
@@ -80,19 +80,8 @@ func main() {
 		log.Fatalln(err.Error()) //nolint:gocritic
 	}
 
-	// --- Refresh the materialized view so consumers see the updated active keys ---
-	log.Println("refreshing active_keys materialized view...")
-
-	db := lo.Must(postgres.GetContext(ctx))
-
-	// CONCURRENTLY lets reads continue during the refresh, but requires the unique index
-	// on active_keys.id and must run outside any transaction block — postgres.RunInTx has
-	// already committed above.
-	_, err = db.NewRaw("REFRESH MATERIALIZED VIEW CONCURRENTLY active_keys;").Exec(ctx)
-	if err != nil {
-		err = otel.ReportError(span, fmt.Errorf("rotate keys: %w", err))
-		log.Fatalln(err.Error())
-	}
+	// active_keys is a plain view, so a newly inserted key is visible to the next reader
+	// with no refresh step to run — and none to forget.
 
 	otel.ReportSuccessNoContent(span)
 	log.Printf("done — %d usage(s) processed, completed in %s",

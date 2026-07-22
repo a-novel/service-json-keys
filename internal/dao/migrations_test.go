@@ -18,11 +18,11 @@ import (
 // `cron` schema and migration 20250713173700 (`cron.schedule(...)` for the
 // hourly active_keys refresh) would fail with `schema "cron" does not exist`.
 //
-// The scheduled job is irrelevant to tests anyway: it never fires during a test
-// run, and every DAO test that needs a current active_keys materialized view
-// already issues `REFRESH MATERIALIZED VIEW active_keys` itself. So a stub whose
-// schedule/unschedule are no-ops is functionally complete — it only has to let
-// the migration apply.
+// The scheduled job is irrelevant to tests: it never fires during a test run, and
+// active_keys is a plain view again, so there is no snapshot for it to maintain.
+// Both the migration that schedules the job and the later one that unschedules it
+// still run as history, so the stub covers schedule and unschedule alike. No-ops
+// are functionally complete — the stub only has to let those migrations apply.
 const (
 	cronStubUp = `CREATE SCHEMA IF NOT EXISTS cron;
 
