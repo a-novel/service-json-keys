@@ -13,6 +13,7 @@ import (
 
 	"github.com/a-novel/service-json-keys/v2/internal/config/configtest"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
+	"github.com/a-novel/service-json-keys/v2/internal/models/migrations"
 )
 
 func TestPgJwkDelete(t *testing.T) {
@@ -165,7 +166,7 @@ func TestPgJwkDelete(t *testing.T) {
 			postgres.RunDBTest(
 				t,
 				configtest.PostgresPreset,
-				migrationsWithCronStub(t),
+				migrations.Migrations,
 				func(ctx context.Context, t *testing.T) {
 					t.Helper()
 
@@ -177,9 +178,6 @@ func TestPgJwkDelete(t *testing.T) {
 						require.NoError(t, err)
 					}
 
-					_, err = db.NewRaw("REFRESH MATERIALIZED VIEW active_keys;").Exec(ctx)
-					require.NoError(t, err)
-
 					key, err := dao.Exec(ctx, testCase.request)
 					require.ErrorIs(t, err, testCase.expectErr)
 					require.Equal(t, testCase.expect, key)
@@ -187,4 +185,66 @@ func TestPgJwkDelete(t *testing.T) {
 			)
 		})
 	}
+}
+
+// TestPgJwkDeleteTakesEffectImmediately is the regression this milestone's issue is about: a
+// revoked key must stop being served from the moment it is revoked, with no refresh in between.
+//
+// It reads through PgJwkSelect rather than asserting on the delete's own return value, because
+// the defect lived entirely on the read path. While active_keys was a materialized view the
+// snapshot carried a *copy* of deleted_at, so the revoked key kept being returned — and kept
+// signing — until the next hourly refresh. Nothing the reader could filter on would have caught
+// it, since the stale column was in the snapshot itself.
+func TestPgJwkDeleteTakesEffectImmediately(t *testing.T) {
+	t.Parallel()
+
+	// Truncate, never Round: this value becomes deleted_at, and the view keeps a key
+	// visible while deleted_at > CURRENT_TIMESTAMP. Round goes to the nearest second, so
+	// half the time it lands in the future and the key stays active for up to 500ms —
+	// which the assertion below then reads as "revocation did not take effect".
+	now := time.Now().UTC().Truncate(time.Second)
+	keyID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
+
+	postgres.RunDBTest(
+		t,
+		configtest.PostgresPreset,
+		migrations.Migrations,
+		func(ctx context.Context, t *testing.T) {
+			t.Helper()
+
+			db, err := postgres.GetContext(ctx)
+			require.NoError(t, err)
+
+			fixture := &dao.Jwk{
+				ID:         keyID,
+				PrivateKey: "private-key",
+				PublicKey:  lo.ToPtr("public-key"),
+				Usage:      "auth",
+				CreatedAt:  now.Add(-time.Hour),
+				ExpiresAt:  now.Add(time.Hour),
+			}
+
+			_, err = db.NewInsert().Model(fixture).Exec(ctx)
+			require.NoError(t, err)
+
+			selectDAO := dao.NewPgJwkSelect()
+
+			// Precondition: the key is served before revocation. Without this the test would
+			// still pass against a read path that returns nothing at all.
+			got, err := selectDAO.Exec(ctx, &dao.JwkSelectRequest{ID: keyID})
+			require.NoError(t, err)
+			require.Equal(t, keyID, got.ID)
+
+			_, err = dao.NewPgJwkDelete().Exec(ctx, &dao.JwkDeleteRequest{
+				ID:      keyID,
+				Now:     now,
+				Comment: "compromised",
+			})
+			require.NoError(t, err)
+
+			// No refresh here on purpose — that is the whole assertion.
+			_, err = selectDAO.Exec(ctx, &dao.JwkSelectRequest{ID: keyID})
+			require.ErrorIs(t, err, dao.ErrJwkSelectNotFound)
+		},
+	)
 }

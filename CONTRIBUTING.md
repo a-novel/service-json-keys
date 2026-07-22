@@ -72,7 +72,7 @@ The `keys` table — defined in [`internal/models/migrations/`](./internal/model
 | `expires_at`                    | Hard expiry; the key leaves the active view at this point.         |
 | `deleted_at`, `deleted_comment` | Premature revocation (e.g., compromise). `nil` for natural expiry. |
 
-Reads target the `active_keys` materialized view, which excludes expired and soft-deleted rows. The view is refreshed by the rotation job after a write so consumers see the new main key on their next fetch.
+Reads target the `active_keys` view, which excludes expired and revoked rows. It is a plain view, so both predicates are evaluated per query — a key stops being served the moment its `expires_at` passes or its `deleted_at` is set, with no refresh step in between.
 
 ### Key configuration
 
@@ -97,7 +97,7 @@ Adding a usage means updating [`internal/config/jwks.config.yaml`](./internal/co
 
 ### Key rotation
 
-[`cmd/rotate-keys/main.go`](./cmd/rotate-keys/main.go) is a one-shot job. For each configured usage, it generates a new key when the current main key is older than `key.rotation`, then refreshes the `active_keys` materialized view so consumers see the change immediately. Run it on a schedule (cron, Kubernetes CronJob, etc.).
+[`cmd/rotate-keys/main.go`](./cmd/rotate-keys/main.go) is a one-shot job. For each configured usage, it generates a new key when the current main key is older than `key.rotation`, which consumers see on their next fetch. Run it on a schedule (cron, Kubernetes CronJob, etc.).
 
 This job is **not optional** for a long-running deployment. Existing keys age out of `active_keys` once they reach `key.ttl`, but nothing inside the gRPC or REST processes generates replacements — so without the job firing on schedule, the active set eventually empties for each usage and signing breaks. Run the job once during deploy/bootstrap as well so the database is seeded before the service is expected to sign anything; otherwise it starts with no keys to sign with. Standalone images do this automatically before starting the server (see `builds/standalone.*.Dockerfile`), but split gRPC/REST deployments must arrange that initial run themselves.
 

@@ -13,6 +13,7 @@ import (
 
 	"github.com/a-novel/service-json-keys/v2/internal/config/configtest"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
+	"github.com/a-novel/service-json-keys/v2/internal/models/migrations"
 )
 
 func TestPgJwkSelect(t *testing.T) {
@@ -125,7 +126,7 @@ func TestPgJwkSelect(t *testing.T) {
 			postgres.RunDBTest(
 				t,
 				configtest.PostgresPreset,
-				migrationsWithCronStub(t),
+				migrations.Migrations,
 				func(ctx context.Context, t *testing.T) {
 					t.Helper()
 
@@ -136,9 +137,6 @@ func TestPgJwkSelect(t *testing.T) {
 						_, err = db.NewInsert().Model(&testCase.fixtures).Exec(ctx)
 						require.NoError(t, err)
 					}
-
-					_, err = db.NewRaw("REFRESH MATERIALIZED VIEW active_keys;").Exec(ctx)
-					require.NoError(t, err)
 
 					key, err := dao.Exec(ctx, testCase.request)
 					require.ErrorIs(t, err, testCase.expectErr)
