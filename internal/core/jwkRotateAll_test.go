@@ -54,9 +54,8 @@ func TestJwkRotateAllProcessesEveryUsage(t *testing.T) {
 	require.Equal(t, 1, transactor.Calls(), "every usage belongs to one unit of work, not one each")
 }
 
-// TestRotateKeysReportsNothingProcessedOnFailure covers the count's contract: a
-// partial number describes work that has been rolled back, so reporting it would
-// tell an operator that keys were rotated when none were.
+// TestRotateKeysReportsNothingProcessedOnFailure covers the count's contract. A partial
+// number describes work that has been rolled back, so the count reports zero.
 func TestJwkRotateAllReportsNothingProcessedOnFailure(t *testing.T) {
 	t.Parallel()
 
