@@ -38,6 +38,9 @@ func TestGrpcClaimsSign(t *testing.T) {
 
 		expect       *protogen.ClaimsSignResponse
 		expectStatus codes.Code
+		// expectMessage is a fragment the status message must carry, so a caller
+		// can tell what to fix without reading the service's logs.
+		expectMessage string
 	}{
 		{
 			name: "Success",
@@ -83,6 +86,25 @@ func TestGrpcClaimsSign(t *testing.T) {
 			expectStatus: codes.Unavailable,
 		},
 		{
+			// A caller naming a registered claim sent a bad request. Reporting it
+			// as Internal would blame the service for the caller's input and give
+			// them nothing to correct.
+			name: "Error/ReservedClaim",
+
+			request: &protogen.ClaimsSignRequest{
+				Payload: lo.Must(grpcf.MarshalJSONAsAny(map[string]any{"sub": "attacker"})),
+				Usage:   "test-usage",
+			},
+
+			serviceMock: &serviceMock{
+				req: map[string]any{"sub": "attacker"},
+				err: core.ErrReservedClaim,
+			},
+
+			expectStatus:  codes.InvalidArgument,
+			expectMessage: "registered claim",
+		},
+		{
 			name: "Error/Internal",
 
 			request: &protogen.ClaimsSignRequest{
@@ -124,6 +146,11 @@ func TestGrpcClaimsSign(t *testing.T) {
 				testCase.expectStatus, resSt.Code(),
 				"expected status code %s, got %s (%v)", testCase.expectStatus, resSt.Code(), err,
 			)
+
+			if testCase.expectMessage != "" {
+				require.Contains(t, resSt.Message(), testCase.expectMessage)
+			}
+
 			require.Equal(t, testCase.expect, res)
 
 			service.AssertExpectations(t)

@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"go.opentelemetry.io/otel/attribute"
@@ -70,7 +71,14 @@ func (service *ClaimsSign) Exec(ctx context.Context, request *ClaimsSignRequest)
 
 	producer := jwt.NewProducer(jwt.ProducerConfig{Plugins: producerPlugins})
 
+	// A caller claim that collides with the envelope above is rejected at
+	// encoding time, inside Issue. The request is malformed, so it is classified
+	// rather than reported as a fault; the wrapped error names the members.
 	token, err := producer.Issue(ctx, claims, nil)
+	if errors.Is(err, jwa.ErrReservedMember) {
+		return "", fmt.Errorf("%w: %w", ErrReservedClaim, err)
+	}
+
 	if err != nil {
 		return "", otel.ReportError(span, fmt.Errorf("issue token: %w", err))
 	}
