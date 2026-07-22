@@ -79,10 +79,9 @@ func (DependencyStatus) EnumDescriptor() ([]byte, []int) {
 
 // DependencyHealth reports the health of a single external dependency.
 //
-// The shape is deliberately minimal. This gRPC surface is internal today, but errors from a
-// dependency health check routinely embed internal hostnames, ports, or schema names, and
-// carrying them in the response would leak infrastructure topology if it ever became
-// externally reachable. The underlying error is recorded on the trace span for operators.
+// The message carries the status alone. Health-check errors embed internal hostnames, ports and
+// schema names, and this gRPC surface may not stay internal forever. The underlying error is
+// recorded on the trace span for operators.
 type DependencyHealth struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The dependency's current operational status.
