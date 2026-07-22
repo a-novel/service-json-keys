@@ -41,12 +41,5 @@ func (handler *RestJwkList) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = assertPublic(jwks...)
-	if err != nil {
-		httpf.HandleError(ctx, handler.logger, w, span, httpf.ErrMap{}, err)
-
-		return
-	}
-
 	httpf.SendJSON(ctx, w, span, jwks)
 }
