@@ -20,8 +20,8 @@ CREATE INDEX keys_usage_idx ON keys (usage);
 
 /* active_keys exposes only keys that are still valid, and is the only object DAOs read from.
 
-Both conditions are required: testing COALESCE(deleted_at, expires_at) would let a future
-deleted_at act as a backdoor expiry for a key whose expires_at has already passed.
+Both conditions are required. deleted_at and expires_at are independent, and a COALESCE over
+the pair lets a future deleted_at mask an expires_at that has already passed.
 
 Being a plain view, the predicates are evaluated per query, so a key stops being served the moment
 its expires_at passes or its deleted_at is set. */

@@ -21,7 +21,7 @@ enum DependencyStatus {
 
 // DependencyHealth reports the health of a single external dependency.
 //
-// The message carries the status alone: health-check errors embed internal hostnames, ports and
+// The message carries the status alone. Health-check errors embed internal hostnames, ports and
 // schema names, and this gRPC surface may not stay internal forever. The underlying error is
 // recorded on the trace span for operators.
 message DependencyHealth {
