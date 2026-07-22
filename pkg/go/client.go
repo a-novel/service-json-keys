@@ -49,6 +49,10 @@ type BaseClient interface {
 	// ClaimsSign asks the service to sign claims and returns a compact JWT.
 	// The request payload must be a protobuf Any wrapping the claims to embed;
 	// the response token is the resulting compact JWT string.
+	//
+	// The payload carries application claims only. The registered ones — iss,
+	// sub, aud, exp, nbf, iat, jti — come from the usage's server-side config,
+	// and a payload naming one fails with InvalidArgument.
 	ClaimsSign(ctx context.Context, req *ClaimsSignRequest, opts ...grpc.CallOption) (*ClaimsSignResponse, error)
 
 	// Close releases the underlying gRPC connection. Typically called via defer after NewClient.

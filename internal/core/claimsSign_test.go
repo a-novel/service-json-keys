@@ -73,6 +73,36 @@ func TestClaimsSign(t *testing.T) {
 
 			expectErr: core.ErrConfigNotFound,
 		},
+		{
+			// The envelope's own claims are stamped from the usage config, so a
+			// caller naming one is refused when the token is encoded. A usage
+			// registered with no plugins still reaches that point, which is where
+			// the claims are serialized.
+			name: "Error/ReservedClaim",
+
+			request: &core.ClaimsSignRequest{
+				Claims: map[string]any{"sub": "attacker", "foo": "bar"},
+				Usage:  "test-usage",
+			},
+
+			keysConfig: testConfig,
+			producers:  core.JwkProducers{"test-usage": nil},
+
+			expectErr: core.ErrReservedClaim,
+		},
+		{
+			name: "Success/UnreservedClaims",
+
+			request: &core.ClaimsSignRequest{
+				Claims: &testClaims{Foo: "bar"},
+				Usage:  "test-usage",
+			},
+
+			keysConfig: testConfig,
+			producers:  core.JwkProducers{"test-usage": nil},
+
+			expectErr: nil,
+		},
 	}
 
 	for _, testCase := range testCases {

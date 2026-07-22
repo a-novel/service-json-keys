@@ -52,6 +52,14 @@ func (handler *GrpcClaimsSign) ClaimsSign(
 		return nil, status.Error(codes.Unavailable, "unknown usage")
 	}
 
+	// The registered claims belong to the usage's envelope. Naming the set keeps
+	// the caller from having to guess which of their claims was refused, without
+	// echoing the service's own error text back to them.
+	if errors.Is(err, core.ErrReservedClaim) {
+		return nil, status.Error(codes.InvalidArgument,
+			"payload may not set a registered claim (iss, sub, aud, exp, nbf, iat, jti)")
+	}
+
 	if err != nil {
 		_ = otel.ReportError(span, err)
 
