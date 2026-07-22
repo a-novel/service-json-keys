@@ -74,9 +74,39 @@ func TestJwkExtract(t *testing.T) {
 			},
 		},
 		{
-			name: "Success/SymmetricKey",
+			// A symmetric key is stored with only private material. Asking for its
+			// public half is asking for something that does not exist, and this case
+			// previously returned the decrypted private key to that caller.
+			name: "SymmetricKeyWithoutPrivateAuthorization",
 
 			request: &core.JwkExtractRequest{
+				Jwk: &dao.Jwk{
+					ID: uuid.MustParse("00000000-0000-0000-0000-000000000001"),
+
+					PrivateKey: mustEncryptBase64Value(ctx, t, &jwa.JWK{
+						JWKCommon: jwa.JWKCommon{
+							KTY:    "test-kty",
+							Use:    "test-use",
+							KeyOps: []jwa.KeyOp{"test-key-ops"},
+							Alg:    "test-alg",
+							KID:    "00000000-0000-0000-0000-000000000001",
+						},
+						Payload: []byte(
+							`{"value":"private-key-1"}`,
+						),
+					}),
+				},
+			},
+
+			expectErr: core.ErrJwkExtractNoPublicKey,
+		},
+		{
+			// The same key with authorization, which is the gRPC signing path.
+			name: "Success/SymmetricKeyWithPrivateAuthorization",
+
+			request: &core.JwkExtractRequest{
+				Private: true,
+
 				Jwk: &dao.Jwk{
 					ID: uuid.MustParse("00000000-0000-0000-0000-000000000001"),
 
