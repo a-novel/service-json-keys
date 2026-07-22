@@ -1,4 +1,12 @@
-import { handleHttpResponse } from "@a-novel-kit/nodelib-browser/http";
+import { decodeHttpResponse, handleHttpResponse } from "@a-novel-kit/nodelib-browser/http";
+
+import type { ZodType } from "zod";
+
+// Fallback decoder used when no schema is supplied: parses the JSON body as-is,
+// trusting it to match T.
+async function decodeRawHttpResponse<T>(response: Response): Promise<T> {
+  return await response.json();
+}
 
 /** Status of a single health-check dependency reported by the `/healthcheck` endpoint. */
 export type HealthDependency = {
@@ -30,13 +38,15 @@ export class JsonKeysApi {
   }
 
   /**
-   * Sends a request to the given path and deserializes the JSON response body as `T`.
-   * Throws if the server returns a non-2xx status or the body is not valid JSON.
+   * Sends a request to the given path and deserializes the JSON response body as `T`,
+   * validating it against the schema when one is given.
+   * Throws if the server returns a non-2xx status, the body is not valid JSON, or the
+   * body does not satisfy the schema.
    */
-  async fetch<T>(input: string, init?: RequestInit): Promise<T> {
+  async fetch<T>(input: string, validator?: ZodType<T>, init?: RequestInit): Promise<T> {
     return await fetch(`${this._baseUrl}${input}`, init)
       .then(handleHttpResponse)
-      .then((res) => res.json() as Promise<T>);
+      .then(validator ? decodeHttpResponse(validator) : decodeRawHttpResponse<T>);
   }
 
   /** Checks that the server is reachable. Throws on any non-2xx response. */
@@ -50,6 +60,6 @@ export class JsonKeysApi {
    * so inspect each entry's `status` field to detect one.
    */
   async health(): Promise<Record<string, HealthDependency>> {
-    return await this.fetch("/healthcheck", { method: "GET" });
+    return await this.fetch("/healthcheck", undefined, { method: "GET" });
   }
 }
