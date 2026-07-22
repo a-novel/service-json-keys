@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/samber/lo"
-	"github.com/uptrace/bun"
 
 	"github.com/a-novel-kit/golib/otel"
 	"github.com/a-novel-kit/golib/postgres"
@@ -56,25 +55,14 @@ func main() {
 		config.JwkPresetDefault,
 	)
 
-	// --- Rotate keys for each usage (inside a transaction for atomicity) ---
+	// --- Rotate keys for each usage, as one unit of work ---
 	log.Printf("rotating keys for %d configured usage(s)", len(config.JwkPresetDefault))
 
-	processed := 0
+	serviceJwkRotateAll := core.NewJwkRotateAll(
+		serviceJwkGen, postgres.NewTransactor(nil), config.JwkPresetDefault,
+	)
 
-	err := postgres.RunInTx(ctx, nil, func(ctx context.Context, _ bun.IDB) error {
-		for usage := range config.JwkPresetDefault {
-			log.Printf("  · %s: ensuring key (rotated if interval elapsed)", usage)
-
-			_, err := serviceJwkGen.Exec(ctx, &core.JwkGenRequest{Usage: usage})
-			if err != nil {
-				return fmt.Errorf("generate key for usage %s: %w", usage, err)
-			}
-
-			processed++
-		}
-
-		return nil
-	})
+	resp, err := serviceJwkRotateAll.Exec(ctx, &core.JwkRotateAllRequest{})
 	if err != nil {
 		err = otel.ReportError(span, fmt.Errorf("rotate keys: %w", err))
 		log.Fatalln(err.Error()) //nolint:gocritic
@@ -85,5 +73,5 @@ func main() {
 
 	otel.ReportSuccessNoContent(span)
 	log.Printf("done — %d usage(s) processed, completed in %s",
-		processed, time.Since(start).Round(time.Millisecond))
+		resp.Processed, time.Since(start).Round(time.Millisecond))
 }
