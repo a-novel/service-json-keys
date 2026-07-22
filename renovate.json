@@ -10,6 +10,7 @@
     {
       "matchManagers": ["gomod"],
       "matchFileNames": ["!go.mod"],
+      "additionalBranchPrefix": "gotools-",
       "goGetDirs": ["."]
     },
     {
