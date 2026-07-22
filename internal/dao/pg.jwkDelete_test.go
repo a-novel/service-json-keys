@@ -187,14 +187,11 @@ func TestPgJwkDelete(t *testing.T) {
 	}
 }
 
-// TestPgJwkDeleteTakesEffectImmediately is the regression this milestone's issue is about: a
-// revoked key must stop being served from the moment it is revoked, with no refresh in between.
+// TestPgJwkDeleteTakesEffectImmediately pins that a revoked key stops being served from the
+// moment it is revoked, with no refresh in between.
 //
-// It reads through PgJwkSelect rather than asserting on the delete's own return value, because
-// the defect lived entirely on the read path. While active_keys was a materialized view the
-// snapshot carried a *copy* of deleted_at, so the revoked key kept being returned — and kept
-// signing — until the next hourly refresh. Nothing the reader could filter on would have caught
-// it, since the stale column was in the snapshot itself.
+// It reads through PgJwkSelect, because the guarantee lives on the read path: active_keys is a
+// plain view, so its predicates are evaluated per query and a revocation takes effect at once.
 func TestPgJwkDeleteTakesEffectImmediately(t *testing.T) {
 	t.Parallel()
 
@@ -229,8 +226,7 @@ func TestPgJwkDeleteTakesEffectImmediately(t *testing.T) {
 
 			selectDAO := dao.NewPgJwkSelect()
 
-			// Precondition: the key is served before revocation. Without this the test would
-			// still pass against a read path that returns nothing at all.
+			// Precondition: the key is served before revocation.
 			got, err := selectDAO.Exec(ctx, &dao.JwkSelectRequest{ID: keyID})
 			require.NoError(t, err)
 			require.Equal(t, keyID, got.ID)
