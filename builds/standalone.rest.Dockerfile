@@ -1,6 +1,6 @@
 # Standalone REST server image for local development. Applies migrations and rotates keys
-# automatically before starting the server, so the database does not need to be pre-initialized.
-# For production deployments, use the base REST image (rest.Dockerfile) instead.
+# automatically before starting the server, so the database needs no pre-initialization.
+# Production deployments use the base REST image (rest.Dockerfile).
 FROM docker.io/library/golang:1.26.5-alpine AS builder
 
 ENV CGO_ENABLED=0
@@ -39,8 +39,6 @@ HEALTHCHECK --interval=1s --timeout=5s --retries=10 --start-period=1s \
 
 ENV REST_PORT=8080
 
-# REST port.
 EXPOSE 8080
 
-# Apply migrations and rotate keys, then start the server.
 CMD ["sh", "-c", "/migrations && /rotate-keys && /rest"]

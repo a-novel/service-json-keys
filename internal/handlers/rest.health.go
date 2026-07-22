@@ -20,18 +20,17 @@ const (
 )
 
 // RestHealthStatus is the JSON representation of a single dependency's health.
-// The shape is deliberately minimal: /healthcheck is an unauthenticated public
-// endpoint, so it must not expose raw error messages — those routinely include
-// internal hostnames, ports, or schema names that leak infrastructure topology.
-// The underlying error is recorded on the trace span for operators instead.
+// /healthcheck is public and unauthenticated, so the body carries the status alone:
+// raw error messages embed internal hostnames, ports and schema names. The underlying
+// error is recorded on the trace span for operators.
 type RestHealthStatus struct {
 	// Status is either [RestHealthStatusUp] or [RestHealthStatusDown].
 	Status string `json:"status"`
 }
 
 // NewRestHealthStatus converts an error into a RestHealthStatus, mapping nil to
-// [RestHealthStatusUp] and any non-nil error to [RestHealthStatusDown]. The error
-// itself is intentionally discarded from the public response; see [RestHealthStatus].
+// [RestHealthStatusUp] and any non-nil error to [RestHealthStatusDown]. The error is
+// dropped from the public response; see [RestHealthStatus].
 func NewRestHealthStatus(err error) *RestHealthStatus {
 	return &RestHealthStatus{
 		Status: lo.Ternary(err == nil, RestHealthStatusUp, RestHealthStatusDown),

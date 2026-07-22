@@ -23,9 +23,8 @@ func main() {
 
 	start := time.Now()
 
-	// Inventory the .up.sql files up front for the start-of-run log. The
-	// bun migrator doesn't expose a count, so the embedded FS is the closest
-	// stable source.
+	// Inventory the .up.sql files for the start-of-run log; the bun migrator exposes no count,
+	// so the embedded FS is the closest stable source.
 	discovered := listUpMigrations(migrations.Migrations)
 	log.Printf("discovered %d migration(s) in models/migrations", len(discovered))
 
@@ -44,17 +43,16 @@ func main() {
 		len(discovered), time.Since(start).Round(time.Millisecond))
 }
 
-// listUpMigrations returns the bare name of every *.up.sql in the migrations
-// FS, in lexical order (the timestamp prefix makes that chronological). It
-// feeds the start-of-run inventory log only; bun's migrator decides which
-// migrations actually run.
+// listUpMigrations returns the bare name of every *.up.sql in the migrations FS, in lexical
+// order — the timestamp prefix makes that chronological. It feeds the inventory log; bun's
+// migrator decides which migrations actually run.
 func listUpMigrations(f fs.FS) []string {
 	var out []string
 
 	_ = fs.WalkDir(f, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			// Aborts the walk on error; the caller discards it, since the
-			// inventory is best-effort logging rather than a gate.
+			// Abort the walk; the caller discards the error, as the inventory
+			// is best-effort logging.
 			return err
 		}
 

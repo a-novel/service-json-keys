@@ -1,6 +1,6 @@
-// Command rotate-keys rotates active JSON Web Keys. For each configured usage, it generates
-// a new key if the rotation interval has elapsed. Consumers see it on their next fetch:
-// active_keys is a plain view, so there is no snapshot to refresh.
+// Command rotate-keys rotates active JSON Web Keys: for each configured usage, it generates a
+// new key once the rotation interval has elapsed. Consumers pick the key up on their next
+// fetch, since active_keys is a plain view with no snapshot to refresh.
 //
 // Designed to run as a periodic job (e.g., a Kubernetes CronJob).
 package main
@@ -67,9 +67,6 @@ func main() {
 		err = otel.ReportError(span, fmt.Errorf("rotate keys: %w", err))
 		log.Fatalln(err.Error()) //nolint:gocritic
 	}
-
-	// active_keys is a plain view, so a newly inserted key is visible to the next reader
-	// with no refresh step to run — and none to forget.
 
 	otel.ReportSuccessNoContent(span)
 	log.Printf("done — %d usage(s) processed, completed in %s",

@@ -56,8 +56,8 @@ type claimsVerifier[C any] struct {
 // configuration references an unsupported algorithm. C must be JSON-serializable and match the
 // claims type used when signing for the same usage.
 func NewClaimsVerifier[C any](c Client) (ClaimsVerifier[C], error) {
-	// Build the cached public-key sources here rather than in the client, so the client's exported
-	// surface never mentions a jwt type. A sign-only consumer that never calls this pays nothing.
+	// Building the public-key sources here keeps jwt types off the client's exported surface,
+	// and a sign-only consumer never pays for the setup.
 	adapter := newJwkExportGrpc(c)
 
 	sources, err := core.NewJwkPublicSource(adapter, c.Keys())

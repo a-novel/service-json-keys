@@ -17,9 +17,8 @@ var (
 	// ErrJwkPresetUnknown is returned when a requested algorithm has no corresponding preset entry.
 	ErrJwkPresetUnknown = errors.New("unknown jwk preset")
 	// ErrJwkPresetUnknownAlgorithm is returned when a key configuration references an algorithm
-	// for which no key-source builder is registered. Only asymmetric algorithms (EdDSA, ECDSA,
-	// RSA, RSA-PSS) are supported — symmetric algorithms like HMAC are deliberately excluded
-	// because their secrets cannot be safely separated into a public-key REST surface.
+	// with no registered key-source builder. Only asymmetric algorithms are supported: a
+	// symmetric secret has no public half to publish on the REST surface.
 	ErrJwkPresetUnknownAlgorithm = errors.New("unknown jwk algorithm")
 )
 
@@ -132,7 +131,7 @@ func JwkGeneratorRsa(alg jwa.Alg) func() (any, any, string, string, error) {
 
 // JwkPrivateSources holds typed, cached private-key sources for each supported algorithm family,
 // grouped by usage name, and is used to wire signing plugins for JWT production. Only asymmetric
-// algorithms are supported; symmetric (HMAC) algorithms are not.
+// algorithms are supported.
 type JwkPrivateSources struct {
 	EdDSA map[string]*jwk.Source
 	ES    map[string]*jwk.Source
@@ -168,8 +167,8 @@ func NewJwkPrivateSource(
 			Fetch:         fetch,
 		})
 
-		// One algorithm-agnostic source per usage; the bucket only records which signer plugin to
-		// wire later (jwt v2 decodes the key type at the plugin, not the source).
+		// One algorithm-agnostic source per usage; the bucket records which signer plugin to wire
+		// later, since jwt v2 decodes the key type at the plugin.
 		switch keyConfig.Alg {
 		case jwa.EdDSA:
 			output.EdDSA[usage] = keySource
@@ -187,7 +186,7 @@ func NewJwkPrivateSource(
 
 // JwkPublicSources holds typed, cached public-key sources for each supported algorithm family,
 // grouped by usage name, and is used to wire verification plugins for JWT consumption. Only
-// asymmetric algorithms are supported; symmetric (HMAC) algorithms are not.
+// asymmetric algorithms are supported.
 type JwkPublicSources struct {
 	EdDSA map[string]*jwk.Source
 	ES    map[string]*jwk.Source
@@ -223,8 +222,8 @@ func NewJwkPublicSource(
 			Fetch:         fetch,
 		})
 
-		// One algorithm-agnostic source per usage; the bucket only records which verifier plugin to
-		// wire later (jwt v2 decodes the key type at the plugin, not the source).
+		// One algorithm-agnostic source per usage; the bucket records which verifier plugin to wire
+		// later, since jwt v2 decodes the key type at the plugin.
 		switch keyConfig.Alg {
 		case jwa.EdDSA:
 			output.EdDSA[usage] = keySource

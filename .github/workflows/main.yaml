@@ -335,9 +335,8 @@ jobs:
       id-token: write
     outputs:
       digest: ${{ steps.build.outputs.digest }}
-    # This image is booted and exercised by test-pkg (a full
-    # integration run), so this job only builds + pushes it. skip_healthcheck
-    # drops the redundant smoke run and the container constellation it needed.
+    # test-pkg boots and exercises this image in a full integration run, so this job only
+    # builds and pushes it; skip_healthcheck drops the redundant smoke run.
     steps:
       - uses: a-novel-kit/workflows/build-actions/docker@v1.20.1
         id: build
@@ -394,9 +393,8 @@ jobs:
       id-token: write
     outputs:
       digest: ${{ steps.build.outputs.digest }}
-    # This image is booted and exercised by test-pkg-js (a full
-    # integration run), so this job only builds + pushes it. skip_healthcheck
-    # drops the redundant smoke run and the container constellation it needed.
+    # test-pkg-js boots and exercises this image in a full integration run, so this job only
+    # builds and pushes it; skip_healthcheck drops the redundant smoke run.
     steps:
       - uses: a-novel-kit/workflows/build-actions/docker@v1.20.1
         id: build
@@ -446,8 +444,8 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master' && success()
     needs: [build-js]
-    # GitHub Pages allows a single deployment in flight per site; without this
-    # group, concurrent master runs fail with "in progress deployment" errors.
+    # GitHub Pages allows one deployment in flight per site. The group serializes concurrent
+    # master runs.
     concurrency:
       group: github-pages
       cancel-in-progress: false

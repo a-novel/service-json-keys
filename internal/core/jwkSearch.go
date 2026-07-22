@@ -67,7 +67,6 @@ func (service *JwkSearch) Exec(ctx context.Context, request *JwkSearchRequest) (
 
 	span.SetAttributes(attribute.Int("entities.count", len(entities)))
 
-	// Don't use lo so we can handle errors properly.
 	deserialized := make([]*Jwk, len(entities))
 
 	for i, entity := range entities {

@@ -25,8 +25,7 @@ const MasterKeyLength = 32
 // in the database. It must be kept secret and generated with a cryptographically secure
 // random source.
 //
-// Rotating this secret permanently invalidates all private keys encrypted with the old value,
-// so update it with care.
+// Rotating this secret permanently invalidates every private key encrypted with the old value.
 func NewMasterKeyContext(ctx context.Context, masterKeyRaw string) (context.Context, error) {
 	ctx, span := otel.Tracer().Start(ctx, "lib.NewMasterKeyContext")
 	defer span.End()
@@ -43,7 +42,7 @@ func NewMasterKeyContext(ctx context.Context, masterKeyRaw string) (context.Cont
 		))
 	}
 
-	// secretbox needs the key as a fixed-size array, not a slice.
+	// secretbox needs the key as a fixed-size array.
 	var masterKey [MasterKeyLength]byte
 	copy(masterKey[:], masterKeyBytes)
 
@@ -66,12 +65,8 @@ func MasterKeyContext(ctx context.Context) ([MasterKeyLength]byte, error) {
 	return masterKey, nil
 }
 
-// TransferMasterKeyContext passes the master key saved in the base context to a
-// new context derived from the destination context. It returns the newly created
-// context.
-//
-// If the base context does not contain any master key, this is a no-op, and the
-// destination context is returned as-is.
+// TransferMasterKeyContext copies the master key held by baseCtx onto a context derived from
+// destCtx. When baseCtx holds no master key, destCtx is returned unchanged.
 func TransferMasterKeyContext(baseCtx, destCtx context.Context) context.Context {
 	masterKey, ok := baseCtx.Value(masterKeyContext{}).([MasterKeyLength]byte)
 	if !ok {

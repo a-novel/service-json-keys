@@ -26,8 +26,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// JwkListService lists the active keys for a given usage, newest first: the first key is
-// the current signing key, the rest are older keys still trusted for verification.
+// JwkListService lists the active public keys for a given usage.
 type JwkListServiceClient interface {
 	// Returns the active public keys for the given usage, newest first. The first key is the
 	// current signing key; the rest are older keys still trusted for verifying tokens issued
@@ -57,8 +56,7 @@ func (c *jwkListServiceClient) JwkList(ctx context.Context, in *JwkListRequest, 
 // All implementations must embed UnimplementedJwkListServiceServer
 // for forward compatibility.
 //
-// JwkListService lists the active keys for a given usage, newest first: the first key is
-// the current signing key, the rest are older keys still trusted for verification.
+// JwkListService lists the active public keys for a given usage.
 type JwkListServiceServer interface {
 	// Returns the active public keys for the given usage, newest first. The first key is the
 	// current signing key; the rest are older keys still trusted for verifying tokens issued

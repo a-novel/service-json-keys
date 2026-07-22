@@ -1,20 +1,17 @@
 # Runs the JSON-keys gRPC server. Requires a database with migrations already applied.
 FROM docker.io/library/golang:1.26.5-alpine AS builder
 
-# CGO_ENABLED=0 produces a fully static binary with no C library dependency,
-# which is required for safe execution on Alpine (musl libc).
+# CGO_ENABLED=0 produces a fully static binary, required to run safely on Alpine's musl libc.
 ENV CGO_ENABLED=0
 
 WORKDIR /app
 
-# Download dependencies before copying source files so the module cache layer is
-# reused on rebuilds where only source files change.
+# Download dependencies before the source copy, so the module layer survives source-only rebuilds.
 COPY go.mod go.sum ./
 RUN --mount=type=cache,target=/go/pkg/mod \
     go mod download
 
-# Install grpcurl for the healthcheck. Placed before source COPY so the cached
-# layer (download + compile) survives source-only rebuilds.
+# grpcurl backs the healthcheck; installing it before the source copy keeps its layer cached too.
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
     GOBIN=/usr/local/bin go install github.com/fullstorydev/grpcurl/cmd/grpcurl@v1.9.3
@@ -43,7 +40,6 @@ HEALTHCHECK --interval=1s --timeout=5s --retries=10 --start-period=1s \
 
 ENV GRPC_PORT=8080
 
-# gRPC port.
 EXPOSE 8080
 # TLS port.
 EXPOSE 443

@@ -31,7 +31,6 @@ HEALTHCHECK --interval=1s --timeout=5s --retries=10 --start-period=1s \
 
 ENV REST_PORT=8080
 
-# REST API port.
 EXPOSE 8080
 
 CMD ["/rest"]

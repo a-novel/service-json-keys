@@ -21,13 +21,11 @@ enum DependencyStatus {
 
 // DependencyHealth reports the health of a single external dependency.
 //
-// The shape is deliberately minimal. This gRPC surface is internal today, but errors from a
-// dependency health check routinely embed internal hostnames, ports, or schema names, and
-// carrying them in the response would leak infrastructure topology if it ever became
-// externally reachable. The underlying error is recorded on the trace span for operators.
+// The message carries the status alone. Health-check errors embed internal hostnames, ports and
+// schema names, and this gRPC surface may not stay internal forever. The underlying error is
+// recorded on the trace span for operators.
 message DependencyHealth {
-  // Number 2 and name "err" are reserved so a future field cannot re-introduce a raw error
-  // string, which would re-open the topology leak this message is shaped to avoid.
+  // Reserved so a future field cannot re-introduce a raw error string and re-open the leak.
   reserved 2;
   reserved "err";
 

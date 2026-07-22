@@ -1,9 +1,6 @@
-// Command rest runs the public REST server for the JSON-keys service.
-//
-// This server exposes read-only JSON Web Key endpoints so that any client can fetch
-// public keys for local token verification. It does not expose
-// signing or any private key material. No authentication is required to access
-// these endpoints.
+// Command rest runs the public REST server for the JSON-keys service. It serves read-only
+// JSON Web Key endpoints, unauthenticated, so any client can fetch public keys for local
+// token verification. Signing and private key material stay off this surface.
 //
 // For the private authenticated gRPC API (including token signing), see cmd/grpc.
 package main

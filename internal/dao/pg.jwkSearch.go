@@ -14,11 +14,8 @@ import (
 //go:embed pg.jwkSearch.sql
 var jwkSearchQuery string
 
-// KeysMaxBatchSize is the maximum number of keys returned by a single search operation.
-//
-// Regular key rotation and TTL-based expiration normally keep the number of active keys per usage
-// low, so the search has no pagination. This limit exists as a safeguard in case of misconfiguration
-// or unexpected key accumulation.
+// KeysMaxBatchSize is the maximum number of keys returned by a single search operation. It is a
+// safeguard against misconfiguration or unexpected key accumulation.
 const KeysMaxBatchSize = 100
 
 // ErrJwkSearchTooManyResults is logged (not returned) when a search hits the [KeysMaxBatchSize]
@@ -66,8 +63,7 @@ func (dao *PgJwkSearch) Exec(ctx context.Context, request *JwkSearchRequest) ([]
 		attribute.Int("keys.max_batch_size", KeysMaxBatchSize),
 	)
 
-	// Log an error when too many keys are found, as this indicates a potential misconfiguration.
-	// The results found so far are still returned to the caller.
+	// Hitting the cap signals a misconfiguration; log it and return what was found.
 	if len(entities) >= KeysMaxBatchSize {
 		err = fmt.Errorf("%w: %d keys found for usage %s", ErrJwkSearchTooManyResults, len(entities), request.Usage)
 
