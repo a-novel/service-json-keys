@@ -15,60 +15,12 @@ import (
 
 	"github.com/a-novel-kit/golib/otel"
 	"github.com/a-novel-kit/golib/postgres"
-	"github.com/a-novel-kit/golib/transaction"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
 	"github.com/a-novel/service-json-keys/v2/internal/core"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 	"github.com/a-novel/service-json-keys/v2/internal/lib"
 )
-
-// jwkGenerator ensures a key exists for one usage, rotating it when its interval
-// has elapsed. Declared here rather than taken as a concrete type so the rotation
-// can be exercised without a key service behind it.
-type jwkGenerator interface {
-	Exec(ctx context.Context, request *core.JwkGenRequest) (*core.Jwk, error)
-}
-
-// rotateKeys ensures every configured usage has a current key, as a single unit of
-// work: a failure partway through leaves none of them rotated.
-//
-// That is the whole reason it takes a transactor rather than reaching for one. The
-// rotation used to open a transaction and then hand each generation the surrounding
-// context, so every key committed on its own and a failure on the third usage left
-// the first two rotated — with the job reporting failure as though nothing had been
-// written.
-//
-// It returns the number of usages processed, which is only meaningful when the error
-// is nil: a partial count belongs to work that has been rolled back.
-func rotateKeys(
-	ctx context.Context,
-	transactor transaction.Transactor,
-	generator jwkGenerator,
-	usages map[string]*config.Jwk,
-) (int, error) {
-	processed := 0
-
-	err := transactor.WithinTx(ctx, func(ctx context.Context) error {
-		for usage := range usages {
-			log.Printf("  · %s: ensuring key (rotated if interval elapsed)", usage)
-
-			_, err := generator.Exec(ctx, &core.JwkGenRequest{Usage: usage})
-			if err != nil {
-				return fmt.Errorf("generate key for usage %s: %w", usage, err)
-			}
-
-			processed++
-		}
-
-		return nil
-	})
-	if err != nil {
-		return 0, err
-	}
-
-	return processed, nil
-}
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lmsgprefix)
@@ -106,7 +58,11 @@ func main() {
 	// --- Rotate keys for each usage, as one unit of work ---
 	log.Printf("rotating keys for %d configured usage(s)", len(config.JwkPresetDefault))
 
-	processed, err := rotateKeys(ctx, postgres.NewTransactor(nil), serviceJwkGen, config.JwkPresetDefault)
+	serviceJwkRotateAll := core.NewJwkRotateAll(
+		serviceJwkGen, postgres.NewTransactor(nil), config.JwkPresetDefault,
+	)
+
+	resp, err := serviceJwkRotateAll.Exec(ctx, &core.JwkRotateAllRequest{})
 	if err != nil {
 		err = otel.ReportError(span, fmt.Errorf("rotate keys: %w", err))
 		log.Fatalln(err.Error()) //nolint:gocritic
@@ -117,5 +73,5 @@ func main() {
 
 	otel.ReportSuccessNoContent(span)
 	log.Printf("done — %d usage(s) processed, completed in %s",
-		processed, time.Since(start).Round(time.Millisecond))
+		resp.Processed, time.Since(start).Round(time.Millisecond))
 }
