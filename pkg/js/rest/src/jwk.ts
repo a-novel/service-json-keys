@@ -2,11 +2,42 @@ import type { JsonKeysApi } from "./api";
 
 import { HTTP_HEADERS } from "@a-novel-kit/nodelib-browser/http";
 
+import { z } from "zod";
+
+export const JwkKeyOpSchema = z.enum([
+  "sign",
+  "verify",
+  "encrypt",
+  "decrypt",
+  "wrapKey",
+  "unwrapKey",
+  "deriveKey",
+  "deriveBits",
+]);
+
 /**
  * Permitted cryptographic operations for a JSON Web Key, as defined by the `key_ops`
  * field in RFC 7517. The value constrains how the key may be used by a consumer.
  */
-export type JwkKeyOp = "sign" | "verify" | "encrypt" | "decrypt" | "wrapKey" | "unwrapKey" | "deriveKey" | "deriveBits";
+export type JwkKeyOp = z.infer<typeof JwkKeyOpSchema>;
+
+/**
+ * Parses a public JSON Web Key. The schema is loose because a key carries
+ * algorithm-specific parameters beyond the standard fields (`x` and `crv` for EdDSA,
+ * `n` and `e` for RSA), and those vary by key type.
+ */
+export const JwkSchema = z.looseObject({
+  /** Key type (e.g., `"OKP"` for EdDSA, `"EC"` for elliptic curve). */
+  kty: z.string(),
+  /** Intended use: `"sig"` for signature verification or `"enc"` for encryption. */
+  use: z.string(),
+  /** Permitted operations for this key. */
+  key_ops: z.array(JwkKeyOpSchema),
+  /** Signing algorithm (e.g., `"EdDSA"`). */
+  alg: z.string(),
+  /** Key ID. Matches the `kid` header field in JWTs signed with this key. */
+  kid: z.string(),
+});
 
 /**
  * A JSON Web Key (RFC 7517) as returned by the JSON-keys service.
@@ -14,23 +45,8 @@ export type JwkKeyOp = "sign" | "verify" | "encrypt" | "decrypt" | "wrapKey" | "
  * Only public keys are exposed over the REST API — private key material never leaves
  * the server. Use the `kid` field to match a key against the `kid` header in a JWT
  * when selecting the right key for verification.
- *
- * The index signature (`[key: string]: unknown`) covers algorithm-specific parameters
- * (e.g., `x` and `crv` for EdDSA keys) that vary by key type.
  */
-export type Jwk = {
-  /** Key type (e.g., `"OKP"` for EdDSA, `"EC"` for elliptic curve). */
-  kty: string;
-  /** Intended use: `"sig"` for signature verification or `"enc"` for encryption. */
-  use: string;
-  /** Permitted operations for this key. */
-  key_ops: JwkKeyOp[];
-  /** Signing algorithm (e.g., `"EdDSA"`). */
-  alg: string;
-  /** Key ID. Matches the `kid` header field in JWTs signed with this key. */
-  kid: string;
-  [key: string]: unknown;
-};
+export type Jwk = z.infer<typeof JwkSchema>;
 
 /**
  * Returns all active public keys for the given usage.
@@ -42,7 +58,10 @@ export async function jwkList(api: JsonKeysApi, usage?: string): Promise<Jwk[]> 
   const params = new URLSearchParams();
   if (usage) params.set("usage", usage);
   const query = params.toString();
-  return await api.fetch(`/jwks${query ? `?${query}` : ""}`, { method: "GET", headers: HTTP_HEADERS.JSON });
+  return await api.fetch(`/jwks${query ? `?${query}` : ""}`, z.array(JwkSchema), {
+    method: "GET",
+    headers: HTTP_HEADERS.JSON,
+  });
 }
 
 /**
@@ -57,5 +76,5 @@ export async function jwkList(api: JsonKeysApi, usage?: string): Promise<Jwk[]> 
 export async function jwkGet(api: JsonKeysApi, id: string): Promise<Jwk> {
   const params = new URLSearchParams();
   params.set("id", id);
-  return await api.fetch(`/jwk?${params.toString()}`, { method: "GET", headers: HTTP_HEADERS.JSON });
+  return await api.fetch(`/jwk?${params.toString()}`, JwkSchema, { method: "GET", headers: HTTP_HEADERS.JSON });
 }
