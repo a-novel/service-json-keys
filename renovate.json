@@ -4,7 +4,13 @@
     "managerFilePatterns": ["/(^|/)(?:podman-)?compose[^/]*\\.ya?ml$/"]
   },
   "gomod": {
-    "managerFilePatterns": ["/(^|/)go\\.mod$/", "/(^|/)golangci-lint\\.mod$/", "/(^|/)gotestsum\\.mod$/"]
+    "managerFilePatterns": [
+      "/(^|/)go\\.mod$/",
+      "/(^|/)golangci-lint\\.mod$/",
+      "/(^|/)gotestsum\\.mod$/",
+      "/(^|/)buf\\.mod$/",
+      "/(^|/)mockery\\.mod$/"
+    ]
   },
   "packageRules": [
     {
@@ -30,24 +36,31 @@
       }
     },
     {
-      "matchFileNames": ["go.mod"],
-      "matchPackageNames": ["github.com/bufbuild/buf/cmd/buf"],
+      "matchFileNames": ["buf.mod"],
+      "additionalBranchPrefix": "buf-",
+      "goGetDirs": ["."],
       "postUpgradeTasks": {
         "commands": [
-          "go mod download",
+          "rm -f buf.sum",
+          "go get -modfile=buf.mod -tool github.com/bufbuild/buf/cmd/buf",
           "rm -rf internal/handlers/protogen",
-          "go tool buf generate",
-          "go tool buf format -w",
-          "go tool buf dep update"
+          "go tool -modfile=buf.mod buf generate",
+          "go tool -modfile=buf.mod buf format -w",
+          "go tool -modfile=buf.mod buf dep update"
         ],
         "executionMode": "branch"
       }
     },
     {
-      "matchFileNames": ["go.mod"],
-      "matchPackageNames": ["github.com/vektra/mockery/v3"],
+      "matchFileNames": ["mockery.mod"],
+      "additionalBranchPrefix": "mockery-",
+      "goGetDirs": ["."],
       "postUpgradeTasks": {
-        "commands": ["go tool mockery"],
+        "commands": [
+          "rm -f mockery.sum",
+          "go get -modfile=mockery.mod -tool github.com/vektra/mockery/v3",
+          "go tool -modfile=mockery.mod mockery"
+        ],
         "executionMode": "branch"
       }
     },
