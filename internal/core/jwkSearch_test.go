@@ -242,3 +242,36 @@ func TestJwkSearch(t *testing.T) {
 		})
 	}
 }
+
+// TestJwkSearchRefusesSymmetricKeysWithoutPrivateAuthorization wires the real
+// extraction into the search, so it covers what the public read path actually
+// does rather than what a mock was told to return.
+//
+// The REST handlers leave Private false, so this is the request they make. A
+// symmetric key has only private material, and the search must fail before any of
+// it is deserialized for a caller that may not have it.
+func TestJwkSearchRefusesSymmetricKeysWithoutPrivateAuthorization(t *testing.T) {
+	t.Parallel()
+
+	ctx, err := lib.NewMasterKeyContext(t.Context(), testutils.TestMasterKey)
+	require.NoError(t, err)
+
+	symmetric := &dao.Jwk{
+		ID:    uuid.MustParse("00000000-0000-0000-0000-000000000001"),
+		Usage: "auth",
+		// No public key: the shape a symmetric algorithm is stored in.
+		PrivateKey: mustEncryptBase64Value(ctx, t, &jwa.JWK{
+			JWKCommon: jwa.JWKCommon{KTY: "oct", Alg: "HS256", KID: "00000000-0000-0000-0000-000000000001"},
+			Payload:   []byte(`{"k":"secret-octets"}`),
+		}),
+	}
+
+	daoSearch := coremocks.NewMockJwkSearchDao(t)
+	daoSearch.EXPECT().Exec(mock.Anything, mock.Anything).Return([]*dao.Jwk{symmetric}, nil)
+
+	service := core.NewJwkSearch(daoSearch, core.NewJwkExtract())
+
+	keys, err := service.Exec(ctx, &core.JwkSearchRequest{Usage: "auth"})
+	require.ErrorIs(t, err, core.ErrJwkExtractNoPublicKey)
+	require.Nil(t, keys)
+}
