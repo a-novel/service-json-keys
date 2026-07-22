@@ -94,6 +94,7 @@ github.com/a-novel-kit/golib v0.22.10 h1:4E4QZawlF0Ex8XDHz211D0BqzJPcOW0idYGSbj/
 github.com/a-novel-kit/golib v0.22.10/go.mod h1:+CkFcCcAuFDEHSeTt7yBCuYDQeI2APzGl8mIJuS3/+w=
 github.com/a-novel-kit/jwt/v2 v2.0.0 h1:N9Q351PBwjLFQm3kDxryqjx57+3Z9RpaIxaFqZ3UYQg=
 github.com/a-novel-kit/jwt/v2 v2.0.0/go.mod h1:N/cS04wkXi6GxLAiWRnxXA81tuv1mc6pqDz/f7jRjxs=
+github.com/a-novel-kit/jwt/v2 v2.0.1/go.mod h1:QLLGdh58mLRNb0SiRCrYww2EJrdyaMSVKPn3jovPEQg=
 github.com/a-novel/service-json-keys/v2 v2.4.0 h1:Y2AxCQoAD6DJqFlQdTu508Np+JZgjm4E7IaXLLcJ6IM=
 github.com/a-novel/service-json-keys/v2 v2.4.0/go.mod h1:7RZWj4EOlv6HEB4xQC8FWfdse6li/Q5NBwIaRgWaNGo=
 github.com/alecthomas/chroma/v2 v2.24.1 h1:m5ffpfZbIb++k8AqFEKy9uVgY12xIQtBsQlc6DfZJQM=

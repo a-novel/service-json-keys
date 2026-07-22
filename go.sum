@@ -65,6 +65,7 @@ github.com/a-novel-kit/golib v0.22.10 h1:4E4QZawlF0Ex8XDHz211D0BqzJPcOW0idYGSbj/
 github.com/a-novel-kit/golib v0.22.10/go.mod h1:+CkFcCcAuFDEHSeTt7yBCuYDQeI2APzGl8mIJuS3/+w=
 github.com/a-novel-kit/jwt/v2 v2.0.0 h1:N9Q351PBwjLFQm3kDxryqjx57+3Z9RpaIxaFqZ3UYQg=
 github.com/a-novel-kit/jwt/v2 v2.0.0/go.mod h1:N/cS04wkXi6GxLAiWRnxXA81tuv1mc6pqDz/f7jRjxs=
+github.com/a-novel-kit/jwt/v2 v2.0.1/go.mod h1:QLLGdh58mLRNb0SiRCrYww2EJrdyaMSVKPn3jovPEQg=
 github.com/antlr4-go/antlr/v4 v4.13.1 h1:SqQKkuVZ+zWkMMNkjy5FZe5mr5WURWnlpmOuzYWrPrQ=
 github.com/antlr4-go/antlr/v4 v4.13.1/go.mod h1:GKmUxMtwp6ZgGwZSva4eWPC5mS6vUAmOABFgjdkM7Nw=
 github.com/bmatcuk/doublestar/v4 v4.10.0 h1:zU9WiOla1YA122oLM6i4EXvGW62DvKZVxIe6TYWexEs=
