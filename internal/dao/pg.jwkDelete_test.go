@@ -198,7 +198,11 @@ func TestPgJwkDelete(t *testing.T) {
 func TestPgJwkDeleteTakesEffectImmediately(t *testing.T) {
 	t.Parallel()
 
-	now := time.Now().UTC().Round(time.Second)
+	// Truncate, never Round: this value becomes deleted_at, and the view keeps a key
+	// visible while deleted_at > CURRENT_TIMESTAMP. Round goes to the nearest second, so
+	// half the time it lands in the future and the key stays active for up to 500ms —
+	// which the assertion below then reads as "revocation did not take effect".
+	now := time.Now().UTC().Truncate(time.Second)
 	keyID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 
 	postgres.RunDBTest(
