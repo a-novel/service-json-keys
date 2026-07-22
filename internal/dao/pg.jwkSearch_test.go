@@ -13,6 +13,7 @@ import (
 
 	"github.com/a-novel/service-json-keys/v2/internal/config/configtest"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
+	"github.com/a-novel/service-json-keys/v2/internal/models/migrations"
 )
 
 func TestPgJwkSearch(t *testing.T) {
@@ -167,7 +168,7 @@ func TestPgJwkSearch(t *testing.T) {
 			postgres.RunDBTest(
 				t,
 				configtest.PostgresPreset,
-				migrationsWithCronStub(t),
+				migrations.Migrations,
 				func(ctx context.Context, t *testing.T) {
 					t.Helper()
 
