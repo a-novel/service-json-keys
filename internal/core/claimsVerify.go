@@ -53,7 +53,7 @@ func (service *ClaimsVerify[Out]) Exec(ctx context.Context, request *ClaimsVerif
 
 	var claims Out
 
-	// Use the key configuration to further validate the token claims.
+	// Validate the claims against the usage's configured target, and its expiry unless waived.
 	checks := []jwp.ClaimsCheck{
 		jwp.NewClaimsCheckTarget(jwt.TargetConfig{
 			Issuer:   keyConfig.Token.Issuer,

@@ -1,14 +1,13 @@
 name: release
 
-# Releases are cut from the GitHub UI (Actions ▸ release ▸ pick a type ▸ Run),
-# not from a tag push. workflow_call exposes the same inputs so an agent can
-# drive an identical release later. The protected `release` environment is the
-# "who can publish" gate (configure its required reviewers).
+# Releases are cut from the GitHub UI (Actions ▸ release ▸ pick a type ▸ Run). workflow_call
+# exposes the same inputs so an agent can drive an identical release later. The protected
+# `release` environment is the "who can publish" gate (configure its required reviewers).
 #
-# The build jobs run on the default branch (the dispatch ref), not a tag, so
-# each tags its image from the explicit release version (build-actions `version:`
-# input) and pulls the database service image at the new tag; build-js publishes
-# from the release tag (ref) so the package carries the bumped version.
+# The build jobs run on the dispatch ref, the default branch, so each tags its image from the
+# explicit release version (build-actions `version:` input) and pulls the database service
+# image at the new tag; build-js publishes from the release tag (ref) so the package carries
+# the bumped version.
 on:
   workflow_dispatch:
     inputs:
@@ -316,8 +315,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           run_args: -e POSTGRES_DSN="${POSTGRES_DSN}" -e APP_MASTER_KEY="${APP_MASTER_KEY}"
 
-  # Publish the JS client from the bumped tag (ref) so it carries the new
-  # version rather than the pre-bump default branch.
+  # Publish the JS client from the bumped tag (ref) so the package carries the new version.
   build-js:
     needs: [release]
     if: ${{ !inputs.dry_run }}

@@ -57,9 +57,8 @@ type BaseClient interface {
 
 // Client extends [BaseClient] with the JWK configuration needed to build local token verifiers.
 //
-// Obtain a Client with [NewClient]. Pass it to [NewClaimsVerifier], which builds the cached
-// public-key sources for local verification — so the client's own exported surface stays free of
-// jwt types, and a sign-only consumer never pays for verifier setup.
+// Obtain a Client with [NewClient], then pass it to [NewClaimsVerifier], which builds the
+// cached public-key sources used for local verification.
 type Client interface {
 	BaseClient
 

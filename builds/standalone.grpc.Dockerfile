@@ -1,6 +1,6 @@
 # Standalone gRPC server image for local development. Applies migrations and rotates keys
-# automatically before starting the server, so the database does not need to be pre-initialized.
-# For production deployments, use the base gRPC image (grpc.Dockerfile) instead.
+# automatically before starting the server, so the database needs no pre-initialization.
+# Production deployments use the base gRPC image (grpc.Dockerfile).
 FROM docker.io/library/golang:1.26.5-alpine AS builder
 
 ENV CGO_ENABLED=0
@@ -43,10 +43,8 @@ HEALTHCHECK --interval=1s --timeout=5s --retries=10 --start-period=1s \
 
 ENV GRPC_PORT=8080
 
-# gRPC port.
 EXPOSE 8080
 # TLS port.
 EXPOSE 443
 
-# Apply migrations and rotate keys, then start the server.
 CMD ["sh", "-c", "/migrations && /rotate-keys && /grpc"]

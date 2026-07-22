@@ -2,8 +2,7 @@ syntax = "proto3";
 
 import "jwk.proto";
 
-// JwkListService lists the active keys for a given usage, newest first: the first key is
-// the current signing key, the rest are older keys still trusted for verification.
+// JwkListService lists the active public keys for a given usage.
 service JwkListService {
   // Returns the active public keys for the given usage, newest first. The first key is the
   // current signing key; the rest are older keys still trusted for verifying tokens issued

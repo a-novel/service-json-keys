@@ -14,8 +14,7 @@ type JwkExportLocalSource interface {
 // A JwkExportLocal wraps the local JwkSearch service as a jwk.Source, so private keys can
 // be cached in memory and served without hitting the database on every request.
 //
-// This exporter is for internal (server-side) use only. The public client package uses its
-// own gRPC-backed exporter instead.
+// Server-side only; the public client package has its own gRPC-backed exporter.
 type JwkExportLocal struct {
 	service JwkExportLocalSource
 }

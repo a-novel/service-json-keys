@@ -11,7 +11,7 @@ import (
 //
 // Private keys must be encrypted with the master key before storage.
 //
-// A Jwk is never hard-deleted. Instead, DAOs query through an "active_keys" view that
+// Rows are soft-deleted and stay in the table; DAOs read through an "active_keys" view that
 // excludes expired and soft-deleted rows. Keys are grouped by [Jwk.Usage]; for each usage there
 // is a single main key (the latest) and zero or more legacy keys (older active versions).
 type Jwk struct {
@@ -29,19 +29,13 @@ type Jwk struct {
 
 	// Usage identifies the signing purpose this key serves.
 	//
-	// A particular Usage value should be registered by a single service, which becomes
-	// the "producer" for this usage. Only the producer should be allowed to perform
-	// operations requiring the private key (e.g., generating a token).
+	// A usage is registered by a single service, its "producer", and only the producer may use
+	// the private key to sign. Any client may fetch the public key for a usage and become a
+	// "recipient" that verifies what the producer signed.
 	//
-	// Any client may consume the public key for a given usage and become a "recipient".
-	// Recipients can use the public key of a producer to verify the data they receive.
-	//
-	// All keys registered under the same usage are considered different versions of the
-	// same key. When a new key is registered for a usage, it becomes the "main" key, and
-	// the other keys are converted to "legacy" keys.
-	//
-	// A producer signs only with the main key. Recipients can verify tokens signed
-	// by any active key for the usage.
+	// All keys under one usage are versions of the same key: the newest is the "main" key, the
+	// rest are "legacy". A producer signs only with the main key; recipients accept any active
+	// key for the usage.
 	Usage string `bun:"usage"`
 
 	// CreatedAt is when the key was generated and persisted; it determines the

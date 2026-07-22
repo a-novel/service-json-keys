@@ -19,8 +19,7 @@ export type HealthDependency = {
  *
  * The REST API is the public read-only interface of the JSON-keys service. It exposes
  * JSON Web Key endpoints so that any client can fetch public keys for local token
- * verification. Signing and private key operations are not available over REST — those
- * are handled by the private gRPC API.
+ * verification. Signing and private key operations live on the private gRPC API.
  */
 export class JsonKeysApi {
   private readonly _baseUrl: string;

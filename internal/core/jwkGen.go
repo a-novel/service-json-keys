@@ -46,11 +46,9 @@ type JwkGenRequest struct {
 
 // A JwkGen generates new keys for a configured usage.
 //
-// It does not force generation. When called, it inspects the current state of the
-// database to decide whether the usage is due for a new key.
-//
-// If the latest key for the usage is still within its rotation window, that key is
-// returned and generation is skipped; the skip is recorded on the trace span.
+// Generation is conditional: it reads the usage's latest key and generates only once the
+// rotation window has elapsed. Within the window it returns that key and records the skip
+// on the trace span.
 type JwkGen struct {
 	daoSearch      JwkGenDaoSearch
 	daoInsert      JwkGenDaoInsert
@@ -79,8 +77,7 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 
 	span.SetAttributes(attribute.String("key.usage", request.Usage))
 
-	// Check the last time a key was inserted for the target usage, and compare to config. If the last key is too
-	// recent, return without generating a new key.
+	// The newest key for the usage decides whether the rotation window has elapsed.
 	keys, err := service.daoSearch.Exec(ctx, &dao.JwkSearchRequest{Usage: request.Usage})
 	if err != nil {
 		return nil, otel.ReportError(span, fmt.Errorf("list keys: %w", err))
@@ -122,7 +119,7 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 			attribute.String("key.alg", string(keyConfig.Alg)),
 		))
 
-		// Encrypt the private key using the master key, so it is protected against database dumping.
+		// Encrypt the private key with the master key, so a database dump does not expose it.
 		privateKeyEncrypted, err := lib.EncryptMasterKey(ctx, privateKey)
 		if err != nil {
 			return nil, otel.ReportError(span, fmt.Errorf("encrypt private key: %w", err))
