@@ -179,9 +179,6 @@ func TestPgJwkSearch(t *testing.T) {
 						require.NoError(t, err)
 					}
 
-					_, err = db.NewRaw("REFRESH MATERIALIZED VIEW active_keys;").Exec(ctx)
-					require.NoError(t, err)
-
 					key, err := dao.Exec(ctx, testCase.request)
 					require.ErrorIs(t, err, testCase.expectErr)
 					require.Equal(t, testCase.expect, key)
