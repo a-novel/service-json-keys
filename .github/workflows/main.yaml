@@ -99,7 +99,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          gitleaks dir . --redact --exit-code 1 --verbose
+          gitleaks dir . --config .gitleaks.toml --redact --exit-code 1 --verbose
 
   test-go:
     needs: [lint-go, build-database]
