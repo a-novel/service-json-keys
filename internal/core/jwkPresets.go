@@ -220,6 +220,14 @@ func NewJwkPublicSource(
 		keySource := jwk.NewSource(jwk.SourceConfig{
 			CacheDuration: keyConfig.Key.Cache,
 			Fetch:         fetch,
+			// The signer rotates to a key the instant it is published, but a verifier holds its
+			// cached set for CacheDuration — so a token signed with a just-rotated key names a kid
+			// the verifier does not yet have, and fails until the cache expires. This lets that
+			// unknown kid force one bounded refetch so the verifier picks the key up at once
+			// instead. Only the public source needs it; the signer never resolves a kid it did not
+			// just mint.
+			RefreshOnUnknownKeyID: true,
+			UnknownKeyIDInterval:  keyConfig.Key.UnknownKeyIDInterval,
 		})
 
 		// One algorithm-agnostic source per usage; the bucket records which verifier plugin to wire

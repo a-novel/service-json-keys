@@ -17,6 +17,10 @@ type JwkKey struct {
 	// Cache configures how long a key is cached in memory before being refetched from the database.
 	// It should be significantly lower than the TTL.
 	Cache time.Duration `json:"cache" yaml:"cache"`
+	// UnknownKeyIDInterval bounds how often a verifier may refetch when it meets a key id its cache
+	// does not hold — the shape a just-rotated key takes before Cache expires. It caps a caller
+	// sending unknown ids to one fetch per interval. Zero uses the jwt default.
+	UnknownKeyIDInterval time.Duration `json:"unknownKeyIDInterval" yaml:"unknownKeyIDInterval"`
 }
 
 // JwkToken holds the claims parameters applied to every JWT signed with a given key.
