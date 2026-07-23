@@ -44,7 +44,7 @@ Pin every image to the same release tag — see the [latest release](https://git
 ```yaml
 services:
   postgres-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/database:v2.4.0
+    image: ghcr.io/a-novel/service-json-keys/database:v2.4.1
     networks: [api]
     environment:
       POSTGRES_PASSWORD: postgres
@@ -64,7 +64,7 @@ services:
     networks: [api]
 
   service-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/grpc:v2.4.0 # or .../rest:v2.3.2 for the public REST API
+    image: ghcr.io/a-novel/service-json-keys/grpc:v2.4.1 # or .../rest:v2.3.2 for the public REST API
     ports: ["${GRPC_PORT}:8080"] # the container always listens on 8080; map ${REST_PORT} for the rest image
     depends_on:
       postgres-json-keys: { condition: service_healthy }
@@ -233,7 +233,7 @@ For a throwaway instance without the dev toolchain, the **standalone** images bu
 ```yaml
 services:
   postgres-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/database:v2.4.0
+    image: ghcr.io/a-novel/service-json-keys/database:v2.4.1
     networks: [api]
     environment:
       POSTGRES_PASSWORD: postgres
@@ -243,7 +243,7 @@ services:
       POSTGRES_INITDB_ARGS: --auth=scram-sha-256
 
   service-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/standalone-grpc:v2.4.0 # or standalone-rest
+    image: ghcr.io/a-novel/service-json-keys/standalone-grpc:v2.4.1 # or standalone-rest
     ports: ["${GRPC_PORT}:8080"] # map ${REST_PORT} for the standalone-rest image
     depends_on:
       postgres-json-keys: { condition: service_healthy }
