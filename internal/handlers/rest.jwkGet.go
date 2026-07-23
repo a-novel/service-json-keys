@@ -52,5 +52,5 @@ func (handler *RestJwkGet) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpf.SendJSON(ctx, w, span, jwk)
+	httpf.SendJSONStatus(ctx, w, span, http.StatusOK, jwk)
 }
