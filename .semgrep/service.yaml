@@ -1,8 +1,14 @@
-# Agora convention rules, enforced by the `lint-semgrep` job in main.yaml.
+# Conventions specific to the clean-architecture SERVICES (`cmd/` +
+# `internal/{config,lib,dao,core,handlers,models}`). Rules that hold for every Go
+# repo — including golib, jwt and the stack CLI — live in generic.yaml.
 #
-# These are structural: a call that must be present, a pairing that must hold.
-# A ban-list rule ("never call X") belongs in `forbidigo` under .golangci.yaml,
-# which already runs.
+# What is deliberately NOT here, because golangci-lint already owns it:
+#   - `defer span.End()`          -> spancheck (on by default)
+#   - error recorded on the span  -> spancheck `record-error` + `set-status`
+#   - layer import direction      -> depguard
+#   - context stored in a struct  -> containedctx
+# Adding a second checker for any of those buys nothing and doubles the places a
+# false positive must be silenced.
 #
 # Go patterns must enumerate return arity — Semgrep has no wildcard for it, so
 # every signature match is repeated for no-return, one return and two returns.
@@ -60,53 +66,4 @@ rules:
       - pattern-not: |
           func ($R $T) $M(ctx context.Context, ...) $RET {
             return $RECV.$INNER(ctx, ...)
-          }
-
-  # An unclosed span is never exported, so the operation vanishes from the trace
-  # and the parent's timing silently absorbs it — worse than not instrumenting.
-  - id: agora-span-must-defer-end
-    languages: [go]
-    severity: ERROR
-    message: >-
-      Span $SPAN is opened but never closed; add `defer $SPAN.End()` on the line
-      after it, or the operation never reaches the trace.
-    paths:
-      exclude:
-        - "*_test.go"
-    patterns:
-      - pattern: "$CTX, $SPAN := otel.Tracer().Start(...)"
-      - pattern-not-inside: |
-          $CTX, $SPAN := otel.Tracer().Start(...)
-          ...
-          defer $SPAN.End()
-
-  # Returning an error without recording it leaves the span green while the
-  # caller sees a failure — the most misleading state a trace can be in.
-  - id: agora-handler-error-must-report
-    languages: [go]
-    severity: ERROR
-    message: >-
-      This error is returned without `otel.ReportError($SPAN, ...)`, so the span
-      is recorded as successful while the caller sees a failure.
-    paths:
-      include:
-        - "internal/handlers/"
-      exclude:
-        - "*_test.go"
-        - "internal/handlers/protogen/"
-        - "internal/handlers/mocks/"
-    patterns:
-      - pattern-inside: |
-          $CTX, $SPAN := otel.Tracer().Start(...)
-          ...
-      - pattern: |
-          if $ERR != nil {
-            ...
-            return ..., status.Error(...)
-          }
-      - pattern-not: |
-          if $ERR != nil {
-            ...
-            otel.ReportError($SPAN, ...)
-            ...
           }
