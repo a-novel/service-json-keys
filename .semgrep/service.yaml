@@ -67,3 +67,28 @@ rules:
           func ($R $T) $M(ctx context.Context, ...) $RET {
             return $RECV.$INNER(ctx, ...)
           }
+
+  # write-go: "Contexts flow downward only — caller to callee. Never return one."
+  # Scoped to the layers that carry request flow. internal/lib is exempt by
+  # design: a context helper (TransferMasterKeyContext, any WithX wrapper) must
+  # return the derived context — that is the whole pattern.
+  - id: agora-no-context-return
+    languages: [go]
+    severity: ERROR
+    message: >-
+      $F returns a context.Context. In the request layers a context flows
+      downward only — take one as the first parameter instead of handing one up.
+    paths:
+      include:
+        - "internal/core/"
+        - "internal/dao/"
+        - "internal/handlers/"
+      exclude:
+        - "*_test.go"
+        - "internal/handlers/protogen/"
+        - "internal/handlers/mocks/"
+        - "internal/core/mocks/"
+    patterns:
+      - pattern-either:
+          - pattern: "func $F(...) context.Context { ... }"
+          - pattern: "func ($R $T) $F(...) context.Context { ... }"

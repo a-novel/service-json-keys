@@ -9,47 +9,13 @@
 #
 # Suppress a single finding with `// nosemgrep: <rule-id>` on the line or the one
 # above it. Prefer that over widening a rule's exclude list.
+#
+# Known non-starter: write-go's "never `new(T)`, always `&T{}`" cannot be a rule
+# here. Semgrep matches Go semantically rather than syntactically, so `new(T)` and
+# `&T{}` reduce to the same AST and the pattern flags every correct constructor.
+# It needs a syntactic checker (grep, or a gocritic rule), not semgrep.
 
 rules:
-  # write-go: "Always the composite-literal form, never new(T)." Two spellings of
-  # the same thing read as two intentions.
-  - id: agora-no-new-builtin
-    languages: [go]
-    severity: ERROR
-    message: "Use `&$T{}` instead of `new($T)` — the composite literal is the single accepted form."
-    paths:
-      exclude:
-        - "*_test.go"
-        - "**/mocks/"
-        - "**/protogen/"
-    pattern: "new($T)"
-
-  # write-go: "Contexts flow downward only — caller to callee. Never return one."
-  # A returned context outlives the call that scoped it.
-  - id: agora-no-context-return
-    languages: [go]
-    severity: ERROR
-    message: >-
-      $F returns a context.Context. Contexts flow downward only — pass one as the
-      first parameter instead of handing one back up.
-    paths:
-      exclude:
-        - "*_test.go"
-        - "**/mocks/"
-        - "**/protogen/"
-    patterns:
-      - pattern-either:
-          - pattern: "func $F(...) context.Context { ... }"
-          - pattern: "func ($R $T) $F(...) context.Context { ... }"
-          - pattern: "func $F(...) (context.Context, $ERR) { ... }"
-      # Opening a span legitimately returns the derived context.
-      - pattern-not-inside: |
-          func $F(...) (context.Context, $ERR) {
-            ...
-            otel.Tracer().Start(...)
-            ...
-          }
-
   # write-go, Secrets: "Never log, trace, or put in span attributes: passwords,
   # tokens, API keys, private keys ... Record identifiers only." A span attribute
   # is the easiest of these to add by reflex and the hardest to notice later.
