@@ -35,6 +35,10 @@ run-name: "🚂 release train epic:#${{ inputs.epic_number }} requested by @${{ 
 
 jobs:
   release-train:
+    # Matches the called workflow's own job permissions; the App token carries
+    # everything else.
+    permissions:
+      contents: read
     uses: a-novel-kit/workflows/.github/workflows/release-train-run.yaml@v1.25.1
     with:
       client_id: ${{ vars.AGENT_BOT_CLIENT_ID }}

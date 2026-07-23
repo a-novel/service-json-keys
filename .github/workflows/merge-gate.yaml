@@ -31,6 +31,10 @@ on:
 
 jobs:
   merge-gate:
+    # The caller sets the ceiling for the reusable workflow, which mints its own
+    # App token and declares `permissions: {}` on every job. Granting nothing
+    # here is what stops the repository default leaking through.
+    permissions: {}
     uses: a-novel-kit/workflows/.github/workflows/merge-gate-run.yaml@v1.25.1
     with:
       client_id: ${{ vars.AGENT_BOT_CLIENT_ID }}

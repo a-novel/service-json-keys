@@ -46,6 +46,11 @@ concurrency:
 
 jobs:
   hotfix:
+    # Matches the called workflow: it pushes the ephemeral branch and tag with
+    # the default token, and reads in-flight release runs to take the lock.
+    permissions:
+      contents: write
+      actions: read
     uses: a-novel-kit/workflows/.github/workflows/hotfix-run.yaml@v1.25.1
     with:
       line: ${{ inputs.line }}

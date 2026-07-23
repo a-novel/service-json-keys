@@ -48,6 +48,10 @@ run-name: "⏮ ROLLBACK epic:#${{ inputs.epic_number }} requested by @${{ github
 
 jobs:
   rollback:
+    # Matches the called workflow's own job permissions; the App token carries
+    # everything else.
+    permissions:
+      contents: read
     uses: a-novel-kit/workflows/.github/workflows/epic-rollback-run.yaml@v1.25.1
     with:
       epic_number: ${{ inputs.epic_number }}
