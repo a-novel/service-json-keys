@@ -28,7 +28,7 @@ linters:
     - copyloopvar
     #    - cyclop
     - decorder
-    #    - depguard
+    - depguard
     - dogsled
     #    - dupl
     - dupword
@@ -135,6 +135,50 @@ linters:
         rules:
           json: goCamel
           yaml: goCamel
+
+    # write-go's layer-relative rule: every layer holding a span records every
+    # error it sees. Only `end` is on by default; the other two are the rule.
+    spancheck:
+      checks:
+        - end
+        - record-error
+        - set-status
+      # golib wraps the two calls spancheck looks for: ReportError does
+      # RecordError + SetStatus(Error), and the ReportSuccess pair closes the
+      # happy path. Without these it flags every correctly-instrumented return.
+      ignore-check-signatures:
+        - "otel.ReportError"
+        - "otel.ReportSuccess"
+        - "otel.ReportSuccessNoContent"
+
+    # Layer import direction, one-way and strict (write-go-service):
+    #   config, lib -> nothing internal
+    #   dao         -> config, lib
+    #   core        -> config, lib, dao
+    #   handlers    -> config, lib, core
+    # Handlers never reach dao; core never reaches handlers; proto-generated
+    # types never enter core or dao — handlers own the proto<->core mapping.
+    depguard:
+      rules:
+        dao:
+          files: ["**/internal/dao/**"]
+          deny:
+            - pkg: "github.com/a-novel/service-json-keys/v2/internal/core"
+              desc: dao is below core; the interface belongs to the consumer
+            - pkg: "github.com/a-novel/service-json-keys/v2/internal/handlers"
+              desc: dao is below handlers
+        core:
+          files: ["**/internal/core/**"]
+          deny:
+            - pkg: "github.com/a-novel/service-json-keys/v2/internal/handlers"
+              desc: core is below handlers
+            - pkg: "github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
+              desc: proto types never enter core; handlers own the mapping
+        handlers:
+          files: ["**/internal/handlers/**"]
+          deny:
+            - pkg: "github.com/a-novel/service-json-keys/v2/internal/dao"
+              desc: handlers reach dao only through a core service
 
   exclusions:
     paths:
