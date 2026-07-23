@@ -114,15 +114,19 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    container:
-      image: ghcr.io/zizmorcore/zizmor:1.28.0
     steps:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
+      # Run the image as a step, not as `container:`. The zizmor image is
+      # minimal and has no libstdc++, which the Node runtime GitHub injects into
+      # a container job needs — actions/checkout cannot start there.
       - name: zizmor
         shell: bash
-        run: zizmor --offline --config .github/zizmor.yml .github/workflows
+        run: |
+          set -euo pipefail
+          docker run --rm -v "$PWD:/src:ro" ghcr.io/zizmorcore/zizmor:1.28.0 \
+            --offline --config /src/.github/zizmor.yml /src/.github/workflows
 
   test-go:
     needs: [lint-go, build-database]
