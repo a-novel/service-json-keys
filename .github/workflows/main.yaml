@@ -108,6 +108,22 @@ jobs:
           set -euo pipefail
           gitleaks dir . --config .gitleaks.toml --redact --exit-code 1 --verbose
 
+  # Replaces CodeQL's `actions` analysis: zizmor's `excessive-permissions` is
+  # the class CodeQL reported as `actions/missing-workflow-permissions`.
+  lint-workflows:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    container:
+      image: ghcr.io/zizmorcore/zizmor:1.28.0
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: zizmor
+        shell: bash
+        run: zizmor --offline --config .github/zizmor.yml .github/workflows
+
   test-go:
     needs: [lint-go, build-database]
     runs-on: ubuntu-latest

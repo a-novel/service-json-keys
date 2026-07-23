@@ -1,0 +1,18 @@
+# Config for the `lint-workflows` job in main.yaml.
+
+rules:
+  unpinned-uses:
+    config:
+      policies:
+        # Tag pins are deliberate: Renovate moves the whole a-novel-kit/workflows
+        # reference set as one grouped update, and a repo must sit at a single
+        # workflows version. Per-action hash pins break that grouping.
+        # `ref-pin` still fails a genuinely floating `@master`.
+        "*": ref-pin
+
+  cache-poisoning:
+    ignore:
+      # Needs a lower-trust branch to write a cache a release run then reads.
+      # GitHub scopes cache writes so a PR branch cannot reach the default
+      # branch's scope, and releases are cut from release.yaml. Confidence: Low.
+      - main.yaml
