@@ -14,6 +14,8 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: actions/setup-go@v7
         with:
           go-version-file: "go.mod"
@@ -38,6 +40,8 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: bufbuild/buf-action@v1
 
   lint-node:
@@ -59,12 +63,12 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: a-novel-kit/workflows/generic-actions/lint-dockerfile@v1.25.1
 
-  # Structural conventions golangci-lint cannot express (a call that must be
-  # present, a pairing that must hold). Rules are local files only: no registry
-  # fetch, no telemetry, no network — so this gate cannot be blocked by a
-  # third-party service being slow or down.
+  # Structural conventions golangci-lint cannot express: a call that must be
+  # present, a pairing that must hold.
   lint-semgrep:
     runs-on: ubuntu-latest
     permissions:
@@ -73,19 +77,22 @@ jobs:
       image: semgrep/semgrep:1.171.0
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: semgrep
         shell: bash
         run: semgrep --config=.semgrep/rules.yaml --error --metrics=off
 
-  # Secret scanning. `gitleaks dir` scans the working tree, which is what a PR
-  # gate needs: fast, offline and deterministic. History sweeps belong to the
-  # scheduled job, not to the merge path.
+  # Working tree only — fast and deterministic. Scanning history needs the
+  # network and belongs to scan-secrets-sweep, off the merge path.
   scan-secrets:
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: install gitleaks
         shell: bash
         env:
@@ -130,6 +137,8 @@ jobs:
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/run-migrations
       # The rotation job was built by CI and never run, so nothing exercised its
       # wiring: the config it loads, the database context it seeds, the services
@@ -190,6 +199,8 @@ jobs:
       GRPC_URL: "localhost:8080"
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: a-novel-kit/workflows/go-actions/test-go@v1.25.1
         id: test
         with:
@@ -340,6 +351,8 @@ jobs:
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/run-migrations
       - uses: a-novel-kit/workflows/build-actions/docker-job@v1.25.1
         with:
@@ -377,6 +390,8 @@ jobs:
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/run-migrations
       - uses: a-novel-kit/workflows/build-actions/docker@v1.25.1
         with:
@@ -435,6 +450,8 @@ jobs:
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/run-migrations
       - uses: a-novel-kit/workflows/build-actions/docker@v1.25.1
         with:
@@ -505,6 +522,8 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - run: |
           mkdir _site
           mv openapi.html _site/index.html
