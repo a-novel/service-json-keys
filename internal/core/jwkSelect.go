@@ -63,7 +63,7 @@ func (service *JwkSelect) Exec(ctx context.Context, request *JwkSelectRequest) (
 	})
 	if err != nil {
 		if errors.Is(err, dao.ErrJwkSelectNotFound) {
-			return nil, ErrJwkNotFound
+			return nil, otel.ReportError(span, ErrJwkNotFound)
 		}
 
 		return nil, otel.ReportError(span, fmt.Errorf("select key: %w", err))

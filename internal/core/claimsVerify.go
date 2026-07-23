@@ -48,7 +48,7 @@ func (service *ClaimsVerify[Out]) Exec(ctx context.Context, request *ClaimsVerif
 
 	keyConfig, ok := service.keysConfig[request.Usage]
 	if !ok {
-		return nil, fmt.Errorf("%w: %s", ErrConfigNotFound, request.Usage)
+		return nil, otel.ReportError(span, fmt.Errorf("%w: %s", ErrConfigNotFound, request.Usage))
 	}
 
 	var claims Out
