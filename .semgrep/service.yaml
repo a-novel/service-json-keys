@@ -1,6 +1,12 @@
 # Conventions specific to the clean-architecture SERVICES (`cmd/` +
-# `internal/{config,lib,dao,core,handlers,models}`). Rules that hold for every Go
-# repo — including golib, jwt and the stack CLI — live in generic.yaml.
+# `internal/{config,lib,dao,core,handlers,models}`).
+#
+# There is no companion generic ruleset. Every rule that survived the audit turned
+# out to be service-shaped: tracing is a service concern (a library repo emits no
+# spans — golib only provides the helpers), and the conventions that do hold
+# everywhere are already covered by golangci-lint. Libraries get the linters and
+# nothing here. If a genuinely repo-shape-agnostic rule ever appears, it earns its
+# own file then, rather than an empty one kept warm now.
 #
 # What is deliberately NOT here, because golangci-lint already owns it:
 #   - `defer span.End()`          -> spancheck (on by default)
@@ -172,3 +178,23 @@ rules:
       - metavariable-regex:
           metavariable: $PARAM
           regex: ^[^*]
+
+  # write-go, Secrets: "Never log, trace, or put in span attributes: passwords,
+  # tokens, API keys, private keys ... Record identifiers only." A span attribute
+  # is the easiest of these to add by reflex and the hardest to notice later.
+  - id: agora-no-secret-in-span-attribute
+    languages: [go]
+    severity: ERROR
+    message: >-
+      Span attribute "$KEY" names credential material. Traces are retained and
+      widely readable — record an identifier (`user.id`, `key.id`) instead.
+    paths:
+      exclude:
+        - "*_test.go"
+    patterns:
+      - pattern-either:
+          - pattern: attribute.String($KEY, ...)
+          - pattern: attribute.StringSlice($KEY, ...)
+      - metavariable-regex:
+          metavariable: $KEY
+          regex: (?i).*(password|passwd|secret|token|apikey|api_key|privatekey|private_key|credential|ciphertext|signature|bearer).*

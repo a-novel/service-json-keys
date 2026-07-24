@@ -81,10 +81,7 @@ jobs:
           persist-credentials: false
       - name: semgrep
         shell: bash
-        # generic.yaml holds what applies to every Go repo in both orgs;
-        # service.yaml adds the clean-architecture rules. Only the second is
-        # repo-shape-specific, which is what makes the first extractable as-is.
-        run: semgrep --config=.semgrep/generic.yaml --config=.semgrep/service.yaml --error --metrics=off
+        run: semgrep --config=.semgrep/service.yaml --error --metrics=off
 
   # Working tree only — fast and deterministic. Scanning history needs the
   # network and belongs to scan-secrets-sweep, off the merge path.
