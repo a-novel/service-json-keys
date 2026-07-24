@@ -67,9 +67,10 @@ linters:
     #    - gosmopolitan
     - govet
     - grouper
-    #    - iface
-    - importas
+    #    - importas
     - inamedparam
+    - interfacebloat
+    - ireturn
     - ineffassign
     #    - interfacebloat
     - intrange
@@ -101,6 +102,7 @@ linters:
     #    - promlinter
     - protogetter
     - reassign
+    - revive
     - recvcheck
     #    - revive
     - rowserrcheck
@@ -130,6 +132,21 @@ linters:
     - zerologlint
 
   settings:
+    revive:
+      rules:
+        # write-go: multi-word file names are camelCase, never snake_case. The
+        # layer prefixes (pg.*, rest.*, grpc.*, *.config.go) are dot-separated,
+        # so a dot is legal between segments; an underscore inside one is not.
+        # Which prefixes a layer allows is a judgement call, deliberately left
+        # to review rather than encoded here.
+        - name: filename-format
+          arguments: ['^[a-z][a-zA-Z0-9]*(\.[a-z][a-zA-Z0-9]*)*(_test)?\.go$']
+
+    # write-go-service: "One method per interface, named Exec." The dependency
+    # interfaces are single-method by construction; this bounds the drift.
+    interfacebloat:
+      max: 3
+
     tagliatelle:
       case:
         rules:
@@ -185,6 +202,14 @@ linters:
       - mocks
       - protogen
     rules:
+      # pkg/go is the published client facade, not a layer boundary: its
+      # interface is broad on purpose, and write-go names it as the documented
+      # exception to "return the concrete type" ("a pkg/go client behind an
+      # interface").
+      - path: pkg/go/
+        linters:
+          - interfacebloat
+          - ireturn
       - path: (.+)_test.go
         linters:
           - forcetypeassert
