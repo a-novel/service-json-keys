@@ -14,6 +14,8 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: actions/setup-go@v7
         with:
           go-version-file: "go.mod"
@@ -38,6 +40,8 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: bufbuild/buf-action@v1
 
   lint-node:
@@ -59,6 +63,8 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: a-novel-kit/workflows/generic-actions/lint-dockerfile@v1.26.1
         with:
           # renovate: datasource=github-releases depName=hadolint/hadolint
@@ -139,6 +145,8 @@ jobs:
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/run-migrations
       # The rotation job was built by CI and never run, so nothing exercised its
       # wiring: the config it loads, the database context it seeds, the services
@@ -199,6 +207,8 @@ jobs:
       GRPC_URL: "localhost:8080"
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: a-novel-kit/workflows/go-actions/test-go@v1.26.1
         id: test
         with:
@@ -349,6 +359,8 @@ jobs:
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/run-migrations
       - uses: a-novel-kit/workflows/build-actions/docker-job@v1.26.1
         with:
@@ -386,6 +398,8 @@ jobs:
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/run-migrations
       - uses: a-novel-kit/workflows/build-actions/docker@v1.26.1
         with:
@@ -444,6 +458,8 @@ jobs:
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/run-migrations
       - uses: a-novel-kit/workflows/build-actions/docker@v1.26.1
         with:
@@ -514,6 +530,8 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - run: |
           mkdir _site
           mv openapi.html _site/index.html
