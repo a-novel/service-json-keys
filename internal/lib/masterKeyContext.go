@@ -54,6 +54,7 @@ func NewMasterKeyContext(ctx context.Context, masterKeyRaw string) (context.Cont
 func MasterKeyContext(ctx context.Context) ([MasterKeyLength]byte, error) {
 	ctx, span := otel.Tracer().Start(ctx, "lib.MasterKeyContext")
 	defer span.End()
+
 	masterKey, ok := ctx.Value(masterKeyContext{}).([MasterKeyLength]byte)
 
 	if !ok {
