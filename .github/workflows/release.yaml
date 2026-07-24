@@ -47,7 +47,7 @@ jobs:
       tag: ${{ steps.core.outputs.tag }}
     steps:
       - id: core
-        uses: a-novel-kit/workflows/publish-actions/release-core@v1.26.1
+        uses: a-novel-kit/workflows/publish-actions/release-core@v1.26.2
         with:
           # renovate: datasource=go depName=github.com/a-novel-kit/stack/cli
           cli_version: "1.7.5"
@@ -72,7 +72,7 @@ jobs:
       POSTGRES_HOST_AUTH_METHOD: scram-sha-256
       POSTGRES_INITDB_ARGS: --auth=scram-sha-256
     steps:
-      - uses: a-novel-kit/workflows/build-actions/docker@v1.26.1
+      - uses: a-novel-kit/workflows/build-actions/docker@v1.26.2
         with:
           file: builds/database.Dockerfile
           image_name: ${{ github.repository }}/database
@@ -114,7 +114,7 @@ jobs:
     env:
       POSTGRES_DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
     steps:
-      - uses: a-novel-kit/workflows/build-actions/docker-job@v1.26.1
+      - uses: a-novel-kit/workflows/build-actions/docker-job@v1.26.2
         with:
           file: builds/migrations.Dockerfile
           image_name: ${{ github.repository }}/jobs/migrations
@@ -155,7 +155,7 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/run-migrations
-      - uses: a-novel-kit/workflows/build-actions/docker-job@v1.26.1
+      - uses: a-novel-kit/workflows/build-actions/docker-job@v1.26.2
         with:
           file: builds/rotate-keys.Dockerfile
           image_name: ${{ github.repository }}/jobs/rotatekeys
@@ -196,7 +196,7 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/run-migrations
-      - uses: a-novel-kit/workflows/build-actions/docker@v1.26.1
+      - uses: a-novel-kit/workflows/build-actions/docker@v1.26.2
         with:
           file: builds/grpc.Dockerfile
           image_name: ${{ github.repository }}/grpc
@@ -237,7 +237,7 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/run-migrations
-      - uses: a-novel-kit/workflows/build-actions/docker@v1.26.1
+      - uses: a-novel-kit/workflows/build-actions/docker@v1.26.2
         with:
           file: builds/standalone.grpc.Dockerfile
           image_name: ${{ github.repository }}/standalone-grpc
@@ -278,7 +278,7 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/run-migrations
-      - uses: a-novel-kit/workflows/build-actions/docker@v1.26.1
+      - uses: a-novel-kit/workflows/build-actions/docker@v1.26.2
         with:
           file: builds/rest.Dockerfile
           image_name: ${{ github.repository }}/rest
@@ -319,7 +319,7 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/run-migrations
-      - uses: a-novel-kit/workflows/build-actions/docker@v1.26.1
+      - uses: a-novel-kit/workflows/build-actions/docker@v1.26.2
         with:
           file: builds/standalone.rest.Dockerfile
           image_name: ${{ github.repository }}/standalone-rest
@@ -336,7 +336,7 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: a-novel-kit/workflows/publish-actions/npm@v1.26.1
+      - uses: a-novel-kit/workflows/publish-actions/npm@v1.26.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           app_private_key: ${{ secrets.PUBLISH_BOT_PRIVATE_KEY }}
@@ -360,7 +360,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: a-novel-kit/workflows/generic-actions/archive-board-items@v1.26.1
+      - uses: a-novel-kit/workflows/generic-actions/archive-board-items@v1.26.2
         with:
           client_id: ${{ vars.AGENT_BOT_CLIENT_ID }}
           app_private_key: ${{ secrets.AGENT_BOT_PRIVATE_KEY }}
