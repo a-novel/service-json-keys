@@ -16,8 +16,13 @@
 # Adding a second checker for any of those buys nothing and doubles the places a
 # false positive must be silenced.
 #
-# Go patterns must enumerate return arity — Semgrep has no wildcard for it, so
-# every signature match is repeated for no-return, one return and two returns.
+# Two Semgrep limits shape what can live here:
+#   - Go patterns must enumerate return arity; there is no wildcard for it, so
+#     every signature match is repeated for no-return, one return, two returns.
+#   - Test files are skipped by Semgrep's built-in .semgrepignore, so NO rule can
+#     target *_test.go without replacing that default wholesale. Test conventions
+#     (sub-test naming, mock.Anything for ctx, AssertExpectations) therefore stay
+#     with review and the write-go-tests skill.
 
 rules:
   # Every layer that carries a context is traced: core, dao, handlers and lib all
@@ -222,24 +227,6 @@ rules:
       - metavariable-regex:
           metavariable: $KEY
           regex: (?i).*(password|passwd|secret|token|apikey|api_key|privatekey|private_key|credential|ciphertext|signature|bearer).*
-
-  # write-go-tests: "Never use spaces in sub-test names — Go test filtering uses
-  # `/` and spaces break it." A space makes the sub-test unreachable with
-  # `-run`, which is only discovered when someone needs to isolate it.
-  - id: agora-subtest-name-no-space
-    languages: [go]
-    severity: ERROR
-    message: >-
-      Sub-test name $NAME contains a space, so `go test -run` cannot address it.
-      Use Success, Success/<Variant> or Error/<What>.
-    paths:
-      include:
-        - "**/*_test.go"
-    patterns:
-      - pattern: $T.Run($NAME, ...)
-      - metavariable-regex:
-          metavariable: $NAME
-          regex: '"[^"]*\s'
 
   # write-go-service: service and DAO types are "stateless after construction —
   # every field is set by New* and never mutated, so every type is safe for
