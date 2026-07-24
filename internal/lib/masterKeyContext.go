@@ -52,17 +52,24 @@ func NewMasterKeyContext(ctx context.Context, masterKeyRaw string) (context.Cont
 // MasterKeyContext returns the master key stored in the context.
 // If no master key is present, [ErrInvalidMasterKey] is returned.
 func MasterKeyContext(ctx context.Context) ([MasterKeyLength]byte, error) {
+	// The context is not propagated onward — nothing here calls out — so the
+	// derived one is dropped. The span still earns its place: a missing master
+	// key fails every operation downstream, and without this the failure has no
+	// record of where it started.
+	_, span := otel.Tracer().Start(ctx, "lib.MasterKeyContext")
+	defer span.End()
+
 	masterKey, ok := ctx.Value(masterKeyContext{}).([MasterKeyLength]byte)
 
 	if !ok {
-		return [MasterKeyLength]byte{}, fmt.Errorf(
+		return [MasterKeyLength]byte{}, otel.ReportError(span, fmt.Errorf(
 			"extract master key: %w: got type %T, expected %T",
 			ErrInvalidMasterKey,
 			ctx.Value(masterKeyContext{}), [MasterKeyLength]byte{},
-		)
+		))
 	}
 
-	return masterKey, nil
+	return otel.ReportSuccess(span, masterKey), nil
 }
 
 // TransferMasterKeyContext copies the master key held by baseCtx onto a context derived from
