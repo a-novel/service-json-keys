@@ -52,6 +52,9 @@ func NewMasterKeyContext(ctx context.Context, masterKeyRaw string) (context.Cont
 // MasterKeyContext returns the master key stored in the context.
 // If no master key is present, [ErrInvalidMasterKey] is returned.
 func MasterKeyContext(ctx context.Context) ([MasterKeyLength]byte, error) {
+	ctx, span := otel.Tracer().Start(ctx, "lib.MasterKeyContext")
+	defer span.End()
+
 	masterKey, ok := ctx.Value(masterKeyContext{}).([MasterKeyLength]byte)
 
 	if !ok {
