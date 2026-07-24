@@ -92,3 +92,83 @@ rules:
       - pattern-either:
           - pattern: "func $F(...) context.Context { ... }"
           - pattern: "func ($R $T) $F(...) context.Context { ... }"
+
+  # write-go-service: "One method per interface, named Exec." A dependency
+  # interface is the contract the consumer owns; a differently-named method means
+  # the boundary was drawn by hand instead of by the pattern.
+  #
+  # The compliant case is excluded with pattern-not rather than a negated regex:
+  # semgrep's regex engine has no lookahead. Return arity is enumerated because
+  # Go patterns have no wildcard for it.
+  - id: agora-dep-interface-method-must-be-exec
+    languages: [go]
+    severity: ERROR
+    message: >-
+      Dependency interface $NAME declares $METHOD; layer contracts expose exactly
+      one method, named Exec.
+    paths:
+      include:
+        - "internal/core/"
+        - "internal/handlers/"
+      exclude:
+        - "*_test.go"
+        - "internal/handlers/protogen/"
+        - "internal/handlers/mocks/"
+        - "internal/core/mocks/"
+    patterns:
+      - pattern-either:
+          - pattern: |
+              type $NAME interface {
+                $METHOD(ctx context.Context, ...) ($RET1, $RET2)
+              }
+          - pattern: |
+              type $NAME interface {
+                $METHOD(ctx context.Context, ...) $RET
+              }
+      - metavariable-regex:
+          metavariable: $NAME
+          regex: .*(Dao|Service[A-Za-z]*)$
+      - pattern-not: |
+          type $NAME interface {
+            Exec(ctx context.Context, ...) ($RET1, $RET2)
+          }
+      - pattern-not: |
+          type $NAME interface {
+            Exec(ctx context.Context, ...) $RET
+          }
+
+  # write-go-service: the Exec signature is
+  # `(ctx context.Context, request *XxxRequest)` so the request can gain a field
+  # without breaking callers. This catches the non-pointer case; a pointer to a
+  # badly-named struct needs the lookahead semgrep does not have.
+  - id: agora-exec-takes-request-pointer
+    languages: [go]
+    severity: ERROR
+    message: >-
+      Exec on $NAME takes $PARAM by value; it must take a
+      *<Entity><Operation>Request so the signature can gain a field later.
+    paths:
+      include:
+        - "internal/core/"
+        - "internal/handlers/"
+      exclude:
+        - "*_test.go"
+        - "internal/handlers/protogen/"
+        - "internal/handlers/mocks/"
+        - "internal/core/mocks/"
+    patterns:
+      - pattern-either:
+          - pattern: |
+              type $NAME interface {
+                Exec(ctx context.Context, $ARG $PARAM) ($RET1, $RET2)
+              }
+          - pattern: |
+              type $NAME interface {
+                Exec(ctx context.Context, $ARG $PARAM) $RET
+              }
+      - metavariable-regex:
+          metavariable: $NAME
+          regex: .*(Dao|Service[A-Za-z]*)$
+      - metavariable-regex:
+          metavariable: $PARAM
+          regex: ^[^*]

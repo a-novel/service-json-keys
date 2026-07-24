@@ -111,6 +111,21 @@ jobs:
           set -euo pipefail
           gitleaks dir . --config .gitleaks.toml --redact --exit-code 1 --verbose
 
+  # Filename and layout conventions. These cannot be semgrep rules: its `paths`
+  # only filters which files a pattern runs against, so it can never express
+  # "flag a file whose NAME does not match a pattern".
+  lint-conventions:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: check conventions
+        shell: bash
+        run: ./scripts/check-conventions.sh
+
   # Replaces CodeQL's `actions` analysis: zizmor's `excessive-permissions` is
   # the class CodeQL reported as `actions/missing-workflow-permissions`.
   lint-workflows:
