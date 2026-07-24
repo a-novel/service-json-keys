@@ -222,3 +222,64 @@ rules:
       - metavariable-regex:
           metavariable: $KEY
           regex: (?i).*(password|passwd|secret|token|apikey|api_key|privatekey|private_key|credential|ciphertext|signature|bearer).*
+
+  # write-go-tests: "Never use spaces in sub-test names — Go test filtering uses
+  # `/` and spaces break it." A space makes the sub-test unreachable with
+  # `-run`, which is only discovered when someone needs to isolate it.
+  - id: agora-subtest-name-no-space
+    languages: [go]
+    severity: ERROR
+    message: >-
+      Sub-test name $NAME contains a space, so `go test -run` cannot address it.
+      Use Success, Success/<Variant> or Error/<What>.
+    paths:
+      include:
+        - "**/*_test.go"
+    patterns:
+      - pattern: $T.Run($NAME, ...)
+      - metavariable-regex:
+          metavariable: $NAME
+          regex: '"[^"]*\s'
+
+  # write-go-service: service and DAO types are "stateless after construction —
+  # every field is set by New* and never mutated, so every type is safe for
+  # concurrent use without synchronization. This is a requirement."
+  #
+  # Constructors are plain functions, not methods, so matching the receiver form
+  # targets exactly the mutation this forbids.
+  - id: agora-no-receiver-mutation
+    languages: [go]
+    severity: ERROR
+    message: >-
+      $M assigns to $R.$FIELD after construction. These types are shared across
+      concurrent requests unsynchronised; every field must be set by New$T only.
+    paths:
+      include:
+        - "internal/core/"
+        - "internal/dao/"
+        - "internal/handlers/"
+      exclude:
+        - "*_test.go"
+        - "internal/handlers/protogen/"
+        - "internal/handlers/mocks/"
+        - "internal/core/mocks/"
+    patterns:
+      - pattern-either:
+          - pattern: |
+              func ($R $T) $M(...) {
+                ...
+                $R.$FIELD = $VAL
+                ...
+              }
+          - pattern: |
+              func ($R $T) $M(...) $RET {
+                ...
+                $R.$FIELD = $VAL
+                ...
+              }
+          - pattern: |
+              func ($R $T) $M(...) ($RET1, $RET2) {
+                ...
+                $R.$FIELD = $VAL
+                ...
+              }

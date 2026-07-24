@@ -16,6 +16,17 @@ formatters:
 
 linters:
   default: none
+  # Evaluated and deliberately NOT enabled — each fights a convention this repo
+  # holds, so leaving them off is the decision, not an oversight:
+  #   gochecknoglobals  50 hits, all sentinel errors. write-go REQUIRES
+  #                     `var ErrX = errors.New(...)` at package scope.
+  #   modernize         its `newexpr` rewrites `lo.ToPtr(x)` to `new(x)`, and
+  #                     write-go bans `new(T)` outright in favour of `&T{}`.
+  #   iface             its identical-interface check calls a REST and a gRPC
+  #                     contract redundant; they are separate on purpose,
+  #                     because interfaces are declared by the consumer.
+  #   wrapcheck         12 hits, most of them `otel.ReportError` returning the
+  #                     error it recorded. Needs ignoreSigs tuning first.
   enable: # https://golangci-lint.run/docs/configuration/file/
     #    - arangolint
     - asasalint
@@ -51,12 +62,14 @@ linters:
     - gocheckcompilerdirectives
     #    - gochecknoglobals
     #    - gochecknoinits
+    - gochecknoinits
     - gochecksumtype
     - gocognit
     - goconst
     - gocritic
     - gocyclo
     - godoclint
+    - godox
     - godot
     #    - godox
     - goheader
@@ -87,6 +100,7 @@ linters:
     - nakedret
     #    - nestif
     - nilerr
+    - nilnil
     - nilnesserr
     #    - nilnil
     - nlreturn
