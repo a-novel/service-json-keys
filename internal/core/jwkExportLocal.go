@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 
+	"github.com/a-novel-kit/golib/otel"
 	"github.com/a-novel-kit/jwt/v2/jwa"
 )
 
@@ -25,6 +26,8 @@ func NewJwkExportLocal(service JwkExportLocalSource) *JwkExportLocal {
 }
 
 func (source *JwkExportLocal) SearchKeys(ctx context.Context, usage string) ([]*jwa.JWK, error) {
+	ctx, span := otel.Tracer().Start(ctx, "core.JwkExportLocal.SearchKeys")
+	defer span.End()
 	return source.service.Exec(ctx, &JwkSearchRequest{
 		Usage:   usage,
 		Private: true,
