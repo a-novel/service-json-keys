@@ -1,3 +1,4 @@
+migration-history	sha256:845edbd13217d43939d9f6fa559059c5b9958be86034a26502d3446c1d321a48
 column	active_keys.created_at	timestamp(0) with time zone
 column	active_keys.deleted_at	timestamp(0) with time zone
 column	active_keys.deleted_comment	text
