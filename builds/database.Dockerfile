@@ -2,6 +2,8 @@
 # Run the migrations image separately after deployment to create the schema.
 FROM docker.io/library/postgres:18.4
 
+ENV POSTGRES_INITDB_ARGS=--auth=scram-sha-256
+
 ARG DEBIAN_FRONTEND=noninteractive
 
 # SQL script run on first container start to install PostgreSQL extensions.
