@@ -1,0 +1,30 @@
+column	active_keys.created_at	timestamp(0) with time zone
+column	active_keys.deleted_at	timestamp(0) with time zone
+column	active_keys.deleted_comment	text
+column	active_keys.expires_at	timestamp(0) with time zone
+column	active_keys.id	uuid
+column	active_keys.private_key	text
+column	active_keys.public_key	text
+column	active_keys.usage	text
+column	keys.created_at	timestamp(0) with time zone NOT NULL
+column	keys.deleted_at	timestamp(0) with time zone
+column	keys.deleted_comment	text
+column	keys.expires_at	timestamp(0) with time zone NOT NULL
+column	keys.id	uuid NOT NULL
+column	keys.private_key	text NOT NULL
+column	keys.public_key	text
+column	keys.usage	text NOT NULL
+comment	schema public	standard public schema
+constraint	keys.keys_created_at_not_null	NOT NULL created_at
+constraint	keys.keys_expires_at_not_null	NOT NULL expires_at
+constraint	keys.keys_id_not_null	NOT NULL id
+constraint	keys.keys_pkey	PRIMARY KEY (id)
+constraint	keys.keys_private_key_check	CHECK ((private_key <> ''::text))
+constraint	keys.keys_private_key_not_null	NOT NULL private_key
+constraint	keys.keys_usage_not_null	NOT NULL usage
+extension	plpgsql	1.0
+index	keys_pkey	CREATE UNIQUE INDEX keys_pkey ON public.keys USING btree (id)
+index	keys_usage_idx	CREATE INDEX keys_usage_idx ON public.keys USING btree (usage)
+relation	active_keys	v AS  SELECT id,\n    private_key,\n    public_key,\n    usage,\n    created_at,\n    expires_at,\n    deleted_at,\n    deleted_comment\n   FROM keys\n  WHERE expires_at > CURRENT_TIMESTAMP AND (deleted_at IS NULL OR deleted_at > CURRENT_TIMESTAMP);
+relation	keys	r
+schema	public	pg_database_owner=UC/pg_database_owner,=U/pg_database_owner
