@@ -20,7 +20,7 @@ const (
 )
 
 // RestHealthStatus is the JSON representation of a single dependency's health.
-// /healthcheck is public and unauthenticated, so the body carries the status alone:
+// /v2/healthcheck is public and unauthenticated, so the body carries the status alone:
 // raw error messages embed internal hostnames, ports and schema names. The underlying
 // error is recorded on the trace span for operators.
 type RestHealthStatus struct {

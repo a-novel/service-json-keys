@@ -30,14 +30,14 @@ tags:
     description: Endpoints for retrieving public JSON Web Keys used to verify signed tokens.
 
 paths:
-  /ping:
+  /v2/ping:
     get:
       operationId: ping
       summary: Ping the server.
       description: |
         A simple endpoint to check if the server is up and running. It always returns the same response.
 
-        This does not report on the server's dependencies; use the `/healthcheck` endpoint for that.
+        This does not report on the server's dependencies; use the `/v2/healthcheck` endpoint for that.
       tags: [health]
       security: []
       responses:
@@ -46,7 +46,7 @@ paths:
         default:
           $ref: "#/components/responses/internalError"
 
-  /healthcheck:
+  /v2/healthcheck:
     get:
       operationId: healthcheck
       summary: Health diagnosis of the server.
@@ -60,7 +60,7 @@ paths:
         default:
           $ref: "#/components/responses/internalError"
 
-  /jwks:
+  /v2/jwks:
     get:
       operationId: jwkList
       summary: List public JSON Web Keys.
@@ -77,7 +77,7 @@ paths:
         default:
           $ref: "#/components/responses/internalError"
 
-  /jwk:
+  /v2/jwk:
     get:
       operationId: jwkGet
       summary: Get a public JSON Web Key by ID.

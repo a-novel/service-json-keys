@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.2
 // - protoc             (unknown)
-// source: status.proto
+// source: anovel/jsonkeys/v2/status.proto
 
-package protogen
+package jsonkeysv2
 
 import (
 	context "context"
@@ -19,7 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	StatusService_Status_FullMethodName = "/StatusService/Status"
+	StatusService_Status_FullMethodName = "/anovel.jsonkeys.v2.StatusService/Status"
 )
 
 // StatusServiceClient is the client API for StatusService service.
@@ -114,7 +114,7 @@ func _StatusService_Status_Handler(srv interface{}, ctx context.Context, dec fun
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var StatusService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "StatusService",
+	ServiceName: "anovel.jsonkeys.v2.StatusService",
 	HandlerType: (*StatusServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -123,5 +123,5 @@ var StatusService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "status.proto",
+	Metadata: "anovel/jsonkeys/v2/status.proto",
 }

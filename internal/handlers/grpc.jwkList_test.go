@@ -15,7 +15,7 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/core"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
 	handlersmocks "github.com/a-novel/service-json-keys/v2/internal/handlers/mocks"
-	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
+	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/internal/handlers/protogen/anovel/jsonkeys/v2"
 )
 
 func TestGrpcJwkList(t *testing.T) {
@@ -31,17 +31,17 @@ func TestGrpcJwkList(t *testing.T) {
 	testCases := []struct {
 		name string
 
-		request *protogen.JwkListRequest
+		request *jsonkeysv2.JwkListRequest
 
 		serviceMock *serviceMock
 
-		expect       *protogen.JwkListResponse
+		expect       *jsonkeysv2.JwkListResponse
 		expectStatus codes.Code
 	}{
 		{
 			name: "Success",
 
-			request: &protogen.JwkListRequest{
+			request: &jsonkeysv2.JwkListRequest{
 				Usage: "test-usage",
 			},
 
@@ -61,8 +61,8 @@ func TestGrpcJwkList(t *testing.T) {
 			},
 
 			expectStatus: codes.OK,
-			expect: &protogen.JwkListResponse{
-				Keys: []*protogen.Jwk{
+			expect: &jsonkeysv2.JwkListResponse{
+				Keys: []*jsonkeysv2.Jwk{
 					{
 						Kty:     "test-kty",
 						Use:     "test-use",
@@ -77,7 +77,7 @@ func TestGrpcJwkList(t *testing.T) {
 		{
 			name: "Success/Empty",
 
-			request: &protogen.JwkListRequest{
+			request: &jsonkeysv2.JwkListRequest{
 				Usage: "test-usage",
 			},
 
@@ -86,14 +86,14 @@ func TestGrpcJwkList(t *testing.T) {
 			},
 
 			expectStatus: codes.OK,
-			expect: &protogen.JwkListResponse{
-				Keys: []*protogen.Jwk{},
+			expect: &jsonkeysv2.JwkListResponse{
+				Keys: []*jsonkeysv2.Jwk{},
 			},
 		},
 		{
 			name: "Error/Internal",
 
-			request: &protogen.JwkListRequest{
+			request: &jsonkeysv2.JwkListRequest{
 				Usage: "test-usage",
 			},
 

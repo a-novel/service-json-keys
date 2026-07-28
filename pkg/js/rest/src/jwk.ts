@@ -58,7 +58,7 @@ export async function jwkList(api: JsonKeysApi, usage?: string): Promise<Jwk[]> 
   const params = new URLSearchParams();
   if (usage) params.set("usage", usage);
   const query = params.toString();
-  return await api.fetch(`/jwks${query ? `?${query}` : ""}`, z.array(JwkSchema), {
+  return await api.fetch(`/v2/jwks${query ? `?${query}` : ""}`, z.array(JwkSchema), {
     method: "GET",
     headers: HTTP_HEADERS.JSON,
   });
@@ -76,5 +76,5 @@ export async function jwkList(api: JsonKeysApi, usage?: string): Promise<Jwk[]> 
 export async function jwkGet(api: JsonKeysApi, id: string): Promise<Jwk> {
   const params = new URLSearchParams();
   params.set("id", id);
-  return await api.fetch(`/jwk?${params.toString()}`, JwkSchema, { method: "GET", headers: HTTP_HEADERS.JSON });
+  return await api.fetch(`/v2/jwk?${params.toString()}`, JwkSchema, { method: "GET", headers: HTTP_HEADERS.JSON });
 }

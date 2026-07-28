@@ -11,7 +11,7 @@ import (
 
 	"github.com/a-novel/service-json-keys/v2/internal/config/configtest"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
-	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
+	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/internal/handlers/protogen/anovel/jsonkeys/v2"
 )
 
 func TestGrpcStatus(t *testing.T) {
@@ -22,16 +22,16 @@ func TestGrpcStatus(t *testing.T) {
 
 		skipPostgres bool
 
-		expect       *protogen.StatusResponse
+		expect       *jsonkeysv2.StatusResponse
 		expectStatus codes.Code
 	}{
 		{
 			name: "Success",
 
 			expectStatus: codes.OK,
-			expect: &protogen.StatusResponse{
-				Postgres: &protogen.DependencyHealth{
-					Status: protogen.DependencyStatus_DEPENDENCY_STATUS_UP,
+			expect: &jsonkeysv2.StatusResponse{
+				Postgres: &jsonkeysv2.DependencyHealth{
+					Status: jsonkeysv2.DependencyStatus_DEPENDENCY_STATUS_UP,
 				},
 			},
 		},
@@ -45,9 +45,9 @@ func TestGrpcStatus(t *testing.T) {
 			skipPostgres: true,
 
 			expectStatus: codes.OK,
-			expect: &protogen.StatusResponse{
-				Postgres: &protogen.DependencyHealth{
-					Status: protogen.DependencyStatus_DEPENDENCY_STATUS_DOWN,
+			expect: &jsonkeysv2.StatusResponse{
+				Postgres: &jsonkeysv2.DependencyHealth{
+					Status: jsonkeysv2.DependencyStatus_DEPENDENCY_STATUS_DOWN,
 				},
 			},
 		},
@@ -68,7 +68,7 @@ func TestGrpcStatus(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			res, err := handler.Status(ctx, new(protogen.StatusRequest))
+			res, err := handler.Status(ctx, new(jsonkeysv2.StatusRequest))
 			resSt, ok := status.FromError(err)
 			require.True(t, ok, resSt.Code().String())
 			require.Equal(

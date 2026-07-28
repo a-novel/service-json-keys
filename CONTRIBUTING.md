@@ -14,27 +14,27 @@ Once the service is up (`a-novel run start service-json-keys/grpc` and/or `.../r
 
 ```bash
 # REST: liveness
-curl http://localhost:${REST_PORT}/ping
+curl http://localhost:${REST_PORT}/v2/ping
 
 # REST: dependency check (Postgres ping)
-curl http://localhost:${REST_PORT}/healthcheck
+curl http://localhost:${REST_PORT}/v2/healthcheck
 
 # gRPC: dependency check
-grpcurl -plaintext localhost:${GRPC_PORT} StatusService/Status
+grpcurl -plaintext localhost:${GRPC_PORT} anovel.jsonkeys.v2.StatusService/Status
 ```
 
 ### Reading keys
 
 ```bash
 # REST: list active public keys for a usage
-curl "http://localhost:${REST_PORT}/jwks?usage=auth"
+curl "http://localhost:${REST_PORT}/v2/jwks?usage=auth"
 
 # REST: fetch a single public key by ID
-curl "http://localhost:${REST_PORT}/jwk?id=<key-uuid>"
+curl "http://localhost:${REST_PORT}/v2/jwk?id=<key-uuid>"
 
 # gRPC: same operations through the private API
-grpcurl -plaintext -d '{"usage":"auth"}' localhost:${GRPC_PORT} JwkListService/JwkList
-grpcurl -plaintext -d '{"id":"<key-uuid>"}' localhost:${GRPC_PORT} JwkGetService/JwkGet
+grpcurl -plaintext -d '{"usage":"auth"}' localhost:${GRPC_PORT} anovel.jsonkeys.v2.JwkListService/JwkList
+grpcurl -plaintext -d '{"id":"<key-uuid>"}' localhost:${GRPC_PORT} anovel.jsonkeys.v2.JwkGetService/JwkGet
 ```
 
 ### Signing claims (gRPC only)
@@ -45,7 +45,7 @@ Signing requires the master key (`APP_MASTER_KEY`) and is only exposed over the 
 grpcurl -plaintext \
   -d '{"usage":"auth","payload":{"@type":"type.googleapis.com/google.protobuf.Struct","value":{"userID":"user-1"}}}' \
   localhost:${GRPC_PORT} \
-  ClaimsSignService/ClaimsSign
+  anovel.jsonkeys.v2.ClaimsSignService/ClaimsSign
 ```
 
 ---
@@ -103,10 +103,10 @@ This job is **not optional** for a long-running deployment. Existing keys age ou
 
 ### APIs
 
-| API               | Audience                       | Operations                                                              | Spec                                                 |
-| ----------------- | ------------------------------ | ----------------------------------------------------------------------- | ---------------------------------------------------- |
-| gRPC (`cmd/grpc`) | Internal, private network only | `StatusService`, `JwkGetService`, `JwkListService`, `ClaimsSignService` | [`internal/models/proto/`](./internal/models/proto/) |
-| REST (`cmd/rest`) | Public, unauthenticated        | `/ping`, `/healthcheck`, `/jwks`, `/jwk`                                | [`openapi.yaml`](./openapi.yaml)                     |
+| API               | Audience                       | Operations                                           | Spec                                                                                       |
+| ----------------- | ------------------------------ | ---------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| gRPC (`cmd/grpc`) | Internal, private network only | `anovel.jsonkeys.v2` services                        | [`internal/models/proto/anovel/jsonkeys/v2/`](./internal/models/proto/anovel/jsonkeys/v2/) |
+| REST (`cmd/rest`) | Public, unauthenticated        | `/v2/ping`, `/v2/healthcheck`, `/v2/jwks`, `/v2/jwk` | [`openapi.yaml`](./openapi.yaml)                                                           |
 
 The REST server never exposes private keys or signing operations. The split is enforced structurally by registering the signing handler only inside [`cmd/grpc/main.go`](./cmd/grpc/main.go). The gRPC server itself implements no application-layer authentication — access control on that server is enforced entirely by deployment infrastructure (network policy, ingress, service mesh).
 

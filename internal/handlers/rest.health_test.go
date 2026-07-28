@@ -32,7 +32,7 @@ func TestRestHealth(t *testing.T) {
 		{
 			name: "Success",
 
-			request: httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/healthcheck", nil),
+			request: httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/v2/healthcheck", nil),
 
 			expectResponse: map[string]any{
 				"client:postgres": map[string]any{
@@ -48,7 +48,7 @@ func TestRestHealth(t *testing.T) {
 			// re-introduced "err") leaks into the public response shape.
 			name: "Success/Degraded",
 
-			request: httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/healthcheck", nil),
+			request: httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/v2/healthcheck", nil),
 
 			skipPostgres: true,
 

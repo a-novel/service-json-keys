@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.2
 // - protoc             (unknown)
-// source: jwk_list.proto
+// source: anovel/jsonkeys/v2/jwk_list.proto
 
-package protogen
+package jsonkeysv2
 
 import (
 	context "context"
@@ -19,7 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	JwkListService_JwkList_FullMethodName = "/JwkListService/JwkList"
+	JwkListService_JwkList_FullMethodName = "/anovel.jsonkeys.v2.JwkListService/JwkList"
 )
 
 // JwkListServiceClient is the client API for JwkListService service.
@@ -118,7 +118,7 @@ func _JwkListService_JwkList_Handler(srv interface{}, ctx context.Context, dec f
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var JwkListService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "JwkListService",
+	ServiceName: "anovel.jsonkeys.v2.JwkListService",
 	HandlerType: (*JwkListServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -127,5 +127,5 @@ var JwkListService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "jwk_list.proto",
+	Metadata: "anovel/jsonkeys/v2/jwk_list.proto",
 }

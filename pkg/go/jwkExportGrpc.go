@@ -7,7 +7,7 @@ import (
 
 	"github.com/a-novel-kit/jwt/v2/jwa"
 
-	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
+	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/internal/handlers/protogen/anovel/jsonkeys/v2"
 )
 
 // A jwkExportGrpc adapts a [BaseClient] to the key-source fetch interface used when initializing
@@ -26,7 +26,7 @@ func (api *jwkExportGrpc) SearchKeys(ctx context.Context, usage string) ([]*jwa.
 		return nil, err
 	}
 
-	keys := lo.Map(res.GetKeys(), func(item *protogen.Jwk, index int) *jwa.JWK {
+	keys := lo.Map(res.GetKeys(), func(item *jsonkeysv2.Jwk, index int) *jwa.JWK {
 		return &jwa.JWK{
 			JWKCommon: jwa.JWKCommon{
 				KTY: jwa.KTY(item.GetKty()),

@@ -2,9 +2,9 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        (unknown)
-// source: jwk_list.proto
+// source: anovel/jsonkeys/v2/jwk_list.proto
 
-package protogen
+package jsonkeysv2
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -32,7 +32,7 @@ type JwkListRequest struct {
 
 func (x *JwkListRequest) Reset() {
 	*x = JwkListRequest{}
-	mi := &file_jwk_list_proto_msgTypes[0]
+	mi := &file_anovel_jsonkeys_v2_jwk_list_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -44,7 +44,7 @@ func (x *JwkListRequest) String() string {
 func (*JwkListRequest) ProtoMessage() {}
 
 func (x *JwkListRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_jwk_list_proto_msgTypes[0]
+	mi := &file_anovel_jsonkeys_v2_jwk_list_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57,7 +57,7 @@ func (x *JwkListRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use JwkListRequest.ProtoReflect.Descriptor instead.
 func (*JwkListRequest) Descriptor() ([]byte, []int) {
-	return file_jwk_list_proto_rawDescGZIP(), []int{0}
+	return file_anovel_jsonkeys_v2_jwk_list_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *JwkListRequest) GetUsage() string {
@@ -78,7 +78,7 @@ type JwkListResponse struct {
 
 func (x *JwkListResponse) Reset() {
 	*x = JwkListResponse{}
-	mi := &file_jwk_list_proto_msgTypes[1]
+	mi := &file_anovel_jsonkeys_v2_jwk_list_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -90,7 +90,7 @@ func (x *JwkListResponse) String() string {
 func (*JwkListResponse) ProtoMessage() {}
 
 func (x *JwkListResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_jwk_list_proto_msgTypes[1]
+	mi := &file_anovel_jsonkeys_v2_jwk_list_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -103,7 +103,7 @@ func (x *JwkListResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use JwkListResponse.ProtoReflect.Descriptor instead.
 func (*JwkListResponse) Descriptor() ([]byte, []int) {
-	return file_jwk_list_proto_rawDescGZIP(), []int{1}
+	return file_anovel_jsonkeys_v2_jwk_list_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *JwkListResponse) GetKeys() []*Jwk {
@@ -113,40 +113,41 @@ func (x *JwkListResponse) GetKeys() []*Jwk {
 	return nil
 }
 
-var File_jwk_list_proto protoreflect.FileDescriptor
+var File_anovel_jsonkeys_v2_jwk_list_proto protoreflect.FileDescriptor
 
-const file_jwk_list_proto_rawDesc = "" +
+const file_anovel_jsonkeys_v2_jwk_list_proto_rawDesc = "" +
 	"\n" +
-	"\x0ejwk_list.proto\x1a\tjwk.proto\"&\n" +
+	"!anovel/jsonkeys/v2/jwk_list.proto\x12\x12anovel.jsonkeys.v2\x1a\x1canovel/jsonkeys/v2/jwk.proto\"&\n" +
 	"\x0eJwkListRequest\x12\x14\n" +
-	"\x05usage\x18\x01 \x01(\tR\x05usage\"+\n" +
-	"\x0fJwkListResponse\x12\x18\n" +
-	"\x04keys\x18\x01 \x03(\v2\x04.JwkR\x04keys2>\n" +
-	"\x0eJwkListService\x12,\n" +
-	"\aJwkList\x12\x0f.JwkListRequest\x1a\x10.JwkListResponseB]B\fJwkListProtoP\x01ZKgithub.com/a-novel/service-json-keys/v2/internal/handlers/protogen;protogenb\x06proto3"
+	"\x05usage\x18\x01 \x01(\tR\x05usage\">\n" +
+	"\x0fJwkListResponse\x12+\n" +
+	"\x04keys\x18\x01 \x03(\v2\x17.anovel.jsonkeys.v2.JwkR\x04keys2d\n" +
+	"\x0eJwkListService\x12R\n" +
+	"\aJwkList\x12\".anovel.jsonkeys.v2.JwkListRequest\x1a#.anovel.jsonkeys.v2.JwkListResponseB\xf2\x01\n" +
+	"\x16com.anovel.jsonkeys.v2B\fJwkListProtoP\x01Z`github.com/a-novel/service-json-keys/v2/internal/handlers/protogen/anovel/jsonkeys/v2;jsonkeysv2\xa2\x02\x03AJX\xaa\x02\x12Anovel.Jsonkeys.V2\xca\x02\x12Anovel\\Jsonkeys\\V2\xe2\x02\x1eAnovel\\Jsonkeys\\V2\\GPBMetadata\xea\x02\x14Anovel::Jsonkeys::V2b\x06proto3"
 
 var (
-	file_jwk_list_proto_rawDescOnce sync.Once
-	file_jwk_list_proto_rawDescData []byte
+	file_anovel_jsonkeys_v2_jwk_list_proto_rawDescOnce sync.Once
+	file_anovel_jsonkeys_v2_jwk_list_proto_rawDescData []byte
 )
 
-func file_jwk_list_proto_rawDescGZIP() []byte {
-	file_jwk_list_proto_rawDescOnce.Do(func() {
-		file_jwk_list_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_jwk_list_proto_rawDesc), len(file_jwk_list_proto_rawDesc)))
+func file_anovel_jsonkeys_v2_jwk_list_proto_rawDescGZIP() []byte {
+	file_anovel_jsonkeys_v2_jwk_list_proto_rawDescOnce.Do(func() {
+		file_anovel_jsonkeys_v2_jwk_list_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_anovel_jsonkeys_v2_jwk_list_proto_rawDesc), len(file_anovel_jsonkeys_v2_jwk_list_proto_rawDesc)))
 	})
-	return file_jwk_list_proto_rawDescData
+	return file_anovel_jsonkeys_v2_jwk_list_proto_rawDescData
 }
 
-var file_jwk_list_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
-var file_jwk_list_proto_goTypes = []any{
-	(*JwkListRequest)(nil),  // 0: JwkListRequest
-	(*JwkListResponse)(nil), // 1: JwkListResponse
-	(*Jwk)(nil),             // 2: Jwk
+var file_anovel_jsonkeys_v2_jwk_list_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_anovel_jsonkeys_v2_jwk_list_proto_goTypes = []any{
+	(*JwkListRequest)(nil),  // 0: anovel.jsonkeys.v2.JwkListRequest
+	(*JwkListResponse)(nil), // 1: anovel.jsonkeys.v2.JwkListResponse
+	(*Jwk)(nil),             // 2: anovel.jsonkeys.v2.Jwk
 }
-var file_jwk_list_proto_depIdxs = []int32{
-	2, // 0: JwkListResponse.keys:type_name -> Jwk
-	0, // 1: JwkListService.JwkList:input_type -> JwkListRequest
-	1, // 2: JwkListService.JwkList:output_type -> JwkListResponse
+var file_anovel_jsonkeys_v2_jwk_list_proto_depIdxs = []int32{
+	2, // 0: anovel.jsonkeys.v2.JwkListResponse.keys:type_name -> anovel.jsonkeys.v2.Jwk
+	0, // 1: anovel.jsonkeys.v2.JwkListService.JwkList:input_type -> anovel.jsonkeys.v2.JwkListRequest
+	1, // 2: anovel.jsonkeys.v2.JwkListService.JwkList:output_type -> anovel.jsonkeys.v2.JwkListResponse
 	2, // [2:3] is the sub-list for method output_type
 	1, // [1:2] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
@@ -154,27 +155,27 @@ var file_jwk_list_proto_depIdxs = []int32{
 	0, // [0:1] is the sub-list for field type_name
 }
 
-func init() { file_jwk_list_proto_init() }
-func file_jwk_list_proto_init() {
-	if File_jwk_list_proto != nil {
+func init() { file_anovel_jsonkeys_v2_jwk_list_proto_init() }
+func file_anovel_jsonkeys_v2_jwk_list_proto_init() {
+	if File_anovel_jsonkeys_v2_jwk_list_proto != nil {
 		return
 	}
-	file_jwk_proto_init()
+	file_anovel_jsonkeys_v2_jwk_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_jwk_list_proto_rawDesc), len(file_jwk_list_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_anovel_jsonkeys_v2_jwk_list_proto_rawDesc), len(file_anovel_jsonkeys_v2_jwk_list_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_jwk_list_proto_goTypes,
-		DependencyIndexes: file_jwk_list_proto_depIdxs,
-		MessageInfos:      file_jwk_list_proto_msgTypes,
+		GoTypes:           file_anovel_jsonkeys_v2_jwk_list_proto_goTypes,
+		DependencyIndexes: file_anovel_jsonkeys_v2_jwk_list_proto_depIdxs,
+		MessageInfos:      file_anovel_jsonkeys_v2_jwk_list_proto_msgTypes,
 	}.Build()
-	File_jwk_list_proto = out.File
-	file_jwk_list_proto_goTypes = nil
-	file_jwk_list_proto_depIdxs = nil
+	File_anovel_jsonkeys_v2_jwk_list_proto = out.File
+	file_anovel_jsonkeys_v2_jwk_list_proto_goTypes = nil
+	file_anovel_jsonkeys_v2_jwk_list_proto_depIdxs = nil
 }

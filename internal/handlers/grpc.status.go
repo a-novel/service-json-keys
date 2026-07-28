@@ -9,7 +9,7 @@ import (
 	"github.com/a-novel-kit/golib/otel"
 	"github.com/a-novel-kit/golib/postgres"
 
-	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
+	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/internal/handlers/protogen/anovel/jsonkeys/v2"
 )
 
 // NewGrpcHealthStatus converts an error into a DependencyHealth proto message,
@@ -17,12 +17,12 @@ import (
 //
 // The error is dropped from the message: raw dependency errors embed internal hostnames,
 // ports and schema names. Operators read it from the trace span the failing probe records.
-func NewGrpcHealthStatus(err error) *protogen.DependencyHealth {
-	return &protogen.DependencyHealth{
+func NewGrpcHealthStatus(err error) *jsonkeysv2.DependencyHealth {
+	return &jsonkeysv2.DependencyHealth{
 		Status: lo.Ternary(
 			err == nil,
-			protogen.DependencyStatus_DEPENDENCY_STATUS_UP,
-			protogen.DependencyStatus_DEPENDENCY_STATUS_DOWN,
+			jsonkeysv2.DependencyStatus_DEPENDENCY_STATUS_UP,
+			jsonkeysv2.DependencyStatus_DEPENDENCY_STATUS_DOWN,
 		),
 	}
 }
@@ -30,7 +30,7 @@ func NewGrpcHealthStatus(err error) *protogen.DependencyHealth {
 // GrpcStatus is the gRPC handler that reports the operational health of the service
 // and its dependencies.
 type GrpcStatus struct {
-	protogen.UnimplementedStatusServiceServer
+	jsonkeysv2.UnimplementedStatusServiceServer
 }
 
 // NewGrpcStatus returns a new GrpcStatus handler.
@@ -38,11 +38,13 @@ func NewGrpcStatus() *GrpcStatus {
 	return &GrpcStatus{}
 }
 
-func (handler *GrpcStatus) Status(ctx context.Context, _ *protogen.StatusRequest) (*protogen.StatusResponse, error) {
+func (handler *GrpcStatus) Status(
+	ctx context.Context, _ *jsonkeysv2.StatusRequest,
+) (*jsonkeysv2.StatusResponse, error) {
 	ctx, span := otel.Tracer().Start(ctx, "grpc.Status")
 	defer span.End()
 
-	return otel.ReportSuccess(span, &protogen.StatusResponse{
+	return otel.ReportSuccess(span, &jsonkeysv2.StatusResponse{
 		Postgres: NewGrpcHealthStatus(handler.reportPostgres(ctx)),
 	}), nil
 }

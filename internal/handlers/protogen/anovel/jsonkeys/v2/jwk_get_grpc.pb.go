@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.2
 // - protoc             (unknown)
-// source: jwk_get.proto
+// source: anovel/jsonkeys/v2/jwk_get.proto
 
-package protogen
+package jsonkeysv2
 
 import (
 	context "context"
@@ -19,7 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	JwkGetService_JwkGet_FullMethodName = "/JwkGetService/JwkGet"
+	JwkGetService_JwkGet_FullMethodName = "/anovel.jsonkeys.v2.JwkGetService/JwkGet"
 )
 
 // JwkGetServiceClient is the client API for JwkGetService service.
@@ -118,7 +118,7 @@ func _JwkGetService_JwkGet_Handler(srv interface{}, ctx context.Context, dec fun
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var JwkGetService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "JwkGetService",
+	ServiceName: "anovel.jsonkeys.v2.JwkGetService",
 	HandlerType: (*JwkGetServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -127,5 +127,5 @@ var JwkGetService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "jwk_get.proto",
+	Metadata: "anovel/jsonkeys/v2/jwk_get.proto",
 }
