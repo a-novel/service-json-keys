@@ -2,9 +2,9 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        (unknown)
-// source: jwk.proto
+// source: anovel/jsonkeys/v2/jwk.proto
 
-package protogen
+package jsonkeysv2
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -47,7 +47,7 @@ type Jwk struct {
 
 func (x *Jwk) Reset() {
 	*x = Jwk{}
-	mi := &file_jwk_proto_msgTypes[0]
+	mi := &file_anovel_jsonkeys_v2_jwk_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -59,7 +59,7 @@ func (x *Jwk) String() string {
 func (*Jwk) ProtoMessage() {}
 
 func (x *Jwk) ProtoReflect() protoreflect.Message {
-	mi := &file_jwk_proto_msgTypes[0]
+	mi := &file_anovel_jsonkeys_v2_jwk_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -72,7 +72,7 @@ func (x *Jwk) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Jwk.ProtoReflect.Descriptor instead.
 func (*Jwk) Descriptor() ([]byte, []int) {
-	return file_jwk_proto_rawDescGZIP(), []int{0}
+	return file_anovel_jsonkeys_v2_jwk_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *Jwk) GetKty() string {
@@ -117,36 +117,37 @@ func (x *Jwk) GetPayload() []byte {
 	return nil
 }
 
-var File_jwk_proto protoreflect.FileDescriptor
+var File_anovel_jsonkeys_v2_jwk_proto protoreflect.FileDescriptor
 
-const file_jwk_proto_rawDesc = "" +
+const file_anovel_jsonkeys_v2_jwk_proto_rawDesc = "" +
 	"\n" +
-	"\tjwk.proto\"\x80\x01\n" +
+	"\x1canovel/jsonkeys/v2/jwk.proto\x12\x12anovel.jsonkeys.v2\"\x80\x01\n" +
 	"\x03Jwk\x12\x10\n" +
 	"\x03kty\x18\x01 \x01(\tR\x03kty\x12\x10\n" +
 	"\x03use\x18\x02 \x01(\tR\x03use\x12\x17\n" +
 	"\akey_ops\x18\x03 \x03(\tR\x06keyOps\x12\x10\n" +
 	"\x03alg\x18\x04 \x01(\tR\x03alg\x12\x10\n" +
 	"\x03kid\x18\x05 \x01(\tR\x03kid\x12\x18\n" +
-	"\apayload\x18\x06 \x01(\fR\apayloadBYB\bJwkProtoP\x01ZKgithub.com/a-novel/service-json-keys/v2/internal/handlers/protogen;protogenb\x06proto3"
+	"\apayload\x18\x06 \x01(\fR\apayloadB\xee\x01\n" +
+	"\x16com.anovel.jsonkeys.v2B\bJwkProtoP\x01Z`github.com/a-novel/service-json-keys/v2/internal/handlers/protogen/anovel/jsonkeys/v2;jsonkeysv2\xa2\x02\x03AJX\xaa\x02\x12Anovel.Jsonkeys.V2\xca\x02\x12Anovel\\Jsonkeys\\V2\xe2\x02\x1eAnovel\\Jsonkeys\\V2\\GPBMetadata\xea\x02\x14Anovel::Jsonkeys::V2b\x06proto3"
 
 var (
-	file_jwk_proto_rawDescOnce sync.Once
-	file_jwk_proto_rawDescData []byte
+	file_anovel_jsonkeys_v2_jwk_proto_rawDescOnce sync.Once
+	file_anovel_jsonkeys_v2_jwk_proto_rawDescData []byte
 )
 
-func file_jwk_proto_rawDescGZIP() []byte {
-	file_jwk_proto_rawDescOnce.Do(func() {
-		file_jwk_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_jwk_proto_rawDesc), len(file_jwk_proto_rawDesc)))
+func file_anovel_jsonkeys_v2_jwk_proto_rawDescGZIP() []byte {
+	file_anovel_jsonkeys_v2_jwk_proto_rawDescOnce.Do(func() {
+		file_anovel_jsonkeys_v2_jwk_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_anovel_jsonkeys_v2_jwk_proto_rawDesc), len(file_anovel_jsonkeys_v2_jwk_proto_rawDesc)))
 	})
-	return file_jwk_proto_rawDescData
+	return file_anovel_jsonkeys_v2_jwk_proto_rawDescData
 }
 
-var file_jwk_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
-var file_jwk_proto_goTypes = []any{
-	(*Jwk)(nil), // 0: Jwk
+var file_anovel_jsonkeys_v2_jwk_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_anovel_jsonkeys_v2_jwk_proto_goTypes = []any{
+	(*Jwk)(nil), // 0: anovel.jsonkeys.v2.Jwk
 }
-var file_jwk_proto_depIdxs = []int32{
+var file_anovel_jsonkeys_v2_jwk_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
 	0, // [0:0] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -154,26 +155,26 @@ var file_jwk_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_jwk_proto_init() }
-func file_jwk_proto_init() {
-	if File_jwk_proto != nil {
+func init() { file_anovel_jsonkeys_v2_jwk_proto_init() }
+func file_anovel_jsonkeys_v2_jwk_proto_init() {
+	if File_anovel_jsonkeys_v2_jwk_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_jwk_proto_rawDesc), len(file_jwk_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_anovel_jsonkeys_v2_jwk_proto_rawDesc), len(file_anovel_jsonkeys_v2_jwk_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   1,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_jwk_proto_goTypes,
-		DependencyIndexes: file_jwk_proto_depIdxs,
-		MessageInfos:      file_jwk_proto_msgTypes,
+		GoTypes:           file_anovel_jsonkeys_v2_jwk_proto_goTypes,
+		DependencyIndexes: file_anovel_jsonkeys_v2_jwk_proto_depIdxs,
+		MessageInfos:      file_anovel_jsonkeys_v2_jwk_proto_msgTypes,
 	}.Build()
-	File_jwk_proto = out.File
-	file_jwk_proto_goTypes = nil
-	file_jwk_proto_depIdxs = nil
+	File_anovel_jsonkeys_v2_jwk_proto = out.File
+	file_anovel_jsonkeys_v2_jwk_proto_goTypes = nil
+	file_anovel_jsonkeys_v2_jwk_proto_depIdxs = nil
 }

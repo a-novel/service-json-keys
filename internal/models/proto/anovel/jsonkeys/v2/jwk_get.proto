@@ -1,6 +1,8 @@
 syntax = "proto3";
 
-import "jwk.proto";
+package anovel.jsonkeys.v2;
+
+import "anovel/jsonkeys/v2/jwk.proto";
 
 // JwkGetService returns a public JSON Web Key by its key ID.
 // The returned key may be used by any recipient to verify a token.

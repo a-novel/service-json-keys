@@ -95,10 +95,12 @@ func main() {
 	}))
 	router.Use(cfg.RestLogger.Logger())
 
-	router.Get("/ping", handlerPing.ServeHTTP)
-	router.Get("/healthcheck", handlerHealth.ServeHTTP)
-	router.Get("/jwks", handlerJwkList.ServeHTTP)
-	router.Get("/jwk", handlerJwkGet.ServeHTTP)
+	router.Route("/v2", func(api chi.Router) {
+		api.Get("/ping", handlerPing.ServeHTTP)
+		api.Get("/healthcheck", handlerHealth.ServeHTTP)
+		api.Get("/jwks", handlerJwkList.ServeHTTP)
+		api.Get("/jwk", handlerJwkGet.ServeHTTP)
+	})
 
 	// =================================================================================================================
 	// RUN

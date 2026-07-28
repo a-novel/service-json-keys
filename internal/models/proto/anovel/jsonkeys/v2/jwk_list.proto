@@ -1,6 +1,8 @@
 syntax = "proto3";
 
-import "jwk.proto";
+package anovel.jsonkeys.v2;
+
+import "anovel/jsonkeys/v2/jwk.proto";
 
 // JwkListService lists the active public keys for a given usage.
 service JwkListService {

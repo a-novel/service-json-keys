@@ -16,7 +16,7 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/core"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
 	handlersmocks "github.com/a-novel/service-json-keys/v2/internal/handlers/mocks"
-	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
+	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/internal/handlers/protogen/anovel/jsonkeys/v2"
 )
 
 func TestGrpcJwkGet(t *testing.T) {
@@ -32,17 +32,17 @@ func TestGrpcJwkGet(t *testing.T) {
 	testCases := []struct {
 		name string
 
-		request *protogen.JwkGetRequest
+		request *jsonkeysv2.JwkGetRequest
 
 		serviceMock *serviceMock
 
-		expect       *protogen.JwkGetResponse
+		expect       *jsonkeysv2.JwkGetResponse
 		expectStatus codes.Code
 	}{
 		{
 			name: "Success",
 
-			request: &protogen.JwkGetRequest{
+			request: &jsonkeysv2.JwkGetRequest{
 				Id: "00000000-0000-0000-0000-000000000001",
 			},
 
@@ -60,8 +60,8 @@ func TestGrpcJwkGet(t *testing.T) {
 			},
 
 			expectStatus: codes.OK,
-			expect: &protogen.JwkGetResponse{
-				Jwk: &protogen.Jwk{
+			expect: &jsonkeysv2.JwkGetResponse{
+				Jwk: &jsonkeysv2.Jwk{
 					Kty:     "test-kty",
 					Use:     "test-use",
 					KeyOps:  []string{"sign", "verify"},
@@ -74,7 +74,7 @@ func TestGrpcJwkGet(t *testing.T) {
 		{
 			name: "Error/InvalidID",
 
-			request: &protogen.JwkGetRequest{
+			request: &jsonkeysv2.JwkGetRequest{
 				Id: "not-a-uuid",
 			},
 
@@ -83,7 +83,7 @@ func TestGrpcJwkGet(t *testing.T) {
 		{
 			name: "Error/NotFound",
 
-			request: &protogen.JwkGetRequest{
+			request: &jsonkeysv2.JwkGetRequest{
 				Id: "00000000-0000-0000-0000-000000000001",
 			},
 
@@ -96,7 +96,7 @@ func TestGrpcJwkGet(t *testing.T) {
 		{
 			name: "Error/Internal",
 
-			request: &protogen.JwkGetRequest{
+			request: &jsonkeysv2.JwkGetRequest{
 				Id: "00000000-0000-0000-0000-000000000001",
 			},
 

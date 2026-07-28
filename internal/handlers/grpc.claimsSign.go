@@ -11,7 +11,7 @@ import (
 	"github.com/a-novel-kit/golib/otel"
 
 	"github.com/a-novel/service-json-keys/v2/internal/core"
-	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
+	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/internal/handlers/protogen/anovel/jsonkeys/v2"
 )
 
 // GrpcClaimsSignService is the service dependency of [GrpcClaimsSign].
@@ -21,7 +21,7 @@ type GrpcClaimsSignService interface {
 
 // GrpcClaimsSign is the gRPC handler that signs a set of claims and returns a compact JWT.
 type GrpcClaimsSign struct {
-	protogen.UnimplementedClaimsSignServiceServer
+	jsonkeysv2.UnimplementedClaimsSignServiceServer
 
 	service GrpcClaimsSignService
 }
@@ -32,8 +32,8 @@ func NewGrpcClaimsSign(service GrpcClaimsSignService) *GrpcClaimsSign {
 }
 
 func (handler *GrpcClaimsSign) ClaimsSign(
-	ctx context.Context, request *protogen.ClaimsSignRequest,
-) (*protogen.ClaimsSignResponse, error) {
+	ctx context.Context, request *jsonkeysv2.ClaimsSignRequest,
+) (*jsonkeysv2.ClaimsSignResponse, error) {
 	ctx, span := otel.Tracer().Start(ctx, "grpc.ClaimsSign")
 	defer span.End()
 
@@ -66,5 +66,5 @@ func (handler *GrpcClaimsSign) ClaimsSign(
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	return otel.ReportSuccess(span, &protogen.ClaimsSignResponse{Token: signed}), nil
+	return otel.ReportSuccess(span, &jsonkeysv2.ClaimsSignResponse{Token: signed}), nil
 }

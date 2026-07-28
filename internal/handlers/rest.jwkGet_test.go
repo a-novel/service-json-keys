@@ -46,7 +46,7 @@ func TestRestJwkGet(t *testing.T) {
 			request: httptest.NewRequestWithContext(
 				t.Context(),
 				http.MethodGet,
-				"/jwk?id=00000000-0000-0000-0000-000000000001",
+				"/v2/jwk?id=00000000-0000-0000-0000-000000000001",
 				nil,
 			),
 
@@ -79,7 +79,7 @@ func TestRestJwkGet(t *testing.T) {
 			request: httptest.NewRequestWithContext(
 				t.Context(),
 				http.MethodGet,
-				"/jwk?id=not-a-uuid",
+				"/v2/jwk?id=not-a-uuid",
 				nil,
 			),
 
@@ -91,7 +91,7 @@ func TestRestJwkGet(t *testing.T) {
 			request: httptest.NewRequestWithContext(
 				t.Context(),
 				http.MethodGet,
-				"/jwk?id=00000000-0000-0000-0000-000000000001",
+				"/v2/jwk?id=00000000-0000-0000-0000-000000000001",
 				nil,
 			),
 
@@ -107,7 +107,7 @@ func TestRestJwkGet(t *testing.T) {
 			request: httptest.NewRequestWithContext(
 				t.Context(),
 				http.MethodGet,
-				"/jwk?id=00000000-0000-0000-0000-000000000001",
+				"/v2/jwk?id=00000000-0000-0000-0000-000000000001",
 				nil,
 			),
 

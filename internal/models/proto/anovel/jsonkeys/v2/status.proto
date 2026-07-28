@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+package anovel.jsonkeys.v2;
+
 // StatusService returns the health of the gRPC server dependencies.
 service StatusService {
   // Returns the current health of all server dependencies checked at request time.

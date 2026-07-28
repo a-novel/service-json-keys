@@ -15,7 +15,7 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/core"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
 	handlersmocks "github.com/a-novel/service-json-keys/v2/internal/handlers/mocks"
-	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
+	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/internal/handlers/protogen/anovel/jsonkeys/v2"
 )
 
 func TestGrpcClaimsSign(t *testing.T) {
@@ -32,11 +32,11 @@ func TestGrpcClaimsSign(t *testing.T) {
 	testCases := []struct {
 		name string
 
-		request *protogen.ClaimsSignRequest
+		request *jsonkeysv2.ClaimsSignRequest
 
 		serviceMock *serviceMock
 
-		expect       *protogen.ClaimsSignResponse
+		expect       *jsonkeysv2.ClaimsSignResponse
 		expectStatus codes.Code
 		// expectMessage is a fragment the status message must carry, so a caller
 		// can tell what to fix without reading the service's logs.
@@ -45,7 +45,7 @@ func TestGrpcClaimsSign(t *testing.T) {
 		{
 			name: "Success",
 
-			request: &protogen.ClaimsSignRequest{
+			request: &jsonkeysv2.ClaimsSignRequest{
 				Payload: lo.Must(grpcf.MarshalJSONAsAny(map[string]any{"message": "hello world"})),
 				Usage:   "test-usage",
 			},
@@ -56,14 +56,14 @@ func TestGrpcClaimsSign(t *testing.T) {
 			},
 
 			expectStatus: codes.OK,
-			expect: &protogen.ClaimsSignResponse{
+			expect: &jsonkeysv2.ClaimsSignResponse{
 				Token: "access-token",
 			},
 		},
 		{
 			name: "Error/InvalidPayload",
 
-			request: &protogen.ClaimsSignRequest{
+			request: &jsonkeysv2.ClaimsSignRequest{
 				// Payload not set — grpcf.UnmarshalJSONFromAny(nil) returns an error.
 				Usage: "test-usage",
 			},
@@ -73,7 +73,7 @@ func TestGrpcClaimsSign(t *testing.T) {
 		{
 			name: "Error/BadConfig",
 
-			request: &protogen.ClaimsSignRequest{
+			request: &jsonkeysv2.ClaimsSignRequest{
 				Payload: lo.Must(grpcf.MarshalJSONAsAny(map[string]any{"message": "hello world"})),
 				Usage:   "test-usage",
 			},
@@ -91,7 +91,7 @@ func TestGrpcClaimsSign(t *testing.T) {
 			// them nothing to correct.
 			name: "Error/ReservedClaim",
 
-			request: &protogen.ClaimsSignRequest{
+			request: &jsonkeysv2.ClaimsSignRequest{
 				Payload: lo.Must(grpcf.MarshalJSONAsAny(map[string]any{"sub": "attacker"})),
 				Usage:   "test-usage",
 			},
@@ -107,7 +107,7 @@ func TestGrpcClaimsSign(t *testing.T) {
 		{
 			name: "Error/Internal",
 
-			request: &protogen.ClaimsSignRequest{
+			request: &jsonkeysv2.ClaimsSignRequest{
 				Payload: lo.Must(grpcf.MarshalJSONAsAny(map[string]any{"message": "hello world"})),
 				Usage:   "test-usage",
 			},

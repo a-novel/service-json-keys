@@ -9,18 +9,18 @@ import (
 	golibproto "github.com/a-novel-kit/golib/grpcf/proto/gen"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
-	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
+	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/internal/handlers/protogen/anovel/jsonkeys/v2"
 )
 
 type (
-	StatusRequest      = protogen.StatusRequest
-	StatusResponse     = protogen.StatusResponse
-	JwkListRequest     = protogen.JwkListRequest
-	JwkListResponse    = protogen.JwkListResponse
-	JwkGetRequest      = protogen.JwkGetRequest
-	JwkGetResponse     = protogen.JwkGetResponse
-	ClaimsSignRequest  = protogen.ClaimsSignRequest
-	ClaimsSignResponse = protogen.ClaimsSignResponse
+	StatusRequest      = jsonkeysv2.StatusRequest
+	StatusResponse     = jsonkeysv2.StatusResponse
+	JwkListRequest     = jsonkeysv2.JwkListRequest
+	JwkListResponse    = jsonkeysv2.JwkListResponse
+	JwkGetRequest      = jsonkeysv2.JwkGetRequest
+	JwkGetResponse     = jsonkeysv2.JwkGetResponse
+	ClaimsSignRequest  = jsonkeysv2.ClaimsSignRequest
+	ClaimsSignResponse = jsonkeysv2.ClaimsSignResponse
 
 	// JwkConfig holds the full configuration for a single key usage — the signing algorithm
 	// and the key and token parameters applied to every JWT signed under it.
@@ -72,10 +72,10 @@ type Client interface {
 
 type client struct {
 	golibproto.EchoServiceClient
-	protogen.StatusServiceClient
-	protogen.JwkGetServiceClient
-	protogen.JwkListServiceClient
-	protogen.ClaimsSignServiceClient
+	jsonkeysv2.StatusServiceClient
+	jsonkeysv2.JwkGetServiceClient
+	jsonkeysv2.JwkListServiceClient
+	jsonkeysv2.ClaimsSignServiceClient
 
 	keys map[string]*JwkConfig
 
@@ -101,10 +101,10 @@ func NewClient(addr string, opts ...grpc.DialOption) (Client, error) {
 
 	c := &client{
 		EchoServiceClient:       golibproto.NewEchoServiceClient(conn),
-		StatusServiceClient:     protogen.NewStatusServiceClient(conn),
-		JwkGetServiceClient:     protogen.NewJwkGetServiceClient(conn),
-		JwkListServiceClient:    protogen.NewJwkListServiceClient(conn),
-		ClaimsSignServiceClient: protogen.NewClaimsSignServiceClient(conn),
+		StatusServiceClient:     jsonkeysv2.NewStatusServiceClient(conn),
+		JwkGetServiceClient:     jsonkeysv2.NewJwkGetServiceClient(conn),
+		JwkListServiceClient:    jsonkeysv2.NewJwkListServiceClient(conn),
+		ClaimsSignServiceClient: jsonkeysv2.NewClaimsSignServiceClient(conn),
 		keys:                    config.JwkPresetDefault,
 		conn:                    conn,
 	}

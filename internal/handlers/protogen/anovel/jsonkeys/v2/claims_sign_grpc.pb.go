@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.2
 // - protoc             (unknown)
-// source: claims_sign.proto
+// source: anovel/jsonkeys/v2/claims_sign.proto
 
-package protogen
+package jsonkeysv2
 
 import (
 	context "context"
@@ -19,7 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ClaimsSignService_ClaimsSign_FullMethodName = "/ClaimsSignService/ClaimsSign"
+	ClaimsSignService_ClaimsSign_FullMethodName = "/anovel.jsonkeys.v2.ClaimsSignService/ClaimsSign"
 )
 
 // ClaimsSignServiceClient is the client API for ClaimsSignService service.
@@ -122,7 +122,7 @@ func _ClaimsSignService_ClaimsSign_Handler(srv interface{}, ctx context.Context,
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var ClaimsSignService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "ClaimsSignService",
+	ServiceName: "anovel.jsonkeys.v2.ClaimsSignService",
 	HandlerType: (*ClaimsSignServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -131,5 +131,5 @@ var ClaimsSignService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "claims_sign.proto",
+	Metadata: "anovel/jsonkeys/v2/claims_sign.proto",
 }

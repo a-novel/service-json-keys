@@ -29,7 +29,7 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/core"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
-	"github.com/a-novel/service-json-keys/v2/internal/handlers/protogen"
+	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/internal/handlers/protogen/anovel/jsonkeys/v2"
 	"github.com/a-novel/service-json-keys/v2/internal/lib"
 )
 
@@ -110,10 +110,10 @@ func main() {
 
 	grpcf.SetEchoServersContext(ctx, server, cfg.Grpc.Ping)
 
-	protogen.RegisterStatusServiceServer(server, handlerStatus)
-	protogen.RegisterClaimsSignServiceServer(server, handlerClaimsSign)
-	protogen.RegisterJwkGetServiceServer(server, handlerJwkGet)
-	protogen.RegisterJwkListServiceServer(server, handlerJwkList)
+	jsonkeysv2.RegisterStatusServiceServer(server, handlerStatus)
+	jsonkeysv2.RegisterClaimsSignServiceServer(server, handlerClaimsSign)
+	jsonkeysv2.RegisterJwkGetServiceServer(server, handlerJwkGet)
+	jsonkeysv2.RegisterJwkListServiceServer(server, handlerJwkList)
 
 	reflection.Register(server)
 

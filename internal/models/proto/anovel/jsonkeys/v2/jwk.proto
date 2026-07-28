@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+package anovel.jsonkeys.v2;
+
 // Jwk represents a public JSON Web Key. Private key material is never included.
 message Jwk {
   // Key type identifier. Corresponds to the "kty" JWK parameter (RFC 7517 §4.1).

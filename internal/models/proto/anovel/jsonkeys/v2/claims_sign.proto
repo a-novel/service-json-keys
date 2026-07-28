@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+package anovel.jsonkeys.v2;
+
 import "google/protobuf/any.proto";
 
 // ClaimsSignService remotely generates a signed token from claims. The parameters used to
