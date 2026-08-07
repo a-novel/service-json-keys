@@ -13,4 +13,4 @@ EXPOSE 5432
 
 # The postgres image ships no healthcheck of its own.
 HEALTHCHECK --interval=1s --timeout=5s --retries=10 --start-period=1s \
-  CMD pg_isready || exit 1
+  CMD ["pg_isready"]
