@@ -1,6 +1,6 @@
 # PostgreSQL image with this service's extensions pre-installed at build time.
 # Run the migrations image separately after deployment to create the schema.
-FROM docker.io/library/postgres:18.4
+FROM docker.io/library/postgres:18.6
 
 ENV POSTGRES_INITDB_ARGS=--auth=scram-sha-256
 
