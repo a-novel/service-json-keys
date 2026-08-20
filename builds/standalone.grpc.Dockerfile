@@ -1,7 +1,7 @@
 # Standalone gRPC server image for local development. Applies migrations and rotates keys
 # automatically before starting the server, so the database needs no pre-initialization.
 # Production deployments use the base gRPC image (grpc.Dockerfile).
-FROM docker.io/library/golang:1.26.5-alpine AS builder
+FROM docker.io/library/golang:1.27.0-alpine AS builder
 
 ENV CGO_ENABLED=0
 
