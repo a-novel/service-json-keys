@@ -39,7 +39,7 @@ The service runs as published OCI images plus a PostgreSQL database. Both server
 | `service-json-keys/jobs/rotatekeys` | Scheduled key-rotation job (see [CONTRIBUTING](./CONTRIBUTING.md#key-rotation)). |
 | `service-json-keys/database`        | Pre-tuned PostgreSQL image — or bring your own Postgres.                         |
 
-Pin every image to the same release tag — see the [latest release](https://github.com/a-novel/service-json-keys/releases/latest). A production deployment runs `database`, then the migrations job to completion, then any number of `grpc` and/or `rest` replicas:
+Pin every image to the same release tag — see the [latest release](https://github.com/a-novel/service-json-keys/releases/latest). A production deployment runs `database`, then the migrations job to completion, then any number of `grpc` and/or `rest` replicas. Provide `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DATABASE` through the orchestrator; store the password as a secret.
 
 ```yaml
 services:
@@ -47,9 +47,9 @@ services:
     image: ghcr.io/a-novel/service-json-keys/database:v2.5.1
     networks: [api]
     environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_DB: "${POSTGRES_DATABASE}"
       POSTGRES_HOST_AUTH_METHOD: scram-sha-256
       POSTGRES_INITDB_ARGS: --auth=scram-sha-256
     volumes:
@@ -60,7 +60,12 @@ services:
     depends_on:
       postgres-json-keys: { condition: service_healthy }
     environment:
-      POSTGRES_DSN: "postgres://postgres:postgres@postgres-json-keys:5432/postgres?sslmode=disable"
+      POSTGRES_HOST: postgres-json-keys
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DATABASE: "${POSTGRES_DATABASE}"
+      POSTGRES_TLS_ENABLED: "false"
     networks: [api]
 
   service-json-keys:
@@ -70,7 +75,12 @@ services:
       postgres-json-keys: { condition: service_healthy }
       migrations-json-keys: { condition: service_completed_successfully }
     environment:
-      POSTGRES_DSN: "postgres://postgres:postgres@postgres-json-keys:5432/postgres?sslmode=disable"
+      POSTGRES_HOST: postgres-json-keys
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DATABASE: "${POSTGRES_DATABASE}"
+      POSTGRES_TLS_ENABLED: "false"
       APP_MASTER_KEY: "<your-master-key-here>"
     networks: [api]
 
@@ -85,12 +95,20 @@ Run both servers by adding a second service that reuses the same database and mi
 
 ### Configuration
 
-Every variable is read from the process environment.
+Every variable is read from the process environment. Set `POSTGRES_HOST` to use the discrete
+connection fields. `POSTGRES_DSN` remains a deprecated compatibility fallback while existing
+deployments migrate.
 
-| Name             | Description                                                                                                                                                                                                                                               | Images                                                                              |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `POSTGRES_DSN`   | PostgreSQL connection string. **Required.**                                                                                                                                                                                                               | all                                                                                 |
-| `APP_MASTER_KEY` | 32-byte hex-encoded key that encrypts private keys at rest. **Required** by every image that touches private keys. **Never rotate** unless you can afford to invalidate every existing key — see [CONTRIBUTING](./CONTRIBUTING.md#master-key-encryption). | `grpc`<br/>`rest`<br/>`standalone-grpc`<br/>`standalone-rest`<br/>`jobs/rotatekeys` |
+| Name                   | Description                                                                                                                                                                                                                                               | Images                                                                              |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `POSTGRES_HOST`        | PostgreSQL hostname or IP address. Selects the discrete connection fields. **Required for new deployments.**                                                                                                                                              | all                                                                                 |
+| `POSTGRES_PORT`        | PostgreSQL port. Defaults to `5432`.                                                                                                                                                                                                                      | all                                                                                 |
+| `POSTGRES_USER`        | PostgreSQL login role. **Required when `POSTGRES_HOST` is set.**                                                                                                                                                                                          | all                                                                                 |
+| `POSTGRES_PASSWORD`    | PostgreSQL login password. **Required when `POSTGRES_HOST` is set; inject it as a secret.**                                                                                                                                                               | all                                                                                 |
+| `POSTGRES_DATABASE`    | PostgreSQL database name. **Required when `POSTGRES_HOST` is set.**                                                                                                                                                                                       | all                                                                                 |
+| `POSTGRES_TLS_ENABLED` | Encrypt the PostgreSQL connection. Defaults to `true`; disable only when another trusted boundary protects the database link.                                                                                                                             | all                                                                                 |
+| `POSTGRES_DSN`         | Deprecated connection-URL fallback, read only when `POSTGRES_HOST` is empty.                                                                                                                                                                              | all                                                                                 |
+| `APP_MASTER_KEY`       | 32-byte hex-encoded key that encrypts private keys at rest. **Required** by every image that touches private keys. **Never rotate** unless you can afford to invalidate every existing key — see [CONTRIBUTING](./CONTRIBUTING.md#master-key-encryption). | `grpc`<br/>`rest`<br/>`standalone-grpc`<br/>`standalone-rest`<br/>`jobs/rotatekeys` |
 
 The gRPC server exposes private-key operations and must run on an isolated, access-controlled network — the server does not authenticate callers itself.
 
@@ -236,9 +254,9 @@ services:
     image: ghcr.io/a-novel/service-json-keys/database:v2.5.1
     networks: [api]
     environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_DB: "${POSTGRES_DATABASE}"
       POSTGRES_HOST_AUTH_METHOD: scram-sha-256
       POSTGRES_INITDB_ARGS: --auth=scram-sha-256
 
@@ -248,7 +266,12 @@ services:
     depends_on:
       postgres-json-keys: { condition: service_healthy }
     environment:
-      POSTGRES_DSN: "postgres://postgres:postgres@postgres-json-keys:5432/postgres?sslmode=disable"
+      POSTGRES_HOST: postgres-json-keys
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DATABASE: "${POSTGRES_DATABASE}"
+      POSTGRES_TLS_ENABLED: "false"
       APP_MASTER_KEY: "<your-master-key-here>"
     networks: [api]
 
