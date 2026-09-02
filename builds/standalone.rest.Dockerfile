@@ -1,7 +1,7 @@
 # Standalone REST server image for local development. Applies migrations and rotates keys
 # automatically before starting the server, so the database needs no pre-initialization.
 # Production deployments use the base REST image (rest.Dockerfile).
-FROM docker.io/library/golang:1.27.0-alpine AS builder
+FROM docker.io/library/golang:1.27.1-alpine AS builder
 
 ENV CGO_ENABLED=0
 
