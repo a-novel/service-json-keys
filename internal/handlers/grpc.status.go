@@ -5,6 +5,8 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/uptrace/bun"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/a-novel-kit/golib/otel"
 	"github.com/a-novel-kit/golib/postgres"
@@ -38,14 +40,22 @@ func NewGrpcStatus() *GrpcStatus {
 	return &GrpcStatus{}
 }
 
+// Status returns Unavailable when any dependency probe fails.
 func (handler *GrpcStatus) Status(
 	ctx context.Context, _ *jsonkeysv2.StatusRequest,
 ) (*jsonkeysv2.StatusResponse, error) {
 	ctx, span := otel.Tracer().Start(ctx, "grpc.Status")
 	defer span.End()
 
+	err := handler.reportPostgres(ctx)
+	if err != nil {
+		_ = otel.ReportError(span, err)
+
+		return nil, status.Error(codes.Unavailable, "service dependencies unavailable")
+	}
+
 	return otel.ReportSuccess(span, &jsonkeysv2.StatusResponse{
-		Postgres: NewGrpcHealthStatus(handler.reportPostgres(ctx)),
+		Postgres: NewGrpcHealthStatus(nil),
 	}), nil
 }
 
@@ -61,10 +71,10 @@ func (handler *GrpcStatus) reportPostgres(ctx context.Context) error {
 	pgdb, ok := pg.(*bun.DB)
 	if !ok {
 		// Cannot assess the DB connection in transaction mode.
-		return nil
+		return otel.ReportError(span, postgres.ErrNoDbInContext)
 	}
 
-	err = pgdb.Ping()
+	err = pgdb.PingContext(ctx)
 	if err != nil {
 		return otel.ReportError(span, err)
 	}

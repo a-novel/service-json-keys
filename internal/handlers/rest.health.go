@@ -38,7 +38,7 @@ func NewRestHealthStatus(err error) *RestHealthStatus {
 }
 
 // RestHealth is the HTTP handler that reports the operational health of the service
-// and its dependencies as a JSON object.
+// and its dependencies as a JSON object, with HTTP 503 when a probe fails.
 type RestHealth struct{}
 
 // NewRestHealth returns a new RestHealth handler.
@@ -50,8 +50,16 @@ func (handler *RestHealth) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx, span := otel.Tracer().Start(r.Context(), "rest.Health")
 	defer span.End()
 
-	httpf.SendJSONStatus(ctx, w, span, http.StatusOK, map[string]any{
-		"client:postgres": NewRestHealthStatus(handler.reportPostgres(ctx)),
+	err := handler.reportPostgres(ctx)
+	statusCode := http.StatusOK
+
+	if err != nil {
+		_ = otel.ReportError(span, err)
+		statusCode = http.StatusServiceUnavailable
+	}
+
+	httpf.SendJSONStatus(ctx, w, span, statusCode, map[string]any{
+		"client:postgres": NewRestHealthStatus(err),
 	})
 }
 
@@ -67,10 +75,10 @@ func (handler *RestHealth) reportPostgres(ctx context.Context) error {
 	pgdb, ok := pg.(*bun.DB)
 	if !ok {
 		// Cannot assess the DB connection in transaction mode.
-		return nil
+		return otel.ReportError(span, postgres.ErrNoDbInContext)
 	}
 
-	err = pgdb.Ping()
+	err = pgdb.PingContext(ctx)
 	if err != nil {
 		return otel.ReportError(span, err)
 	}

@@ -24,6 +24,10 @@ func TestClient(t *testing.T) {
 	_, err = client.UnaryEcho(t.Context(), &golibproto.UnaryEchoRequest{})
 	require.NoError(t, err)
 
+	health, err := client.Status(t.Context(), &servicejsonkeys.StatusRequest{})
+	require.NoError(t, err)
+	require.NotNil(t, health.GetPostgres())
+
 	keys, err := client.JwkList(t.Context(), &servicejsonkeys.JwkListRequest{
 		Usage: servicejsonkeys.KeyUsageAuth,
 	})

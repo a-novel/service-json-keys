@@ -40,6 +40,7 @@ type BaseClient interface {
 		ctx context.Context, req *golibproto.UnaryEchoRequest, opts ...grpc.CallOption,
 	) (*golibproto.UnaryEchoResponse, error)
 	// Status reports the operational health of the service and its dependencies.
+	// It returns Unavailable when a dependency probe fails. Set a request deadline.
 	Status(ctx context.Context, req *StatusRequest, opts ...grpc.CallOption) (*StatusResponse, error)
 
 	// JwkGet retrieves a single JSON Web Key by its key ID.
