@@ -54,9 +54,8 @@ export class JsonKeysApi {
   }
 
   /**
-   * Returns the health status of every service dependency, keyed by dependency name.
-   * The endpoint always responds 200; a degraded dependency shows as a `down` entry,
-   * so inspect each entry's `status` field to detect one.
+   * Returns the dependency report when every dependency is healthy.
+   * Throws on HTTP 503 when a dependency probe fails, or on another non-2xx response.
    */
   async health(): Promise<Record<string, HealthDependency>> {
     return await this.fetch("/v2/healthcheck", undefined, { method: "GET" });
