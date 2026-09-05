@@ -50,17 +50,18 @@ func (handler *RestHealth) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx, span := otel.Tracer().Start(r.Context(), "rest.Health")
 	defer span.End()
 
-	err := handler.reportPostgres(ctx)
 	statusCode := http.StatusOK
+	statusResp := map[string]any{}
 
+	err := handler.reportPostgres(ctx)
 	if err != nil {
 		_ = otel.ReportError(span, err)
 		statusCode = http.StatusServiceUnavailable
 	}
 
-	httpf.SendJSONStatus(ctx, w, span, statusCode, map[string]any{
-		"client:postgres": NewRestHealthStatus(err),
-	})
+	statusResp["client:postgres"] = NewRestHealthStatus(err)
+
+	httpf.SendJSONStatus(ctx, w, span, statusCode, statusResp)
 }
 
 func (handler *RestHealth) reportPostgres(ctx context.Context) error {
