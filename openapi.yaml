@@ -52,11 +52,15 @@ paths:
       summary: Health diagnosis of the server.
       description: |
         Performs a complete health diagnosis of the server dependencies, by pinging each in turn.
+        Returns HTTP 200 only when every dependency is healthy, otherwise HTTP 503 with the same
+        sanitized report. Use `/v2/ping` for process-only liveness.
       tags: [health]
       security: []
       responses:
         "200":
           $ref: "#/components/responses/health"
+        "503":
+          $ref: "#/components/responses/healthUnavailable"
         default:
           $ref: "#/components/responses/internalError"
 
@@ -108,20 +112,22 @@ components:
             examples: [pong]
 
     health:
-      description: Summary of the server dependencies.
+      description: All server dependencies are healthy.
       content:
         application/json:
           schema:
-            type: object
-            required: ["client:postgres"]
-            additionalProperties:
-              $ref: "#/components/schemas/healthStatus"
-            properties:
-              "client:postgres":
-                $ref: "#/components/schemas/healthStatus"
+            $ref: "#/components/schemas/healthReport"
           examples:
             healthy:
               value: { "client:postgres": { "status": "up" } }
+
+    healthUnavailable:
+      description: At least one dependency probe failed. Raw probe errors are not exposed.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/healthReport"
+          examples:
             degraded:
               value: { "client:postgres": { "status": "down" } }
 
@@ -173,6 +179,16 @@ components:
       description: Something unexpected happened.
 
   schemas:
+    healthReport:
+      type: object
+      description: Sanitized dependency statuses. Every dependency must be up for HTTP 200.
+      required: ["client:postgres"]
+      additionalProperties:
+        $ref: "#/components/schemas/healthStatus"
+      properties:
+        "client:postgres":
+          $ref: "#/components/schemas/healthStatus"
+
     healthStatus:
       type: object
       description: |
