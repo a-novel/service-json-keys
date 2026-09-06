@@ -1,27 +1,17 @@
 package env
 
 import (
+	"fmt"
 	"os"
 	"time"
-
-	"github.com/a-novel-kit/golib/config"
 )
-
-// prefix is the value of SERVICE_JSON_KEYS_ENV_PREFIX, prepended to all environment
-// variable names read by this package. Set it to avoid conflicts when multiple instances
-// of this service run in the same environment.
-var prefix = os.Getenv("SERVICE_JSON_KEYS_ENV_PREFIX")
-
-func getEnv(name string) string {
-	return os.Getenv(prefix + name)
-}
 
 // Default values used when the corresponding environment variable is absent.
 const (
 	AppNameDefault = "service-json-keys"
 
 	GrpcPortDefault            = 8080
-	GrpcDefaultPing            = time.Second * 5
+	GrpcDefaultPing            = 5 * time.Second
 	GrpcTimeoutShutdownDefault = 30 * time.Second
 
 	RestPortDefault              = 8080
@@ -35,140 +25,41 @@ const (
 	CorsAllowCredentialsDefault  = false
 	CorsMaxAgeDefault            = 3600
 
-	// PostgresMaxOpenConnsDefault keeps the pool well under a stock PostgreSQL
-	// max_connections of 100 once multiplied by a service's replica count, leaving
-	// room for the migration job and a psql session. Go's own default is unlimited,
-	// which turns a spike into connection refusals for everything on that database
-	// rather than queueing inside this process.
+	// PostgresMaxOpenConnsDefault leaves capacity for jobs and operator sessions.
 	PostgresMaxOpenConnsDefault = 20
-	// PostgresMaxIdleConnsDefault matches the open limit so a burst does not close
-	// connections it is about to reopen.
+	// PostgresMaxIdleConnsDefault keeps burst connections ready for reuse.
 	PostgresMaxIdleConnsDefault = 20
 	PostgresPortDefault         = 5432
 	PostgresTLSEnabledDefault   = true
 )
 
-// Default values used when the corresponding environment variable is absent.
 var (
+	// CorsAllowedOriginsDefault permits every origin when no deployment policy is supplied.
 	CorsAllowedOriginsDefault = []string{"*"}
+	// CorsAllowedHeadersDefault permits every request header when no deployment policy is supplied.
 	CorsAllowedHeadersDefault = []string{"*"}
 )
 
-// Raw values for environment variables.
-var (
-	postgresDsn          = getEnv("POSTGRES_DSN")
-	postgresHost         = getEnv("POSTGRES_HOST")
-	postgresPort         = getEnv("POSTGRES_PORT")
-	postgresUser         = getEnv("POSTGRES_USER")
-	postgresPassword     = getEnv("POSTGRES_PASSWORD")
-	postgresDatabase     = getEnv("POSTGRES_DATABASE")
-	postgresTLSEnabled   = getEnv("POSTGRES_TLS_ENABLED")
-	postgresMaxOpenConns = getEnv("POSTGRES_MAX_OPEN_CONNS")
-	postgresMaxIdleConns = getEnv("POSTGRES_MAX_IDLE_CONNS")
+// Get returns the raw value of a service-prefixed environment variable.
+func Get(name string) string {
+	return os.Getenv(variableName(name))
+}
 
-	appName      = getEnv("APP_NAME")
-	appMasterKey = getEnv("APP_MASTER_KEY")
-	otel         = getEnv("OTEL")
+// Load parses a service-prefixed environment variable and returns fallback when it is unset.
+func Load[T any](name string, fallback T, parser func(string) (T, error)) (T, error) {
+	value := Get(name)
+	if value == "" {
+		return fallback, nil
+	}
 
-	grpcPort            = getEnv("GRPC_PORT")
-	grpcUrl             = getEnv("GRPC_URL")
-	grpcPing            = getEnv("GRPC_PING")
-	grpcTimeoutShutdown = getEnv("GRPC_TIMEOUT_SHUTDOWN")
+	parsed, err := parser(value)
+	if err != nil {
+		return fallback, fmt.Errorf("parse %s as %T: %w", variableName(name), fallback, err)
+	}
 
-	restPort              = getEnv("REST_PORT")
-	restTimeoutRead       = getEnv("REST_TIMEOUT_READ")
-	restTimeoutReadHeader = getEnv("REST_TIMEOUT_READ_HEADER")
-	restTimeoutWrite      = getEnv("REST_TIMEOUT_WRITE")
-	restTimeoutIdle       = getEnv("REST_TIMEOUT_IDLE")
-	restTimeoutRequest    = getEnv("REST_TIMEOUT_REQUEST")
-	restMaxRequestSize    = getEnv("REST_MAX_REQUEST_SIZE")
-	restTimeoutShutdown   = getEnv("REST_TIMEOUT_SHUTDOWN")
+	return parsed, nil
+}
 
-	corsAllowedOrigins   = getEnv("REST_CORS_ALLOWED_ORIGINS")
-	corsAllowedHeaders   = getEnv("REST_CORS_ALLOWED_HEADERS")
-	corsAllowCredentials = getEnv("REST_CORS_ALLOW_CREDENTIALS")
-	corsMaxAge           = getEnv("REST_CORS_MAX_AGE")
-
-	gcloudProjectId = getEnv("GCLOUD_PROJECT_ID")
-)
-
-var (
-	// PostgresDsn is the legacy URL used when PostgresHost is empty.
-	//
-	// Configure the discrete PostgreSQL fields for new deployments.
-	PostgresDsn = postgresDsn
-	// PostgresHost is the PostgreSQL server hostname or IP address.
-	PostgresHost = postgresHost
-	// PostgresPort is the PostgreSQL server port.
-	PostgresPort = config.LoadEnv(postgresPort, PostgresPortDefault, config.IntParser)
-	// PostgresUser is the PostgreSQL login role.
-	PostgresUser = postgresUser
-	// PostgresPassword is the PostgreSQL login credential.
-	PostgresPassword = postgresPassword
-	// PostgresDatabase is the PostgreSQL database name.
-	PostgresDatabase = postgresDatabase
-	// PostgresTLSEnabled controls transport encryption for the PostgreSQL connection.
-	PostgresTLSEnabled = config.LoadEnv(postgresTLSEnabled, PostgresTLSEnabledDefault, config.BoolParser)
-
-	// PostgresMaxOpenConns is the maximum number of open connections to the database.
-	PostgresMaxOpenConns = config.LoadEnv(postgresMaxOpenConns, PostgresMaxOpenConnsDefault, config.IntParser)
-	// PostgresMaxIdleConns is the maximum number of connections kept open while idle.
-	PostgresMaxIdleConns = config.LoadEnv(postgresMaxIdleConns, PostgresMaxIdleConnsDefault, config.IntParser)
-
-	// AppName is the application name, as it appears in logs and tracing.
-	AppName = config.LoadEnv(appName, AppNameDefault, config.StringParser)
-	// AppMasterKey is a secure, 32-byte random secret used to encrypt private JSON Web Keys
-	// in the database.
-	AppMasterKey = appMasterKey
-	// Otel configures whether to enable OpenTelemetry tracing.
-	Otel = config.LoadEnv(otel, false, config.BoolParser)
-
-	// GrpcPort is the port on which the gRPC server listens for incoming requests.
-	GrpcPort = config.LoadEnv(grpcPort, GrpcPortDefault, config.IntParser)
-	// GrpcUrl is the address of the gRPC service, in the form <host>:<port>.
-	GrpcUrl = grpcUrl
-	// GrpcPing configures the refresh interval for the gRPC server internal healthcheck.
-	GrpcPing = config.LoadEnv(grpcPing, GrpcDefaultPing, config.DurationParser)
-
-	// GrpcTimeoutShutdown bounds graceful RPC drain before remaining calls are stopped.
-	GrpcTimeoutShutdown = config.LoadEnv(
-		grpcTimeoutShutdown, GrpcTimeoutShutdownDefault, config.DurationParser,
-	)
-
-	// RestPort is the port on which the REST server listens for incoming requests.
-	RestPort = config.LoadEnv(restPort, RestPortDefault, config.IntParser)
-	// RestTimeoutRead is the maximum duration for reading an incoming REST request.
-	RestTimeoutRead = config.LoadEnv(restTimeoutRead, RestTimeoutReadDefault, config.DurationParser)
-	// RestTimeoutReadHeader is the maximum duration for reading the headers of an incoming REST request.
-	RestTimeoutReadHeader = config.LoadEnv(restTimeoutReadHeader, RestTimeoutReadHeaderDefault, config.DurationParser)
-	// RestTimeoutWrite is the maximum duration for writing a REST response.
-	RestTimeoutWrite = config.LoadEnv(restTimeoutWrite, RestTimeoutWriteDefault, config.DurationParser)
-	// RestTimeoutIdle is the maximum duration to wait for the next request when keep-alives are enabled.
-	RestTimeoutIdle = config.LoadEnv(restTimeoutIdle, RestTimeoutIdleDefault, config.DurationParser)
-	// RestTimeoutRequest is the maximum duration for processing an incoming REST request.
-	RestTimeoutRequest = config.LoadEnv(restTimeoutRequest, RestTimeoutRequestDefault, config.DurationParser)
-	// RestTimeoutShutdown bounds graceful request drain before remaining connections are closed.
-	RestTimeoutShutdown = config.LoadEnv(
-		restTimeoutShutdown, RestTimeoutShutdownDefault, config.DurationParser,
-	)
-	// RestMaxRequestSize is the maximum size of an incoming REST request body.
-	RestMaxRequestSize = config.LoadEnv(restMaxRequestSize, RestMaxRequestSizeDefault, config.Int64Parser)
-
-	// CorsAllowedOrigins lists the origins allowed to access the REST API.
-	CorsAllowedOrigins = config.LoadEnv(
-		corsAllowedOrigins, CorsAllowedOriginsDefault, config.SliceParser(config.StringParser),
-	)
-	// CorsAllowedHeaders lists the headers allowed in CORS requests.
-	CorsAllowedHeaders = config.LoadEnv(
-		corsAllowedHeaders, CorsAllowedHeadersDefault, config.SliceParser(config.StringParser),
-	)
-	// CorsAllowCredentials configures whether CORS requests can include credentials.
-	CorsAllowCredentials = config.LoadEnv(corsAllowCredentials, CorsAllowCredentialsDefault, config.BoolParser)
-	// CorsMaxAge is the maximum age, in seconds, of CORS preflight cache results.
-	CorsMaxAge = config.LoadEnv(corsMaxAge, CorsMaxAgeDefault, config.IntParser)
-
-	// GcloudProjectId is the Google Cloud project ID. When set, the service switches to
-	// Google Cloud Logging and Google Cloud Trace for observability. When empty, it falls
-	// back to local-development logging and disabled tracing.
-	GcloudProjectId = gcloudProjectId
-)
+func variableName(name string) string {
+	return os.Getenv("SERVICE_JSON_KEYS_ENV_PREFIX") + name
+}

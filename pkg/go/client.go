@@ -8,8 +8,8 @@ import (
 
 	golibproto "github.com/a-novel-kit/golib/grpcf/proto/gen"
 
-	"github.com/a-novel/service-json-keys/v2/internal/config"
-	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/internal/handlers/protogen/anovel/jsonkeys/v2"
+	jwkconfig "github.com/a-novel/service-json-keys/v2/internal/jwk"
+	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/pkg/go/protogen/anovel/jsonkeys/v2"
 )
 
 type (
@@ -25,7 +25,7 @@ type (
 	// JwkConfig holds the full configuration for a single key usage — the signing algorithm
 	// and the key and token parameters applied to every JWT signed under it.
 	// Keyed by usage name in the map returned by [Client.Keys].
-	JwkConfig = config.Jwk
+	JwkConfig = jwkconfig.Jwk
 )
 
 // BaseClient is the minimal gRPC interface for the JSON-keys service. It exposes every RPC
@@ -106,7 +106,7 @@ func NewClient(addr string, opts ...grpc.DialOption) (Client, error) {
 		JwkGetServiceClient:     jsonkeysv2.NewJwkGetServiceClient(conn),
 		JwkListServiceClient:    jsonkeysv2.NewJwkListServiceClient(conn),
 		ClaimsSignServiceClient: jsonkeysv2.NewClaimsSignServiceClient(conn),
-		keys:                    config.JwkPresetDefault,
+		keys:                    jwkconfig.PresetDefault,
 		conn:                    conn,
 	}
 

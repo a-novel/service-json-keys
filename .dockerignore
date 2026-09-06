@@ -10,8 +10,12 @@ node_modules
 **/*_test.go
 **/*.test.go
 
-# Go client package — not part of any server build.
-pkg/
+# Go client package — only generated protobuf bindings are part of server builds.
+pkg/*
+!pkg/go/
+pkg/go/*
+!pkg/go/protogen/
+!pkg/go/protogen/**
 
 # Scripts, docs, and frontend config — not part of any server build.
 scripts/

@@ -11,6 +11,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 
 COPY ./cmd/migrations ./cmd/migrations
 COPY ./internal/config ./internal/config
+COPY ./internal/jwk ./internal/jwk
 COPY ./internal/models/migrations ./internal/models/migrations
 
 RUN --mount=type=cache,target=/go/pkg/mod \

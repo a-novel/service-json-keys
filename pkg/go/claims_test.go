@@ -16,7 +16,7 @@ import (
 func TestClaimsVerifier(t *testing.T) {
 	t.Parallel()
 
-	client, err := servicejsonkeys.NewClient(env.GrpcUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	client, err := servicejsonkeys.NewClient(env.Get("GRPC_URL"), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	require.NoError(t, err)
 
 	defer client.Close()

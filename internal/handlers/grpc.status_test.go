@@ -19,8 +19,8 @@ import (
 
 	"github.com/a-novel/service-json-keys/v2/internal/config/configtest"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
-	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/internal/handlers/protogen/anovel/jsonkeys/v2"
 	"github.com/a-novel/service-json-keys/v2/pkg/go"
+	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/pkg/go/protogen/anovel/jsonkeys/v2"
 )
 
 func TestGrpcStatus(t *testing.T) {

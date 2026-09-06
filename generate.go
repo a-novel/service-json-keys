@@ -7,5 +7,5 @@ package servicejsonkeys
 //go:generate go tool -modfile=mockery.mod mockery
 
 // Generate proto stubs.
-//go:generate rm -rf internal/handlers/protogen
+//go:generate rm -rf pkg/go/protogen
 //go:generate go tool -modfile=buf.mod buf generate

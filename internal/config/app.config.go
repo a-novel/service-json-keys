@@ -77,4 +77,6 @@ type App struct {
 	RestLogger logging.HTTPConfig `json:"restLogger" yaml:"restLogger"`
 	// Postgres configures the PostgreSQL connection.
 	Postgres postgres.Config `json:"postgres" yaml:"postgres"`
+	// GcloudProjectID selects Google Cloud logging and telemetry when non-empty.
+	GcloudProjectID string `json:"-" yaml:"-"`
 }
