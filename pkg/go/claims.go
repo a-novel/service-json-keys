@@ -62,7 +62,7 @@ func NewClaimsVerifier[C any](c Client) (ClaimsVerifier[C], error) {
 
 	recipients, err := core.NewJwkRecipients(adapter, c.Keys())
 	if err != nil {
-		return nil, fmt.Errorf("(NewClaimsVerifier) new recipients: %w", err)
+		return nil, fmt.Errorf("(NewClaimsVerifier) new public sources: %w", err)
 	}
 
 	return &claimsVerifier[C]{service: core.NewClaimsVerify[C](recipients, c.Keys())}, nil
