@@ -8,8 +8,8 @@ import (
 
 	"github.com/a-novel-kit/jwt/v2/jwa"
 
-	jwkconfig "github.com/a-novel/service-json-keys/v2/internal/jwk"
-	"github.com/a-novel/service-json-keys/v2/internal/verifier"
+	jwkconfig "github.com/a-novel/service-json-keys/v2/internal/config/jwk"
+	"github.com/a-novel/service-json-keys/v2/internal/core/verifier"
 )
 
 type source struct{}

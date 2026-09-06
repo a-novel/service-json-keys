@@ -10,6 +10,7 @@ import (
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
 	"github.com/a-novel/service-json-keys/v2/internal/core"
+	"github.com/a-novel/service-json-keys/v2/internal/core/verifier"
 )
 
 func TestClaimsVerify(t *testing.T) {
@@ -80,6 +81,8 @@ func TestClaimsVerify(t *testing.T) {
 			t.Parallel()
 
 			service := core.NewClaimsVerify[testClaims](testCase.recipients, testCase.keysConfig)
+
+			require.IsType(t, &verifier.ClaimsVerify[testClaims]{}, service)
 
 			_, err := service.Exec(t.Context(), testCase.request)
 			require.ErrorIs(t, err, testCase.expectErr)

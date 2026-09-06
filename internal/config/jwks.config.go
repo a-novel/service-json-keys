@@ -1,6 +1,6 @@
 package config
 
-import "github.com/a-novel/service-json-keys/v2/internal/jwk"
+import "github.com/a-novel/service-json-keys/v2/internal/config/jwk"
 
 type (
 	// JwkKey holds the lifetime and caching parameters for a JSON Web Key.

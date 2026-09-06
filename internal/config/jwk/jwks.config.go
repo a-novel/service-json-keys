@@ -1,7 +1,6 @@
 package jwk
 
 import (
-	_ "embed"
 	"time"
 
 	"github.com/a-novel-kit/jwt/v2/jwa"

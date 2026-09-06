@@ -1,9 +1,13 @@
 package core
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/a-novel/service-json-keys/v2/internal/core/verifier"
+)
 
 // ErrConfigNotFound is returned when no JWK configuration is registered for a given key usage.
-var ErrConfigNotFound = errors.New("no config found for the requested usage")
+var ErrConfigNotFound = verifier.ErrConfigNotFound
 
 // ErrJwkNotFound is returned when no active key matches the requested ID.
 var ErrJwkNotFound = errors.New("jwk not found")

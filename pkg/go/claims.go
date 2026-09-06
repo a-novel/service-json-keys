@@ -6,7 +6,7 @@ import (
 
 	"github.com/samber/lo"
 
-	"github.com/a-novel/service-json-keys/v2/internal/verifier"
+	"github.com/a-novel/service-json-keys/v2/internal/core/verifier"
 )
 
 // KeyUsage identifies the intended purpose of a token. It selects the signing key and full
@@ -48,7 +48,7 @@ type ClaimsVerifier[C any] interface {
 }
 
 type claimsVerifier[C any] struct {
-	claims *verifier.Claims[C]
+	claims *verifier.ClaimsVerify[C]
 }
 
 // NewClaimsVerifier creates a token verifier backed by the key configuration carried by c. It
@@ -65,11 +65,11 @@ func NewClaimsVerifier[C any](c Client) (ClaimsVerifier[C], error) {
 		return nil, fmt.Errorf("(NewClaimsVerifier) new recipients: %w", err)
 	}
 
-	return &claimsVerifier[C]{claims: verifier.NewClaims[C](recipients, c.Keys())}, nil
+	return &claimsVerifier[C]{claims: verifier.NewClaimsVerify[C](recipients, c.Keys())}, nil
 }
 
 func (claimsVerifier *claimsVerifier[C]) VerifyClaims(ctx context.Context, req *VerifyClaimsRequest) (*C, error) {
-	return claimsVerifier.claims.Verify(ctx, &verifier.Request{
+	return claimsVerifier.claims.Exec(ctx, &verifier.ClaimsVerifyRequest{
 		Token:         req.AccessToken,
 		Usage:         req.Usage,
 		IgnoreExpired: lo.FromPtr(req.Options).IgnoreExpired,

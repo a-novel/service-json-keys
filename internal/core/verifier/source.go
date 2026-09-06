@@ -2,7 +2,6 @@ package verifier
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/a-novel-kit/jwt/v2"
@@ -10,30 +9,8 @@ import (
 	jwtjwk "github.com/a-novel-kit/jwt/v2/jwk"
 	"github.com/a-novel-kit/jwt/v2/jws"
 
-	jwkconfig "github.com/a-novel/service-json-keys/v2/internal/jwk"
+	jwkconfig "github.com/a-novel/service-json-keys/v2/internal/config/jwk"
 )
-
-var (
-	// ErrPresetUnknown is returned when a usage has no verification preset for its algorithm.
-	ErrPresetUnknown = errors.New("unknown jwk preset")
-	// ErrPresetUnknownAlgorithm is returned when a usage selects an unsupported key algorithm.
-	ErrPresetUnknownAlgorithm = errors.New("unknown jwk algorithm")
-)
-
-var jwsPresetsECDSA = map[jwa.Alg]jws.ECDSAPreset{
-	jwa.ES256: jws.ES256,
-	jwa.ES384: jws.ES384,
-	jwa.ES512: jws.ES512,
-}
-
-var jwsPresetsRSA = map[jwa.Alg]jws.RSAPreset{
-	jwa.RS256: jws.RS256,
-	jwa.RS384: jws.RS384,
-	jwa.RS512: jws.RS512,
-	jwa.PS256: jws.PS256,
-	jwa.PS384: jws.PS384,
-	jwa.PS512: jws.PS512,
-}
 
 // Source provides the public JWKs used by NewRecipients.
 type Source interface {
@@ -75,14 +52,14 @@ func NewRecipients(source Source, keys map[string]*jwkconfig.Jwk) (Recipients, e
 		case jwa.EdDSA:
 			recipient = jws.NewSourcedED25519Verifier(keySource)
 		case jwa.ES256, jwa.ES384, jwa.ES512:
-			preset, ok := jwsPresetsECDSA[keyConfig.Alg]
+			preset, ok := jwkconfig.JwsPresetsEcdsa[keyConfig.Alg]
 			if !ok {
 				return nil, fmt.Errorf("%w (ecdsa) for usage: %s", ErrPresetUnknown, usage)
 			}
 
 			recipient = jws.NewSourcedECDSAVerifier(keySource, preset)
 		case jwa.RS256, jwa.RS384, jwa.RS512, jwa.PS256, jwa.PS384, jwa.PS512:
-			preset, ok := jwsPresetsRSA[keyConfig.Alg]
+			preset, ok := jwkconfig.JwsPresetsRsa[keyConfig.Alg]
 			if !ok {
 				return nil, fmt.Errorf("%w (rsa) for usage: %s", ErrPresetUnknown, usage)
 			}

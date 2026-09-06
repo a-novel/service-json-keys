@@ -38,9 +38,24 @@ replace github.com/a-novel/service-json-keys/v2 => %s
 `, filepath.ToSlash(moduleRoot))), 0o600))
 		require.NoError(t, os.WriteFile(filepath.Join(consumerDir, "main.go"), []byte(`package main
 
-import _ "github.com/a-novel/service-json-keys/v2/pkg/go"
+import (
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
-func main() {}
+	servicejsonkeys "github.com/a-novel/service-json-keys/v2/pkg/go"
+)
+
+func main() {
+	client, err := servicejsonkeys.NewClient("localhost:1", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		panic(err)
+	}
+	defer client.Close()
+
+	if _, err := servicejsonkeys.NewClaimsVerifier[map[string]any](client); err != nil {
+		panic(err)
+	}
+}
 `), 0o600))
 
 		command := exec.CommandContext(t.Context(), "go", "run", "-mod=mod", ".")
@@ -63,16 +78,16 @@ func main() {}
 		output, err := command.Output()
 		require.NoError(t, err)
 
-		forbidden := []string{
-			"github.com/a-novel/service-json-keys/v2/internal/config",
-			"github.com/a-novel/service-json-keys/v2/internal/core",
-			"github.com/a-novel/service-json-keys/v2/internal/dao",
-			"github.com/a-novel/service-json-keys/v2/internal/handlers",
+		const internalPrefix = "github.com/a-novel/service-json-keys/v2/internal/"
+
+		allowed := []string{
+			internalPrefix + "config/jwk",
+			internalPrefix + "core/verifier",
 		}
 
 		for dependency := range strings.SplitSeq(string(output), "\n") {
-			for _, prefix := range forbidden {
-				require.False(t, strings.HasPrefix(dependency, prefix), dependency)
+			if strings.HasPrefix(dependency, internalPrefix) {
+				require.Contains(t, allowed, dependency)
 			}
 		}
 	})

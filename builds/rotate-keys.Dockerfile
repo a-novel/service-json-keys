@@ -13,7 +13,6 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 
 COPY ./cmd/rotate-keys ./cmd/rotate-keys
 COPY ./internal/config ./internal/config
-COPY ./internal/jwk ./internal/jwk
 COPY ./internal/dao ./internal/dao
 COPY ./internal/core ./internal/core
 COPY ./internal/lib ./internal/lib

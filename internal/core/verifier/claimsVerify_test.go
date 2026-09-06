@@ -7,11 +7,11 @@ import (
 
 	"github.com/a-novel-kit/jwt/v2/jwa"
 
-	jwkconfig "github.com/a-novel/service-json-keys/v2/internal/jwk"
-	"github.com/a-novel/service-json-keys/v2/internal/verifier"
+	jwkconfig "github.com/a-novel/service-json-keys/v2/internal/config/jwk"
+	"github.com/a-novel/service-json-keys/v2/internal/core/verifier"
 )
 
-func TestClaims(t *testing.T) {
+func TestClaimsVerify(t *testing.T) {
 	t.Parallel()
 
 	type testClaims struct {
@@ -25,14 +25,14 @@ func TestClaims(t *testing.T) {
 	testCases := []struct {
 		name string
 
-		request    *verifier.Request
+		request    *verifier.ClaimsVerifyRequest
 		recipients verifier.Recipients
 
 		expectErr error
 	}{
 		{
 			name: "Error/ConfigNotFound",
-			request: &verifier.Request{
+			request: &verifier.ClaimsVerifyRequest{
 				Token: "some.token.value",
 				Usage: "unknown-usage",
 			},
@@ -41,7 +41,7 @@ func TestClaims(t *testing.T) {
 		},
 		{
 			name: "Error/NoRecipients",
-			request: &verifier.Request{
+			request: &verifier.ClaimsVerifyRequest{
 				Token: "some.token.value",
 				Usage: "test-usage",
 			},
@@ -54,8 +54,8 @@ func TestClaims(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			claimsVerifier := verifier.NewClaims[testClaims](testCase.recipients, keys)
-			claims, err := claimsVerifier.Verify(t.Context(), testCase.request)
+			claimsVerifier := verifier.NewClaimsVerify[testClaims](testCase.recipients, keys)
+			claims, err := claimsVerifier.Exec(t.Context(), testCase.request)
 
 			require.ErrorIs(t, err, testCase.expectErr)
 			require.Nil(t, claims)

@@ -24,7 +24,6 @@ COPY ./internal/lib ./internal/lib
 COPY ./internal/core ./internal/core
 COPY ./internal/models ./internal/models
 COPY ./internal/config ./internal/config
-COPY ./internal/jwk ./internal/jwk
 COPY ./pkg/go/protogen ./pkg/go/protogen
 
 RUN --mount=type=cache,target=/go/pkg/mod \
