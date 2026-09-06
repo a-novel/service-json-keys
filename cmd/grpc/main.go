@@ -29,8 +29,8 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/core"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
+	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/internal/handlers/protogen/anovel/jsonkeys/v2"
 	"github.com/a-novel/service-json-keys/v2/internal/lib"
-	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/pkg/go/protogen/anovel/jsonkeys/v2"
 )
 
 func main() {

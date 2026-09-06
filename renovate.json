@@ -43,7 +43,7 @@
         "commands": [
           "rm -f buf.sum",
           "go get -modfile=buf.mod -tool github.com/bufbuild/buf/cmd/buf",
-          "rm -rf pkg/go/protogen",
+          "rm -rf internal/handlers/protogen",
           "go tool -modfile=buf.mod buf generate",
           "go tool -modfile=buf.mod buf format -w",
           "go tool -modfile=buf.mod buf dep update"

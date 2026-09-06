@@ -23,7 +23,6 @@ COPY ./internal/lib ./internal/lib
 COPY ./internal/core ./internal/core
 COPY ./internal/models ./internal/models
 COPY ./internal/config ./internal/config
-COPY ./pkg/go/protogen ./pkg/go/protogen
 
 # -ldflags="-s -w" strips the symbol table and DWARF debug info, shrinking the binary.
 # -trimpath removes local filesystem paths for reproducible builds.

@@ -15,7 +15,7 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/core"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
 	handlersmocks "github.com/a-novel/service-json-keys/v2/internal/handlers/mocks"
-	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/pkg/go/protogen/anovel/jsonkeys/v2"
+	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/internal/handlers/protogen/anovel/jsonkeys/v2"
 )
 
 func TestGrpcClaimsSign(t *testing.T) {

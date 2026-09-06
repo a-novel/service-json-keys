@@ -225,8 +225,8 @@ const file_anovel_jsonkeys_v2_status_proto_rawDesc = "" +
 	"\x14DEPENDENCY_STATUS_UP\x10\x01\x12\x1a\n" +
 	"\x16DEPENDENCY_STATUS_DOWN\x10\x022`\n" +
 	"\rStatusService\x12O\n" +
-	"\x06Status\x12!.anovel.jsonkeys.v2.StatusRequest\x1a\".anovel.jsonkeys.v2.StatusResponseB\xe6\x01\n" +
-	"\x16com.anovel.jsonkeys.v2B\vStatusProtoP\x01ZUgithub.com/a-novel/service-json-keys/v2/pkg/go/protogen/anovel/jsonkeys/v2;jsonkeysv2\xa2\x02\x03AJX\xaa\x02\x12Anovel.Jsonkeys.V2\xca\x02\x12Anovel\\Jsonkeys\\V2\xe2\x02\x1eAnovel\\Jsonkeys\\V2\\GPBMetadata\xea\x02\x14Anovel::Jsonkeys::V2b\x06proto3"
+	"\x06Status\x12!.anovel.jsonkeys.v2.StatusRequest\x1a\".anovel.jsonkeys.v2.StatusResponseB\xf1\x01\n" +
+	"\x16com.anovel.jsonkeys.v2B\vStatusProtoP\x01Z`github.com/a-novel/service-json-keys/v2/internal/handlers/protogen/anovel/jsonkeys/v2;jsonkeysv2\xa2\x02\x03AJX\xaa\x02\x12Anovel.Jsonkeys.V2\xca\x02\x12Anovel\\Jsonkeys\\V2\xe2\x02\x1eAnovel\\Jsonkeys\\V2\\GPBMetadata\xea\x02\x14Anovel::Jsonkeys::V2b\x06proto3"
 
 var (
 	file_anovel_jsonkeys_v2_status_proto_rawDescOnce sync.Once

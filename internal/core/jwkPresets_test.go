@@ -126,6 +126,7 @@ func TestJwkRecipients(t *testing.T) {
 			require.Len(t, recipients, testCase.expectLen)
 
 			for _, plugins := range recipients {
+				require.NotNil(t, plugins)
 				require.Len(t, plugins, 1)
 			}
 

@@ -123,8 +123,8 @@ const file_anovel_jsonkeys_v2_jwk_list_proto_rawDesc = "" +
 	"\x0fJwkListResponse\x12+\n" +
 	"\x04keys\x18\x01 \x03(\v2\x17.anovel.jsonkeys.v2.JwkR\x04keys2d\n" +
 	"\x0eJwkListService\x12R\n" +
-	"\aJwkList\x12\".anovel.jsonkeys.v2.JwkListRequest\x1a#.anovel.jsonkeys.v2.JwkListResponseB\xe7\x01\n" +
-	"\x16com.anovel.jsonkeys.v2B\fJwkListProtoP\x01ZUgithub.com/a-novel/service-json-keys/v2/pkg/go/protogen/anovel/jsonkeys/v2;jsonkeysv2\xa2\x02\x03AJX\xaa\x02\x12Anovel.Jsonkeys.V2\xca\x02\x12Anovel\\Jsonkeys\\V2\xe2\x02\x1eAnovel\\Jsonkeys\\V2\\GPBMetadata\xea\x02\x14Anovel::Jsonkeys::V2b\x06proto3"
+	"\aJwkList\x12\".anovel.jsonkeys.v2.JwkListRequest\x1a#.anovel.jsonkeys.v2.JwkListResponseB\xf2\x01\n" +
+	"\x16com.anovel.jsonkeys.v2B\fJwkListProtoP\x01Z`github.com/a-novel/service-json-keys/v2/internal/handlers/protogen/anovel/jsonkeys/v2;jsonkeysv2\xa2\x02\x03AJX\xaa\x02\x12Anovel.Jsonkeys.V2\xca\x02\x12Anovel\\Jsonkeys\\V2\xe2\x02\x1eAnovel\\Jsonkeys\\V2\\GPBMetadata\xea\x02\x14Anovel::Jsonkeys::V2b\x06proto3"
 
 var (
 	file_anovel_jsonkeys_v2_jwk_list_proto_rawDescOnce sync.Once

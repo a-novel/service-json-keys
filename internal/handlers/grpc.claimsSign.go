@@ -11,7 +11,7 @@ import (
 	"github.com/a-novel-kit/golib/otel"
 
 	"github.com/a-novel/service-json-keys/v2/internal/core"
-	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/pkg/go/protogen/anovel/jsonkeys/v2"
+	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/internal/handlers/protogen/anovel/jsonkeys/v2"
 )
 
 // GrpcClaimsSignService is the service dependency of [GrpcClaimsSign].

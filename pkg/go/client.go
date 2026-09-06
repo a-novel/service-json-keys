@@ -9,7 +9,7 @@ import (
 	golibproto "github.com/a-novel-kit/golib/grpcf/proto/gen"
 
 	jwkconfig "github.com/a-novel/service-json-keys/v2/internal/config/jwk"
-	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/pkg/go/protogen/anovel/jsonkeys/v2"
+	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/internal/handlers/protogen/anovel/jsonkeys/v2"
 )
 
 type (

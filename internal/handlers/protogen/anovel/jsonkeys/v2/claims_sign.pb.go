@@ -143,8 +143,8 @@ const file_anovel_jsonkeys_v2_claims_sign_proto_rawDesc = "" +
 	"\x05token\x18\x01 \x01(\tR\x05token2p\n" +
 	"\x11ClaimsSignService\x12[\n" +
 	"\n" +
-	"ClaimsSign\x12%.anovel.jsonkeys.v2.ClaimsSignRequest\x1a&.anovel.jsonkeys.v2.ClaimsSignResponseB\xea\x01\n" +
-	"\x16com.anovel.jsonkeys.v2B\x0fClaimsSignProtoP\x01ZUgithub.com/a-novel/service-json-keys/v2/pkg/go/protogen/anovel/jsonkeys/v2;jsonkeysv2\xa2\x02\x03AJX\xaa\x02\x12Anovel.Jsonkeys.V2\xca\x02\x12Anovel\\Jsonkeys\\V2\xe2\x02\x1eAnovel\\Jsonkeys\\V2\\GPBMetadata\xea\x02\x14Anovel::Jsonkeys::V2b\x06proto3"
+	"ClaimsSign\x12%.anovel.jsonkeys.v2.ClaimsSignRequest\x1a&.anovel.jsonkeys.v2.ClaimsSignResponseB\xf5\x01\n" +
+	"\x16com.anovel.jsonkeys.v2B\x0fClaimsSignProtoP\x01Z`github.com/a-novel/service-json-keys/v2/internal/handlers/protogen/anovel/jsonkeys/v2;jsonkeysv2\xa2\x02\x03AJX\xaa\x02\x12Anovel.Jsonkeys.V2\xca\x02\x12Anovel\\Jsonkeys\\V2\xe2\x02\x1eAnovel\\Jsonkeys\\V2\\GPBMetadata\xea\x02\x14Anovel::Jsonkeys::V2b\x06proto3"
 
 var (
 	file_anovel_jsonkeys_v2_claims_sign_proto_rawDescOnce sync.Once

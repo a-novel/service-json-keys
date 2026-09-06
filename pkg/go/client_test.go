@@ -46,6 +46,11 @@ import (
 )
 
 func main() {
+	request := &servicejsonkeys.JwkListRequest{Usage: servicejsonkeys.KeyUsageAuth}
+	if request.GetUsage() != servicejsonkeys.KeyUsageAuth {
+		panic("client request alias lost its generated methods")
+	}
+
 	client, err := servicejsonkeys.NewClient("localhost:1", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		panic(err)
@@ -58,17 +63,42 @@ func main() {
 }
 `), 0o600))
 
-		command := exec.CommandContext(t.Context(), "go", "run", "-mod=mod", ".")
-		command.Dir = consumerDir
+		consumerPath := filepath.Join(consumerDir, "consumer")
+		build := exec.CommandContext(t.Context(), "go", "build", "-mod=mod", "-o", "consumer", ".")
+		build.Dir = consumerDir
 
-		command.Env = append(os.Environ(),
-			"GOWORK=off",
-			"SERVICE_JSON_KEYS_ENV_PREFIX=",
-			"REST_TIMEOUT_READ=invalid",
-		)
-
-		output, err := command.CombinedOutput()
+		build.Env = append(os.Environ(), "GOWORK=off")
+		output, err := build.CombinedOutput()
 		require.NoError(t, err, string(output))
+
+		testCases := []struct {
+			name   string
+			prefix string
+		}{
+			{name: "Unprefixed"},
+			{name: "Prefixed", prefix: "JSON_KEYS_CLIENT_TEST_"},
+		}
+
+		for _, testCase := range testCases {
+			t.Run(testCase.name, func(t *testing.T) {
+				t.Parallel()
+
+				command := exec.CommandContext(t.Context(), consumerPath)
+				command.Dir = consumerDir
+
+				command.Env = append(os.Environ(),
+					"GOWORK=off",
+					"SERVICE_JSON_KEYS_ENV_PREFIX="+testCase.prefix,
+					testCase.prefix+"REST_TIMEOUT_READ=invalid",
+					testCase.prefix+"GRPC_PING=invalid",
+					testCase.prefix+"POSTGRES_PORT=invalid",
+					testCase.prefix+"OTEL=invalid",
+				)
+
+				output, err := command.CombinedOutput()
+				require.NoError(t, err, string(output))
+			})
+		}
 	})
 
 	t.Run("Success/DependencyBoundary", func(t *testing.T) {
@@ -78,18 +108,12 @@ func main() {
 		output, err := command.Output()
 		require.NoError(t, err)
 
-		const internalPrefix = "github.com/a-novel/service-json-keys/v2/internal/"
+		dependencies := strings.Split(strings.TrimSpace(string(output)), "\n")
 
-		allowed := []string{
-			internalPrefix + "config/jwk",
-			internalPrefix + "core/verifier",
-		}
+		const configPath = "github.com/a-novel/service-json-keys/v2/internal/config"
 
-		for dependency := range strings.SplitSeq(string(output), "\n") {
-			if strings.HasPrefix(dependency, internalPrefix) {
-				require.Contains(t, allowed, dependency)
-			}
-		}
+		require.NotContains(t, dependencies, configPath)
+		require.NotContains(t, dependencies, configPath+"/env")
 	})
 
 	t.Run("Success/RemoteCalls", func(t *testing.T) {

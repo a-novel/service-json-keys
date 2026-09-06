@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/a-novel-kit/jwt/v2"
@@ -9,18 +10,16 @@ import (
 	"github.com/a-novel-kit/jwt/v2/jwk"
 	"github.com/a-novel-kit/jwt/v2/jws"
 
-	"github.com/a-novel/service-json-keys/v2/internal/config"
 	jwkconfig "github.com/a-novel/service-json-keys/v2/internal/config/jwk"
-	"github.com/a-novel/service-json-keys/v2/internal/core/verifier"
 )
 
 var (
 	// ErrJwkPresetUnknown is returned when a requested algorithm has no corresponding preset entry.
-	ErrJwkPresetUnknown = verifier.ErrPresetUnknown
+	ErrJwkPresetUnknown = errors.New("unknown jwk preset")
 	// ErrJwkPresetUnknownAlgorithm is returned when a key configuration references an algorithm
 	// with no signing or verification plugin. Only asymmetric algorithms are supported because
 	// symmetric secrets have no public half to publish on the REST surface.
-	ErrJwkPresetUnknownAlgorithm = verifier.ErrPresetUnknownAlgorithm
+	ErrJwkPresetUnknownAlgorithm = errors.New("unknown jwk algorithm")
 )
 
 // JwkGeneratorResult contains the key material and identifiers produced for one asymmetric key pair.
@@ -151,7 +150,7 @@ type JwkProducers map[string][]jwt.ProducerPlugin
 // NewJwkProducers builds cached signing plugins from private keys for every configured usage.
 func NewJwkProducers(
 	source JwkPrivateSource,
-	keys map[string]*config.Jwk,
+	keys map[string]*jwkconfig.Jwk,
 ) (JwkProducers, error) {
 	output := make(JwkProducers)
 
@@ -191,12 +190,49 @@ func NewJwkProducers(
 
 // JwkRecipients maps each key usage to the set of JWT recipient plugins used for verifying tokens
 // under that usage.
-type JwkRecipients = verifier.Recipients
+type JwkRecipients map[string][]jwt.RecipientPlugin
 
 // NewJwkRecipients builds cached verification plugins from public keys for every configured usage.
 func NewJwkRecipients(
 	source JwkPublicSource,
-	keys map[string]*config.Jwk,
+	keys map[string]*jwkconfig.Jwk,
 ) (JwkRecipients, error) {
-	return verifier.NewRecipients(source, keys)
+	output := make(JwkRecipients)
+
+	for usage, keyConfig := range keys {
+		keySource := newJwkSource(source.SearchKeys, usage, jwk.SourceConfig{
+			CacheDuration: keyConfig.Key.Cache,
+			// A rotated signing key can appear before the verifier's normal cache refresh.
+			// An unknown key ID triggers one rate-limited refetch so verification can continue.
+			RefreshOnUnknownKeyID: true,
+			UnknownKeyIDInterval:  keyConfig.Key.UnknownKeyIDInterval,
+		})
+
+		var recipient jwt.RecipientPlugin
+
+		switch keyConfig.Alg {
+		case jwa.EdDSA:
+			recipient = jws.NewSourcedED25519Verifier(keySource)
+		case jwa.ES256, jwa.ES384, jwa.ES512:
+			ecdsaPreset, ok := jwkconfig.JwsPresetsEcdsa[keyConfig.Alg]
+			if !ok {
+				return nil, fmt.Errorf("%w (ecdsa) for usage: %s", ErrJwkPresetUnknown, usage)
+			}
+
+			recipient = jws.NewSourcedECDSAVerifier(keySource, ecdsaPreset)
+		case jwa.RS256, jwa.RS384, jwa.RS512, jwa.PS256, jwa.PS384, jwa.PS512:
+			rsaPreset, ok := jwkconfig.JwsPresetsRsa[keyConfig.Alg]
+			if !ok {
+				return nil, fmt.Errorf("%w (rsa) for usage: %s", ErrJwkPresetUnknown, usage)
+			}
+
+			recipient = jws.NewSourcedRSAVerifier(keySource, rsaPreset)
+		default:
+			return nil, fmt.Errorf("%w: %s", ErrJwkPresetUnknownAlgorithm, keyConfig.Alg)
+		}
+
+		output[usage] = []jwt.RecipientPlugin{recipient}
+	}
+
+	return output, nil
 }

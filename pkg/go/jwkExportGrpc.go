@@ -7,7 +7,7 @@ import (
 
 	"github.com/a-novel-kit/jwt/v2/jwa"
 
-	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/pkg/go/protogen/anovel/jsonkeys/v2"
+	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/internal/handlers/protogen/anovel/jsonkeys/v2"
 )
 
 // A jwkExportGrpc adapts a [BaseClient] to the key-source fetch interface used when initializing

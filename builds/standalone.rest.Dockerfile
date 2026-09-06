@@ -20,7 +20,6 @@ COPY ./internal/lib ./internal/lib
 COPY ./internal/core ./internal/core
 COPY ./internal/models ./internal/models
 COPY ./internal/config ./internal/config
-COPY ./pkg/go/protogen ./pkg/go/protogen
 
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \

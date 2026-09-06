@@ -9,7 +9,7 @@ import (
 	"github.com/a-novel-kit/golib/otel"
 	"github.com/a-novel-kit/golib/transaction"
 
-	"github.com/a-novel/service-json-keys/v2/internal/config"
+	jwkconfig "github.com/a-novel/service-json-keys/v2/internal/config/jwk"
 )
 
 // JwkRotateAllServiceGen is the per-usage generation dependency of [JwkRotateAll].
@@ -35,14 +35,14 @@ type JwkRotateAllResponse struct {
 type JwkRotateAll struct {
 	serviceGen JwkRotateAllServiceGen
 	transactor transaction.Transactor
-	keysConfig map[string]*config.Jwk
+	keysConfig map[string]*jwkconfig.Jwk
 }
 
 // NewJwkRotateAll returns a JwkRotateAll rotating the usages declared in keysConfig.
 func NewJwkRotateAll(
 	serviceGen JwkRotateAllServiceGen,
 	transactor transaction.Transactor,
-	keysConfig map[string]*config.Jwk,
+	keysConfig map[string]*jwkconfig.Jwk,
 ) *JwkRotateAll {
 	return &JwkRotateAll{serviceGen: serviceGen, transactor: transactor, keysConfig: keysConfig}
 }

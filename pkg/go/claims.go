@@ -6,7 +6,7 @@ import (
 
 	"github.com/samber/lo"
 
-	"github.com/a-novel/service-json-keys/v2/internal/core/verifier"
+	"github.com/a-novel/service-json-keys/v2/internal/core"
 )
 
 // KeyUsage identifies the intended purpose of a token. It selects the signing key and full
@@ -48,7 +48,7 @@ type ClaimsVerifier[C any] interface {
 }
 
 type claimsVerifier[C any] struct {
-	claims *verifier.ClaimsVerify[C]
+	service *core.ClaimsVerify[C]
 }
 
 // NewClaimsVerifier creates a token verifier backed by the key configuration carried by c. It
@@ -56,20 +56,20 @@ type claimsVerifier[C any] struct {
 // configuration references an unsupported algorithm. C must be JSON-serializable and match the
 // claims type used when signing for the same usage.
 func NewClaimsVerifier[C any](c Client) (ClaimsVerifier[C], error) {
-	// Building the public-key sources here keeps jwt types off the client's exported surface,
+	// Building the public-key plugins here keeps jwt types off the client's exported surface,
 	// and a sign-only consumer never pays for the setup.
 	adapter := newJwkExportGrpc(c)
 
-	recipients, err := verifier.NewRecipients(adapter, c.Keys())
+	recipients, err := core.NewJwkRecipients(adapter, c.Keys())
 	if err != nil {
-		return nil, fmt.Errorf("(NewClaimsVerifier) new recipients: %w", err)
+		return nil, fmt.Errorf("(NewClaimsVerifier) new public sources: %w", err)
 	}
 
-	return &claimsVerifier[C]{claims: verifier.NewClaimsVerify[C](recipients, c.Keys())}, nil
+	return &claimsVerifier[C]{service: core.NewClaimsVerify[C](recipients, c.Keys())}, nil
 }
 
-func (claimsVerifier *claimsVerifier[C]) VerifyClaims(ctx context.Context, req *VerifyClaimsRequest) (*C, error) {
-	return claimsVerifier.claims.Exec(ctx, &verifier.ClaimsVerifyRequest{
+func (verifier *claimsVerifier[C]) VerifyClaims(ctx context.Context, req *VerifyClaimsRequest) (*C, error) {
+	return verifier.service.Exec(ctx, &core.ClaimsVerifyRequest{
 		Token:         req.AccessToken,
 		Usage:         req.Usage,
 		IgnoreExpired: lo.FromPtr(req.Options).IgnoreExpired,
