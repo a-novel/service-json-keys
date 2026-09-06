@@ -16,7 +16,7 @@ import (
 	coremocks "github.com/a-novel/service-json-keys/v2/internal/core/mocks"
 )
 
-func TestNewJwkPrivateSource(t *testing.T) {
+func TestJwkProducers(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -24,14 +24,26 @@ func TestNewJwkPrivateSource(t *testing.T) {
 
 		keys map[string]*config.Jwk
 
+		expectLen int
 		expectErr error
 	}{
 		{
-			name: "Success",
+			name: "Success/SupportedAlgorithms",
 
 			keys: map[string]*config.Jwk{
-				"test-usage": {Alg: jwa.EdDSA},
+				"eddsa": {Alg: jwa.EdDSA},
+				"es256": {Alg: jwa.ES256},
+				"es384": {Alg: jwa.ES384},
+				"es512": {Alg: jwa.ES512},
+				"rs256": {Alg: jwa.RS256},
+				"rs384": {Alg: jwa.RS384},
+				"rs512": {Alg: jwa.RS512},
+				"ps256": {Alg: jwa.PS256},
+				"ps384": {Alg: jwa.PS384},
+				"ps512": {Alg: jwa.PS512},
 			},
+
+			expectLen: 10,
 		},
 		{
 			name: "Error/UnknownAlgorithm",
@@ -50,13 +62,20 @@ func TestNewJwkPrivateSource(t *testing.T) {
 
 			source := coremocks.NewMockJwkPrivateSource(t)
 
-			_, err := core.NewJwkPrivateSource(source, testCase.keys)
+			producers, err := core.NewJwkProducers(source, testCase.keys)
 			require.ErrorIs(t, err, testCase.expectErr)
+			require.Len(t, producers, testCase.expectLen)
+
+			for _, plugins := range producers {
+				require.Len(t, plugins, 1)
+			}
+
+			source.AssertExpectations(t)
 		})
 	}
 }
 
-func TestNewJwkPublicSource(t *testing.T) {
+func TestJwkRecipients(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -64,14 +83,26 @@ func TestNewJwkPublicSource(t *testing.T) {
 
 		keys map[string]*config.Jwk
 
+		expectLen int
 		expectErr error
 	}{
 		{
-			name: "Success",
+			name: "Success/SupportedAlgorithms",
 
 			keys: map[string]*config.Jwk{
-				"test-usage": {Alg: jwa.EdDSA},
+				"eddsa": {Alg: jwa.EdDSA},
+				"es256": {Alg: jwa.ES256},
+				"es384": {Alg: jwa.ES384},
+				"es512": {Alg: jwa.ES512},
+				"rs256": {Alg: jwa.RS256},
+				"rs384": {Alg: jwa.RS384},
+				"rs512": {Alg: jwa.RS512},
+				"ps256": {Alg: jwa.PS256},
+				"ps384": {Alg: jwa.PS384},
+				"ps512": {Alg: jwa.PS512},
 			},
+
+			expectLen: 10,
 		},
 		{
 			name: "Error/UnknownAlgorithm",
@@ -90,68 +121,118 @@ func TestNewJwkPublicSource(t *testing.T) {
 
 			source := coremocks.NewMockJwkPublicSource(t)
 
-			_, err := core.NewJwkPublicSource(source, testCase.keys)
+			recipients, err := core.NewJwkRecipients(source, testCase.keys)
 			require.ErrorIs(t, err, testCase.expectErr)
-		})
-	}
-}
+			require.Len(t, recipients, testCase.expectLen)
 
-// The signer rotates to a key the moment it is published, but a verifier holds its cached set for
-// the whole cache duration — so a token signed with a just-rotated key names a kid the verifier does
-// not yet have. Without RefreshOnUnknownKeyID the source scans its stale cache, misses, and reports
-// the key not found; with it, the unknown kid forces one refetch and the verifier recovers.
-func TestNewJwkPublicSourceRefetchesOnUnknownKeyID(t *testing.T) {
-	t.Parallel()
-
-	_, key1Public, err := jwk.GenerateED25519()
-	require.NoError(t, err)
-
-	_, key2Public, err := jwk.GenerateED25519()
-	require.NoError(t, err)
-
-	require.NotEqual(t, key1Public.KID, key2Public.KID, "the two keys must have distinct ids")
-
-	// The published set: only key1 at first, then key1 and the rotated-in key2. A long cache means
-	// the normal refresh never refetches within the test, so recovery can only come from the
-	// unknown-kid path.
-	source := coremocks.NewMockJwkPublicSource(t)
-
-	var calls int
-
-	source.EXPECT().
-		SearchKeys(mock.Anything, "test-usage").
-		RunAndReturn(func(context.Context, string) ([]*jwa.JWK, error) {
-			calls++
-			if calls == 1 {
-				return []*jwa.JWK{key1Public.JWK}, nil
+			for _, plugins := range recipients {
+				require.Len(t, plugins, 1)
 			}
 
-			return []*jwa.JWK{key1Public.JWK, key2Public.JWK}, nil
+			source.AssertExpectations(t)
 		})
+	}
 
-	// A long cache so a normal refresh never refetches within the test — recovery can only come
-	// from the unknown-kid path. A tiny interval so that path is not rate-limited against the
-	// just-primed cache; in production the cache is minutes old by the time a rotated key appears,
-	// well past the 10s default.
-	sources, err := core.NewJwkPublicSource(source, map[string]*config.Jwk{
-		"test-usage": {Alg: jwa.EdDSA, Key: config.JwkKey{Cache: time.Hour, UnknownKeyIDInterval: time.Millisecond}},
+	t.Run("Success/RefreshUnknownKeyID", func(t *testing.T) {
+		t.Parallel()
+
+		key1Private, key1Public, err := jwk.GenerateED25519()
+		require.NoError(t, err)
+
+		key2Private, key2Public, err := jwk.GenerateED25519()
+		require.NoError(t, err)
+		require.NotEqual(t, key1Public.KID, key2Public.KID)
+
+		keys := map[string]*config.Jwk{
+			"test-usage": {
+				Alg: jwa.EdDSA,
+				Key: config.JwkKey{
+					Cache:                time.Hour,
+					UnknownKeyIDInterval: time.Millisecond,
+				},
+				Token: config.JwkToken{
+					TTL:      time.Hour,
+					Issuer:   "test-issuer",
+					Audience: "test-audience",
+					Subject:  "test-subject",
+				},
+			},
+		}
+
+		privateSource1 := coremocks.NewMockJwkPrivateSource(t)
+		privateSource1.EXPECT().
+			SearchKeys(mock.Anything, "test-usage").
+			Return([]*jwa.JWK{key1Private.JWK}, nil).
+			Once()
+
+		producers1, err := core.NewJwkProducers(privateSource1, keys)
+		require.NoError(t, err)
+
+		privateSource2 := coremocks.NewMockJwkPrivateSource(t)
+		privateSource2.EXPECT().
+			SearchKeys(mock.Anything, "test-usage").
+			Return([]*jwa.JWK{key2Private.JWK}, nil).
+			Once()
+
+		producers2, err := core.NewJwkProducers(privateSource2, keys)
+		require.NoError(t, err)
+
+		publicSource := coremocks.NewMockJwkPublicSource(t)
+
+		var publicFetches int
+
+		publicSource.EXPECT().
+			SearchKeys(mock.Anything, "test-usage").
+			RunAndReturn(func(context.Context, string) ([]*jwa.JWK, error) {
+				publicFetches++
+				if publicFetches == 1 {
+					return []*jwa.JWK{key1Public.JWK}, nil
+				}
+
+				return []*jwa.JWK{key1Public.JWK, key2Public.JWK}, nil
+			})
+
+		recipients, err := core.NewJwkRecipients(publicSource, keys)
+		require.NoError(t, err)
+
+		type testClaims struct {
+			Message string `json:"message"`
+		}
+
+		signer1 := core.NewClaimsSign(producers1, keys)
+		token1, err := signer1.Exec(t.Context(), &core.ClaimsSignRequest{
+			Claims: &testClaims{Message: "first"},
+			Usage:  "test-usage",
+		})
+		require.NoError(t, err)
+
+		verifier := core.NewClaimsVerify[testClaims](recipients, keys)
+		claims1, err := verifier.Exec(t.Context(), &core.ClaimsVerifyRequest{
+			Token: token1,
+			Usage: "test-usage",
+		})
+		require.NoError(t, err)
+		require.Equal(t, &testClaims{Message: "first"}, claims1)
+
+		time.Sleep(2 * time.Millisecond)
+
+		signer2 := core.NewClaimsSign(producers2, keys)
+		token2, err := signer2.Exec(t.Context(), &core.ClaimsSignRequest{
+			Claims: &testClaims{Message: "second"},
+			Usage:  "test-usage",
+		})
+		require.NoError(t, err)
+
+		claims2, err := verifier.Exec(t.Context(), &core.ClaimsVerifyRequest{
+			Token: token2,
+			Usage: "test-usage",
+		})
+		require.NoError(t, err)
+		require.Equal(t, &testClaims{Message: "second"}, claims2)
+		require.Equal(t, 2, publicFetches)
+
+		privateSource1.AssertExpectations(t)
+		privateSource2.AssertExpectations(t)
+		publicSource.AssertExpectations(t)
 	})
-	require.NoError(t, err)
-
-	keySource := sources.EdDSA["test-usage"]
-	require.NotNil(t, keySource)
-
-	// Prime the cache with the first published set (key1 only).
-	cached, err := keySource.List(t.Context())
-	require.NoError(t, err)
-	require.Len(t, cached, 1)
-
-	// Let the unknown-kid interval elapse, as it has in production by the time a rotation is seen.
-	time.Sleep(2 * time.Millisecond)
-
-	// A token names key2, which the cache does not hold. The lookup misses, and RefreshOnUnknownKeyID
-	// forces the refetch that surfaces it.
-	got, err := keySource.Get(t.Context(), key2Public.KID)
-	require.NoError(t, err, "an unknown kid must trigger a refetch, not fail")
-	require.Equal(t, key2Public.KID, got.KID)
 }

@@ -56,18 +56,13 @@ type claimsVerifier[C any] struct {
 // configuration references an unsupported algorithm. C must be JSON-serializable and match the
 // claims type used when signing for the same usage.
 func NewClaimsVerifier[C any](c Client) (ClaimsVerifier[C], error) {
-	// Building the public-key sources here keeps jwt types off the client's exported surface,
+	// Building the public-key plugins here keeps jwt types off the client's exported surface,
 	// and a sign-only consumer never pays for the setup.
 	adapter := newJwkExportGrpc(c)
 
-	sources, err := core.NewJwkPublicSource(adapter, c.Keys())
+	recipients, err := core.NewJwkRecipients(adapter, c.Keys())
 	if err != nil {
 		return nil, fmt.Errorf("(NewClaimsVerifier) new public sources: %w", err)
-	}
-
-	recipients, err := core.NewJwkRecipients(sources, c.Keys())
-	if err != nil {
-		return nil, fmt.Errorf("(NewClaimsVerifier) new recipients: %w", err)
 	}
 
 	return &claimsVerifier[C]{service: core.NewClaimsVerify[C](recipients, c.Keys())}, nil
