@@ -17,8 +17,8 @@ var (
 	// ErrJwkPresetUnknown is returned when a requested algorithm has no corresponding preset entry.
 	ErrJwkPresetUnknown = errors.New("unknown jwk preset")
 	// ErrJwkPresetUnknownAlgorithm is returned when a key configuration references an algorithm
-	// with no registered key-source builder. Only asymmetric algorithms are supported: a
-	// symmetric secret has no public half to publish on the REST surface.
+	// with no signing or verification plugin. Only asymmetric algorithms are supported because
+	// symmetric secrets have no public half to publish on the REST surface.
 	ErrJwkPresetUnknownAlgorithm = errors.New("unknown jwk algorithm")
 )
 
@@ -57,10 +57,20 @@ var JwsPresetsRsa = map[jwa.Alg]jws.RSAPreset{
 	jwa.PS512: jws.PS512,
 }
 
-// JwkGenAny is the common generator signature. It returns the private key, the matching
-// public key, the KID strings for each, plus any generation error. Only asymmetric
-// algorithms are supported, so the public key is always non-nil on success.
-type JwkGenAny func() (any, any, string, string, error)
+// JwkGeneratorResult contains the key material and identifiers produced for one asymmetric key pair.
+type JwkGeneratorResult struct {
+	// PrivateKey contains the private key material.
+	PrivateKey any
+	// PublicKey contains the matching public key material.
+	PublicKey any
+	// PrivateKID identifies PrivateKey.
+	PrivateKID string
+	// PublicKID identifies PublicKey.
+	PublicKID string
+}
+
+// JwkGenAny is the common generator signature used by [JwkGenerators].
+type JwkGenAny func() (*JwkGeneratorResult, error)
 
 // JwkGenerators is the registry of key generators keyed by algorithm. JwkGen.Exec uses this
 // to look up the correct generator for a given usage's configured algorithm.
@@ -78,240 +88,185 @@ var JwkGenerators = map[jwa.Alg]JwkGenAny{
 }
 
 // JwkGeneratorEd25519 generates an Ed25519 private/public key pair.
-func JwkGeneratorEd25519() (any, any, string, string, error) {
+func JwkGeneratorEd25519() (*JwkGeneratorResult, error) {
 	priv, pub, err := jwk.GenerateED25519()
 	if err != nil {
-		return nil, nil, "", "", err
+		return nil, err
 	}
 
-	return priv, pub, priv.KID, pub.KID, nil
+	return &JwkGeneratorResult{
+		PrivateKey: priv,
+		PublicKey:  pub,
+		PrivateKID: priv.KID,
+		PublicKID:  pub.KID,
+	}, nil
 }
 
 // JwkGeneratorEs returns a generator for the given ECDSA algorithm.
-func JwkGeneratorEs(alg jwa.Alg) func() (any, any, string, string, error) {
-	return func() (any, any, string, string, error) {
+func JwkGeneratorEs(alg jwa.Alg) JwkGenAny {
+	return func() (*JwkGeneratorResult, error) {
 		var (
 			preset jwk.ECDSAPreset
 			ok     bool
 		)
 
 		if preset, ok = JwkPresetsEcdsa[alg]; !ok {
-			return nil, nil, "", "", fmt.Errorf("%w (ecdsa): %s", ErrJwkPresetUnknown, alg)
+			return nil, fmt.Errorf("%w (ecdsa): %s", ErrJwkPresetUnknown, alg)
 		}
 
 		priv, pub, err := jwk.GenerateECDSA(preset)
 		if err != nil {
-			return nil, nil, "", "", err
+			return nil, err
 		}
 
-		return priv, pub, priv.KID, pub.KID, nil
+		return &JwkGeneratorResult{
+			PrivateKey: priv,
+			PublicKey:  pub,
+			PrivateKID: priv.KID,
+			PublicKID:  pub.KID,
+		}, nil
 	}
 }
 
 // JwkGeneratorRsa returns a generator for the given RSA algorithm (covers both PKCS#1 and PSS).
-func JwkGeneratorRsa(alg jwa.Alg) func() (any, any, string, string, error) {
-	return func() (any, any, string, string, error) {
+func JwkGeneratorRsa(alg jwa.Alg) JwkGenAny {
+	return func() (*JwkGeneratorResult, error) {
 		var (
 			preset jwk.RSAPreset
 			ok     bool
 		)
 
 		if preset, ok = JwkPresetsRsa[alg]; !ok {
-			return nil, nil, "", "", fmt.Errorf("%w (rsa): %s", ErrJwkPresetUnknown, alg)
+			return nil, fmt.Errorf("%w (rsa): %s", ErrJwkPresetUnknown, alg)
 		}
 
 		priv, pub, err := jwk.GenerateRSA(preset)
 		if err != nil {
-			return nil, nil, "", "", err
+			return nil, err
 		}
 
-		return priv, pub, priv.KID, pub.KID, nil
+		return &JwkGeneratorResult{
+			PrivateKey: priv,
+			PublicKey:  pub,
+			PrivateKID: priv.KID,
+			PublicKID:  pub.KID,
+		}, nil
 	}
 }
 
-// JwkPrivateSources holds typed, cached private-key sources for each supported algorithm family,
-// grouped by usage name, and is used to wire signing plugins for JWT production. Only asymmetric
-// algorithms are supported.
-type JwkPrivateSources struct {
-	EdDSA map[string]*jwk.Source
-	ES    map[string]*jwk.Source
-	RSA   map[string]*jwk.Source
-}
-
-// JwkPrivateSource is the fetch interface required by NewJwkPrivateSource.
-// It retrieves the raw JWKs for a given usage so they can be decoded into typed key sources.
+// JwkPrivateSource provides the private JWKs used by [NewJwkProducers].
 type JwkPrivateSource interface {
+	// SearchKeys returns the private JWKs registered for usage.
 	SearchKeys(ctx context.Context, usage string) ([]*jwa.JWK, error)
 }
 
-// NewJwkPrivateSource builds a JwkPrivateSources by creating a typed, cached key source for each
-// usage in keys, using source to fetch raw key material. Returns an error if a usage references
-// an unsupported algorithm.
-func NewJwkPrivateSource(
-	source JwkPrivateSource,
-	keys map[string]*config.Jwk,
-) (*JwkPrivateSources, error) {
-	output := &JwkPrivateSources{
-		EdDSA: make(map[string]*jwk.Source),
-		ES:    make(map[string]*jwk.Source),
-		RSA:   make(map[string]*jwk.Source),
-	}
-
-	for usage, keyConfig := range keys {
-		fetch := func(ctx context.Context) ([]*jwa.JWK, error) {
-			return source.SearchKeys(ctx, usage)
-		}
-
-		keySource := jwk.NewSource(jwk.SourceConfig{
-			CacheDuration: keyConfig.Key.Cache,
-			Fetch:         fetch,
-		})
-
-		// One algorithm-agnostic source per usage; the bucket records which signer plugin to wire
-		// later, since jwt v2 decodes the key type at the plugin.
-		switch keyConfig.Alg {
-		case jwa.EdDSA:
-			output.EdDSA[usage] = keySource
-		case jwa.ES256, jwa.ES384, jwa.ES512:
-			output.ES[usage] = keySource
-		case jwa.RS256, jwa.RS384, jwa.RS512, jwa.PS256, jwa.PS384, jwa.PS512:
-			output.RSA[usage] = keySource
-		default:
-			return nil, fmt.Errorf("%w: %s", ErrJwkPresetUnknownAlgorithm, keyConfig.Alg)
-		}
-	}
-
-	return output, nil
-}
-
-// JwkPublicSources holds typed, cached public-key sources for each supported algorithm family,
-// grouped by usage name, and is used to wire verification plugins for JWT consumption. Only
-// asymmetric algorithms are supported.
-type JwkPublicSources struct {
-	EdDSA map[string]*jwk.Source
-	ES    map[string]*jwk.Source
-	RSA   map[string]*jwk.Source
-}
-
-// JwkPublicSource is the fetch interface required by NewJwkPublicSource.
-// It retrieves the raw JWKs for a given usage so they can be decoded into typed key sources.
+// JwkPublicSource provides the public JWKs used by [NewJwkRecipients].
 type JwkPublicSource interface {
+	// SearchKeys returns the public JWKs registered for usage.
 	SearchKeys(ctx context.Context, usage string) ([]*jwa.JWK, error)
 }
 
-// NewJwkPublicSource builds a JwkPublicSources by creating a typed, cached key source for each
-// usage in keys, using source to fetch raw key material. Returns an error if a usage references
-// an unsupported algorithm.
-func NewJwkPublicSource(
-	source JwkPublicSource,
-	keys map[string]*config.Jwk,
-) (*JwkPublicSources, error) {
-	output := &JwkPublicSources{
-		EdDSA: make(map[string]*jwk.Source),
-		ES:    make(map[string]*jwk.Source),
-		RSA:   make(map[string]*jwk.Source),
+func newJwkSource(
+	searchKeys func(context.Context, string) ([]*jwa.JWK, error),
+	usage string,
+	sourceConfig jwk.SourceConfig,
+) *jwk.Source {
+	sourceConfig.Fetch = func(ctx context.Context) ([]*jwa.JWK, error) {
+		return searchKeys(ctx, usage)
 	}
 
-	for usage, keyConfig := range keys {
-		fetch := func(ctx context.Context) ([]*jwa.JWK, error) {
-			return source.SearchKeys(ctx, usage)
-		}
-
-		keySource := jwk.NewSource(jwk.SourceConfig{
-			CacheDuration: keyConfig.Key.Cache,
-			Fetch:         fetch,
-			// The signer rotates to a key the instant it is published, but a verifier holds its
-			// cached set for CacheDuration — so a token signed with a just-rotated key names a kid
-			// the verifier does not yet have, and fails until the cache expires. This lets that
-			// unknown kid force one bounded refetch so the verifier picks the key up at once
-			// instead. Only the public source needs it; the signer never resolves a kid it did not
-			// just mint.
-			RefreshOnUnknownKeyID: true,
-			UnknownKeyIDInterval:  keyConfig.Key.UnknownKeyIDInterval,
-		})
-
-		// One algorithm-agnostic source per usage; the bucket records which verifier plugin to wire
-		// later, since jwt v2 decodes the key type at the plugin.
-		switch keyConfig.Alg {
-		case jwa.EdDSA:
-			output.EdDSA[usage] = keySource
-		case jwa.ES256, jwa.ES384, jwa.ES512:
-			output.ES[usage] = keySource
-		case jwa.RS256, jwa.RS384, jwa.RS512, jwa.PS256, jwa.PS384, jwa.PS512:
-			output.RSA[usage] = keySource
-		default:
-			return nil, fmt.Errorf("%w: %s", ErrJwkPresetUnknownAlgorithm, keyConfig.Alg)
-		}
-	}
-
-	return output, nil
+	return jwk.NewSource(sourceConfig)
 }
 
 // JwkProducers maps each key usage to the set of JWT producer plugins used for signing tokens
-// under that usage. Use [NewJwkProducers] to build one from a [JwkPrivateSources].
+// under that usage.
 type JwkProducers map[string][]jwt.ProducerPlugin
 
-// NewJwkProducers builds a JwkProducers map from sources, wiring the appropriate signer plugin
-// for each usage based on its algorithm. Returns an error if a usage has no matching signer preset.
+// NewJwkProducers builds cached signing plugins from private keys for every configured usage.
 func NewJwkProducers(
-	sources *JwkPrivateSources,
+	source JwkPrivateSource,
 	keys map[string]*config.Jwk,
 ) (JwkProducers, error) {
 	output := make(JwkProducers)
 
-	for usage, usageConfig := range sources.EdDSA {
-		signer := jws.NewSourcedED25519Signer(usageConfig)
-		output[usage] = []jwt.ProducerPlugin{signer}
-	}
+	for usage, keyConfig := range keys {
+		keySource := newJwkSource(source.SearchKeys, usage, jwk.SourceConfig{
+			CacheDuration: keyConfig.Key.Cache,
+		})
 
-	for usage, usageConfig := range sources.ES {
-		signer := jws.NewSourcedECDSASigner(usageConfig, JwsPresetsEcdsa[keys[usage].Alg])
-		output[usage] = append(output[usage], signer)
-	}
+		var signer jwt.ProducerPlugin
 
-	for usage, usageConfig := range sources.RSA {
-		rsaPreset, ok := JwsPresetsRsa[keys[usage].Alg]
-		if !ok {
-			return nil, fmt.Errorf("%w (rsa) for usage: %s", ErrJwkPresetUnknown, usage)
+		switch keyConfig.Alg {
+		case jwa.EdDSA:
+			signer = jws.NewSourcedED25519Signer(keySource)
+		case jwa.ES256, jwa.ES384, jwa.ES512:
+			ecdsaPreset, ok := JwsPresetsEcdsa[keyConfig.Alg]
+			if !ok {
+				return nil, fmt.Errorf("%w (ecdsa) for usage: %s", ErrJwkPresetUnknown, usage)
+			}
+
+			signer = jws.NewSourcedECDSASigner(keySource, ecdsaPreset)
+		case jwa.RS256, jwa.RS384, jwa.RS512, jwa.PS256, jwa.PS384, jwa.PS512:
+			rsaPreset, ok := JwsPresetsRsa[keyConfig.Alg]
+			if !ok {
+				return nil, fmt.Errorf("%w (rsa) for usage: %s", ErrJwkPresetUnknown, usage)
+			}
+
+			signer = jws.NewSourcedRSASigner(keySource, rsaPreset)
+		default:
+			return nil, fmt.Errorf("%w: %s", ErrJwkPresetUnknownAlgorithm, keyConfig.Alg)
 		}
 
-		signer := jws.NewSourcedRSASigner(usageConfig, rsaPreset)
-		output[usage] = append(output[usage], signer)
+		output[usage] = []jwt.ProducerPlugin{signer}
 	}
 
 	return output, nil
 }
 
 // JwkRecipients maps each key usage to the set of JWT recipient plugins used for verifying tokens
-// under that usage. Use [NewJwkRecipients] to build one from a [JwkPublicSources].
+// under that usage.
 type JwkRecipients map[string][]jwt.RecipientPlugin
 
-// NewJwkRecipients builds a JwkRecipients map from sources, wiring the appropriate verifier plugin
-// for each usage based on its algorithm. Returns an error if a usage has no matching verifier preset.
+// NewJwkRecipients builds cached verification plugins from public keys for every configured usage.
 func NewJwkRecipients(
-	sources *JwkPublicSources,
+	source JwkPublicSource,
 	keys map[string]*config.Jwk,
 ) (JwkRecipients, error) {
 	output := make(JwkRecipients)
 
-	for usage, usageConfig := range sources.EdDSA {
-		recipient := jws.NewSourcedED25519Verifier(usageConfig)
-		output[usage] = []jwt.RecipientPlugin{recipient}
-	}
+	for usage, keyConfig := range keys {
+		keySource := newJwkSource(source.SearchKeys, usage, jwk.SourceConfig{
+			CacheDuration: keyConfig.Key.Cache,
+			// A rotated signing key can appear before the verifier's normal cache refresh.
+			// An unknown key ID triggers one rate-limited refetch so verification can continue.
+			RefreshOnUnknownKeyID: true,
+			UnknownKeyIDInterval:  keyConfig.Key.UnknownKeyIDInterval,
+		})
 
-	for usage, usageConfig := range sources.ES {
-		recipient := jws.NewSourcedECDSAVerifier(usageConfig, JwsPresetsEcdsa[keys[usage].Alg])
-		output[usage] = append(output[usage], recipient)
-	}
+		var recipient jwt.RecipientPlugin
 
-	for usage, usageConfig := range sources.RSA {
-		rsaPreset, ok := JwsPresetsRsa[keys[usage].Alg]
-		if !ok {
-			return nil, fmt.Errorf("%w (rsa) for usage: %s", ErrJwkPresetUnknown, usage)
+		switch keyConfig.Alg {
+		case jwa.EdDSA:
+			recipient = jws.NewSourcedED25519Verifier(keySource)
+		case jwa.ES256, jwa.ES384, jwa.ES512:
+			ecdsaPreset, ok := JwsPresetsEcdsa[keyConfig.Alg]
+			if !ok {
+				return nil, fmt.Errorf("%w (ecdsa) for usage: %s", ErrJwkPresetUnknown, usage)
+			}
+
+			recipient = jws.NewSourcedECDSAVerifier(keySource, ecdsaPreset)
+		case jwa.RS256, jwa.RS384, jwa.RS512, jwa.PS256, jwa.PS384, jwa.PS512:
+			rsaPreset, ok := JwsPresetsRsa[keyConfig.Alg]
+			if !ok {
+				return nil, fmt.Errorf("%w (rsa) for usage: %s", ErrJwkPresetUnknown, usage)
+			}
+
+			recipient = jws.NewSourcedRSAVerifier(keySource, rsaPreset)
+		default:
+			return nil, fmt.Errorf("%w: %s", ErrJwkPresetUnknownAlgorithm, keyConfig.Alg)
 		}
 
-		recipient := jws.NewSourcedRSAVerifier(usageConfig, rsaPreset)
-		output[usage] = append(output[usage], recipient)
+		output[usage] = []jwt.RecipientPlugin{recipient}
 	}
 
 	return output, nil

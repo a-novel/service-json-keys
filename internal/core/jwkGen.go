@@ -108,19 +108,19 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 			return nil, otel.ReportError(span, fmt.Errorf("%w: %s", ErrJwkGenUnknownKeyUsage, request.Usage))
 		}
 
-		privateKey, publicKey, privateKID, publicKID, err := keyGenerator()
+		generatedKey, err := keyGenerator()
 		if err != nil {
 			return nil, otel.ReportError(span, fmt.Errorf("generate key: %w", err))
 		}
 
 		span.AddEvent("key.generated", trace.WithAttributes(
-			attribute.String("key.private.kid", privateKID),
-			attribute.String("key.public.kid", publicKID),
+			attribute.String("key.private.kid", generatedKey.PrivateKID),
+			attribute.String("key.public.kid", generatedKey.PublicKID),
 			attribute.String("key.alg", string(keyConfig.Alg)),
 		))
 
 		// Encrypt the private key with the master key, so a database dump does not expose it.
-		privateKeyEncrypted, err := lib.EncryptMasterKey(ctx, privateKey)
+		privateKeyEncrypted, err := lib.EncryptMasterKey(ctx, generatedKey.PrivateKey)
 		if err != nil {
 			return nil, otel.ReportError(span, fmt.Errorf("encrypt private key: %w", err))
 		}
@@ -132,15 +132,15 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 		span.AddEvent("key.private.encoded")
 
 		// Both private and public keys share the same KID.
-		kid, err := uuid.Parse(privateKID)
+		kid, err := uuid.Parse(generatedKey.PrivateKID)
 		if err != nil {
 			return nil, otel.ReportError(span, fmt.Errorf("parse KID: %w", err))
 		}
 
 		var publicKeyEncoded *string
 
-		if publicKey != nil {
-			publicKeySerialized, err := json.Marshal(publicKey)
+		if generatedKey.PublicKey != nil {
+			publicKeySerialized, err := json.Marshal(generatedKey.PublicKey)
 			if err != nil {
 				return nil, otel.ReportError(span, fmt.Errorf("serialize public key: %w", err))
 			}
