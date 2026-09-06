@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/a-novel-kit/golib/postgres"
+	"github.com/a-novel-kit/golib/postgres/postgrestest"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config/configtest"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
@@ -165,7 +166,7 @@ func TestPgJwkSearch(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			postgres.RunDBTest(
+			postgrestest.RunDBTest(
 				t,
 				configtest.PostgresPreset,
 				migrations.Migrations,

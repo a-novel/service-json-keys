@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/a-novel-kit/golib/postgres"
+	"github.com/a-novel-kit/golib/postgres/postgrestest"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config/configtest"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
@@ -163,7 +164,7 @@ func TestPgJwkDelete(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			postgres.RunDBTest(
+			postgrestest.RunDBTest(
 				t,
 				configtest.PostgresPreset,
 				migrations.Migrations,
@@ -202,7 +203,7 @@ func TestPgJwkDeleteTakesEffectImmediately(t *testing.T) {
 	now := time.Now().UTC().Truncate(time.Second)
 	keyID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 
-	postgres.RunDBTest(
+	postgrestest.RunDBTest(
 		t,
 		configtest.PostgresPreset,
 		migrations.Migrations,
