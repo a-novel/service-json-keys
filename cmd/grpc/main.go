@@ -74,8 +74,7 @@ func main() {
 	// The signing chain: a cached private-key source feeds the per-usage producer plugins, so
 	// ClaimsSign signs tokens without hitting the database on every request.
 	serviceExportLocal := core.NewJwkExportLocal(serviceJwkSearch)
-	serviceJwkSource := lo.Must(core.NewJwkPrivateSource(serviceExportLocal, config.JwkPresetDefault))
-	serviceJwkProducer := lo.Must(core.NewJwkProducers(serviceJwkSource, config.JwkPresetDefault))
+	serviceJwkProducer := lo.Must(core.NewJwkProducers(serviceExportLocal, config.JwkPresetDefault))
 	serviceClaimsSign := core.NewClaimsSign(serviceJwkProducer, config.JwkPresetDefault)
 
 	// =================================================================================================================

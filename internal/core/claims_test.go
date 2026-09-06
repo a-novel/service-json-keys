@@ -1,12 +1,12 @@
 package core_test
 
 import (
-	"context"
 	"crypto/ed25519"
 	"testing"
 	"time"
 
 	"github.com/samber/lo"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"github.com/a-novel-kit/jwt/v2/jwa"
@@ -14,6 +14,7 @@ import (
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
 	"github.com/a-novel/service-json-keys/v2/internal/core"
+	coremocks "github.com/a-novel/service-json-keys/v2/internal/core/mocks"
 )
 
 func TestClaimsSignAndVerify(t *testing.T) {
@@ -51,32 +52,6 @@ func TestClaimsSignAndVerify(t *testing.T) {
 		},
 	}
 
-	producers, err := core.NewJwkProducers(&core.JwkPrivateSources{
-		EdDSA: map[string]*jwk.Source{
-			"test-usage": jwk.NewSource(jwk.SourceConfig{
-				Fetch: func(_ context.Context) ([]*jwa.JWK, error) {
-					return privateKeysJSON, nil
-				},
-			}),
-		},
-		ES:  make(map[string]*jwk.Source),
-		RSA: make(map[string]*jwk.Source),
-	}, testConfig)
-	require.NoError(t, err)
-
-	recipients, err := core.NewJwkRecipients(&core.JwkPublicSources{
-		EdDSA: map[string]*jwk.Source{
-			"test-usage": jwk.NewSource(jwk.SourceConfig{
-				Fetch: func(_ context.Context) ([]*jwa.JWK, error) {
-					return publicKeysJSON, nil
-				},
-			}),
-		},
-		ES:  make(map[string]*jwk.Source),
-		RSA: make(map[string]*jwk.Source),
-	}, testConfig)
-	require.NoError(t, err)
-
 	testCases := []struct {
 		name string
 
@@ -92,6 +67,24 @@ func TestClaimsSignAndVerify(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
+
+			privateSource := coremocks.NewMockJwkPrivateSource(t)
+			privateSource.EXPECT().
+				SearchKeys(mock.Anything, "test-usage").
+				Return(privateKeysJSON, nil).
+				Once()
+
+			producers, err := core.NewJwkProducers(privateSource, testConfig)
+			require.NoError(t, err)
+
+			publicSource := coremocks.NewMockJwkPublicSource(t)
+			publicSource.EXPECT().
+				SearchKeys(mock.Anything, "test-usage").
+				Return(publicKeysJSON, nil).
+				Once()
+
+			recipients, err := core.NewJwkRecipients(publicSource, testConfig)
+			require.NoError(t, err)
 
 			signer := core.NewClaimsSign(producers, testConfig)
 			verifier := core.NewClaimsVerify[testClaims](recipients, testConfig)
@@ -109,6 +102,9 @@ func TestClaimsSignAndVerify(t *testing.T) {
 			require.NoError(t, err)
 
 			require.Equal(t, testCase.claims, verifiedClaims)
+
+			privateSource.AssertExpectations(t)
+			publicSource.AssertExpectations(t)
 		})
 	}
 }
