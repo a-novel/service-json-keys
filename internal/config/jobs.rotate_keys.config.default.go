@@ -1,21 +1,29 @@
 package config
 
-import "fmt"
+import (
+	"github.com/samber/lo"
 
-// LoadJobRotateKeys reads and validates the runtime configuration for the key-rotation job.
-func LoadJobRotateKeys() (JobRotateKeys, error) {
-	appConfig, err := LoadApp()
-	if err != nil {
-		return JobRotateKeys{}, fmt.Errorf("load rotate-keys config: %w", err)
-	}
+	"github.com/a-novel-kit/golib/otel"
+	otelpresets "github.com/a-novel-kit/golib/otel/presets"
 
-	return JobRotateKeys{
-		App: Main{
-			Name:      appConfig.App.Name + "-job-rotate-keys",
-			MasterKey: appConfig.App.MasterKey,
-		},
-		Jwk:      JwkPresetDefault,
-		Otel:     appConfig.Otel,
-		Postgres: appConfig.Postgres,
-	}, nil
+	"github.com/a-novel/service-json-keys/v2/internal/config/env"
+)
+
+// JobRotateKeysPresetDefault is the default [JobRotateKeys] configuration populated from environment variables.
+var JobRotateKeysPresetDefault = JobRotateKeys{
+	App: Main{
+		Name:      env.AppName + "-job-rotate-keys",
+		MasterKey: env.AppMasterKey,
+	},
+	Jwk: JwkPresetDefault,
+
+	Otel: lo.If[otel.Config](!env.Otel, &otelpresets.Disabled{}).
+		ElseIf(env.GcloudProjectId == "", &otelpresets.Local{
+			FlushTimeout: OtelFlushTimeout,
+		}).
+		Else(&otelpresets.Gcloud{
+			ProjectID:    env.GcloudProjectId,
+			FlushTimeout: OtelFlushTimeout,
+		}),
+	Postgres: PostgresPresetDefault,
 }

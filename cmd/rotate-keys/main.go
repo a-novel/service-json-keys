@@ -29,7 +29,7 @@ func main() {
 	start := time.Now()
 
 	// --- Bootstrap: load config, init telemetry and context ---
-	cfg := lo.Must(config.LoadJobRotateKeys())
+	cfg := config.JobRotateKeysPresetDefault
 	ctx := context.Background()
 
 	otel.SetAppName(cfg.App.Name)
@@ -38,7 +38,7 @@ func main() {
 	defer cfg.Otel.Flush()
 
 	ctx = lo.Must(lib.NewMasterKeyContext(ctx, cfg.App.MasterKey))
-	ctx = lo.Must(postgres.NewContext(ctx, cfg.Postgres))
+	ctx = lo.Must(postgres.NewContext(ctx, config.PostgresPresetDefault))
 
 	ctx, span := otel.Tracer().Start(ctx, "job.RotateKeys")
 	defer span.End()
@@ -52,14 +52,14 @@ func main() {
 		daoJwkSearch,
 		daoJwkInsert,
 		serviceJwkExtract,
-		cfg.Jwk,
+		config.JwkPresetDefault,
 	)
 
 	// --- Rotate keys for each usage, as one unit of work ---
-	log.Printf("rotating keys for %d configured usage(s)", len(cfg.Jwk))
+	log.Printf("rotating keys for %d configured usage(s)", len(config.JwkPresetDefault))
 
 	serviceJwkRotateAll := core.NewJwkRotateAll(
-		serviceJwkGen, postgres.NewTransactor(nil), cfg.Jwk,
+		serviceJwkGen, postgres.NewTransactor(nil), config.JwkPresetDefault,
 	)
 
 	resp, err := serviceJwkRotateAll.Exec(ctx, &core.JwkRotateAllRequest{})

@@ -1,49 +1,64 @@
 package config_test
 
 import (
+	"os"
+	"os/exec"
+	"strings"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
-
-	"github.com/a-novel/service-json-keys/v2/internal/config"
 )
 
-func TestLoadApp(t *testing.T) {
+func TestApp(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		name string
 
 		restTimeoutRead string
 
-		expectRead time.Duration
+		expectRead string
 		expectErr  string
 	}{
 		{
+			name:       "Success/Default",
+			expectRead: "15s",
+		},
+		{
 			name:            "Success",
 			restTimeoutRead: "2s",
-			expectRead:      2 * time.Second,
+			expectRead:      "2s",
 		},
 		{
 			name:            "Error/InvalidRestTimeoutRead",
 			restTimeoutRead: "invalid",
-			expectErr:       "TEST_REST_TIMEOUT_READ",
+			expectErr:       `time: invalid duration "invalid"`,
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			t.Setenv("SERVICE_JSON_KEYS_ENV_PREFIX", "TEST_")
-			t.Setenv("TEST_REST_TIMEOUT_READ", testCase.restTimeoutRead)
+			t.Parallel()
 
-			appConfig, err := config.LoadApp()
+			command := exec.CommandContext(t.Context(), "go", "run", "./testdata/app")
+
+			command.Env = append(os.Environ(),
+				"GOWORK=off",
+				"SERVICE_JSON_KEYS_ENV_PREFIX=TEST_",
+				"REST_TIMEOUT_READ=invalid",
+				"TEST_REST_TIMEOUT_READ="+testCase.restTimeoutRead,
+			)
+
+			output, err := command.CombinedOutput()
 			if testCase.expectErr != "" {
-				require.ErrorContains(t, err, testCase.expectErr)
+				require.Error(t, err)
+				require.Contains(t, string(output), testCase.expectErr)
 
 				return
 			}
 
-			require.NoError(t, err)
-			require.Equal(t, testCase.expectRead, appConfig.Rest.Timeouts.Read)
+			require.NoError(t, err, string(output))
+			require.Equal(t, testCase.expectRead, strings.TrimSpace(string(output)))
 		})
 	}
 }

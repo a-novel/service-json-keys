@@ -45,10 +45,12 @@ func main() {}
 
 		command := exec.CommandContext(t.Context(), "go", "run", "-mod=mod", ".")
 		command.Dir = consumerDir
-		command.Env = replaceEnvironment(os.Environ(), map[string]string{
-			"SERVICE_JSON_KEYS_ENV_PREFIX": "",
-			"REST_TIMEOUT_READ":            "invalid",
-		})
+
+		command.Env = append(os.Environ(),
+			"GOWORK=off",
+			"SERVICE_JSON_KEYS_ENV_PREFIX=",
+			"REST_TIMEOUT_READ=invalid",
+		)
 
 		output, err := command.CombinedOutput()
 		require.NoError(t, err, string(output))
@@ -79,7 +81,7 @@ func main() {}
 		t.Parallel()
 
 		client, err := servicejsonkeys.NewClient(
-			env.Get("GRPC_URL"),
+			env.GrpcUrl,
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 		)
 		require.NoError(t, err)
@@ -105,21 +107,4 @@ func main() {}
 		require.NoError(t, err)
 		require.Equal(t, key.GetJwk(), keys.GetKeys()[0])
 	})
-}
-
-func replaceEnvironment(current []string, replacements map[string]string) []string {
-	output := make([]string, 0, len(current)+len(replacements))
-
-	for _, item := range current {
-		name, _, ok := strings.Cut(item, "=")
-		if _, replace := replacements[name]; !ok || !replace {
-			output = append(output, item)
-		}
-	}
-
-	for name, value := range replacements {
-		output = append(output, name+"="+value)
-	}
-
-	return output
 }

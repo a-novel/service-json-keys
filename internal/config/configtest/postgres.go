@@ -8,10 +8,10 @@
 package configtest
 
 import (
-	"github.com/samber/lo"
-
 	"github.com/a-novel/service-json-keys/v2/internal/config"
 )
 
-// PostgresPreset is the PostgreSQL configuration used in integration tests.
-var PostgresPreset = lo.Must(config.LoadPostgres())
+// PostgresPreset is the PostgreSQL configuration used in integration tests. It aliases
+// config.PostgresPresetDefault, so tests track the production preset with no parallel
+// definition to maintain.
+var PostgresPreset = config.PostgresPresetDefault
