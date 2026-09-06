@@ -8,8 +8,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
-	"net"
 	"os"
 	"os/signal"
 	"strconv"
@@ -35,7 +35,11 @@ import (
 
 func main() {
 	cfg := config.AppPresetDefault
-	ctx := context.Background()
+
+	processCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	ctx := processCtx
 
 	otel.SetAppName(cfg.App.Name)
 
@@ -47,7 +51,10 @@ func main() {
 	}
 
 	ctx = lo.Must(lib.NewMasterKeyContext(ctx, cfg.App.MasterKey))
-	ctx = lo.Must(postgres.NewContext(ctx, config.PostgresPresetDefault))
+	ctx = lo.Must(postgres.NewContext(ctx, cfg.Postgres))
+
+	database := lo.Must(cfg.Postgres.DB(ctx))
+	defer closeDatabase(database)
 
 	// =================================================================================================================
 	// DAO
@@ -91,8 +98,6 @@ func main() {
 		return rpCtx
 	}
 
-	listenerConfig := new(net.ListenConfig)
-	listener := lo.Must(listenerConfig.Listen(ctx, "tcp", fmt.Sprintf("0.0.0.0:%d", cfg.Grpc.Port)))
 	server := grpc.NewServer(
 		grpc.StatsHandler(otelgrpc.NewServerHandler()),
 		cfg.Otel.RpcInterceptor(),
@@ -123,17 +128,18 @@ func main() {
 
 	log.Println("Starting gRPC server on :" + strconv.Itoa(cfg.Grpc.Port))
 
-	go func() {
-		err := server.Serve(listener)
-		if err != nil {
-			panic(err)
-		}
-	}()
+	err := grpcf.Serve(ctx, server, fmt.Sprintf("0.0.0.0:%d", cfg.Grpc.Port), cfg.Grpc.Shutdown)
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
+	stop()
 
-	log.Println("Shutting down gRPC server...")
-	server.GracefulStop()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func closeDatabase(database io.Closer) {
+	err := database.Close()
+	if err != nil {
+		log.Println("Close Postgres: " + err.Error())
+	}
 }
