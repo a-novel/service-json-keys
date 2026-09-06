@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/samber/lo"
-	"github.com/uptrace/bun"
 
 	"github.com/a-novel-kit/golib/httpf"
 	"github.com/a-novel-kit/golib/otel"
@@ -68,18 +67,7 @@ func (handler *RestHealth) reportPostgres(ctx context.Context) error {
 	ctx, span := otel.Tracer().Start(ctx, "rest.Health(reportPostgres)")
 	defer span.End()
 
-	pg, err := postgres.GetContext(ctx)
-	if err != nil {
-		return otel.ReportError(span, err)
-	}
-
-	pgdb, ok := pg.(*bun.DB)
-	if !ok {
-		// Cannot assess the DB connection in transaction mode.
-		return otel.ReportError(span, postgres.ErrNoDbInContext)
-	}
-
-	err = pgdb.PingContext(ctx)
+	err := postgres.Health(ctx)
 	if err != nil {
 		return otel.ReportError(span, err)
 	}
