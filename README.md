@@ -113,7 +113,13 @@ deployments migrate.
 The gRPC server exposes private-key operations and must run on an isolated, access-controlled network — the server does not authenticate callers itself.
 
 <details>
-<summary>Optional configuration (REST tuning, OpenTelemetry)</summary>
+<summary>Optional configuration (server tuning, OpenTelemetry)</summary>
+
+gRPC tuning (images `grpc`, `standalone-grpc`):
+
+| Name                    | Description               | Default |
+| ----------------------- | ------------------------- | ------- |
+| `GRPC_TIMEOUT_SHUTDOWN` | Graceful shutdown budget. | `30s`   |
 
 REST tuning (images `rest`, `standalone-rest`):
 
@@ -125,6 +131,7 @@ REST tuning (images `rest`, `standalone-rest`):
 | `REST_TIMEOUT_WRITE`          | Write timeout.                       | `30s`            |
 | `REST_TIMEOUT_IDLE`           | Idle keep-alive timeout.             | `60s`            |
 | `REST_TIMEOUT_REQUEST`        | Per-request timeout.                 | `60s`            |
+| `REST_TIMEOUT_SHUTDOWN`       | Graceful shutdown budget.            | `30s`            |
 | `REST_CORS_ALLOWED_ORIGINS`   | CORS allowed origins.                | `*`              |
 | `REST_CORS_ALLOWED_HEADERS`   | CORS allowed headers.                | `*`              |
 | `REST_CORS_ALLOW_CREDENTIALS` | CORS allow-credentials flag.         | `false`          |
