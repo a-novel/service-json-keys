@@ -81,8 +81,9 @@ func TestClaimsVerify(t *testing.T) {
 
 			service := core.NewClaimsVerify[testClaims](testCase.recipients, testCase.keysConfig)
 
-			_, err := service.Exec(t.Context(), testCase.request)
+			claims, err := service.Exec(t.Context(), testCase.request)
 			require.ErrorIs(t, err, testCase.expectErr)
+			require.Nil(t, claims)
 		})
 	}
 }

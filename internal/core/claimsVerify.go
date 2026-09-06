@@ -11,7 +11,7 @@ import (
 	"github.com/a-novel-kit/jwt/v2/jwa"
 	"github.com/a-novel-kit/jwt/v2/jwp"
 
-	"github.com/a-novel/service-json-keys/v2/internal/config"
+	jwkconfig "github.com/a-novel/service-json-keys/v2/internal/config/jwk"
 )
 
 // ClaimsVerifyRequest holds the parameters for a [ClaimsVerify.Exec] call.
@@ -28,18 +28,19 @@ type ClaimsVerifyRequest struct {
 // all token claims against the configuration registered for the given usage.
 type ClaimsVerify[Out any] struct {
 	recipients map[string][]jwt.RecipientPlugin
-	keysConfig map[string]*config.Jwk
+	keysConfig map[string]*jwkconfig.Jwk
 }
 
 // NewClaimsVerify creates a ClaimsVerify service. Recipients provide the per-usage verification
 // plugins (see [NewJwkRecipients]); keysConfig provides the token parameters for each usage.
 func NewClaimsVerify[Out any](
 	recipients map[string][]jwt.RecipientPlugin,
-	keysConfig map[string]*config.Jwk,
+	keysConfig map[string]*jwkconfig.Jwk,
 ) *ClaimsVerify[Out] {
 	return &ClaimsVerify[Out]{recipients: recipients, keysConfig: keysConfig}
 }
 
+// Exec authenticates the token and decodes its claims using the configured usage policy.
 func (service *ClaimsVerify[Out]) Exec(ctx context.Context, request *ClaimsVerifyRequest) (*Out, error) {
 	ctx, span := otel.Tracer().Start(ctx, "core.ClaimsVerify")
 	defer span.End()
@@ -48,7 +49,7 @@ func (service *ClaimsVerify[Out]) Exec(ctx context.Context, request *ClaimsVerif
 
 	keyConfig, ok := service.keysConfig[request.Usage]
 	if !ok {
-		return nil, fmt.Errorf("%w: %s", ErrConfigNotFound, request.Usage)
+		return nil, otel.ReportError(span, fmt.Errorf("%w: %s", ErrConfigNotFound, request.Usage))
 	}
 
 	var claims Out
@@ -71,7 +72,9 @@ func (service *ClaimsVerify[Out]) Exec(ctx context.Context, request *ClaimsVerif
 
 	recipientPlugins, ok := service.recipients[request.Usage]
 	if !ok {
-		return nil, fmt.Errorf("%w: no recipients found for usage %s", ErrConfigNotFound, request.Usage)
+		return nil, otel.ReportError(span,
+			fmt.Errorf("%w: no recipients found for usage %s", ErrConfigNotFound, request.Usage),
+		)
 	}
 
 	recipient := jwt.NewRecipient(

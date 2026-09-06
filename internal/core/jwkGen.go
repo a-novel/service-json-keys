@@ -15,7 +15,7 @@ import (
 
 	"github.com/a-novel-kit/golib/otel"
 
-	"github.com/a-novel/service-json-keys/v2/internal/config"
+	jwkconfig "github.com/a-novel/service-json-keys/v2/internal/config/jwk"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 	"github.com/a-novel/service-json-keys/v2/internal/lib"
 )
@@ -53,7 +53,7 @@ type JwkGen struct {
 	daoSearch      JwkGenDaoSearch
 	daoInsert      JwkGenDaoInsert
 	serviceExtract JwkGenServiceExtract
-	keysConfig     map[string]*config.Jwk
+	keysConfig     map[string]*jwkconfig.Jwk
 }
 
 // NewJwkGen returns a new JwkGen service.
@@ -61,7 +61,7 @@ func NewJwkGen(
 	daoSearch JwkGenDaoSearch,
 	daoInsert JwkGenDaoInsert,
 	serviceExtract JwkGenServiceExtract,
-	keysConfig map[string]*config.Jwk,
+	keysConfig map[string]*jwkconfig.Jwk,
 ) *JwkGen {
 	return &JwkGen{
 		daoSearch:      daoSearch,
