@@ -3,7 +3,7 @@ module github.com/a-novel/service-json-keys/v2
 go 1.27.1
 
 require (
-	github.com/a-novel-kit/golib v0.37.0
+	github.com/a-novel-kit/golib v0.37.1
 	github.com/a-novel-kit/jwt/v2 v2.2.1
 	github.com/go-chi/chi/v5 v5.3.2
 	github.com/go-chi/cors v1.2.2
@@ -75,7 +75,7 @@ require (
 	go.opentelemetry.io/otel/sdk/log v0.22.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.11.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/net v0.58.0 // indirect
+	golang.org/x/net v0.59.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.23.0 // indirect
 	golang.org/x/sys v0.48.0 // indirect
