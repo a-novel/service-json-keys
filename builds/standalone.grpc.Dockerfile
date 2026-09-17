@@ -31,7 +31,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     go build -ldflags="-s -w" -trimpath -o /migrations ./cmd/migrations/ && \
     go build -ldflags="-s -w" -trimpath -o /rotate-keys ./cmd/rotate-keys/
 
-FROM docker.io/library/alpine:3.24.1
+FROM docker.io/library/alpine:3.24.2
 
 COPY --from=builder /grpc /grpc
 COPY --from=builder /migrations /migrations
