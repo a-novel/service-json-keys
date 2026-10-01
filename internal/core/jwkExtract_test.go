@@ -187,19 +187,41 @@ func TestJwkExtract(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			service := core.NewJwkExtract()
+			for _, contextCase := range []struct {
+				name      string
+				masterKey bool
+			}{
+				{name: "WithoutMasterKey"},
+				{name: "WithMasterKey", masterKey: true},
+			} {
+				t.Run(contextCase.name, func(t *testing.T) {
+					t.Parallel()
 
-			result, err := service.Exec(ctx, testCase.request)
-			require.ErrorIs(t, err, testCase.expectErr)
+					testCtx := t.Context()
+					if contextCase.masterKey {
+						testCtx = lo.Must(lib.NewMasterKeyContext(testCtx, testutils.TestMasterKey))
+					}
 
-			// The json.RawMessage in the JWK payload causes trouble with Go comparison,
-			// so instead we directly compare the JSON representations.
-			jsonExpect, err := json.Marshal(testCase.expect)
-			require.NoError(t, err)
-			jsonResp, err := json.Marshal(result)
-			require.NoError(t, err)
+					service := core.NewJwkExtract()
 
-			require.JSONEq(t, string(jsonExpect), string(jsonResp))
+					result, err := service.Exec(testCtx, testCase.request)
+					if testCase.request.Private && !contextCase.masterKey {
+						require.ErrorIs(t, err, lib.ErrInvalidMasterKey)
+						require.Nil(t, result)
+
+						return
+					}
+
+					require.ErrorIs(t, err, testCase.expectErr)
+
+					jsonExpect, err := json.Marshal(testCase.expect)
+					require.NoError(t, err)
+					jsonResp, err := json.Marshal(result)
+					require.NoError(t, err)
+
+					require.JSONEq(t, string(jsonExpect), string(jsonResp))
+				})
+			}
 		})
 	}
 }
