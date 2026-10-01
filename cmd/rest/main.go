@@ -1,6 +1,6 @@
 // Command rest runs the public REST server for the JSON-keys service. It serves read-only
 // JSON Web Key endpoints, unauthenticated, so any client can fetch public keys for local
-// token verification. Signing and private key material stay off this surface.
+// token verification. Public-key retrieval requires database access but no master key.
 //
 // For the private authenticated gRPC API (including token signing), see cmd/grpc.
 package main
@@ -30,7 +30,6 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/core"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
-	"github.com/a-novel/service-json-keys/v2/internal/lib"
 )
 
 func main() {
@@ -50,7 +49,6 @@ func main() {
 		log.SetFlags(log.Flags() &^ (log.Ldate | log.Ltime))
 	}
 
-	ctx = lo.Must(lib.NewMasterKeyContext(ctx, cfg.App.MasterKey))
 	ctx = lo.Must(postgres.NewContext(ctx, cfg.Postgres))
 
 	database := lo.Must(cfg.Postgres.DB(ctx))
