@@ -5,9 +5,10 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
     GOBIN=/usr/local/bin go install -trimpath -ldflags="-s -w" chainguard.dev/apko@v1.4.6
 COPY ./builds/database.apko.yaml /database.yaml
+# PostgreSQL 18 needs OpenSSL 3 headers; libssh2-dev r11 switched to OpenSSL 4.
 RUN apko build-minirootfs /database.yaml /runtime.tar \
     && apko build-minirootfs /database.yaml /builder.tar \
-        --package-append build-base,meson,ninja,pkgconf,bzip2-dev,lz4-dev,openssl-dev,postgresql-18-dev,libxml2-dev,zlib-dev,zstd-dev,libssh2-dev \
+        --package-append build-base,meson,ninja,pkgconf,bzip2-dev,lz4-dev,openssl-dev,postgresql-18-dev,libxml2-dev,zlib-dev,zstd-dev,libssh2-dev=1.11.1-r10 \
     && mkdir /runtime /builder \
     && tar -xf /runtime.tar -C /runtime --exclude=dev \
     && tar -xf /builder.tar -C /builder --exclude=dev
