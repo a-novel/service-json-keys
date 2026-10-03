@@ -65,8 +65,6 @@ func (service *JwkSearch) Exec(ctx context.Context, request *JwkSearchRequest) (
 		return nil, otel.ReportError(span, fmt.Errorf("search entities: %w", err))
 	}
 
-	span.SetAttributes(attribute.Int("entities.count", len(entities)))
-
 	deserialized := make([]*Jwk, len(entities))
 
 	for i, entity := range entities {
@@ -79,5 +77,5 @@ func (service *JwkSearch) Exec(ctx context.Context, request *JwkSearchRequest) (
 		}
 	}
 
-	return otel.ReportSuccess(span, deserialized), nil
+	return deserialized, nil
 }

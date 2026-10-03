@@ -47,7 +47,7 @@ func (service *ClaimsSign) Exec(ctx context.Context, request *ClaimsSignRequest)
 
 	keyConfig, ok := service.keysConfig[request.Usage]
 	if !ok {
-		return "", fmt.Errorf("%w: %s", ErrConfigNotFound, request.Usage)
+		return "", otel.ReportError(span, fmt.Errorf("%w: %s", ErrConfigNotFound, request.Usage))
 	}
 
 	// Attach the standard JWT claim envelope from the usage config; these claims are
@@ -66,22 +66,22 @@ func (service *ClaimsSign) Exec(ctx context.Context, request *ClaimsSignRequest)
 
 	producerPlugins, ok := service.producers[request.Usage]
 	if !ok {
-		return "", fmt.Errorf("%w: %s", ErrConfigNotFound, request.Usage)
+		return "", otel.ReportError(span, fmt.Errorf("%w: %s", ErrConfigNotFound, request.Usage))
 	}
 
 	producer := jwt.NewProducer(jwt.ProducerConfig{Plugins: producerPlugins})
 
 	// A caller claim that collides with the envelope above is rejected at
-	// encoding time, inside Issue. The request is malformed, so it is classified
-	// rather than reported as a fault; the wrapped error names the members.
+	// encoding time, inside Issue. The request is malformed, so it is classified;
+	// the wrapped error names the members.
 	token, err := producer.Issue(ctx, claims, nil)
 	if errors.Is(err, jwa.ErrReservedMember) {
-		return "", fmt.Errorf("%w: %w", ErrReservedClaim, err)
+		return "", otel.ReportError(span, fmt.Errorf("%w: %w", ErrReservedClaim, err))
 	}
 
 	if err != nil {
 		return "", otel.ReportError(span, fmt.Errorf("issue token: %w", err))
 	}
 
-	return otel.ReportSuccess(span, token), nil
+	return token, nil
 }

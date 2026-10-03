@@ -46,7 +46,7 @@ func NewMasterKeyContext(ctx context.Context, masterKeyRaw string) (context.Cont
 	var masterKey [MasterKeyLength]byte
 	copy(masterKey[:], masterKeyBytes)
 
-	return otel.ReportSuccess(span, context.WithValue(ctx, masterKeyContext{}, masterKey)), nil
+	return context.WithValue(ctx, masterKeyContext{}, masterKey), nil
 }
 
 // MasterKeyContext returns the master key stored in the context.
@@ -58,11 +58,11 @@ func MasterKeyContext(ctx context.Context) ([MasterKeyLength]byte, error) {
 	masterKey, ok := ctx.Value(masterKeyContext{}).([MasterKeyLength]byte)
 
 	if !ok {
-		return [MasterKeyLength]byte{}, fmt.Errorf(
+		return [MasterKeyLength]byte{}, otel.ReportError(span, fmt.Errorf(
 			"extract master key: %w: got type %T, expected %T",
 			ErrInvalidMasterKey,
 			ctx.Value(masterKeyContext{}), [MasterKeyLength]byte{},
-		)
+		))
 	}
 
 	return masterKey, nil

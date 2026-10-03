@@ -39,8 +39,6 @@ func (handler *GrpcClaimsSign) ClaimsSign(
 
 	extractedClaims, err := grpcf.UnmarshalJSONFromAny(request.GetPayload())
 	if err != nil {
-		_ = otel.ReportError(span, err)
-
 		return nil, status.Error(codes.InvalidArgument, "invalid payload")
 	}
 
@@ -49,6 +47,8 @@ func (handler *GrpcClaimsSign) ClaimsSign(
 		Usage:  request.GetUsage(),
 	})
 	if errors.Is(err, core.ErrConfigNotFound) {
+		_ = otel.ReportError(span, err)
+
 		return nil, status.Error(codes.Unavailable, "unknown usage")
 	}
 
@@ -66,5 +66,5 @@ func (handler *GrpcClaimsSign) ClaimsSign(
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	return otel.ReportSuccess(span, &jsonkeysv2.ClaimsSignResponse{Token: signed}), nil
+	return &jsonkeysv2.ClaimsSignResponse{Token: signed}, nil
 }
