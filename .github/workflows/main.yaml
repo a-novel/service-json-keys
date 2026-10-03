@@ -57,7 +57,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: a-novel-kit/workflows/go-actions/lint-go@v1.36.3
+      - uses: a-novel-kit/workflows/go-actions/lint-go@2324ca6636a67d9ac715cb2e98cd925d50084667
 
   lint-proto:
     runs-on: ubuntu-latest
@@ -171,7 +171,7 @@ jobs:
         run: |
           go run ./cmd/rotate-keys
           go run ./cmd/rotate-keys
-      - uses: a-novel-kit/workflows/go-actions/test-go@v1.36.3
+      - uses: a-novel-kit/workflows/go-actions/test-go@2324ca6636a67d9ac715cb2e98cd925d50084667
         id: test
         with:
           filter_extra_patterns: "| grep /internal | grep -v /protogen"
@@ -201,7 +201,7 @@ jobs:
           database_image: ghcr.io/a-novel/service-json-keys/database@${{ needs.build-database.outputs.digest }}
           standalone_grpc_image: ghcr.io/a-novel/service-json-keys/standalone-grpc@${{ needs.build-standalone-grpc.outputs.digest }}
           registry_login: "true"
-      - uses: a-novel-kit/workflows/go-actions/test-go@v1.36.3
+      - uses: a-novel-kit/workflows/go-actions/test-go@2324ca6636a67d9ac715cb2e98cd925d50084667
         id: test
         with:
           filter_extra_patterns: "| grep /pkg"
@@ -412,7 +412,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: a-novel-kit/workflows/generic-actions/codecov@v1.36.3
+      - uses: a-novel-kit/workflows/generic-actions/codecov@2324ca6636a67d9ac715cb2e98cd925d50084667
         with:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
           coverage_files: coverage.txt,coverage_pkg.txt,coverage/*
