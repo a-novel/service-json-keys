@@ -44,9 +44,9 @@ func (handler *GrpcStatus) Status(
 		return nil, status.Error(codes.Unavailable, "service dependencies unavailable")
 	}
 
-	return otel.ReportSuccess(span, &jsonkeysv2.StatusResponse{
+	return &jsonkeysv2.StatusResponse{
 		Postgres: NewGrpcHealthStatus(),
-	}), nil
+	}, nil
 }
 
 func (handler *GrpcStatus) reportPostgres(ctx context.Context) error {
@@ -57,8 +57,6 @@ func (handler *GrpcStatus) reportPostgres(ctx context.Context) error {
 	if err != nil {
 		return otel.ReportError(span, err)
 	}
-
-	otel.ReportSuccessNoContent(span)
 
 	return nil
 }

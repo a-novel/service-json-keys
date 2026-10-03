@@ -68,7 +68,6 @@ func main() {
 		log.Fatalln(err.Error()) //nolint:gocritic
 	}
 
-	otel.ReportSuccessNoContent(span)
 	log.Printf("done — %d usage(s) processed, completed in %s",
 		resp.Processed, time.Since(start).Round(time.Millisecond))
 }

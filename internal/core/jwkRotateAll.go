@@ -53,8 +53,6 @@ func (service *JwkRotateAll) Exec(
 	ctx, span := otel.Tracer().Start(ctx, "core.JwkRotateAll")
 	defer span.End()
 
-	span.SetAttributes(attribute.Int("keys.usages", len(service.keysConfig)))
-
 	processed := 0
 
 	err := service.transactor.WithinTx(ctx, func(ctx context.Context) error {
@@ -75,5 +73,5 @@ func (service *JwkRotateAll) Exec(
 
 	span.SetAttributes(attribute.Int("keys.processed", processed))
 
-	return otel.ReportSuccess(span, &JwkRotateAllResponse{Processed: processed}), nil
+	return &JwkRotateAllResponse{Processed: processed}, nil
 }

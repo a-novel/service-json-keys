@@ -44,8 +44,6 @@ func (dao *PgJwkSearch) Exec(ctx context.Context, request *JwkSearchRequest) ([]
 	ctx, span := otel.Tracer().Start(ctx, "dao.PgJwkSearch")
 	defer span.End()
 
-	span.SetAttributes(attribute.String("key.usage", request.Usage))
-
 	tx, err := postgres.GetContext(ctx)
 	if err != nil {
 		return nil, otel.ReportError(span, fmt.Errorf("get transaction: %w", err))
@@ -58,19 +56,14 @@ func (dao *PgJwkSearch) Exec(ctx context.Context, request *JwkSearchRequest) ([]
 		return nil, otel.ReportError(span, fmt.Errorf("execute query: %w", err))
 	}
 
-	span.SetAttributes(
-		attribute.Int("keys.count", len(entities)),
-		attribute.Int("keys.max_batch_size", KeysMaxBatchSize),
-	)
+	span.SetAttributes(attribute.Int("keys.count", len(entities)))
 
 	// Hitting the cap signals a misconfiguration; log it and return what was found.
 	if len(entities) >= KeysMaxBatchSize {
 		err = fmt.Errorf("%w: %d keys found for usage %s", ErrJwkSearchTooManyResults, len(entities), request.Usage)
 
-		logger := otel.Logger()
-		logger.ErrorContext(ctx, err.Error())
-		span.RecordError(err)
+		otel.Logger().ErrorContext(ctx, err.Error())
 	}
 
-	return otel.ReportSuccess(span, entities), nil
+	return entities, nil
 }
