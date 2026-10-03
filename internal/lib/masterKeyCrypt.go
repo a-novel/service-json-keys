@@ -34,14 +34,10 @@ func EncryptMasterKey(ctx context.Context, data any) ([]byte, error) {
 		return nil, otel.ReportError(span, fmt.Errorf("get master key: %w", err))
 	}
 
-	span.AddEvent("masterKey.retrieved")
-
 	serializedData, err := json.Marshal(data)
 	if err != nil {
 		return nil, otel.ReportError(span, fmt.Errorf("serialize data: %w", err))
 	}
-
-	span.AddEvent("data.serialized")
 
 	var nonce [NonceLength]byte
 
@@ -50,13 +46,9 @@ func EncryptMasterKey(ctx context.Context, data any) ([]byte, error) {
 		return nil, otel.ReportError(span, fmt.Errorf("generate nonce: %w", err))
 	}
 
-	span.AddEvent("nonce.generated")
-
 	encrypted := secretbox.Seal(nonce[:], serializedData, &nonce, &secret)
 
-	span.AddEvent("data.encrypted")
-
-	return otel.ReportSuccess(span, encrypted), nil
+	return encrypted, nil
 }
 
 // DecryptMasterKey decrypts a ciphertext produced by [EncryptMasterKey] using the master key stored
@@ -69,8 +61,6 @@ func DecryptMasterKey(ctx context.Context, data []byte, output any) error {
 	if err != nil {
 		return otel.ReportError(span, fmt.Errorf("get master key: %w", err))
 	}
-
-	span.AddEvent("masterKey.retrieved")
 
 	// Secretbox requires a 24-byte nonce prefix plus at least the 16-byte Poly1305 tag.
 	if len(data) < NonceLength+secretbox.Overhead {
@@ -85,15 +75,10 @@ func DecryptMasterKey(ctx context.Context, data []byte, output any) error {
 		return otel.ReportError(span, fmt.Errorf("decrypt data: %w", ErrInvalidSecret))
 	}
 
-	span.AddEvent("data.decrypted")
-
 	err = json.Unmarshal(decrypted, &output)
 	if err != nil {
 		return otel.ReportError(span, fmt.Errorf("unmarshal data: %w", err))
 	}
-
-	span.AddEvent("data.unmarshalled")
-	otel.ReportSuccessNoContent(span)
 
 	return nil
 }

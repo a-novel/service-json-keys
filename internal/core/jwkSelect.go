@@ -2,7 +2,6 @@ package core
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -62,10 +61,6 @@ func (service *JwkSelect) Exec(ctx context.Context, request *JwkSelectRequest) (
 		ID: request.ID,
 	})
 	if err != nil {
-		if errors.Is(err, dao.ErrJwkSelectNotFound) {
-			return nil, ErrJwkNotFound
-		}
-
 		return nil, otel.ReportError(span, fmt.Errorf("select key: %w", err))
 	}
 
@@ -77,5 +72,5 @@ func (service *JwkSelect) Exec(ctx context.Context, request *JwkSelectRequest) (
 		return nil, otel.ReportError(span, fmt.Errorf("deserialize key: %w", err))
 	}
 
-	return otel.ReportSuccess(span, deserialized), nil
+	return deserialized, nil
 }

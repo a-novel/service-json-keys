@@ -1,12 +1,16 @@
 package core
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/a-novel/service-json-keys/v2/internal/dao"
+)
 
 // ErrConfigNotFound is returned when no JWK configuration is registered for a given key usage.
 var ErrConfigNotFound = errors.New("no config found for the requested usage")
 
 // ErrJwkNotFound is returned when no active key matches the requested ID.
-var ErrJwkNotFound = errors.New("jwk not found")
+var ErrJwkNotFound = dao.ErrJwkSelectNotFound
 
 // ErrReservedClaim is returned when the caller's claims name a registered JWT
 // parameter. Those belong to the envelope the service stamps from the usage

@@ -88,5 +88,5 @@ func (service *ClaimsVerify[Out]) Exec(ctx context.Context, request *ClaimsVerif
 		return nil, otel.ReportError(span, err)
 	}
 
-	return otel.ReportSuccess(span, &claims), nil
+	return &claims, nil
 }

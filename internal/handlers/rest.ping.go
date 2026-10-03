@@ -27,6 +27,4 @@ func (handler *RestPing) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-
-	otel.ReportSuccessNoContent(span)
 }

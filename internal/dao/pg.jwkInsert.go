@@ -49,7 +49,6 @@ func (dao *PgJwkInsert) Exec(ctx context.Context, request *JwkInsertRequest) (*J
 
 	span.SetAttributes(
 		attribute.String("key.id", request.ID.String()),
-		attribute.String("key.usage", request.Usage),
 		attribute.Int64("key.created_at", request.Now.Unix()),
 		attribute.Int64("key.expires_at", request.Expiration.Unix()),
 	)
@@ -76,5 +75,5 @@ func (dao *PgJwkInsert) Exec(ctx context.Context, request *JwkInsertRequest) (*J
 		return nil, otel.ReportError(span, fmt.Errorf("execute query: %w", err))
 	}
 
-	return otel.ReportSuccess(span, entity), nil
+	return entity, nil
 }
