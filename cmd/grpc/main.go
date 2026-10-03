@@ -16,7 +16,6 @@ import (
 	"syscall"
 
 	"github.com/samber/lo"
-	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
@@ -99,7 +98,6 @@ func main() {
 	}
 
 	server := grpc.NewServer(
-		grpc.StatsHandler(otelgrpc.NewServerHandler()),
 		cfg.Otel.RpcInterceptor(),
 		grpc.ChainUnaryInterceptor(
 			grpcf.BaseContextUnaryInterceptor(ctxInterceptor),
