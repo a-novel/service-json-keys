@@ -50,14 +50,14 @@ jobs:
           services: postgres
           database_image: ghcr.io/a-novel/service-json-keys/database@${{ needs.build-database.outputs.digest }}
           registry_login: "true"
-      - uses: a-novel-kit/workflows/go-actions/generate-go@v1.36.3
+      - uses: a-novel-kit/workflows/go-actions/generate-go@dba522ea5a09c7f0019bed8d747f1e4e1d3e3f60
 
   lint-go:
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
-      - uses: a-novel-kit/workflows/go-actions/lint-go@v1.36.3
+      - uses: a-novel-kit/workflows/go-actions/lint-go@dba522ea5a09c7f0019bed8d747f1e4e1d3e3f60
 
   lint-proto:
     runs-on: ubuntu-latest
@@ -77,12 +77,12 @@ jobs:
       contents: read
       packages: read
     steps:
-      - uses: a-novel-kit/workflows/node-actions/lint-node@v1.36.3
+      - uses: a-novel-kit/workflows/node-actions/setup-node@b804fd9dde19181bb95d990856fc6a1031f69a59
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           app_private_key: ${{ secrets.DEPENDENCY_BOT_PRIVATE_KEY }}
           client_id: ${{ vars.DEPENDENCY_BOT_CLIENT_ID }}
-          lint_action: "lint:ci"
+      - run: pnpm run lint:ci
 
   lint-dockerfile:
     runs-on: ubuntu-latest
@@ -171,7 +171,7 @@ jobs:
         run: |
           go run ./cmd/rotate-keys
           go run ./cmd/rotate-keys
-      - uses: a-novel-kit/workflows/go-actions/test-go@v1.36.3
+      - uses: a-novel-kit/workflows/go-actions/test-go@dba522ea5a09c7f0019bed8d747f1e4e1d3e3f60
         id: test
         with:
           filter_extra_patterns: "| grep /internal | grep -v /protogen"
@@ -201,7 +201,7 @@ jobs:
           database_image: ghcr.io/a-novel/service-json-keys/database@${{ needs.build-database.outputs.digest }}
           standalone_grpc_image: ghcr.io/a-novel/service-json-keys/standalone-grpc@${{ needs.build-standalone-grpc.outputs.digest }}
           registry_login: "true"
-      - uses: a-novel-kit/workflows/go-actions/test-go@v1.36.3
+      - uses: a-novel-kit/workflows/go-actions/test-go@dba522ea5a09c7f0019bed8d747f1e4e1d3e3f60
         id: test
         with:
           filter_extra_patterns: "| grep /pkg"
@@ -250,7 +250,7 @@ jobs:
     outputs:
       digest: ${{ steps.build.outputs.digest }}
     steps:
-      - uses: a-novel-kit/workflows/build-actions/docker@v1.36.3
+      - uses: a-novel-kit/workflows/build-actions/docker@faea26b62541a7b4222db60a52e0458f8ea68e21
         id: build
         with:
           file: builds/database.Dockerfile
@@ -322,7 +322,7 @@ jobs:
           persist-credentials: false
       - *start-local-database
       - uses: $/.github/actions/run-migrations
-      - uses: a-novel-kit/workflows/build-actions/docker@v1.36.3
+      - uses: a-novel-kit/workflows/build-actions/docker@faea26b62541a7b4222db60a52e0458f8ea68e21
         with:
           file: builds/grpc.Dockerfile
           image_name: ${{ github.repository }}/grpc
@@ -341,7 +341,7 @@ jobs:
     # test-pkg boots and exercises this image in a full integration run, so this job only
     # builds and pushes it; skip_healthcheck drops the redundant smoke run.
     steps:
-      - uses: a-novel-kit/workflows/build-actions/docker@v1.36.3
+      - uses: a-novel-kit/workflows/build-actions/docker@faea26b62541a7b4222db60a52e0458f8ea68e21
         id: build
         with:
           file: builds/standalone.grpc.Dockerfile
@@ -366,7 +366,7 @@ jobs:
           persist-credentials: false
       - *start-local-database
       - uses: $/.github/actions/run-migrations
-      - uses: a-novel-kit/workflows/build-actions/docker@v1.36.3
+      - uses: a-novel-kit/workflows/build-actions/docker@faea26b62541a7b4222db60a52e0458f8ea68e21
         with:
           file: builds/rest.Dockerfile
           image_name: ${{ github.repository }}/rest
@@ -385,7 +385,7 @@ jobs:
     # test-pkg-js boots and exercises this image in a full integration run, so this job only
     # builds and pushes it; skip_healthcheck drops the redundant smoke run.
     steps:
-      - uses: a-novel-kit/workflows/build-actions/docker@v1.36.3
+      - uses: a-novel-kit/workflows/build-actions/docker@faea26b62541a7b4222db60a52e0458f8ea68e21
         id: build
         with:
           file: builds/standalone.rest.Dockerfile
