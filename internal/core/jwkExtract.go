@@ -79,5 +79,5 @@ func (service *JwkExtract) Exec(ctx context.Context, request *JwkExtractRequest)
 		return nil, otel.ReportError(span, fmt.Errorf("deserialize request.Jwk: %w", err))
 	}
 
-	return otel.ReportSuccess(span, deserialized), nil
+	return deserialized, nil
 }

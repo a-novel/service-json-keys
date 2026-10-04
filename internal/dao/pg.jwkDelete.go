@@ -64,11 +64,11 @@ func (dao *PgJwkDelete) Exec(ctx context.Context, request *JwkDeleteRequest) (*J
 	err = tx.NewRaw(jwkDeleteQuery, request.Now, request.Comment, request.ID).Scan(ctx, entity)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, ErrJwkDeleteNotFound
+			return nil, otel.ReportError(span, ErrJwkDeleteNotFound)
 		}
 
 		return nil, otel.ReportError(span, fmt.Errorf("execute query: %w", err))
 	}
 
-	return otel.ReportSuccess(span, entity), nil
+	return entity, nil
 }

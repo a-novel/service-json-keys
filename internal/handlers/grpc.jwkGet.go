@@ -39,8 +39,6 @@ func (handler *GrpcJwkGet) JwkGet(
 
 	keyId, err := uuid.Parse(request.GetId())
 	if err != nil {
-		_ = otel.ReportError(span, err)
-
 		return nil, status.Error(codes.InvalidArgument, "invalid key id")
 	}
 
@@ -57,7 +55,7 @@ func (handler *GrpcJwkGet) JwkGet(
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	return otel.ReportSuccess(span, &jsonkeysv2.JwkGetResponse{
+	return &jsonkeysv2.JwkGetResponse{
 		Jwk: &jsonkeysv2.Jwk{
 			Kty:     jwk.KTY.String(),
 			Use:     jwk.Use.String(),
@@ -66,5 +64,5 @@ func (handler *GrpcJwkGet) JwkGet(
 			Kid:     jwk.KID,
 			Payload: jwk.Payload,
 		},
-	}), nil
+	}, nil
 }

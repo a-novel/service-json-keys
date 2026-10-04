@@ -72,7 +72,5 @@ func (handler *RestHealth) reportPostgres(ctx context.Context) error {
 		return otel.ReportError(span, err)
 	}
 
-	otel.ReportSuccessNoContent(span)
-
 	return nil
 }

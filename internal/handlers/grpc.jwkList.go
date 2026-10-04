@@ -45,7 +45,7 @@ func (handler *GrpcJwkList) JwkList(
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	return otel.ReportSuccess(span, &jsonkeysv2.JwkListResponse{
+	return &jsonkeysv2.JwkListResponse{
 		Keys: lo.Map(jwks, func(item *core.Jwk, index int) *jsonkeysv2.Jwk {
 			return &jsonkeysv2.Jwk{
 				Kty:     item.KTY.String(),
@@ -56,5 +56,5 @@ func (handler *GrpcJwkList) JwkList(
 				Payload: item.Payload,
 			}
 		}),
-	}), nil
+	}, nil
 }

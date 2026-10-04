@@ -11,7 +11,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/samber/lo"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
 
 	"github.com/a-novel-kit/golib/otel"
 
@@ -83,8 +82,6 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 		return nil, otel.ReportError(span, fmt.Errorf("list keys: %w", err))
 	}
 
-	span.AddEvent("keys.retrieved", trace.WithAttributes(attribute.Int("keys.count", len(keys))))
-
 	var lastCreated time.Time
 	if len(keys) > 0 {
 		lastCreated = keys[0].CreatedAt
@@ -92,13 +89,10 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 
 	keyConfig, ok := service.keysConfig[request.Usage]
 	if !ok {
-		return nil, ErrConfigNotFound
+		return nil, otel.ReportError(span, ErrConfigNotFound)
 	}
 
-	span.SetAttributes(
-		attribute.Int64("key.last_created", lastCreated.Unix()),
-		attribute.Float64("key.rotation_interval", keyConfig.Key.Rotation.Seconds()),
-	)
+	span.SetAttributes(attribute.Int64("key.last_created", lastCreated.Unix()))
 
 	var latestKey *dao.Jwk
 
@@ -113,23 +107,13 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 			return nil, otel.ReportError(span, fmt.Errorf("generate key: %w", err))
 		}
 
-		span.AddEvent("key.generated", trace.WithAttributes(
-			attribute.String("key.private.kid", generatedKey.PrivateKID),
-			attribute.String("key.public.kid", generatedKey.PublicKID),
-			attribute.String("key.alg", string(keyConfig.Alg)),
-		))
-
 		// Encrypt the private key with the master key, so a database dump does not expose it.
 		privateKeyEncrypted, err := lib.EncryptMasterKey(ctx, generatedKey.PrivateKey)
 		if err != nil {
 			return nil, otel.ReportError(span, fmt.Errorf("encrypt private key: %w", err))
 		}
 
-		span.AddEvent("key.private.encrypted")
-
 		privateKeyEncoded := base64.RawURLEncoding.EncodeToString(privateKeyEncrypted)
-
-		span.AddEvent("key.private.encoded")
 
 		// Both private and public keys share the same KID.
 		kid, err := uuid.Parse(generatedKey.PrivateKID)
@@ -146,8 +130,6 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 			}
 
 			publicKeyEncoded = lo.ToPtr(base64.RawURLEncoding.EncodeToString(publicKeySerialized))
-
-			span.AddEvent("key.public.encoded")
 		}
 
 		now := time.Now()
@@ -163,11 +145,7 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 		if err != nil {
 			return nil, otel.ReportError(span, fmt.Errorf("insert key: %w", err))
 		}
-
-		span.AddEvent("key.inserted")
 	} else {
-		span.AddEvent("skipped")
-
 		latestKey = keys[0]
 	}
 
@@ -179,5 +157,5 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 		return nil, otel.ReportError(span, err)
 	}
 
-	return otel.ReportSuccess(span, output), nil
+	return output, nil
 }
