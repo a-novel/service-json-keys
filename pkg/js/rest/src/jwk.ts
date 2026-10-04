@@ -23,11 +23,11 @@ export type JwkKeyOp = z.infer<typeof JwkKeyOpSchema>;
 
 /**
  * Parses a public JSON Web Key. The schema is loose because a key carries
- * algorithm-specific parameters beyond the standard fields (`x` and `crv` for EdDSA,
- * `n` and `e` for RSA), and those vary by key type.
+ * algorithm-specific parameters beyond the standard fields (`x` and `crv` for Ed25519,
+ * `n` and `e` for RSA, `pub` for ML-DSA), and those vary by key type.
  */
 export const JwkSchema = z.looseObject({
-  /** Key type (e.g., `"OKP"` for EdDSA, `"EC"` for elliptic curve). */
+  /** Key type (e.g., `"OKP"` for Ed25519, `"EC"` for elliptic curve, `"AKP"` for ML-DSA). */
   kty: z.string(),
   /** Intended use: `"sig"` for signature verification or `"enc"` for encryption. */
   use: z.string(),
