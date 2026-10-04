@@ -33,7 +33,7 @@ export const JwkSchema = z.looseObject({
   use: z.string(),
   /** Permitted operations for this key. */
   key_ops: z.array(JwkKeyOpSchema),
-  /** Signing algorithm (e.g., `"EdDSA"`). */
+  /** Signing algorithm (e.g., `"Ed25519"`). */
   alg: z.string(),
   /** Key ID. Matches the `kid` header field in JWTs signed with this key. */
   kid: z.string(),

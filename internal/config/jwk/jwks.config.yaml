@@ -3,13 +3,9 @@
 # Each top-level key is a usage name; its value configures the signing algorithm,
 # key lifetime, and the JWT claims applied to every token signed under that usage.
 
-# Ed25519 usages are configured as "EdDSA", the label RFC 9864 deprecates, while any service still
-# verifies with jwt v2.2.x: those verifiers accept neither tokens nor keys labeled "Ed25519".
-# Switch both usages to "Ed25519" once every consumer runs jwt v2.3.0 or later.
-
 # Short-lived access tokens issued by the authentication service.
 auth:
-  alg: EdDSA
+  alg: Ed25519
   key:
     ttl: 168h # 7 days — how long a key version stays active before expiring
     rotation: 24h # a new key is generated every 24h; older keys remain active until their TTL
@@ -23,7 +19,7 @@ auth:
 
 # Long-lived refresh tokens used to obtain new access tokens without re-authentication.
 auth-refresh:
-  alg: EdDSA
+  alg: Ed25519
   key:
     ttl: 720h # 30 days
     rotation: 168h # 7 days

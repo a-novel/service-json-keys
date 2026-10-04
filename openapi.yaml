@@ -145,7 +145,7 @@ components:
                 - kty: OKP
                   use: sig
                   key_ops: [verify]
-                  alg: EdDSA
+                  alg: Ed25519
                   kid: "44de7cd7-aff1-e6c4-4204-74e8341d792c"
                   x: "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo"
             empty:
@@ -163,7 +163,7 @@ components:
                 kty: OKP
                 use: sig
                 key_ops: [verify]
-                alg: EdDSA
+                alg: Ed25519
                 kid: "44de7cd7-aff1-e6c4-4204-74e8341d792c"
                 x: "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo"
 
@@ -217,7 +217,7 @@ components:
             "kty": "OKP",
             "use": "sig",
             "key_ops": ["verify"],
-            "alg": "EdDSA",
+            "alg": "Ed25519",
             "kid": "44de7cd7-aff1-e6c4-4204-74e8341d792c",
             "x": "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo",
           }
@@ -239,7 +239,7 @@ components:
         alg:
           type: string
           description: The algorithm intended for use with the key.
-          examples: [EdDSA, Ed25519, ES256, RS256, ML-DSA-44]
+          examples: [Ed25519, EdDSA, ES256, RS256, ML-DSA-44]
         kid:
           type: string
           description: The unique identifier of the key.
