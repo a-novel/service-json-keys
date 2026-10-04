@@ -52,6 +52,9 @@ func TestClaimsSignAndVerify(t *testing.T) {
 		{name: "Success/PS256", alg: jwa.PS256},
 		{name: "Success/PS384", alg: jwa.PS384},
 		{name: "Success/PS512", alg: jwa.PS512},
+		{name: "Success/MLDSA44", alg: jwa.MLDSA44},
+		{name: "Success/MLDSA65", alg: jwa.MLDSA65},
+		{name: "Success/MLDSA87", alg: jwa.MLDSA87},
 	}
 
 	for _, testCase := range testCases {

@@ -42,9 +42,12 @@ func TestJwkProducers(t *testing.T) {
 				"ps256":   {Alg: jwa.PS256},
 				"ps384":   {Alg: jwa.PS384},
 				"ps512":   {Alg: jwa.PS512},
+				"mldsa44": {Alg: jwa.MLDSA44},
+				"mldsa65": {Alg: jwa.MLDSA65},
+				"mldsa87": {Alg: jwa.MLDSA87},
 			},
 
-			expectLen: 11,
+			expectLen: 14,
 		},
 		{
 			name: "Error/UnknownAlgorithm",
@@ -102,9 +105,12 @@ func TestJwkRecipients(t *testing.T) {
 				"ps256":   {Alg: jwa.PS256},
 				"ps384":   {Alg: jwa.PS384},
 				"ps512":   {Alg: jwa.PS512},
+				"mldsa44": {Alg: jwa.MLDSA44},
+				"mldsa65": {Alg: jwa.MLDSA65},
+				"mldsa87": {Alg: jwa.MLDSA87},
 			},
 
-			expectLen: 11,
+			expectLen: 14,
 		},
 		{
 			name: "Error/UnknownAlgorithm",

@@ -51,6 +51,9 @@ var JwkGenerators = map[jwa.Alg]JwkGenAny{
 	jwa.PS256:   JwkGeneratorRsa(jwa.PS256),
 	jwa.PS384:   JwkGeneratorRsa(jwa.PS384),
 	jwa.PS512:   JwkGeneratorRsa(jwa.PS512),
+	jwa.MLDSA44: JwkGeneratorMLDSA(jwa.MLDSA44),
+	jwa.MLDSA65: JwkGeneratorMLDSA(jwa.MLDSA65),
+	jwa.MLDSA87: JwkGeneratorMLDSA(jwa.MLDSA87),
 }
 
 // JwkGeneratorEd25519 returns a generator for Ed25519 key pairs labeled with alg: "Ed25519", or the
@@ -112,6 +115,28 @@ func JwkGeneratorRsa(alg jwa.Alg) JwkGenAny {
 		}
 
 		priv, pub, err := jwk.GenerateRSA(preset)
+		if err != nil {
+			return nil, err
+		}
+
+		return &JwkGeneratorResult{
+			PrivateKey: priv,
+			PublicKey:  pub,
+			PrivateKID: priv.KID,
+			PublicKID:  pub.KID,
+		}, nil
+	}
+}
+
+// JwkGeneratorMLDSA returns a generator for the given post-quantum ML-DSA algorithm.
+func JwkGeneratorMLDSA(alg jwa.Alg) JwkGenAny {
+	return func() (*JwkGeneratorResult, error) {
+		preset, ok := jwkconfig.JwkPresetsMLDSA[alg]
+		if !ok {
+			return nil, fmt.Errorf("%w (ml-dsa): %s", ErrJwkPresetUnknown, alg)
+		}
+
+		priv, pub, err := jwk.GenerateMLDSA(preset)
 		if err != nil {
 			return nil, err
 		}
@@ -188,6 +213,8 @@ func NewJwkProducers(
 			}
 
 			signer = jws.NewSourcedRSASigner(keySource, rsaPreset)
+		case jwa.MLDSA44, jwa.MLDSA65, jwa.MLDSA87:
+			signer = jws.NewSourcedMLDSASigner(keySource)
 		default:
 			return nil, fmt.Errorf("%w: %s", ErrJwkPresetUnknownAlgorithm, keyConfig.Alg)
 		}
@@ -238,6 +265,8 @@ func NewJwkRecipients(
 			}
 
 			recipient = jws.NewSourcedRSAVerifier(keySource, rsaPreset)
+		case jwa.MLDSA44, jwa.MLDSA65, jwa.MLDSA87:
+			recipient = jws.NewSourcedMLDSAVerifier(keySource)
 		default:
 			return nil, fmt.Errorf("%w: %s", ErrJwkPresetUnknownAlgorithm, keyConfig.Alg)
 		}

@@ -357,6 +357,9 @@ func TestJwkGen(t *testing.T) {
 		jwa.ES256,
 		jwa.ES384,
 		jwa.ES512,
+		jwa.MLDSA44,
+		jwa.MLDSA65,
+		jwa.MLDSA87,
 	} {
 		testCases = append(testCases, testCaseDef{
 			name: "Success/" + string(alg),
