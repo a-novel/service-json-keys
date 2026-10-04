@@ -40,3 +40,11 @@ var JwsPresetsRsa = map[jwa.Alg]jws.RSAPreset{
 	jwa.PS384: jws.PS384,
 	jwa.PS512: jws.PS512,
 }
+
+// JwkPresetsMLDSA maps ML-DSA algorithm identifiers to their JWK generation presets. The JWS plugins
+// need no preset: an ML-DSA key's parameter set fixes its algorithm.
+var JwkPresetsMLDSA = map[jwa.Alg]jwtjwk.MLDSAPreset{
+	jwa.MLDSA44: jwtjwk.MLDSA44,
+	jwa.MLDSA65: jwtjwk.MLDSA65,
+	jwa.MLDSA87: jwtjwk.MLDSA87,
+}

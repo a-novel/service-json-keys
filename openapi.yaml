@@ -225,7 +225,7 @@ components:
         kty:
           type: string
           description: The cryptographic algorithm family used with the key.
-          examples: [OKP, EC, RSA]
+          examples: [OKP, EC, RSA, AKP]
         use:
           type: string
           description: The intended use of the public key.
@@ -239,7 +239,7 @@ components:
         alg:
           type: string
           description: The algorithm intended for use with the key.
-          examples: [EdDSA, ES256, RS256]
+          examples: [EdDSA, Ed25519, ES256, RS256, ML-DSA-44]
         kid:
           type: string
           description: The unique identifier of the key.

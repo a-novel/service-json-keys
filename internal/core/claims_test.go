@@ -1,7 +1,9 @@
 package core_test
 
 import (
+	"encoding/base64"
 	"encoding/json"
+	"strings"
 	"testing"
 	"time"
 
@@ -38,7 +40,9 @@ func TestClaimsSignAndVerify(t *testing.T) {
 		name string
 		alg  jwa.Alg
 	}{
-		{name: "Success/EdDSA", alg: jwa.EdDSA},
+		{name: "Success/Ed25519", alg: jwa.Ed25519},
+		// Consumers on jwt v2.2.x accept only "EdDSA" tokens and keys.
+		{name: "Success/EdDSA", alg: jwa.EdDSA}, //nolint:staticcheck // The legacy label is under test.
 		{name: "Success/ES256", alg: jwa.ES256},
 		{name: "Success/ES384", alg: jwa.ES384},
 		{name: "Success/ES512", alg: jwa.ES512},
@@ -48,6 +52,9 @@ func TestClaimsSignAndVerify(t *testing.T) {
 		{name: "Success/PS256", alg: jwa.PS256},
 		{name: "Success/PS384", alg: jwa.PS384},
 		{name: "Success/PS512", alg: jwa.PS512},
+		{name: "Success/MLDSA44", alg: jwa.MLDSA44},
+		{name: "Success/MLDSA65", alg: jwa.MLDSA65},
+		{name: "Success/MLDSA87", alg: jwa.MLDSA87},
 	}
 
 	for _, testCase := range testCases {
@@ -117,6 +124,19 @@ func TestClaimsSignAndVerify(t *testing.T) {
 			})
 			require.NoError(t, err)
 			require.Equal(t, claims, verifiedClaims)
+
+			// Both the published key and the token carry the configured label, which is what a
+			// verifier pinned to that label checks.
+			var header struct {
+				Alg jwa.Alg `json:"alg"`
+			}
+
+			encodedHeader, _, _ := strings.Cut(signedClaims, ".")
+			decodedHeader, err := base64.RawURLEncoding.DecodeString(encodedHeader)
+			require.NoError(t, err)
+			require.NoError(t, json.Unmarshal(decodedHeader, &header))
+			require.Equal(t, testCase.alg, header.Alg)
+			require.Equal(t, testCase.alg, publicKey.Alg)
 
 			privateSource.AssertExpectations(t)
 			publicSource.AssertExpectations(t)

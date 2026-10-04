@@ -80,7 +80,7 @@ The per-usage configuration ships in [`internal/config/jwks.config.yaml`](./inte
 
 ```yaml
 auth:
-  alg: EdDSA # signing algorithm: HS256/384/512, ES256/384/512, RS256/384/512, PS256/384/512, EdDSA
+  alg: EdDSA # signing algorithm: Ed25519 (or the legacy EdDSA), ES256/384/512, RS256/384/512, PS256/384/512, ML-DSA-44/65/87
   key:
     ttl: 168h # how long a key version stays active before expiring
     rotation: 24h # cadence at which a new key is generated; should be << ttl
