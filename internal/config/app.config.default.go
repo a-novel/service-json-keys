@@ -22,7 +22,8 @@ const (
 
 // LoggerProdGrpc sends gRPC request logs to Google Cloud Logging.
 var LoggerProdGrpc = loggingpresets.GRPCGcloud{
-	Component: env.GcloudProjectId,
+	Component: env.AppName,
+	ProjectId: env.GcloudProjectId,
 }
 
 // LoggerDevGrpc prints gRPC request logs to the console in a human-readable format.
