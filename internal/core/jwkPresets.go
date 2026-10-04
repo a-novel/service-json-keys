@@ -40,31 +40,37 @@ type JwkGenAny func() (*JwkGeneratorResult, error)
 // JwkGenerators is the registry of key generators keyed by algorithm. JwkGen.Exec uses this
 // to look up the correct generator for a given usage's configured algorithm.
 var JwkGenerators = map[jwa.Alg]JwkGenAny{
-	jwa.EdDSA: JwkGeneratorEd25519,
-	jwa.ES256: JwkGeneratorEs(jwa.ES256),
-	jwa.ES384: JwkGeneratorEs(jwa.ES384),
-	jwa.ES512: JwkGeneratorEs(jwa.ES512),
-	jwa.RS256: JwkGeneratorRsa(jwa.RS256),
-	jwa.RS384: JwkGeneratorRsa(jwa.RS384),
-	jwa.RS512: JwkGeneratorRsa(jwa.RS512),
-	jwa.PS256: JwkGeneratorRsa(jwa.PS256),
-	jwa.PS384: JwkGeneratorRsa(jwa.PS384),
-	jwa.PS512: JwkGeneratorRsa(jwa.PS512),
+	jwa.EdDSA:   JwkGeneratorEd25519(jwa.EdDSA), //nolint:staticcheck // A configured legacy label is honored.
+	jwa.Ed25519: JwkGeneratorEd25519(jwa.Ed25519),
+	jwa.ES256:   JwkGeneratorEs(jwa.ES256),
+	jwa.ES384:   JwkGeneratorEs(jwa.ES384),
+	jwa.ES512:   JwkGeneratorEs(jwa.ES512),
+	jwa.RS256:   JwkGeneratorRsa(jwa.RS256),
+	jwa.RS384:   JwkGeneratorRsa(jwa.RS384),
+	jwa.RS512:   JwkGeneratorRsa(jwa.RS512),
+	jwa.PS256:   JwkGeneratorRsa(jwa.PS256),
+	jwa.PS384:   JwkGeneratorRsa(jwa.PS384),
+	jwa.PS512:   JwkGeneratorRsa(jwa.PS512),
 }
 
-// JwkGeneratorEd25519 generates an Ed25519 private/public key pair.
-func JwkGeneratorEd25519() (*JwkGeneratorResult, error) {
-	priv, pub, err := jwk.GenerateED25519()
-	if err != nil {
-		return nil, err
-	}
+// JwkGeneratorEd25519 returns a generator for Ed25519 key pairs labeled with alg: "Ed25519", or the
+// "EdDSA" identifier RFC 9864 deprecates. Verifiers on jwt v2.2.x recognize only "EdDSA" keys.
+func JwkGeneratorEd25519(alg jwa.Alg) JwkGenAny {
+	return func() (*JwkGeneratorResult, error) {
+		priv, pub, err := jwk.GenerateED25519()
+		if err != nil {
+			return nil, err
+		}
 
-	return &JwkGeneratorResult{
-		PrivateKey: priv,
-		PublicKey:  pub,
-		PrivateKID: priv.KID,
-		PublicKID:  pub.KID,
-	}, nil
+		priv.Alg, pub.Alg = alg, alg
+
+		return &JwkGeneratorResult{
+			PrivateKey: priv,
+			PublicKey:  pub,
+			PrivateKID: priv.KID,
+			PublicKID:  pub.KID,
+		}, nil
+	}
 }
 
 // JwkGeneratorEs returns a generator for the given ECDSA algorithm.
@@ -162,7 +168,11 @@ func NewJwkProducers(
 		var signer jwt.ProducerPlugin
 
 		switch keyConfig.Alg {
-		case jwa.EdDSA:
+		// The token label follows the configured algorithm, so a usage left on "EdDSA" stays verifiable
+		// by consumers on jwt v2.2.x, which reject "Ed25519".
+		case jwa.EdDSA: //nolint:staticcheck // A configured legacy label is honored.
+			signer = jws.NewSourcedEdDSASigner(keySource) //nolint:staticcheck // See above.
+		case jwa.Ed25519:
 			signer = jws.NewSourcedED25519Signer(keySource)
 		case jwa.ES256, jwa.ES384, jwa.ES512:
 			ecdsaPreset, ok := jwkconfig.JwsPresetsEcdsa[keyConfig.Alg]
@@ -211,7 +221,8 @@ func NewJwkRecipients(
 		var recipient jwt.RecipientPlugin
 
 		switch keyConfig.Alg {
-		case jwa.EdDSA:
+		// The Ed25519 verifier accepts tokens and keys under either label.
+		case jwa.Ed25519, jwa.EdDSA: //nolint:staticcheck // A configured legacy label is honored.
 			recipient = jws.NewSourcedED25519Verifier(keySource)
 		case jwa.ES256, jwa.ES384, jwa.ES512:
 			ecdsaPreset, ok := jwkconfig.JwsPresetsEcdsa[keyConfig.Alg]

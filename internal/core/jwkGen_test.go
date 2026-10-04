@@ -111,7 +111,7 @@ func TestJwkGen(t *testing.T) {
 
 			keys: map[string]*config.Jwk{
 				"test-usage": {
-					Alg: jwa.EdDSA,
+					Alg: jwa.Ed25519,
 					Key: config.JwkKey{
 						TTL:      24 * time.Hour,
 						Rotation: 12 * time.Hour,
@@ -149,7 +149,7 @@ func TestJwkGen(t *testing.T) {
 					JWKCommon: jwa.JWKCommon{
 						KTY: "test-kty",
 						Use: "test-use",
-						Alg: jwa.EdDSA,
+						Alg: jwa.Ed25519,
 						KID: "00000000-0000-0000-0000-000000000001",
 					},
 					Payload: json.RawMessage(`{"message":"hello world"}`),
@@ -160,7 +160,7 @@ func TestJwkGen(t *testing.T) {
 				JWKCommon: jwa.JWKCommon{
 					KTY: "test-kty",
 					Use: "test-use",
-					Alg: jwa.EdDSA,
+					Alg: jwa.Ed25519,
 					KID: "00000000-0000-0000-0000-000000000001",
 				},
 				Payload: json.RawMessage(`{"message":"hello world"}`),
@@ -175,7 +175,7 @@ func TestJwkGen(t *testing.T) {
 
 			keys: map[string]*config.Jwk{
 				"test-usage": {
-					Alg: jwa.EdDSA,
+					Alg: jwa.Ed25519,
 					Key: config.JwkKey{
 						TTL:      24 * time.Hour,
 						Rotation: 12 * time.Hour,
@@ -202,7 +202,7 @@ func TestJwkGen(t *testing.T) {
 					JWKCommon: jwa.JWKCommon{
 						KTY: "test-kty",
 						Use: "test-use",
-						Alg: jwa.EdDSA,
+						Alg: jwa.Ed25519,
 						KID: "00000000-0000-0000-0000-000000000002",
 					},
 					Payload: json.RawMessage(`{"message":"hello world"}`),
@@ -213,7 +213,7 @@ func TestJwkGen(t *testing.T) {
 				JWKCommon: jwa.JWKCommon{
 					KTY: "test-kty",
 					Use: "test-use",
-					Alg: jwa.EdDSA,
+					Alg: jwa.Ed25519,
 					KID: "00000000-0000-0000-0000-000000000002",
 				},
 				Payload: json.RawMessage(`{"message":"hello world"}`),
@@ -228,7 +228,7 @@ func TestJwkGen(t *testing.T) {
 
 			keys: map[string]*config.Jwk{
 				"test-usage": {
-					Alg: jwa.EdDSA,
+					Alg: jwa.Ed25519,
 					Key: config.JwkKey{
 						TTL:      24 * time.Hour,
 						Rotation: 12 * time.Hour,
@@ -276,7 +276,7 @@ func TestJwkGen(t *testing.T) {
 
 			keys: map[string]*config.Jwk{
 				"test-usage": {
-					Alg: jwa.EdDSA,
+					Alg: jwa.Ed25519,
 					Key: config.JwkKey{
 						TTL:      24 * time.Hour,
 						Rotation: 12 * time.Hour,
@@ -313,7 +313,7 @@ func TestJwkGen(t *testing.T) {
 
 			keys: map[string]*config.Jwk{
 				"test-usage": {
-					Alg: jwa.EdDSA,
+					Alg: jwa.Ed25519,
 					Key: config.JwkKey{
 						TTL:      24 * time.Hour,
 						Rotation: 12 * time.Hour,
@@ -346,7 +346,8 @@ func TestJwkGen(t *testing.T) {
 	}
 
 	for _, alg := range []jwa.Alg{
-		jwa.EdDSA,
+		jwa.Ed25519,
+		jwa.EdDSA, //nolint:staticcheck // The legacy label is under test.
 		jwa.RS256,
 		jwa.RS384,
 		jwa.RS512,

@@ -21,7 +21,7 @@ func TestClaimsSign(t *testing.T) {
 
 	testConfig := map[string]*config.Jwk{
 		"test-usage": {
-			Alg: jwa.EdDSA,
+			Alg: jwa.Ed25519,
 			Key: config.JwkKey{
 				TTL:      168 * time.Hour,
 				Rotation: 24 * time.Hour,

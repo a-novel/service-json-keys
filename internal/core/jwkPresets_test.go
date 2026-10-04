@@ -31,19 +31,20 @@ func TestJwkProducers(t *testing.T) {
 			name: "Success/SupportedAlgorithms",
 
 			keys: map[string]*config.Jwk{
-				"eddsa": {Alg: jwa.EdDSA},
-				"es256": {Alg: jwa.ES256},
-				"es384": {Alg: jwa.ES384},
-				"es512": {Alg: jwa.ES512},
-				"rs256": {Alg: jwa.RS256},
-				"rs384": {Alg: jwa.RS384},
-				"rs512": {Alg: jwa.RS512},
-				"ps256": {Alg: jwa.PS256},
-				"ps384": {Alg: jwa.PS384},
-				"ps512": {Alg: jwa.PS512},
+				"ed25519": {Alg: jwa.Ed25519},
+				"eddsa":   {Alg: jwa.EdDSA}, //nolint:staticcheck // The legacy label is under test.
+				"es256":   {Alg: jwa.ES256},
+				"es384":   {Alg: jwa.ES384},
+				"es512":   {Alg: jwa.ES512},
+				"rs256":   {Alg: jwa.RS256},
+				"rs384":   {Alg: jwa.RS384},
+				"rs512":   {Alg: jwa.RS512},
+				"ps256":   {Alg: jwa.PS256},
+				"ps384":   {Alg: jwa.PS384},
+				"ps512":   {Alg: jwa.PS512},
 			},
 
-			expectLen: 10,
+			expectLen: 11,
 		},
 		{
 			name: "Error/UnknownAlgorithm",
@@ -90,19 +91,20 @@ func TestJwkRecipients(t *testing.T) {
 			name: "Success/SupportedAlgorithms",
 
 			keys: map[string]*config.Jwk{
-				"eddsa": {Alg: jwa.EdDSA},
-				"es256": {Alg: jwa.ES256},
-				"es384": {Alg: jwa.ES384},
-				"es512": {Alg: jwa.ES512},
-				"rs256": {Alg: jwa.RS256},
-				"rs384": {Alg: jwa.RS384},
-				"rs512": {Alg: jwa.RS512},
-				"ps256": {Alg: jwa.PS256},
-				"ps384": {Alg: jwa.PS384},
-				"ps512": {Alg: jwa.PS512},
+				"ed25519": {Alg: jwa.Ed25519},
+				"eddsa":   {Alg: jwa.EdDSA}, //nolint:staticcheck // The legacy label is under test.
+				"es256":   {Alg: jwa.ES256},
+				"es384":   {Alg: jwa.ES384},
+				"es512":   {Alg: jwa.ES512},
+				"rs256":   {Alg: jwa.RS256},
+				"rs384":   {Alg: jwa.RS384},
+				"rs512":   {Alg: jwa.RS512},
+				"ps256":   {Alg: jwa.PS256},
+				"ps384":   {Alg: jwa.PS384},
+				"ps512":   {Alg: jwa.PS512},
 			},
 
-			expectLen: 10,
+			expectLen: 11,
 		},
 		{
 			name: "Error/UnknownAlgorithm",
@@ -146,7 +148,7 @@ func TestJwkRecipients(t *testing.T) {
 
 		keys := map[string]*config.Jwk{
 			"test-usage": {
-				Alg: jwa.EdDSA,
+				Alg: jwa.Ed25519,
 				Key: config.JwkKey{
 					Cache:                time.Hour,
 					UnknownKeyIDInterval: time.Millisecond,
