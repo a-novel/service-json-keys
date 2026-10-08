@@ -13,6 +13,7 @@ import (
 
 	"github.com/samber/lo"
 
+	"github.com/a-novel-kit/golib/downtime"
 	"github.com/a-novel-kit/golib/otel"
 	"github.com/a-novel-kit/golib/postgres"
 
@@ -37,7 +38,7 @@ func main() {
 	lo.Must0(otel.Init(cfg.Otel))
 	defer cfg.Otel.Flush()
 
-	if cfg.App.Downtime.InProgress(config.DowntimeService, start) {
+	if downtime.Started(cfg.App.DowntimeStart, start) {
 		log.Println("planned downtime in progress: no rotation")
 
 		return

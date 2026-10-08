@@ -165,9 +165,9 @@ Database connection pool (server images). The limits are **per process**. The da
 
 Planned downtime (all server images, `jobs/rotatekeys`):
 
-| Name       | Description                                                                                                                                                                                                                                                                                            | Default |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
-| `DOWNTIME` | A planned downtime window, as JSON: `{"services":["json-keys"],"start":"…","end":"…"}`. From `start` until it is removed, if it lists `json-keys`, the servers answer `503` / `UNAVAILABLE` except for ping, health, status and reflection, start without the database, and key rotation does nothing. |         |
+| Name             | Description                                                                                                                                                                                                                                   | Default |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| `DOWNTIME_START` | When a planned downtime starts, in RFC 3339. From then until it is removed, even past the announced end, the servers answer `503` / `UNAVAILABLE` except for ping and gRPC health, start without the database, and key rotation does nothing. |         |
 
 Logs and tracing — OpenTelemetry supports a stdout and a Google Cloud exporter (all server images):
 

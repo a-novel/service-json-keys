@@ -12,9 +12,9 @@ import (
 // JobRotateKeysPresetDefault is the default [JobRotateKeys] configuration populated from environment variables.
 var JobRotateKeysPresetDefault = JobRotateKeys{
 	App: Main{
-		Name:      env.AppName + "-job-rotate-keys",
-		MasterKey: env.AppMasterKey,
-		Downtime:  env.Downtime,
+		Name:          env.AppName + "-job-rotate-keys",
+		MasterKey:     env.AppMasterKey,
+		DowntimeStart: env.DowntimeStart,
 	},
 	Jwk: JwkPresetDefault,
 

@@ -52,7 +52,7 @@ func main() {
 	}
 
 	// A server started during a planned downtime refuses work, so it leaves the database alone.
-	if !cfg.App.Downtime.InProgress(config.DowntimeService, time.Now()) {
+	if !downtime.Started(cfg.App.DowntimeStart, time.Now()) {
 		ctx = lo.Must(postgres.NewContext(ctx, cfg.Postgres))
 
 		database := lo.Must(cfg.Postgres.DB(ctx))
@@ -105,8 +105,8 @@ func main() {
 		MaxAge: cfg.Rest.Cors.MaxAge,
 	}))
 	router.Use(cfg.RestLogger.Logger())
-	// During a planned downtime, only ping and health answer.
-	router.Use(downtime.Middleware(cfg.App.Downtime, config.DowntimeService, "/v2/ping", "/v2/healthcheck"))
+	// During a planned downtime, only liveness answers.
+	router.Use(downtime.Middleware(cfg.App.DowntimeStart, "/v2/ping"))
 
 	router.Route("/v2", func(api chi.Router) {
 		api.Get("/ping", handlerPing.ServeHTTP)

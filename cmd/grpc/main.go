@@ -23,6 +23,7 @@ import (
 
 	"github.com/a-novel-kit/golib/downtime"
 	"github.com/a-novel-kit/golib/grpcf"
+	golibproto "github.com/a-novel-kit/golib/grpcf/proto/gen"
 	"github.com/a-novel-kit/golib/otel"
 	"github.com/a-novel-kit/golib/postgres"
 
@@ -55,7 +56,7 @@ func main() {
 	ctx = lo.Must(lib.NewMasterKeyContext(ctx, cfg.App.MasterKey))
 
 	// A server started during a planned downtime refuses work, so it leaves the database alone.
-	if !cfg.App.Downtime.InProgress(config.DowntimeService, time.Now()) {
+	if !downtime.Started(cfg.App.DowntimeStart, time.Now()) {
 		ctx = lo.Must(postgres.NewContext(ctx, cfg.Postgres))
 
 		database := lo.Must(cfg.Postgres.DB(ctx))
@@ -103,12 +104,10 @@ func main() {
 		return rpCtx
 	}
 
-	// During a planned downtime, only health, status and reflection answer; the logger records the
-	// refusals. Reflection serves schemas, which tools such as grpcurl need to reach the others.
+	// During a planned downtime, only liveness answers; the logger records the refusals.
 	open := []string{
 		"/" + healthpb.Health_ServiceDesc.ServiceName + "/",
-		"/" + jsonkeysv2.StatusService_ServiceDesc.ServiceName + "/",
-		"/grpc.reflection.",
+		"/" + golibproto.EchoService_ServiceDesc.ServiceName + "/",
 	}
 
 	server := grpc.NewServer(
@@ -117,13 +116,13 @@ func main() {
 			grpcf.BaseContextUnaryInterceptor(ctxInterceptor),
 			cfg.GrpcLogger.UnaryInterceptor(),
 			cfg.GrpcLogger.PanicUnaryInterceptor(),
-			downtime.UnaryServerInterceptor(cfg.App.Downtime, config.DowntimeService, open...),
+			downtime.UnaryServerInterceptor(cfg.App.DowntimeStart, open...),
 		),
 		grpc.ChainStreamInterceptor(
 			grpcf.BaseContextStreamInterceptor(ctxInterceptor),
 			cfg.GrpcLogger.StreamInterceptor(),
 			cfg.GrpcLogger.PanicStreamInterceptor(),
-			downtime.StreamServerInterceptor(cfg.App.Downtime, config.DowntimeService, open...),
+			downtime.StreamServerInterceptor(cfg.App.DowntimeStart, open...),
 		),
 	)
 

@@ -126,8 +126,13 @@ components:
               value: { "client:postgres": { "status": "up" } }
 
     healthUnavailable:
-      description: At least one dependency probe failed. Raw probe errors are not exposed.
+      description: |
+        At least one dependency probe failed. Raw probe errors are not exposed. During a planned
+        downtime, a problem body tagged `downtime` instead.
       content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/plannedDowntimeProblem"
         application/json:
           schema:
             $ref: "#/components/schemas/healthReport"
@@ -184,54 +189,34 @@ components:
 
     plannedDowntime:
       description: |
-        The service is in a planned downtime and refuses work until operators clear it. The body
-        carries the window; its end is the expected return, not a promise.
-      headers:
-        Retry-After:
-          description: The window's end, while it is still ahead.
-          schema:
-            type: string
+        The service is in a planned downtime and refuses work until operators end it. The platform
+        reads the announced window from the downtime document infra publishes.
       content:
         application/problem+json:
           schema:
-            type: object
-            required: [type, title, status, tags]
-            properties:
-              type:
-                type: string
-                const: about:blank
-              title:
-                type: string
-              status:
-                type: integer
-                const: 503
-              tags:
-                type: object
-                required: [downtime]
-                properties:
-                  downtime:
-                    $ref: "#/components/schemas/downtimeWindow"
+            $ref: "#/components/schemas/plannedDowntimeProblem"
 
   schemas:
-    downtimeWindow:
+    plannedDowntimeProblem:
       type: object
-      description: A planned downtime window, shared by every service it lists.
-      required: [services, start, end]
+      description: The answer to a request refused during a planned downtime.
+      required: [type, title, status, tags]
       properties:
-        services:
-          type: array
-          description: The services the window stops.
-          items:
-            type: string
-          examples: [["json-keys", "authentication"]]
-        start:
+        type:
           type: string
-          format: date-time
-          description: When the listed services start refusing work.
-        end:
+          const: about:blank
+        title:
           type: string
-          format: date-time
-          description: When service is expected back.
+        status:
+          type: integer
+          const: 503
+        tags:
+          type: object
+          required: [downtime]
+          properties:
+            downtime:
+              type: boolean
+              const: true
 
     healthReport:
       type: object
