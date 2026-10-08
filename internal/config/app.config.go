@@ -23,6 +23,9 @@ type Main struct {
 	// MasterKey is a secure, 32-byte random secret used to encrypt private JSON Web Keys
 	// in the database.
 	MasterKey string `json:"masterKey" yaml:"masterKey"`
+	// DowntimeStart is when a planned downtime starts; nil when none is planned. From then until
+	// it is removed, the service refuses work and leaves its database alone.
+	DowntimeStart *time.Time `json:"downtimeStart" yaml:"downtimeStart"`
 }
 
 // Grpc holds the gRPC server configuration.

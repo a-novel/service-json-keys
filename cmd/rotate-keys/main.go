@@ -13,6 +13,7 @@ import (
 
 	"github.com/samber/lo"
 
+	"github.com/a-novel-kit/golib/downtime"
 	"github.com/a-novel-kit/golib/otel"
 	"github.com/a-novel-kit/golib/postgres"
 
@@ -36,6 +37,12 @@ func main() {
 
 	lo.Must0(otel.Init(cfg.Otel))
 	defer cfg.Otel.Flush()
+
+	if downtime.Started(cfg.App.DowntimeStart, start) {
+		log.Println("planned downtime in progress: no rotation")
+
+		return
+	}
 
 	ctx = lo.Must(lib.NewMasterKeyContext(ctx, cfg.App.MasterKey))
 	ctx = lo.Must(postgres.NewContext(ctx, config.PostgresPresetDefault))

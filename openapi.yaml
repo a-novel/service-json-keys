@@ -78,6 +78,8 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/jwkList"
+        "503":
+          $ref: "#/components/responses/plannedDowntime"
         default:
           $ref: "#/components/responses/internalError"
 
@@ -98,6 +100,8 @@ paths:
           $ref: "#/components/responses/badRequest"
         "404":
           $ref: "#/components/responses/notFound"
+        "503":
+          $ref: "#/components/responses/plannedDowntime"
         default:
           $ref: "#/components/responses/internalError"
 
@@ -122,8 +126,13 @@ components:
               value: { "client:postgres": { "status": "up" } }
 
     healthUnavailable:
-      description: At least one dependency probe failed. Raw probe errors are not exposed.
+      description: |
+        At least one dependency probe failed. Raw probe errors are not exposed. During a planned
+        downtime, a problem body tagged `downtime` instead.
       content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/plannedDowntimeProblem"
         application/json:
           schema:
             $ref: "#/components/schemas/healthReport"
@@ -178,7 +187,37 @@ components:
     internalError:
       description: Something unexpected happened.
 
+    plannedDowntime:
+      description: |
+        The service is in a planned downtime and refuses work until operators end it. The platform
+        reads the announced window from the downtime document infra publishes.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/plannedDowntimeProblem"
+
   schemas:
+    plannedDowntimeProblem:
+      type: object
+      description: The answer to a request refused during a planned downtime.
+      required: [type, title, status, tags]
+      properties:
+        type:
+          type: string
+          const: about:blank
+        title:
+          type: string
+        status:
+          type: integer
+          const: 503
+        tags:
+          type: object
+          required: [downtime]
+          properties:
+            downtime:
+              type: boolean
+              const: true
+
     healthReport:
       type: object
       description: Sanitized dependency statuses. Every dependency must be up for HTTP 200.

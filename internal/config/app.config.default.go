@@ -42,8 +42,9 @@ var LoggerProd = &loggingpresets.LogGcloud{
 // AppPresetDefault is the default [App] configuration populated from environment variables.
 var AppPresetDefault = App{
 	App: Main{
-		Name:      env.AppName,
-		MasterKey: env.AppMasterKey,
+		Name:          env.AppName,
+		MasterKey:     env.AppMasterKey,
+		DowntimeStart: env.DowntimeStart,
 	},
 	Grpc: Grpc{
 		Port:     env.GrpcPort,
