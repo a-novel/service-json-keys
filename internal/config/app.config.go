@@ -3,6 +3,7 @@ package config
 import (
 	"time"
 
+	"github.com/a-novel-kit/golib/downtime"
 	"github.com/a-novel-kit/golib/logging"
 	"github.com/a-novel-kit/golib/otel"
 	"github.com/a-novel-kit/golib/postgres"
@@ -16,6 +17,9 @@ type RestCors struct {
 	MaxAge           int      `json:"maxAge"           yaml:"maxAge"`
 }
 
+// DowntimeService is this service's name in a planned downtime window.
+const DowntimeService = "json-keys"
+
 // Main holds the core application identity and secrets.
 type Main struct {
 	// Name is the application name, as it appears in logs and tracing.
@@ -23,6 +27,9 @@ type Main struct {
 	// MasterKey is a secure, 32-byte random secret used to encrypt private JSON Web Keys
 	// in the database.
 	MasterKey string `json:"masterKey" yaml:"masterKey"`
+	// Downtime is the planned downtime window; nil without one. While a window listing
+	// [DowntimeService] is in progress, the service refuses work and leaves its database alone.
+	Downtime *downtime.Window `json:"downtime" yaml:"downtime"`
 }
 
 // Grpc holds the gRPC server configuration.

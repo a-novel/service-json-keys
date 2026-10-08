@@ -14,6 +14,7 @@ var JobRotateKeysPresetDefault = JobRotateKeys{
 	App: Main{
 		Name:      env.AppName + "-job-rotate-keys",
 		MasterKey: env.AppMasterKey,
+		Downtime:  env.Downtime,
 	},
 	Jwk: JwkPresetDefault,
 

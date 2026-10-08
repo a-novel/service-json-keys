@@ -37,6 +37,12 @@ func main() {
 	lo.Must0(otel.Init(cfg.Otel))
 	defer cfg.Otel.Flush()
 
+	if cfg.App.Downtime.InProgress(config.DowntimeService, start) {
+		log.Println("planned downtime in progress: no rotation")
+
+		return
+	}
+
 	ctx = lo.Must(lib.NewMasterKeyContext(ctx, cfg.App.MasterKey))
 	ctx = lo.Must(postgres.NewContext(ctx, config.PostgresPresetDefault))
 

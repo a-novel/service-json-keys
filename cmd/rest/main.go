@@ -15,12 +15,14 @@ import (
 	"os/signal"
 	"strconv"
 	"syscall"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/samber/lo"
 
+	"github.com/a-novel-kit/golib/downtime"
 	"github.com/a-novel-kit/golib/httpf"
 	"github.com/a-novel-kit/golib/otel"
 	"github.com/a-novel-kit/golib/postgres"
@@ -49,10 +51,13 @@ func main() {
 		log.SetFlags(log.Flags() &^ (log.Ldate | log.Ltime))
 	}
 
-	ctx = lo.Must(postgres.NewContext(ctx, cfg.Postgres))
+	// A server started during a planned downtime refuses work, so it leaves the database alone.
+	if !cfg.App.Downtime.InProgress(config.DowntimeService, time.Now()) {
+		ctx = lo.Must(postgres.NewContext(ctx, cfg.Postgres))
 
-	database := lo.Must(cfg.Postgres.DB(ctx))
-	defer closeDatabase(database)
+		database := lo.Must(cfg.Postgres.DB(ctx))
+		defer closeDatabase(database)
+	}
 
 	// =================================================================================================================
 	// DAO
@@ -100,6 +105,8 @@ func main() {
 		MaxAge: cfg.Rest.Cors.MaxAge,
 	}))
 	router.Use(cfg.RestLogger.Logger())
+	// During a planned downtime, only ping and health answer.
+	router.Use(downtime.Middleware(cfg.App.Downtime, config.DowntimeService, "/v2/ping", "/v2/healthcheck"))
 
 	router.Route("/v2", func(api chi.Router) {
 		api.Get("/ping", handlerPing.ServeHTTP)

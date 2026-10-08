@@ -163,6 +163,12 @@ Database connection pool (server images). The limits are **per process**. The da
 | `POSTGRES_MAX_OPEN_CONNS` | Maximum open connections to the database. | `20`    |
 | `POSTGRES_MAX_IDLE_CONNS` | Maximum connections kept open while idle. | `20`    |
 
+Planned downtime (all server images, `jobs/rotatekeys`):
+
+| Name       | Description                                                                                                                                                                                                                                                                                            | Default |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| `DOWNTIME` | A planned downtime window, as JSON: `{"services":["json-keys"],"start":"…","end":"…"}`. From `start` until it is removed, if it lists `json-keys`, the servers answer `503` / `UNAVAILABLE` except for ping, health, status and reflection, start without the database, and key rotation does nothing. |         |
+
 Logs and tracing — OpenTelemetry supports a stdout and a Google Cloud exporter (all server images):
 
 | Name                | Description                                                           | Default             |

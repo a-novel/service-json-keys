@@ -44,6 +44,7 @@ var AppPresetDefault = App{
 	App: Main{
 		Name:      env.AppName,
 		MasterKey: env.AppMasterKey,
+		Downtime:  env.Downtime,
 	},
 	Grpc: Grpc{
 		Port:     env.GrpcPort,

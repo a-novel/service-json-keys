@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/a-novel-kit/golib/config"
+	"github.com/a-novel-kit/golib/downtime"
 )
 
 // prefix is the value of SERVICE_JSON_KEYS_ENV_PREFIX, prepended to all environment
@@ -90,6 +91,8 @@ var (
 	corsMaxAge           = getEnv("REST_CORS_MAX_AGE")
 
 	gcloudProjectId = getEnv("GCLOUD_PROJECT_ID")
+
+	downtimeWindow = getEnv("DOWNTIME")
 )
 
 var (
@@ -171,4 +174,8 @@ var (
 	// Google Cloud Logging and Google Cloud Trace for observability. When empty, it falls
 	// back to local-development logging and disabled tracing.
 	GcloudProjectId = gcloudProjectId
+
+	// Downtime is the planned downtime window, as JSON. The service refuses work while a window
+	// that lists it is in progress. Nil without a window.
+	Downtime = config.LoadEnv(downtimeWindow, nil, downtime.ParseWindow)
 )

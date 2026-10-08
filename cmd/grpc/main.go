@@ -14,12 +14,14 @@ import (
 	"os/signal"
 	"strconv"
 	"syscall"
+	"time"
 
 	"github.com/samber/lo"
 	"google.golang.org/grpc"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
 
+	"github.com/a-novel-kit/golib/downtime"
 	"github.com/a-novel-kit/golib/grpcf"
 	"github.com/a-novel-kit/golib/otel"
 	"github.com/a-novel-kit/golib/postgres"
@@ -51,10 +53,14 @@ func main() {
 	}
 
 	ctx = lo.Must(lib.NewMasterKeyContext(ctx, cfg.App.MasterKey))
-	ctx = lo.Must(postgres.NewContext(ctx, cfg.Postgres))
 
-	database := lo.Must(cfg.Postgres.DB(ctx))
-	defer closeDatabase(database)
+	// A server started during a planned downtime refuses work, so it leaves the database alone.
+	if !cfg.App.Downtime.InProgress(config.DowntimeService, time.Now()) {
+		ctx = lo.Must(postgres.NewContext(ctx, cfg.Postgres))
+
+		database := lo.Must(cfg.Postgres.DB(ctx))
+		defer closeDatabase(database)
+	}
 
 	// =================================================================================================================
 	// DAO
@@ -97,17 +103,27 @@ func main() {
 		return rpCtx
 	}
 
+	// During a planned downtime, only health, status and reflection answer; the logger records the
+	// refusals. Reflection serves schemas, which tools such as grpcurl need to reach the others.
+	open := []string{
+		"/" + healthpb.Health_ServiceDesc.ServiceName + "/",
+		"/" + jsonkeysv2.StatusService_ServiceDesc.ServiceName + "/",
+		"/grpc.reflection.",
+	}
+
 	server := grpc.NewServer(
 		cfg.Otel.RpcInterceptor(),
 		grpc.ChainUnaryInterceptor(
 			grpcf.BaseContextUnaryInterceptor(ctxInterceptor),
 			cfg.GrpcLogger.UnaryInterceptor(),
 			cfg.GrpcLogger.PanicUnaryInterceptor(),
+			downtime.UnaryServerInterceptor(cfg.App.Downtime, config.DowntimeService, open...),
 		),
 		grpc.ChainStreamInterceptor(
 			grpcf.BaseContextStreamInterceptor(ctxInterceptor),
 			cfg.GrpcLogger.StreamInterceptor(),
 			cfg.GrpcLogger.PanicStreamInterceptor(),
+			downtime.StreamServerInterceptor(cfg.App.Downtime, config.DowntimeService, open...),
 		),
 	)
 
