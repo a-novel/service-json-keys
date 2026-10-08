@@ -1,6 +1,6 @@
 module github.com/a-novel/service-json-keys/v2
 
-go 1.27.1
+go 1.27.2
 
 require (
 	github.com/a-novel-kit/golib v0.39.0
