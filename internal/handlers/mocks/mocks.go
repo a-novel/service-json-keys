@@ -17,10 +17,19 @@ func NewMockGrpcClaimsSignService(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockGrpcClaimsSignService {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockGrpcClaimsSignService{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -110,10 +119,19 @@ func NewMockGrpcJwkGetService(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockGrpcJwkGetService {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockGrpcJwkGetService{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -189,8 +207,8 @@ func (_c *MockGrpcJwkGetService_Exec_Call) Run(run func(ctx context.Context, req
 	return _c
 }
 
-func (_c *MockGrpcJwkGetService_Exec_Call) Return(v *core.Jwk, err error) *MockGrpcJwkGetService_Exec_Call {
-	_c.Call.Return(v, err)
+func (_c *MockGrpcJwkGetService_Exec_Call) Return(jwk *core.Jwk, err error) *MockGrpcJwkGetService_Exec_Call {
+	_c.Call.Return(jwk, err)
 	return _c
 }
 
@@ -205,10 +223,19 @@ func NewMockGrpcJwkListService(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockGrpcJwkListService {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockGrpcJwkListService{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -284,8 +311,8 @@ func (_c *MockGrpcJwkListService_Exec_Call) Run(run func(ctx context.Context, re
 	return _c
 }
 
-func (_c *MockGrpcJwkListService_Exec_Call) Return(vs []*core.Jwk, err error) *MockGrpcJwkListService_Exec_Call {
-	_c.Call.Return(vs, err)
+func (_c *MockGrpcJwkListService_Exec_Call) Return(jwks []*core.Jwk, err error) *MockGrpcJwkListService_Exec_Call {
+	_c.Call.Return(jwks, err)
 	return _c
 }
 
@@ -300,10 +327,19 @@ func NewMockRestJwkGetService(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockRestJwkGetService {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockRestJwkGetService{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -379,8 +415,8 @@ func (_c *MockRestJwkGetService_Exec_Call) Run(run func(ctx context.Context, req
 	return _c
 }
 
-func (_c *MockRestJwkGetService_Exec_Call) Return(v *core.Jwk, err error) *MockRestJwkGetService_Exec_Call {
-	_c.Call.Return(v, err)
+func (_c *MockRestJwkGetService_Exec_Call) Return(jwk *core.Jwk, err error) *MockRestJwkGetService_Exec_Call {
+	_c.Call.Return(jwk, err)
 	return _c
 }
 
@@ -395,10 +431,19 @@ func NewMockRestJwkListService(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockRestJwkListService {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockRestJwkListService{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -474,8 +519,8 @@ func (_c *MockRestJwkListService_Exec_Call) Run(run func(ctx context.Context, re
 	return _c
 }
 
-func (_c *MockRestJwkListService_Exec_Call) Return(vs []*core.Jwk, err error) *MockRestJwkListService_Exec_Call {
-	_c.Call.Return(vs, err)
+func (_c *MockRestJwkListService_Exec_Call) Return(jwks []*core.Jwk, err error) *MockRestJwkListService_Exec_Call {
+	_c.Call.Return(jwks, err)
 	return _c
 }
 
