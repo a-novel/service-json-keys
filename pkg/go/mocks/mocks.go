@@ -19,10 +19,19 @@ func NewMockClaimsVerifier[C any](t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockClaimsVerifier[C] {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockClaimsVerifier[C]{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -114,10 +123,19 @@ func NewMockBaseClient(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockBaseClient {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockBaseClient{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -208,8 +226,8 @@ func (_c *MockBaseClient_ClaimsSign_Call) Run(run func(ctx context.Context, req 
 	return _c
 }
 
-func (_c *MockBaseClient_ClaimsSign_Call) Return(v *servicejsonkeys.ClaimsSignResponse, err error) *MockBaseClient_ClaimsSign_Call {
-	_c.Call.Return(v, err)
+func (_c *MockBaseClient_ClaimsSign_Call) Return(claimsSignResponse *servicejsonkeys.ClaimsSignResponse, err error) *MockBaseClient_ClaimsSign_Call {
+	_c.Call.Return(claimsSignResponse, err)
 	return _c
 }
 
@@ -324,8 +342,8 @@ func (_c *MockBaseClient_JwkGet_Call) Run(run func(ctx context.Context, req *ser
 	return _c
 }
 
-func (_c *MockBaseClient_JwkGet_Call) Return(v *servicejsonkeys.JwkGetResponse, err error) *MockBaseClient_JwkGet_Call {
-	_c.Call.Return(v, err)
+func (_c *MockBaseClient_JwkGet_Call) Return(jwkGetResponse *servicejsonkeys.JwkGetResponse, err error) *MockBaseClient_JwkGet_Call {
+	_c.Call.Return(jwkGetResponse, err)
 	return _c
 }
 
@@ -407,8 +425,8 @@ func (_c *MockBaseClient_JwkList_Call) Run(run func(ctx context.Context, req *se
 	return _c
 }
 
-func (_c *MockBaseClient_JwkList_Call) Return(v *servicejsonkeys.JwkListResponse, err error) *MockBaseClient_JwkList_Call {
-	_c.Call.Return(v, err)
+func (_c *MockBaseClient_JwkList_Call) Return(jwkListResponse *servicejsonkeys.JwkListResponse, err error) *MockBaseClient_JwkList_Call {
+	_c.Call.Return(jwkListResponse, err)
 	return _c
 }
 
@@ -490,8 +508,8 @@ func (_c *MockBaseClient_Status_Call) Run(run func(ctx context.Context, req *ser
 	return _c
 }
 
-func (_c *MockBaseClient_Status_Call) Return(v *servicejsonkeys.StatusResponse, err error) *MockBaseClient_Status_Call {
-	_c.Call.Return(v, err)
+func (_c *MockBaseClient_Status_Call) Return(statusResponse *servicejsonkeys.StatusResponse, err error) *MockBaseClient_Status_Call {
+	_c.Call.Return(statusResponse, err)
 	return _c
 }
 
@@ -589,10 +607,19 @@ func NewMockClient(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockClient {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockClient{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -683,8 +710,8 @@ func (_c *MockClient_ClaimsSign_Call) Run(run func(ctx context.Context, req *ser
 	return _c
 }
 
-func (_c *MockClient_ClaimsSign_Call) Return(v *servicejsonkeys.ClaimsSignResponse, err error) *MockClient_ClaimsSign_Call {
-	_c.Call.Return(v, err)
+func (_c *MockClient_ClaimsSign_Call) Return(claimsSignResponse *servicejsonkeys.ClaimsSignResponse, err error) *MockClient_ClaimsSign_Call {
+	_c.Call.Return(claimsSignResponse, err)
 	return _c
 }
 
@@ -799,8 +826,8 @@ func (_c *MockClient_JwkGet_Call) Run(run func(ctx context.Context, req *service
 	return _c
 }
 
-func (_c *MockClient_JwkGet_Call) Return(v *servicejsonkeys.JwkGetResponse, err error) *MockClient_JwkGet_Call {
-	_c.Call.Return(v, err)
+func (_c *MockClient_JwkGet_Call) Return(jwkGetResponse *servicejsonkeys.JwkGetResponse, err error) *MockClient_JwkGet_Call {
+	_c.Call.Return(jwkGetResponse, err)
 	return _c
 }
 
@@ -882,8 +909,8 @@ func (_c *MockClient_JwkList_Call) Run(run func(ctx context.Context, req *servic
 	return _c
 }
 
-func (_c *MockClient_JwkList_Call) Return(v *servicejsonkeys.JwkListResponse, err error) *MockClient_JwkList_Call {
-	_c.Call.Return(v, err)
+func (_c *MockClient_JwkList_Call) Return(jwkListResponse *servicejsonkeys.JwkListResponse, err error) *MockClient_JwkList_Call {
+	_c.Call.Return(jwkListResponse, err)
 	return _c
 }
 
@@ -928,8 +955,8 @@ func (_c *MockClient_Keys_Call) Run(run func()) *MockClient_Keys_Call {
 	return _c
 }
 
-func (_c *MockClient_Keys_Call) Return(stringToV map[string]*servicejsonkeys.JwkConfig) *MockClient_Keys_Call {
-	_c.Call.Return(stringToV)
+func (_c *MockClient_Keys_Call) Return(stringToJwkConfig map[string]*servicejsonkeys.JwkConfig) *MockClient_Keys_Call {
+	_c.Call.Return(stringToJwkConfig)
 	return _c
 }
 
@@ -1011,8 +1038,8 @@ func (_c *MockClient_Status_Call) Run(run func(ctx context.Context, req *service
 	return _c
 }
 
-func (_c *MockClient_Status_Call) Return(v *servicejsonkeys.StatusResponse, err error) *MockClient_Status_Call {
-	_c.Call.Return(v, err)
+func (_c *MockClient_Status_Call) Return(statusResponse *servicejsonkeys.StatusResponse, err error) *MockClient_Status_Call {
+	_c.Call.Return(statusResponse, err)
 	return _c
 }
 
