@@ -17,13 +17,11 @@ import (
 	"time"
 
 	"github.com/samber/lo"
-	"google.golang.org/grpc"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
 
 	"github.com/a-novel-kit/golib/downtime"
 	"github.com/a-novel-kit/golib/grpcf"
-	golibproto "github.com/a-novel-kit/golib/grpcf/proto/gen"
 	"github.com/a-novel-kit/golib/otel"
 	"github.com/a-novel-kit/golib/postgres"
 
@@ -97,34 +95,18 @@ func main() {
 	// SERVER
 	// =================================================================================================================
 
-	ctxInterceptor := func(rpCtx context.Context) context.Context {
-		rpCtx = postgres.TransferContext(ctx, rpCtx)
-		rpCtx = lib.TransferMasterKeyContext(ctx, rpCtx)
-
-		return rpCtx
-	}
-
 	// During a planned downtime, only liveness answers; the logger records the refusals.
-	open := []string{
-		"/" + healthpb.Health_ServiceDesc.ServiceName + "/",
-		"/" + golibproto.EchoService_ServiceDesc.ServiceName + "/",
-	}
+	server := grpcf.NewServer(grpcf.ServerOptions{
+		Otel:          cfg.Otel,
+		Logger:        cfg.GrpcLogger,
+		DowntimeStart: cfg.App.DowntimeStart,
+		BaseContext: func(rpCtx context.Context) context.Context {
+			rpCtx = postgres.TransferContext(ctx, rpCtx)
+			rpCtx = lib.TransferMasterKeyContext(ctx, rpCtx)
 
-	server := grpc.NewServer(
-		cfg.Otel.RpcInterceptor(),
-		grpc.ChainUnaryInterceptor(
-			grpcf.BaseContextUnaryInterceptor(ctxInterceptor),
-			cfg.GrpcLogger.UnaryInterceptor(),
-			cfg.GrpcLogger.PanicUnaryInterceptor(),
-			downtime.UnaryServerInterceptor(cfg.App.DowntimeStart, open...),
-		),
-		grpc.ChainStreamInterceptor(
-			grpcf.BaseContextStreamInterceptor(ctxInterceptor),
-			cfg.GrpcLogger.StreamInterceptor(),
-			cfg.GrpcLogger.PanicStreamInterceptor(),
-			downtime.StreamServerInterceptor(cfg.App.DowntimeStart, open...),
-		),
-	)
+			return rpCtx
+		},
+	})
 
 	healthcheck := grpcf.RegisterEchoServers(server)
 	healthcheck.SetServingStatus("", healthpb.HealthCheckResponse_SERVING)

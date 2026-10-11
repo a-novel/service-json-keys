@@ -90,7 +90,7 @@ func main() {
 					"GOWORK=off",
 					"SERVICE_JSON_KEYS_ENV_PREFIX="+testCase.prefix,
 					testCase.prefix+"REST_TIMEOUT_READ=invalid",
-					testCase.prefix+"GRPC_PING=invalid",
+					testCase.prefix+"GRPC_TIMEOUT_SHUTDOWN=invalid",
 					testCase.prefix+"POSTGRES_PORT=invalid",
 					testCase.prefix+"OTEL=invalid",
 				)

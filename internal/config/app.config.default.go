@@ -46,31 +46,8 @@ var AppPresetDefault = App{
 		MasterKey:     env.AppMasterKey,
 		DowntimeStart: env.DowntimeStart,
 	},
-	Grpc: Grpc{
-		Port:     env.GrpcPort,
-		Ping:     env.GrpcPing,
-		Shutdown: env.GrpcTimeoutShutdown,
-	},
-	Rest: Rest{
-		Port: env.RestPort,
-		Timeouts: RestTimeouts{
-			Read:       env.RestTimeoutRead,
-			ReadHeader: env.RestTimeoutReadHeader,
-			Write:      env.RestTimeoutWrite,
-			Idle:       env.RestTimeoutIdle,
-			Request:    env.RestTimeoutRequest,
-			Shutdown:   env.RestTimeoutShutdown,
-		},
-		MaxRequestSize:    env.RestMaxRequestSize,
-		ClientIPHeader:    env.RestClientIPHeader,
-		RateLimitsEnabled: env.RestRateLimitsEnabled,
-		Cors: RestCors{
-			AllowedOrigins:   env.CorsAllowedOrigins,
-			AllowedHeaders:   env.CorsAllowedHeaders,
-			AllowCredentials: env.CorsAllowCredentials,
-			MaxAge:           env.CorsMaxAge,
-		},
-	},
+	Grpc: env.Grpc,
+	Rest: env.Rest,
 
 	Otel: lo.If[otel.Config](!env.Otel, &otelpresets.Disabled{}).
 		ElseIf(env.GcloudProjectId == "", &otelpresets.Local{
