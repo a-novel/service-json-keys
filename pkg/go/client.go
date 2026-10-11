@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 
 	golibproto "github.com/a-novel-kit/golib/grpcf/proto/gen"
@@ -94,7 +95,12 @@ func (c *client) Close() {
 // NewClient dials the JSON-keys gRPC server at addr and prepares the client for use,
 // returning an error if any setup step fails. Any grpc.DialOption values accepted by
 // grpc.NewClient may be forwarded via opts.
+//
+// Each call opens a client span and sends the caller's trace context, so the server's
+// spans join the caller's trace.
 func NewClient(addr string, opts ...grpc.DialOption) (Client, error) {
+	opts = append([]grpc.DialOption{grpc.WithStatsHandler(otelgrpc.NewClientHandler())}, opts...)
+
 	conn, err := grpc.NewClient(addr, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("new grpc client: %w", err)

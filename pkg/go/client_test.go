@@ -1,7 +1,9 @@
 package servicejsonkeys_test
 
 import (
+	"context"
 	"fmt"
+	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -9,9 +11,15 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/test/bufconn"
 
+	"github.com/a-novel-kit/golib/grpcf"
 	golibproto "github.com/a-novel-kit/golib/grpcf/proto/gen"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config/env"
@@ -114,6 +122,55 @@ func main() {
 
 		require.NotContains(t, dependencies, configPath)
 		require.NotContains(t, dependencies, configPath+"/env")
+	})
+
+	t.Run("Success/PropagatesTraceContext", func(t *testing.T) {
+		t.Parallel()
+
+		// golib's otel.Init installs this propagator in every service; the default one sends nothing.
+		otel.SetTextMapPropagator(propagation.TraceContext{})
+
+		received := make(chan []string, 1)
+		server := grpc.NewServer(grpc.UnaryInterceptor(func(
+			ctx context.Context, req any, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler,
+		) (any, error) {
+			md, _ := metadata.FromIncomingContext(ctx)
+			received <- md.Get("traceparent")
+
+			return handler(ctx, req)
+		}))
+		grpcf.RegisterEchoServers(server)
+
+		listener := bufconn.Listen(1 << 16)
+		go func() { _ = server.Serve(listener) }()
+
+		defer server.Stop()
+
+		client, err := servicejsonkeys.NewClient(
+			"passthrough:///bufconn",
+			grpc.WithContextDialer(func(ctx context.Context, _ string) (net.Conn, error) {
+				return listener.DialContext(ctx)
+			}),
+			grpc.WithTransportCredentials(insecure.NewCredentials()),
+		)
+		require.NoError(t, err)
+
+		defer client.Close()
+
+		caller := trace.NewSpanContext(trace.SpanContextConfig{
+			TraceID:    trace.TraceID{1},
+			SpanID:     trace.SpanID{1},
+			TraceFlags: trace.FlagsSampled,
+		})
+
+		_, err = client.UnaryEcho(
+			trace.ContextWithSpanContext(t.Context(), caller), &golibproto.UnaryEchoRequest{},
+		)
+		require.NoError(t, err)
+
+		traceparent := <-received
+		require.Len(t, traceparent, 1)
+		require.Contains(t, traceparent[0], caller.TraceID().String())
 	})
 
 	t.Run("Success/RemoteCalls", func(t *testing.T) {
