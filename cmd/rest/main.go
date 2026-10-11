@@ -9,9 +9,9 @@ import (
 	"context"
 	"io"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -83,36 +83,22 @@ func main() {
 	// ROUTER
 	// =================================================================================================================
 
-	router := httpf.NewRouter(cfg.Rest, httpf.RouterOptions{
-		Otel:          cfg.Otel,
-		Logger:        cfg.RestLogger,
-		DowntimeStart: cfg.App.DowntimeStart,
-		Liveness:      "/v2/ping",
-		Methods:       []string{http.MethodHead, http.MethodGet},
-	})
+	router := httpf.NewRouter(cfg.Rest, cfg.Otel, cfg.RestLogger, cfg.App.DowntimeStart)
 
 	router.Route("/v2", func(api chi.Router) {
-		// Probes reach /ping without a budget.
 		api.Get("/ping", handlerPing.ServeHTTP)
-
-		api.Group(func(api chi.Router) {
-			api.Use(httpf.NewLimits(cfg.Rest).Standard())
-
-			api.Get("/healthcheck", handlerHealth.ServeHTTP)
-			api.Get("/jwks", handlerJwkList.ServeHTTP)
-			api.Get("/jwk", handlerJwkGet.ServeHTTP)
-		})
+		api.Get("/healthcheck", handlerHealth.ServeHTTP)
+		api.Get("/jwks", handlerJwkList.ServeHTTP)
+		api.Get("/jwk", handlerJwkGet.ServeHTTP)
 	})
 
 	// =================================================================================================================
 	// RUN
 	// =================================================================================================================
 
-	httpServer := httpf.NewServer(ctx, cfg.Rest, router)
+	log.Println("Starting REST server on :" + strconv.Itoa(cfg.Rest.Port))
 
-	log.Println("Starting REST server on " + httpServer.Addr)
-
-	err := httpf.Serve(ctx, httpServer, cfg.Rest.Timeouts.Shutdown)
+	err := httpf.ListenAndServe(ctx, cfg.Rest, router)
 
 	stop()
 

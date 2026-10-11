@@ -146,6 +146,7 @@ REST tuning (images `rest`, `standalone-rest`):
 | ----------------------------- | ------------------------------------------------------------------------------------------------------- | --------------- |
 | `REST_MAX_REQUEST_SIZE`       | Maximum request body size, in bytes.                                                                    | `16384` (16KiB) |
 | `REST_CLIENT_IP_HEADER`       | Header a trusted proxy sets to the visitor IP. Set it only when every request comes through that proxy. | TCP peer        |
+| `REST_LIVENESS_PATH`          | Ping path, which still answers during a planned downtime and skips the rate limit.                      | `/v2/ping`      |
 | `REST_RATE_LIMITS_ENABLED`    | Rate-limit each visitor on every route but the ping. Turn off only in test stacks.                      | `true`          |
 | `REST_RATE_LIMIT`             | Requests each visitor sends to each route, as `<requests>/<window>`.                                    | `5/1s`          |
 | `REST_TIMEOUT_READ`           | Read timeout.                                                                                           | `15s`           |
@@ -156,6 +157,7 @@ REST tuning (images `rest`, `standalone-rest`):
 | `REST_TIMEOUT_SHUTDOWN`       | Graceful shutdown budget.                                                                               | `30s`           |
 | `REST_CORS_ALLOWED_ORIGINS`   | CORS allowed origins.                                                                                   | `*`             |
 | `REST_CORS_ALLOWED_HEADERS`   | CORS allowed headers.                                                                                   | `*`             |
+| `REST_CORS_ALLOWED_METHODS`   | CORS allowed methods, comma-separated.                                                                  | `HEAD,GET`      |
 | `REST_CORS_ALLOW_CREDENTIALS` | CORS allow-credentials flag.                                                                            | `false`         |
 | `REST_CORS_MAX_AGE`           | CORS max-age, in seconds.                                                                               | `3600`          |
 

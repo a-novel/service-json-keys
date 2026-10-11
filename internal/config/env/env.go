@@ -1,6 +1,7 @@
 package env
 
 import (
+	"net/http"
 	"os"
 
 	"github.com/a-novel-kit/golib/config"
@@ -95,7 +96,7 @@ var (
 	// Grpc configures the gRPC server from the GRPC_* variables.
 	Grpc = grpcf.LoadServerConfig(getEnv, grpcf.ServerConfigDefault)
 	// Rest configures the REST server from the REST_* variables.
-	Rest = httpf.LoadServerConfig(getEnv, httpf.ServerConfigDefault)
+	Rest = httpf.LoadServerConfig(getEnv, restDefaults())
 
 	// GcloudProjectId is the Google Cloud project ID. When set, the service switches to
 	// Google Cloud Logging and Google Cloud Trace for observability. When empty, it falls
@@ -106,3 +107,12 @@ var (
 	// until it is removed, the service refuses work. Nil when none is planned.
 	DowntimeStart = config.LoadEnv(downtimeStart, nil, downtime.ParseStart)
 )
+
+// restDefaults keeps golib's REST defaults but for the versioned ping path and the read-only methods.
+func restDefaults() httpf.ServerConfig {
+	defaults := httpf.ServerConfigDefault
+	defaults.Liveness = "/v2/ping"
+	defaults.Cors.AllowedMethods = []string{http.MethodHead, http.MethodGet}
+
+	return defaults
+}
