@@ -32,3 +32,5 @@ services:
     environment:
       POSTGRES_DSN: postgres://postgres:postgres@postgres:5432/postgres?sslmode=disable
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
+      # The suite lists keys several times within a second from one address.
+      REST_RATE_LIMITS_ENABLED: "false"
