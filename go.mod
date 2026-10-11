@@ -3,7 +3,7 @@ module github.com/a-novel/service-json-keys/v2
 go 1.27.2
 
 require (
-	github.com/a-novel-kit/golib v0.43.1-0.20261011221726-ea12558d455c
+	github.com/a-novel-kit/golib v0.44.0
 	github.com/a-novel-kit/jwt/v2 v2.3.0
 	github.com/go-chi/chi/v5 v5.3.2
 	github.com/goccy/go-yaml v1.19.2
