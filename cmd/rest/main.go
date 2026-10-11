@@ -34,6 +34,9 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
 )
 
+// restRateLimit caps the requests per second each visitor sends to each route.
+const restRateLimit = 5
+
 func main() {
 	cfg := config.AppPresetDefault
 
@@ -91,6 +94,12 @@ func main() {
 
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.ClientIPFromRemoteAddr)
+
+	if cfg.Rest.ClientIPHeader != "" {
+		// The proxy's header names the visitor; a request without it keeps the peer address.
+		router.Use(middleware.ClientIPFromHeader(cfg.Rest.ClientIPHeader))
+	}
+
 	router.Use(middleware.Timeout(cfg.Rest.Timeouts.Request))
 	router.Use(middleware.RequestSize(cfg.Rest.MaxRequestSize))
 	router.Use(cfg.Otel.HttpHandler())
@@ -109,10 +118,18 @@ func main() {
 	router.Use(downtime.Middleware(cfg.App.DowntimeStart, "/v2/ping"))
 
 	router.Route("/v2", func(api chi.Router) {
+		// Probes reach /ping without a budget.
 		api.Get("/ping", handlerPing.ServeHTTP)
-		api.Get("/healthcheck", handlerHealth.ServeHTTP)
-		api.Get("/jwks", handlerJwkList.ServeHTTP)
-		api.Get("/jwk", handlerJwkGet.ServeHTTP)
+
+		api.Group(func(api chi.Router) {
+			if cfg.Rest.RateLimitsEnabled {
+				api.Use(handlers.RestLimit(restRateLimit, time.Second))
+			}
+
+			api.Get("/healthcheck", handlerHealth.ServeHTTP)
+			api.Get("/jwks", handlerJwkList.ServeHTTP)
+			api.Get("/jwk", handlerJwkGet.ServeHTTP)
+		})
 	})
 
 	// =================================================================================================================
