@@ -59,6 +59,8 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/health"
+        "429":
+          $ref: "#/components/responses/tooManyRequests"
         "503":
           $ref: "#/components/responses/healthUnavailable"
         default:
@@ -78,6 +80,8 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/jwkList"
+        "429":
+          $ref: "#/components/responses/tooManyRequests"
         "503":
           $ref: "#/components/responses/plannedDowntime"
         default:
@@ -100,6 +104,8 @@ paths:
           $ref: "#/components/responses/badRequest"
         "404":
           $ref: "#/components/responses/notFound"
+        "429":
+          $ref: "#/components/responses/tooManyRequests"
         "503":
           $ref: "#/components/responses/plannedDowntime"
         default:
@@ -183,6 +189,15 @@ components:
     badRequest:
       description: |
         The request sent to the server could not be parsed.
+
+    tooManyRequests:
+      description: |
+        The caller sent too many requests to this route. Retry once `Retry-After` has elapsed.
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
 
     internalError:
       description: Something unexpected happened.

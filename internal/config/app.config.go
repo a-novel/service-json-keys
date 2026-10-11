@@ -3,18 +3,12 @@ package config
 import (
 	"time"
 
+	"github.com/a-novel-kit/golib/grpcf"
+	"github.com/a-novel-kit/golib/httpf"
 	"github.com/a-novel-kit/golib/logging"
 	"github.com/a-novel-kit/golib/otel"
 	"github.com/a-novel-kit/golib/postgres"
 )
-
-// RestCors holds CORS configuration for the REST server.
-type RestCors struct {
-	AllowedOrigins   []string `json:"allowedOrigins"   yaml:"allowedOrigins"`
-	AllowedHeaders   []string `json:"allowedHeaders"   yaml:"allowedHeaders"`
-	AllowCredentials bool     `json:"allowCredentials" yaml:"allowCredentials"`
-	MaxAge           int      `json:"maxAge"           yaml:"maxAge"`
-}
 
 // Main holds the core application identity and secrets.
 type Main struct {
@@ -28,47 +22,14 @@ type Main struct {
 	DowntimeStart *time.Time `json:"downtimeStart" yaml:"downtimeStart"`
 }
 
-// Grpc holds the gRPC server configuration.
-type Grpc struct {
-	// Port is the port on which the gRPC server listens for incoming requests.
-	Port int `json:"port" yaml:"port"`
-	// Ping configures the refresh interval for the gRPC server internal healthcheck.
-	Ping time.Duration `json:"ping" yaml:"ping"`
-	// Shutdown bounds graceful RPC drain before remaining calls are stopped.
-	Shutdown time.Duration `json:"shutdown" yaml:"shutdown"`
-}
-
-// RestTimeouts holds timeout configuration for the REST server.
-type RestTimeouts struct {
-	Read       time.Duration `json:"read"       yaml:"read"`
-	ReadHeader time.Duration `json:"readHeader" yaml:"readHeader"`
-	Write      time.Duration `json:"write"      yaml:"write"`
-	Idle       time.Duration `json:"idle"       yaml:"idle"`
-	Request    time.Duration `json:"request"    yaml:"request"`
-	// Shutdown bounds graceful request drain before remaining connections are closed.
-	Shutdown time.Duration `json:"shutdown" yaml:"shutdown"`
-}
-
-// Rest holds the REST server configuration.
-type Rest struct {
-	// Port is the port on which the REST server listens for incoming requests.
-	Port int `json:"port" yaml:"port"`
-	// Timeouts holds the REST server timeout configuration.
-	Timeouts RestTimeouts `json:"timeouts" yaml:"timeouts"`
-	// MaxRequestSize is the maximum size of an incoming request body.
-	MaxRequestSize int64 `json:"maxRequestSize" yaml:"maxRequestSize"`
-	// Cors holds the CORS configuration.
-	Cors RestCors `json:"cors" yaml:"cors"`
-}
-
 // App aggregates the configuration needed to run the gRPC and REST servers.
 type App struct {
 	// App holds the core application identity and secrets.
 	App Main `json:"app" yaml:"app"`
 	// Grpc holds the gRPC server configuration.
-	Grpc Grpc `json:"grpc" yaml:"grpc"`
+	Grpc grpcf.ServerConfig `json:"grpc" yaml:"grpc"`
 	// Rest holds the REST server configuration.
-	Rest Rest `json:"rest" yaml:"rest"`
+	Rest httpf.ServerConfig `json:"rest" yaml:"rest"`
 
 	// Otel configures the OpenTelemetry exporter for traces and metrics.
 	Otel otel.Config `json:"otel" yaml:"otel"`

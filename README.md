@@ -142,19 +142,24 @@ gRPC tuning (images `grpc`, `standalone-grpc`):
 
 REST tuning (images `rest`, `standalone-rest`):
 
-| Name                          | Description                          | Default          |
-| ----------------------------- | ------------------------------------ | ---------------- |
-| `REST_MAX_REQUEST_SIZE`       | Maximum request body size, in bytes. | `2097152` (2MiB) |
-| `REST_TIMEOUT_READ`           | Read timeout.                        | `15s`            |
-| `REST_TIMEOUT_READ_HEADER`    | Header read timeout.                 | `3s`             |
-| `REST_TIMEOUT_WRITE`          | Write timeout.                       | `30s`            |
-| `REST_TIMEOUT_IDLE`           | Idle keep-alive timeout.             | `60s`            |
-| `REST_TIMEOUT_REQUEST`        | Per-request timeout.                 | `60s`            |
-| `REST_TIMEOUT_SHUTDOWN`       | Graceful shutdown budget.            | `30s`            |
-| `REST_CORS_ALLOWED_ORIGINS`   | CORS allowed origins.                | `*`              |
-| `REST_CORS_ALLOWED_HEADERS`   | CORS allowed headers.                | `*`              |
-| `REST_CORS_ALLOW_CREDENTIALS` | CORS allow-credentials flag.         | `false`          |
-| `REST_CORS_MAX_AGE`           | CORS max-age, in seconds.            | `3600`           |
+| Name                          | Description                                                                                             | Default         |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------- | --------------- |
+| `REST_MAX_REQUEST_SIZE`       | Maximum request body size, in bytes.                                                                    | `16384` (16KiB) |
+| `REST_CLIENT_IP_HEADER`       | Header a trusted proxy sets to the visitor IP. Set it only when every request comes through that proxy. | TCP peer        |
+| `REST_LIVENESS_PATH`          | Ping path, which still answers during a planned downtime and skips the rate limit.                      | `/v2/ping`      |
+| `REST_RATE_LIMITS_ENABLED`    | Rate-limit each visitor on every route but the ping. Turn off only in test stacks.                      | `true`          |
+| `REST_RATE_LIMIT`             | Requests each visitor sends to each route, as `<requests>/<window>`.                                    | `5/1s`          |
+| `REST_TIMEOUT_READ`           | Read timeout.                                                                                           | `15s`           |
+| `REST_TIMEOUT_READ_HEADER`    | Header read timeout.                                                                                    | `3s`            |
+| `REST_TIMEOUT_WRITE`          | Write timeout.                                                                                          | `30s`           |
+| `REST_TIMEOUT_IDLE`           | Idle keep-alive timeout.                                                                                | `60s`           |
+| `REST_TIMEOUT_REQUEST`        | Per-request timeout.                                                                                    | `60s`           |
+| `REST_TIMEOUT_SHUTDOWN`       | Graceful shutdown budget.                                                                               | `30s`           |
+| `REST_CORS_ALLOWED_ORIGINS`   | CORS allowed origins.                                                                                   | `*`             |
+| `REST_CORS_ALLOWED_HEADERS`   | CORS allowed headers.                                                                                   | `*`             |
+| `REST_CORS_ALLOWED_METHODS`   | CORS allowed methods, comma-separated.                                                                  | `HEAD,GET`      |
+| `REST_CORS_ALLOW_CREDENTIALS` | CORS allow-credentials flag.                                                                            | `false`         |
+| `REST_CORS_MAX_AGE`           | CORS max-age, in seconds.                                                                               | `3600`          |
 
 Database connection pool (server images). The limits are **per process**. The database's `max_connections` has to cover every replica plus the migration job; the stock `postgres` default is 100.
 

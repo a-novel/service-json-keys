@@ -9,8 +9,6 @@ import (
 	"context"
 	"io"
 	"log"
-	"net"
-	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
@@ -18,8 +16,6 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/cors"
 	"github.com/samber/lo"
 
 	"github.com/a-novel-kit/golib/downtime"
@@ -87,26 +83,7 @@ func main() {
 	// ROUTER
 	// =================================================================================================================
 
-	router := chi.NewRouter()
-
-	router.Use(middleware.Recoverer)
-	router.Use(middleware.ClientIPFromRemoteAddr)
-	router.Use(middleware.Timeout(cfg.Rest.Timeouts.Request))
-	router.Use(middleware.RequestSize(cfg.Rest.MaxRequestSize))
-	router.Use(cfg.Otel.HttpHandler())
-	router.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   cfg.Rest.Cors.AllowedOrigins,
-		AllowedHeaders:   cfg.Rest.Cors.AllowedHeaders,
-		AllowCredentials: cfg.Rest.Cors.AllowCredentials,
-		AllowedMethods: []string{
-			http.MethodHead,
-			http.MethodGet,
-		},
-		MaxAge: cfg.Rest.Cors.MaxAge,
-	}))
-	router.Use(cfg.RestLogger.Logger())
-	// During a planned downtime, only liveness answers.
-	router.Use(downtime.Middleware(cfg.App.DowntimeStart, "/v2/ping"))
+	router := httpf.NewRouter(cfg.Rest, cfg.Otel, cfg.RestLogger, cfg.App.DowntimeStart)
 
 	router.Route("/v2", func(api chi.Router) {
 		api.Get("/ping", handlerPing.ServeHTTP)
@@ -119,19 +96,9 @@ func main() {
 	// RUN
 	// =================================================================================================================
 
-	httpServer := &http.Server{
-		Addr:              ":" + strconv.Itoa(cfg.Rest.Port),
-		Handler:           router,
-		ReadTimeout:       cfg.Rest.Timeouts.Read,
-		ReadHeaderTimeout: cfg.Rest.Timeouts.ReadHeader,
-		WriteTimeout:      cfg.Rest.Timeouts.Write,
-		IdleTimeout:       cfg.Rest.Timeouts.Idle,
-		BaseContext:       func(_ net.Listener) context.Context { return ctx },
-	}
+	log.Println("Starting REST server on :" + strconv.Itoa(cfg.Rest.Port))
 
-	log.Println("Starting REST server on " + httpServer.Addr)
-
-	err := httpf.Serve(ctx, httpServer, cfg.Rest.Timeouts.Shutdown)
+	err := httpf.ListenAndServe(ctx, cfg.Rest, router)
 
 	stop()
 

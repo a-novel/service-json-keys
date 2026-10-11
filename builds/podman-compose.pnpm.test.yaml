@@ -24,6 +24,8 @@ services:
     environment:
       POSTGRES_DSN: "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres-json-keys:5432/${POSTGRES_DB}?sslmode=disable"
       APP_MASTER_KEY: "${APP_MASTER_KEY}"
+      # The suite lists keys several times within a second from one address.
+      REST_RATE_LIMITS_ENABLED: false
     networks:
       - json-keys-integration-rest-test
 
