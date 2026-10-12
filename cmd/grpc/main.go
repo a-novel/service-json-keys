@@ -101,7 +101,7 @@ func main() {
 		return rpCtx
 	}
 
-	server := grpcf.NewServer(cfg.Otel, cfg.GrpcLogger, cfg.App.DowntimeStart, ctxInterceptor)
+	server := grpcf.NewServer(ctx, cfg.Otel, cfg.GrpcLogger, cfg.App.DowntimeStart, ctxInterceptor)
 
 	healthcheck := grpcf.RegisterEchoServers(server)
 	healthcheck.SetServingStatus("", healthpb.HealthCheckResponse_SERVING)
