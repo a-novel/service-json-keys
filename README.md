@@ -54,6 +54,12 @@ services:
       POSTGRES_INITDB_ARGS: --auth=scram-sha-256
     volumes:
       - json-keys-postgres-data:/var/lib/postgresql/
+    # Podman ignores the image's own check, so the dependents' wait needs this one.
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
 
   migrations-json-keys:
     image: ghcr.io/a-novel/service-json-keys/jobs/migrations:v2.3.2
@@ -296,6 +302,12 @@ services:
       POSTGRES_DB: "${POSTGRES_DATABASE}"
       POSTGRES_HOST_AUTH_METHOD: scram-sha-256
       POSTGRES_INITDB_ARGS: --auth=scram-sha-256
+    # Podman ignores the image's own check, so the dependents' wait needs this one.
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
 
   service-json-keys:
     image: ghcr.io/a-novel/service-json-keys/standalone-grpc:v2.10.1 # or standalone-rest

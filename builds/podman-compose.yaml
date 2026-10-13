@@ -1,3 +1,11 @@
+# Podman drops a Dockerfile's HEALTHCHECK from OCI images, the format it builds by default and the
+# one images are published in: a service the others wait for declares its check here.
+x-postgres-healthcheck: &postgres-healthcheck
+  test: ["CMD", "pg_isready"]
+  interval: 1s
+  timeout: 5s
+  retries: 10
+
 services:
   # ====================================================================================================================
   # DATABASE
@@ -19,13 +27,15 @@ services:
       POSTGRES_INITDB_ARGS: --auth=scram-sha-256
     volumes:
       - json-keys-postgres-data:/var/lib/postgresql/
+    healthcheck: *postgres-healthcheck
 
   # ====================================================================================================================
   # ONE-SHOT TARGETS
   # ====================================================================================================================
 
   service-json-keys-migrations:
-    profiles: ["migrations"]
+    # Also under the profiles of the targets waiting for it, so `--profile <target>` runs it first.
+    profiles: ["migrations", "rotate-keys"]
     build:
       context: ..
       dockerfile: ./builds/migrations.Dockerfile
@@ -68,10 +78,6 @@ services:
     depends_on:
       postgres-json-keys:
         condition: service_healthy
-      service-json-keys-migrations:
-        condition: service_completed_successfully
-      service-json-keys-rotate-keys:
-        condition: service_completed_successfully
     environment:
       POSTGRES_DSN: "postgres://postgres:postgres@postgres-json-keys:5432/postgres?sslmode=disable"
       APP_MASTER_KEY: fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca
@@ -88,10 +94,6 @@ services:
     depends_on:
       postgres-json-keys:
         condition: service_healthy
-      service-json-keys-migrations:
-        condition: service_completed_successfully
-      service-json-keys-rotate-keys:
-        condition: service_completed_successfully
     environment:
       POSTGRES_DSN: "postgres://postgres:postgres@postgres-json-keys:5432/postgres?sslmode=disable"
       APP_MASTER_KEY: fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca
