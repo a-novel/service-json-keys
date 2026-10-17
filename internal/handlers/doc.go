@@ -4,8 +4,9 @@
 //
 // Two transport implementations serve distinct audiences:
 //
-//   - gRPC handlers: the private API for authenticated service-to-service calls, covering
-//     token signing, key retrieval, and dependency health checks. Wired by cmd/grpc.
+//   - gRPC handlers: the private API for internal service-to-service calls, covering
+//     token signing, key retrieval, and dependency health checks. It authenticates no caller:
+//     the network around it restricts access. Wired by cmd/grpc.
 //
 //   - REST handlers: the public, unauthenticated read-only API exposing the JSON Web Keys
 //     used for token verification. Wired by cmd/rest.
