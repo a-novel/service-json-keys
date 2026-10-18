@@ -2,6 +2,7 @@ package core_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -77,6 +78,67 @@ func TestJwkProducers(t *testing.T) {
 			source.AssertExpectations(t)
 		})
 	}
+
+	t.Run("Success/StaleIfError", func(t *testing.T) {
+		t.Parallel()
+
+		errFoo := errors.New("foo")
+
+		privateKey, _, err := jwk.GenerateED25519()
+		require.NoError(t, err)
+
+		keys := map[string]*config.Jwk{
+			"test-usage": {
+				Alg: jwa.Ed25519,
+				Key: config.JwkKey{
+					Cache:        time.Millisecond,
+					StaleIfError: time.Hour,
+				},
+				Token: config.JwkToken{
+					TTL:      time.Hour,
+					Issuer:   "test-issuer",
+					Audience: "test-audience",
+					Subject:  "test-subject",
+				},
+			},
+		}
+
+		// The first fetch fills the cache and the refetch fails, as during an outage.
+		privateSource := coremocks.NewMockJwkPrivateSource(t)
+		privateSource.EXPECT().
+			SearchKeys(mock.Anything, "test-usage").
+			Return([]*jwa.JWK{privateKey.JWK}, nil).
+			Once()
+		privateSource.EXPECT().
+			SearchKeys(mock.Anything, "test-usage").
+			Return(nil, errFoo).
+			Once()
+
+		producers, err := core.NewJwkProducers(privateSource, keys)
+		require.NoError(t, err)
+
+		type testClaims struct {
+			Message string `json:"message"`
+		}
+
+		signer := core.NewClaimsSign(producers, keys)
+
+		_, err = signer.Exec(t.Context(), &core.ClaimsSignRequest{
+			Claims: &testClaims{Message: "fresh"},
+			Usage:  "test-usage",
+		})
+		require.NoError(t, err)
+
+		time.Sleep(2 * time.Millisecond)
+
+		_, err = signer.Exec(t.Context(), &core.ClaimsSignRequest{
+			Claims: &testClaims{Message: "stale"},
+			Usage:  "test-usage",
+		})
+		require.NoError(t, err)
+
+		privateSource.AssertExpectations(t)
+	})
 }
 
 func TestJwkRecipients(t *testing.T) {
@@ -242,6 +304,85 @@ func TestJwkRecipients(t *testing.T) {
 
 		privateSource1.AssertExpectations(t)
 		privateSource2.AssertExpectations(t)
+		publicSource.AssertExpectations(t)
+	})
+
+	t.Run("Success/StaleIfError", func(t *testing.T) {
+		t.Parallel()
+
+		errFoo := errors.New("foo")
+
+		privateKey, publicKey, err := jwk.GenerateED25519()
+		require.NoError(t, err)
+
+		keys := map[string]*config.Jwk{
+			"test-usage": {
+				Alg: jwa.Ed25519,
+				Key: config.JwkKey{
+					Cache:        time.Millisecond,
+					StaleIfError: time.Hour,
+				},
+				Token: config.JwkToken{
+					TTL:      time.Hour,
+					Issuer:   "test-issuer",
+					Audience: "test-audience",
+					Subject:  "test-subject",
+				},
+			},
+		}
+
+		privateSource := coremocks.NewMockJwkPrivateSource(t)
+		privateSource.EXPECT().
+			SearchKeys(mock.Anything, "test-usage").
+			Return([]*jwa.JWK{privateKey.JWK}, nil).
+			Once()
+
+		producers, err := core.NewJwkProducers(privateSource, keys)
+		require.NoError(t, err)
+
+		// The first fetch fills the cache and the refetch fails, as during an outage.
+		publicSource := coremocks.NewMockJwkPublicSource(t)
+		publicSource.EXPECT().
+			SearchKeys(mock.Anything, "test-usage").
+			Return([]*jwa.JWK{publicKey.JWK}, nil).
+			Once()
+		publicSource.EXPECT().
+			SearchKeys(mock.Anything, "test-usage").
+			Return(nil, errFoo).
+			Once()
+
+		recipients, err := core.NewJwkRecipients(publicSource, keys)
+		require.NoError(t, err)
+
+		type testClaims struct {
+			Message string `json:"message"`
+		}
+
+		token, err := core.NewClaimsSign(producers, keys).Exec(t.Context(), &core.ClaimsSignRequest{
+			Claims: &testClaims{Message: "test"},
+			Usage:  "test-usage",
+		})
+		require.NoError(t, err)
+
+		verifier := core.NewClaimsVerify[testClaims](recipients, keys)
+
+		claims, err := verifier.Exec(t.Context(), &core.ClaimsVerifyRequest{
+			Token: token,
+			Usage: "test-usage",
+		})
+		require.NoError(t, err)
+		require.Equal(t, &testClaims{Message: "test"}, claims)
+
+		time.Sleep(2 * time.Millisecond)
+
+		claims, err = verifier.Exec(t.Context(), &core.ClaimsVerifyRequest{
+			Token: token,
+			Usage: "test-usage",
+		})
+		require.NoError(t, err)
+		require.Equal(t, &testClaims{Message: "test"}, claims)
+
+		privateSource.AssertExpectations(t)
 		publicSource.AssertExpectations(t)
 	})
 }

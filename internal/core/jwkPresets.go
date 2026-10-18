@@ -188,6 +188,7 @@ func NewJwkProducers(
 	for usage, keyConfig := range keys {
 		keySource := newJwkSource(source.SearchKeys, usage, jwk.SourceConfig{
 			CacheDuration: keyConfig.Key.Cache,
+			StaleIfError:  keyConfig.Key.StaleIfError,
 		})
 
 		var signer jwt.ProducerPlugin
@@ -239,6 +240,7 @@ func NewJwkRecipients(
 	for usage, keyConfig := range keys {
 		keySource := newJwkSource(source.SearchKeys, usage, jwk.SourceConfig{
 			CacheDuration: keyConfig.Key.Cache,
+			StaleIfError:  keyConfig.Key.StaleIfError,
 			// A rotated signing key can appear before the verifier's normal cache refresh.
 			// An unknown key ID triggers one rate-limited refetch so verification can continue.
 			RefreshOnUnknownKeyID: true,
