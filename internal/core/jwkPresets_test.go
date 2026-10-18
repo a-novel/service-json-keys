@@ -331,11 +331,12 @@ func TestJwkRecipients(t *testing.T) {
 			},
 		}
 
+		// The signer reads its key once for the header and once for the signature. The millisecond
+		// cache can expire between the two reads on a loaded runner, which refetches the key.
 		privateSource := coremocks.NewMockJwkPrivateSource(t)
 		privateSource.EXPECT().
 			SearchKeys(mock.Anything, "test-usage").
-			Return([]*jwa.JWK{privateKey.JWK}, nil).
-			Once()
+			Return([]*jwa.JWK{privateKey.JWK}, nil)
 
 		producers, err := core.NewJwkProducers(privateSource, keys)
 		require.NoError(t, err)
