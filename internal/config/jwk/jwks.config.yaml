@@ -10,6 +10,7 @@ auth:
     ttl: 168h # 7 days — how long a key version stays active before expiring
     rotation: 24h # a new key is generated every 24h; older keys remain active until their TTL
     cache: 30m # how long public keys are cached locally before re-fetching
+    staleIfError: 24h # cached keys stay in use this long past the cache while re-fetching fails
   token:
     ttl: 24h
     issuer: "anovel-authentication"
@@ -24,6 +25,7 @@ auth-refresh:
     ttl: 720h # 30 days
     rotation: 168h # 7 days
     cache: 30m
+    staleIfError: 24h
   token:
     ttl: 168h # 7 days
     issuer: "anovel-authentication"

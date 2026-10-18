@@ -16,6 +16,13 @@ type JwkKey struct {
 	// Cache configures how long a key is cached in memory before being refetched from the database.
 	// It should be significantly lower than the TTL.
 	Cache time.Duration `json:"cache" yaml:"cache"`
+	// StaleIfError configures how long past Cache the last fetched keys stay in service while refetching
+	// fails, so an outage shorter than it leaves signing and verification running. Zero reports the
+	// failure as soon as Cache expires.
+	//
+	// The newest cached key keeps signing through an outage. Rotation + Cache + StaleIfError should stay
+	// below the TTL, which keeps that key unexpired once fetching recovers.
+	StaleIfError time.Duration `json:"staleIfError" yaml:"staleIfError"`
 	// UnknownKeyIDInterval bounds how often a verifier may refetch when it meets a key id its cache
 	// does not hold — the shape a just-rotated key takes before Cache expires. It caps a caller
 	// sending unknown ids to one fetch per interval. Zero uses the jwt default.
