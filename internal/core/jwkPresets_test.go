@@ -2,7 +2,10 @@ package core_test
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -31,24 +34,8 @@ func TestJwkProducers(t *testing.T) {
 		{
 			name: "Success/SupportedAlgorithms",
 
-			keys: map[string]*config.Jwk{
-				"ed25519": {Alg: jwa.Ed25519},
-				"eddsa":   {Alg: jwa.EdDSA}, //nolint:staticcheck // The legacy label is under test.
-				"es256":   {Alg: jwa.ES256},
-				"es384":   {Alg: jwa.ES384},
-				"es512":   {Alg: jwa.ES512},
-				"rs256":   {Alg: jwa.RS256},
-				"rs384":   {Alg: jwa.RS384},
-				"rs512":   {Alg: jwa.RS512},
-				"ps256":   {Alg: jwa.PS256},
-				"ps384":   {Alg: jwa.PS384},
-				"ps512":   {Alg: jwa.PS512},
-				"mldsa44": {Alg: jwa.MLDSA44},
-				"mldsa65": {Alg: jwa.MLDSA65},
-				"mldsa87": {Alg: jwa.MLDSA87},
-			},
-
-			expectLen: 14,
+			keys:      supportedAlgorithmKeys(),
+			expectLen: len(supportedAlgorithms),
 		},
 		{
 			name: "Error/UnknownAlgorithm",
@@ -155,24 +142,8 @@ func TestJwkRecipients(t *testing.T) {
 		{
 			name: "Success/SupportedAlgorithms",
 
-			keys: map[string]*config.Jwk{
-				"ed25519": {Alg: jwa.Ed25519},
-				"eddsa":   {Alg: jwa.EdDSA}, //nolint:staticcheck // The legacy label is under test.
-				"es256":   {Alg: jwa.ES256},
-				"es384":   {Alg: jwa.ES384},
-				"es512":   {Alg: jwa.ES512},
-				"rs256":   {Alg: jwa.RS256},
-				"rs384":   {Alg: jwa.RS384},
-				"rs512":   {Alg: jwa.RS512},
-				"ps256":   {Alg: jwa.PS256},
-				"ps384":   {Alg: jwa.PS384},
-				"ps512":   {Alg: jwa.PS512},
-				"mldsa44": {Alg: jwa.MLDSA44},
-				"mldsa65": {Alg: jwa.MLDSA65},
-				"mldsa87": {Alg: jwa.MLDSA87},
-			},
-
-			expectLen: 14,
+			keys:      supportedAlgorithmKeys(),
+			expectLen: len(supportedAlgorithms),
 		},
 		{
 			name: "Error/UnknownAlgorithm",
@@ -386,4 +357,121 @@ func TestJwkRecipients(t *testing.T) {
 		privateSource.AssertExpectations(t)
 		publicSource.AssertExpectations(t)
 	})
+}
+
+// supportedAlgorithmKeys configures one usage per supported algorithm, named after it.
+func supportedAlgorithmKeys() map[string]*config.Jwk {
+	keys := make(map[string]*config.Jwk, len(supportedAlgorithms))
+	for _, alg := range supportedAlgorithms {
+		keys[string(alg)] = &config.Jwk{Alg: alg}
+	}
+
+	return keys
+}
+
+// loadGeneratedJWK decodes a generated key into the JSON Web Key a key source serves.
+func loadGeneratedJWK(t *testing.T, key any) *jwa.JWK {
+	t.Helper()
+
+	encoded, err := json.Marshal(key)
+	require.NoError(t, err)
+
+	var output jwa.JWK
+	require.NoError(t, json.Unmarshal(encoded, &output))
+
+	return &output
+}
+
+func TestJwkGenerators(t *testing.T) {
+	t.Parallel()
+
+	type testClaims struct {
+		Foo string `json:"foo"`
+	}
+
+	for _, alg := range supportedAlgorithms {
+		t.Run("Success/"+string(alg), func(t *testing.T) {
+			t.Parallel()
+
+			generator, ok := core.JwkGenerators[alg]
+			require.True(t, ok)
+
+			generatedKey, err := generator()
+			require.NoError(t, err)
+
+			privateKey := loadGeneratedJWK(t, generatedKey.PrivateKey)
+			publicKey := loadGeneratedJWK(t, generatedKey.PublicKey)
+			require.Equal(t, generatedKey.PrivateKID, privateKey.KID)
+			require.Equal(t, generatedKey.PublicKID, publicKey.KID)
+
+			keys := map[string]*config.Jwk{
+				"test-usage": {
+					Alg: alg,
+					Key: config.JwkKey{
+						TTL:      168 * time.Hour,
+						Rotation: 24 * time.Hour,
+						Cache:    30 * time.Minute,
+					},
+					Token: config.JwkToken{
+						TTL:      24 * time.Hour,
+						Issuer:   "test-issuer",
+						Audience: "test-audience",
+						Subject:  "test-subject",
+						Leeway:   5 * time.Minute,
+					},
+				},
+			}
+
+			privateSource := coremocks.NewMockJwkPrivateSource(t)
+			privateSource.EXPECT().
+				SearchKeys(mock.Anything, "test-usage").
+				Return([]*jwa.JWK{privateKey}, nil).
+				Once()
+
+			producers, err := core.NewJwkProducers(privateSource, keys)
+			require.NoError(t, err)
+
+			publicSource := coremocks.NewMockJwkPublicSource(t)
+			publicSource.EXPECT().
+				SearchKeys(mock.Anything, "test-usage").
+				Return([]*jwa.JWK{publicKey}, nil).
+				Once()
+
+			recipients, err := core.NewJwkRecipients(publicSource, keys)
+			require.NoError(t, err)
+
+			claims := &testClaims{Foo: "bar"}
+			signer := core.NewClaimsSign(producers, keys)
+			verifier := core.NewClaimsVerify[testClaims](recipients, keys)
+
+			signedClaims, err := signer.Exec(t.Context(), &core.ClaimsSignRequest{
+				Claims: claims,
+				Usage:  "test-usage",
+			})
+			require.NoError(t, err)
+
+			verifiedClaims, err := verifier.Exec(t.Context(), &core.ClaimsVerifyRequest{
+				Token: signedClaims,
+				Usage: "test-usage",
+			})
+			require.NoError(t, err)
+			require.Equal(t, claims, verifiedClaims)
+
+			// Both the published key and the token carry the configured label, which is what a
+			// verifier pinned to that label checks.
+			var header struct {
+				Alg jwa.Alg `json:"alg"`
+			}
+
+			encodedHeader, _, _ := strings.Cut(signedClaims, ".")
+			decodedHeader, err := base64.RawURLEncoding.DecodeString(encodedHeader)
+			require.NoError(t, err)
+			require.NoError(t, json.Unmarshal(decodedHeader, &header))
+			require.Equal(t, alg, header.Alg)
+			require.Equal(t, alg, publicKey.Alg)
+
+			privateSource.AssertExpectations(t)
+			publicSource.AssertExpectations(t)
+		})
+	}
 }

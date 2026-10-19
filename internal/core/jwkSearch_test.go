@@ -17,13 +17,13 @@ import (
 	coremocks "github.com/a-novel/service-json-keys/v2/internal/core/mocks"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 	"github.com/a-novel/service-json-keys/v2/internal/lib"
-	testutils "github.com/a-novel/service-json-keys/v2/internal/lib/test"
+	"github.com/a-novel/service-json-keys/v2/internal/lib/libtest"
 )
 
 func TestJwkSearch(t *testing.T) {
 	t.Parallel()
 
-	ctx, err := lib.NewMasterKeyContext(t.Context(), testutils.TestMasterKey)
+	ctx, err := lib.NewMasterKeyContext(t.Context(), libtest.MasterKey)
 	require.NoError(t, err)
 
 	errFoo := errors.New("foo")
@@ -38,6 +38,46 @@ func TestJwkSearch(t *testing.T) {
 		err  error
 	}
 
+	storedKeys := []*dao.Jwk{
+		{
+			ID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
+			PrivateKey: "cHJpdmF0ZS1rZXktMg",
+			PublicKey:  lo.ToPtr("cHVibGljLWtleS0y"),
+			Usage:      "test-usage",
+			CreatedAt:  time.Now().Add(-time.Hour),
+			ExpiresAt:  time.Now().Add(time.Hour),
+		},
+		{
+			ID:         uuid.MustParse("00000000-0000-0000-0000-000000000001"),
+			PrivateKey: "cHJpdmF0ZS1rZXktMQ",
+			PublicKey:  lo.ToPtr("cHVibGljLWtleS0x"),
+			Usage:      "test-usage",
+			CreatedAt:  time.Now().Add(-time.Hour),
+			ExpiresAt:  time.Now().Add(time.Hour),
+		},
+	}
+	extractedKeys := []*core.Jwk{
+		{
+			JWKCommon: jwa.JWKCommon{
+				KTY: "test-kty",
+				Use: "test-use",
+				Alg: "test-alg",
+				KID: storedKeys[0].ID.String(),
+			},
+			Payload: json.RawMessage(`{"message":"hello world"}`),
+		},
+		{
+			JWKCommon: jwa.JWKCommon{
+				KTY: "test-kty",
+				Use: "test-use",
+				Alg: "test-alg",
+				KID: storedKeys[1].ID.String(),
+			},
+			Payload: json.RawMessage(`{"message":"hello world"}`),
+		},
+	}
+	request := &core.JwkSearchRequest{Usage: "test-usage", Private: true}
+
 	testCases := []struct {
 		name string
 
@@ -50,153 +90,42 @@ func TestJwkSearch(t *testing.T) {
 		expectErr error
 	}{
 		{
-			name: "Success",
+			name:    "Success",
+			request: request,
 
-			request: &core.JwkSearchRequest{
-				Usage:   "test-usage",
-				Private: true,
-			},
-
-			daoSearchMock: &daoSearchMock{
-				resp: []*dao.Jwk{
-					{
-						ID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
-						PrivateKey: "cHJpdmF0ZS1rZXktMg",
-						PublicKey:  lo.ToPtr("cHVibGljLWtleS0y"),
-						Usage:      "test-usage",
-						CreatedAt:  time.Now().Add(-time.Hour),
-						ExpiresAt:  time.Now().Add(time.Hour),
-					},
-					{
-						ID:         uuid.MustParse("00000000-0000-0000-0000-000000000001"),
-						PrivateKey: "cHJpdmF0ZS1rZXktMQ",
-						PublicKey:  lo.ToPtr("cHVibGljLWtleS0x"),
-						Usage:      "test-usage",
-						CreatedAt:  time.Now().Add(-time.Hour),
-						ExpiresAt:  time.Now().Add(time.Hour),
-					},
-				},
-			},
-
+			daoSearchMock: &daoSearchMock{resp: storedKeys},
 			serviceExtractMock: []*serviceExtractMock{
-				{
-					resp: &core.Jwk{
-						JWKCommon: jwa.JWKCommon{
-							KTY: "test-kty",
-							Use: "test-use",
-							Alg: "test-alg",
-							KID: "00000000-0000-0000-0000-000000000002",
-						},
-						Payload: json.RawMessage(`{"message":"hello world"}`),
-					},
-				},
-				{
-					resp: &core.Jwk{
-						JWKCommon: jwa.JWKCommon{
-							KTY: "test-kty",
-							Use: "test-use",
-							Alg: "test-alg",
-							KID: "00000000-0000-0000-0000-000000000001",
-						},
-						Payload: json.RawMessage(`{"message":"hello world"}`),
-					},
-				},
+				{resp: extractedKeys[0]},
+				{resp: extractedKeys[1]},
 			},
 
-			expect: []*core.Jwk{
-				{
-					JWKCommon: jwa.JWKCommon{
-						KTY: "test-kty",
-						Use: "test-use",
-						Alg: "test-alg",
-						KID: "00000000-0000-0000-0000-000000000002",
-					},
-					Payload: json.RawMessage(`{"message":"hello world"}`),
-				},
-				{
-					JWKCommon: jwa.JWKCommon{
-						KTY: "test-kty",
-						Use: "test-use",
-						Alg: "test-alg",
-						KID: "00000000-0000-0000-0000-000000000001",
-					},
-					Payload: json.RawMessage(`{"message":"hello world"}`),
-				},
-			},
+			expect: extractedKeys,
 		},
 		{
-			name: "Success/Empty",
+			name:    "Success/Empty",
+			request: request,
 
-			request: &core.JwkSearchRequest{
-				Usage:   "test-usage",
-				Private: true,
-			},
-
-			daoSearchMock: &daoSearchMock{
-				resp: []*dao.Jwk{},
-			},
+			daoSearchMock: &daoSearchMock{resp: []*dao.Jwk{}},
 
 			expect: []*core.Jwk{},
 		},
 		{
-			name: "Error/Extract",
+			name:    "Error/Extract",
+			request: request,
 
-			request: &core.JwkSearchRequest{
-				Usage:   "test-usage",
-				Private: true,
-			},
-
-			daoSearchMock: &daoSearchMock{
-				resp: []*dao.Jwk{
-					{
-						ID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
-						PrivateKey: "cHJpdmF0ZS1rZXktMg",
-						PublicKey:  lo.ToPtr("cHVibGljLWtleS0y"),
-						Usage:      "test-usage",
-						CreatedAt:  time.Now().Add(-time.Hour),
-						ExpiresAt:  time.Now().Add(time.Hour),
-					},
-					{
-						ID:         uuid.MustParse("00000000-0000-0000-0000-000000000001"),
-						PrivateKey: "cHJpdmF0ZS1rZXktMQ",
-						PublicKey:  lo.ToPtr("cHVibGljLWtleS0x"),
-						Usage:      "test-usage",
-						CreatedAt:  time.Now().Add(-time.Hour),
-						ExpiresAt:  time.Now().Add(time.Hour),
-					},
-				},
-			},
-
+			daoSearchMock: &daoSearchMock{resp: storedKeys},
 			serviceExtractMock: []*serviceExtractMock{
-				{
-					resp: &core.Jwk{
-						JWKCommon: jwa.JWKCommon{
-							KTY: "test-kty",
-							Use: "test-use",
-							Alg: "test-alg",
-							KID: "00000000-0000-0000-0000-000000000002",
-						},
-						Payload: json.RawMessage(`{"message":"hello world"}`),
-					},
-				},
-				{
-					err: errFoo,
-				},
+				{resp: extractedKeys[0]},
+				{err: errFoo},
 			},
 
 			expectErr: errFoo,
 		},
 		{
-			name: "Error/Search",
+			name:    "Error/Search",
+			request: request,
 
-			request: &core.JwkSearchRequest{
-				Usage:   "test-usage",
-				Private: true,
-			},
-
-			daoSearchMock: &daoSearchMock{
-				err: errFoo,
-			},
+			daoSearchMock: &daoSearchMock{err: errFoo},
 
 			expectErr: errFoo,
 		},
@@ -243,17 +172,14 @@ func TestJwkSearch(t *testing.T) {
 	}
 }
 
-// TestJwkSearchRefusesSymmetricKeysWithoutPrivateAuthorization wires the real
-// extraction into the search, so it covers what the public read path actually
-// does rather than what a mock was told to return.
+// TestJwkSearchRefusesSymmetricKeysWithoutPrivateAuthorization wires the real extraction into
+// the search and makes the request of the REST handlers, which leave Private false.
 //
-// The REST handlers leave Private false, so this is the request they make. A
-// symmetric key has only private material, and the search must fail before any of
-// it is deserialized for a caller that may not have it.
+// A symmetric key has only private material, so the search fails before deserializing any of it.
 func TestJwkSearchRefusesSymmetricKeysWithoutPrivateAuthorization(t *testing.T) {
 	t.Parallel()
 
-	ctx, err := lib.NewMasterKeyContext(t.Context(), testutils.TestMasterKey)
+	ctx, err := lib.NewMasterKeyContext(t.Context(), libtest.MasterKey)
 	require.NoError(t, err)
 
 	symmetric := &dao.Jwk{

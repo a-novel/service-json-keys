@@ -13,14 +13,37 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/core"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 	"github.com/a-novel/service-json-keys/v2/internal/lib"
-	testutils "github.com/a-novel/service-json-keys/v2/internal/lib/test"
+	"github.com/a-novel/service-json-keys/v2/internal/lib/libtest"
 )
 
 func TestJwkExtract(t *testing.T) {
 	t.Parallel()
 
-	ctx, err := lib.NewMasterKeyContext(t.Context(), testutils.TestMasterKey)
+	ctx, err := lib.NewMasterKeyContext(t.Context(), libtest.MasterKey)
 	require.NoError(t, err)
+
+	privateJwk := &jwa.JWK{
+		JWKCommon: jwa.JWKCommon{
+			KTY:    "test-kty",
+			Use:    "test-use",
+			KeyOps: []jwa.KeyOp{"test-key-ops"},
+			Alg:    "test-alg",
+			KID:    "00000000-0000-0000-0000-000000000001",
+		},
+		Payload: []byte(`{"value":"private-key-1"}`),
+	}
+	publicJwk := &jwa.JWK{JWKCommon: privateJwk.JWKCommon, Payload: []byte(`{"value":"public-key-1"}`)}
+
+	// A symmetric key is stored with only private material.
+	symmetricKey := &dao.Jwk{
+		ID:         uuid.MustParse("00000000-0000-0000-0000-000000000001"),
+		PrivateKey: mustEncryptBase64Value(ctx, t, privateJwk),
+	}
+	asymmetricKey := &dao.Jwk{
+		ID:         symmetricKey.ID,
+		PrivateKey: symmetricKey.PrivateKey,
+		PublicKey:  lo.ToPtr(mustSerializeBase64Value(t, publicJwk)),
+	}
 
 	testCases := []struct {
 		name string
@@ -31,175 +54,49 @@ func TestJwkExtract(t *testing.T) {
 		expectErr error
 	}{
 		{
-			name: "Success/PublicKey",
-
-			request: &core.JwkExtractRequest{
-				Jwk: &dao.Jwk{
-					ID: uuid.MustParse("00000000-0000-0000-0000-000000000001"),
-
-					PrivateKey: mustEncryptBase64Value(ctx, t, &jwa.JWK{
-						JWKCommon: jwa.JWKCommon{
-							KTY:    "test-kty",
-							Use:    "test-use",
-							KeyOps: []jwa.KeyOp{"test-key-ops"},
-							Alg:    "test-alg",
-							KID:    "00000000-0000-0000-0000-000000000001",
-						},
-						Payload: []byte(
-							`{"value":"private-key-1"}`,
-						),
-					}),
-					PublicKey: lo.ToPtr(mustSerializeBase64Value(t, &jwa.JWK{
-						JWKCommon: jwa.JWKCommon{
-							KTY:    "test-kty",
-							Use:    "test-use",
-							KeyOps: []jwa.KeyOp{"test-key-ops"},
-							Alg:    "test-alg",
-							KID:    "00000000-0000-0000-0000-000000000001",
-						},
-						Payload: []byte(`{"value":"public-key-1"}`),
-					})),
-				},
-			},
-
-			expect: &core.Jwk{
-				JWKCommon: jwa.JWKCommon{
-					KTY:    "test-kty",
-					Use:    "test-use",
-					KeyOps: []jwa.KeyOp{"test-key-ops"},
-					Alg:    "test-alg",
-					KID:    "00000000-0000-0000-0000-000000000001",
-				},
-				Payload: []byte(`{"value":"public-key-1"}`),
-			},
+			name:    "Success/PublicKey",
+			request: &core.JwkExtractRequest{Jwk: asymmetricKey},
+			expect:  publicJwk,
 		},
 		{
-			// A symmetric key is stored with only private material. Asking for its
-			// public half is asking for something that does not exist, and this case
-			// previously returned the decrypted private key to that caller.
-			name: "SymmetricKeyWithoutPrivateAuthorization",
-
-			request: &core.JwkExtractRequest{
-				Jwk: &dao.Jwk{
-					ID: uuid.MustParse("00000000-0000-0000-0000-000000000001"),
-
-					PrivateKey: mustEncryptBase64Value(ctx, t, &jwa.JWK{
-						JWKCommon: jwa.JWKCommon{
-							KTY:    "test-kty",
-							Use:    "test-use",
-							KeyOps: []jwa.KeyOp{"test-key-ops"},
-							Alg:    "test-alg",
-							KID:    "00000000-0000-0000-0000-000000000001",
-						},
-						Payload: []byte(
-							`{"value":"private-key-1"}`,
-						),
-					}),
-				},
-			},
-
+			name:    "Success/Private",
+			request: &core.JwkExtractRequest{Jwk: asymmetricKey, Private: true},
+			expect:  privateJwk,
+		},
+		{
+			// The gRPC signing path, authorized for private material.
+			name:    "Success/SymmetricKeyWithPrivateAuthorization",
+			request: &core.JwkExtractRequest{Jwk: symmetricKey, Private: true},
+			expect:  privateJwk,
+		},
+		{
+			// A symmetric key has no public half, so a caller without private authorization
+			// gets nothing.
+			name:      "Error/SymmetricKeyWithoutPrivateAuthorization",
+			request:   &core.JwkExtractRequest{Jwk: symmetricKey},
 			expectErr: core.ErrJwkExtractNoPublicKey,
 		},
-		{
-			// The same key with authorization, which is the gRPC signing path.
-			name: "Success/SymmetricKeyWithPrivateAuthorization",
+	}
 
-			request: &core.JwkExtractRequest{
-				Private: true,
-
-				Jwk: &dao.Jwk{
-					ID: uuid.MustParse("00000000-0000-0000-0000-000000000001"),
-
-					PrivateKey: mustEncryptBase64Value(ctx, t, &jwa.JWK{
-						JWKCommon: jwa.JWKCommon{
-							KTY:    "test-kty",
-							Use:    "test-use",
-							KeyOps: []jwa.KeyOp{"test-key-ops"},
-							Alg:    "test-alg",
-							KID:    "00000000-0000-0000-0000-000000000001",
-						},
-						Payload: []byte(
-							`{"value":"private-key-1"}`,
-						),
-					}),
-				},
-			},
-
-			expect: &jwa.JWK{
-				JWKCommon: jwa.JWKCommon{
-					KTY:    "test-kty",
-					Use:    "test-use",
-					KeyOps: []jwa.KeyOp{"test-key-ops"},
-					Alg:    "test-alg",
-					KID:    "00000000-0000-0000-0000-000000000001",
-				},
-				Payload: []byte(`{"value":"private-key-1"}`),
-			},
-		},
-		{
-			name: "Success/Private",
-
-			request: &core.JwkExtractRequest{
-				Jwk: &dao.Jwk{
-					ID: uuid.MustParse("00000000-0000-0000-0000-000000000001"),
-
-					PrivateKey: mustEncryptBase64Value(ctx, t, &jwa.JWK{
-						JWKCommon: jwa.JWKCommon{
-							KTY:    "test-kty",
-							Use:    "test-use",
-							KeyOps: []jwa.KeyOp{"test-key-ops"},
-							Alg:    "test-alg",
-							KID:    "00000000-0000-0000-0000-000000000001",
-						},
-						Payload: []byte(
-							`{"value":"private-key-1"}`,
-						),
-					}),
-					PublicKey: lo.ToPtr(mustSerializeBase64Value(t, &jwa.JWK{
-						JWKCommon: jwa.JWKCommon{
-							KTY:    "test-kty",
-							Use:    "test-use",
-							KeyOps: []jwa.KeyOp{"test-key-ops"},
-							Alg:    "test-alg",
-							KID:    "00000000-0000-0000-0000-000000000001",
-						},
-						Payload: []byte(`{"value":"public-key-1"}`),
-					})),
-				},
-
-				Private: true,
-			},
-
-			expect: &core.Jwk{
-				JWKCommon: jwa.JWKCommon{
-					KTY:    "test-kty",
-					Use:    "test-use",
-					KeyOps: []jwa.KeyOp{"test-key-ops"},
-					Alg:    "test-alg",
-					KID:    "00000000-0000-0000-0000-000000000001",
-				},
-				Payload: []byte(`{"value":"private-key-1"}`),
-			},
-		},
+	contextCases := []struct {
+		name      string
+		masterKey bool
+	}{
+		{name: "WithoutMasterKey"},
+		{name: "WithMasterKey", masterKey: true},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			for _, contextCase := range []struct {
-				name      string
-				masterKey bool
-			}{
-				{name: "WithoutMasterKey"},
-				{name: "WithMasterKey", masterKey: true},
-			} {
+			for _, contextCase := range contextCases {
 				t.Run(contextCase.name, func(t *testing.T) {
 					t.Parallel()
 
 					testCtx := t.Context()
 					if contextCase.masterKey {
-						testCtx = lo.Must(lib.NewMasterKeyContext(testCtx, testutils.TestMasterKey))
+						testCtx = lo.Must(lib.NewMasterKeyContext(testCtx, libtest.MasterKey))
 					}
 
 					service := core.NewJwkExtract()

@@ -1,5 +1,5 @@
-// Command migrations applies pending SQL migrations to the JSON-keys database.
-// Run this once on first deploy and after each schema change.
+// Command migrations applies pending SQL migrations to the JSON Keys database. Run it on first
+// deploy and after each schema change.
 package main
 
 import (
@@ -23,13 +23,13 @@ func main() {
 
 	start := time.Now()
 
-	// Inventory the .up.sql files for the start-of-run log; the bun migrator exposes no count,
-	// so the embedded FS is the closest stable source.
-	discovered := listUpMigrations(migrations.Migrations)
+	// The bun migrator exposes no count, so the start-of-run log lists the embedded files. The
+	// timestamp prefix sorts them in order.
+	discovered := lo.Must(fs.Glob(migrations.Migrations, "*.up.sql"))
 	log.Printf("discovered %d migration(s) in models/migrations", len(discovered))
 
 	for _, name := range discovered {
-		log.Printf("  · %s", name)
+		log.Printf("  · %s", strings.TrimSuffix(name, ".up.sql"))
 	}
 
 	log.Println("connecting to database...")
@@ -41,31 +41,4 @@ func main() {
 
 	log.Printf("done — %d migration(s) examined, completed in %s",
 		len(discovered), time.Since(start).Round(time.Millisecond))
-}
-
-// listUpMigrations returns the bare name of every *.up.sql in the migrations FS, in lexical
-// order — the timestamp prefix makes that chronological. It feeds the inventory log; bun's
-// migrator decides which migrations actually run.
-func listUpMigrations(f fs.FS) []string {
-	var out []string
-
-	_ = fs.WalkDir(f, ".", func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			// Abort the walk; the caller discards the error, as the inventory
-			// is best-effort logging.
-			return err
-		}
-
-		if d.IsDir() {
-			return nil
-		}
-
-		if strings.HasSuffix(path, ".up.sql") {
-			out = append(out, strings.TrimSuffix(path, ".up.sql"))
-		}
-
-		return nil
-	})
-
-	return out
 }

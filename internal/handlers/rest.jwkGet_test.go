@@ -33,7 +33,7 @@ func TestRestJwkGet(t *testing.T) {
 	testCases := []struct {
 		name string
 
-		request *http.Request
+		id string
 
 		serviceMock *serviceMock
 
@@ -43,12 +43,7 @@ func TestRestJwkGet(t *testing.T) {
 		{
 			name: "Success",
 
-			request: httptest.NewRequestWithContext(
-				t.Context(),
-				http.MethodGet,
-				"/v2/jwk?id=00000000-0000-0000-0000-000000000001",
-				nil,
-			),
+			id: "00000000-0000-0000-0000-000000000001",
 
 			serviceMock: &serviceMock{
 				resp: &core.Jwk{
@@ -76,24 +71,14 @@ func TestRestJwkGet(t *testing.T) {
 		{
 			name: "Error/InvalidID",
 
-			request: httptest.NewRequestWithContext(
-				t.Context(),
-				http.MethodGet,
-				"/v2/jwk?id=not-a-uuid",
-				nil,
-			),
+			id: "not-a-uuid",
 
 			expectStatus: http.StatusBadRequest,
 		},
 		{
 			name: "Error/NotFound",
 
-			request: httptest.NewRequestWithContext(
-				t.Context(),
-				http.MethodGet,
-				"/v2/jwk?id=00000000-0000-0000-0000-000000000001",
-				nil,
-			),
+			id: "00000000-0000-0000-0000-000000000001",
 
 			serviceMock: &serviceMock{
 				err: core.ErrJwkNotFound,
@@ -104,12 +89,7 @@ func TestRestJwkGet(t *testing.T) {
 		{
 			name: "Error/Internal",
 
-			request: httptest.NewRequestWithContext(
-				t.Context(),
-				http.MethodGet,
-				"/v2/jwk?id=00000000-0000-0000-0000-000000000001",
-				nil,
-			),
+			id: "00000000-0000-0000-0000-000000000001",
 
 			serviceMock: &serviceMock{
 				err: errFoo,
@@ -127,16 +107,14 @@ func TestRestJwkGet(t *testing.T) {
 
 			if testCase.serviceMock != nil {
 				service.EXPECT().
-					Exec(mock.Anything, &core.JwkSelectRequest{
-						ID: uuid.MustParse(testCase.request.URL.Query().Get("id")),
-					}).
+					Exec(mock.Anything, &core.JwkSelectRequest{ID: uuid.MustParse(testCase.id)}).
 					Return(testCase.serviceMock.resp, testCase.serviceMock.err)
 			}
 
 			handler := handlers.NewRestJwkGet(service, config.LoggerDev)
 			w := httptest.NewRecorder()
 
-			handler.ServeHTTP(w, testCase.request)
+			handler.ServeHTTP(w, httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/v2/jwk?id="+testCase.id, nil))
 
 			res := w.Result()
 

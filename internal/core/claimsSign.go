@@ -53,12 +53,8 @@ func (service *ClaimsSign) Exec(ctx context.Context, request *ClaimsSignRequest)
 	// Attach the standard JWT claim envelope from the usage config; these claims are
 	// checked during verification alongside the token signature.
 	claims, err := jwt.NewBasicClaims(request.Claims, jwt.ClaimsProducerConfig{
-		TargetConfig: jwt.TargetConfig{
-			Issuer:   keyConfig.Token.Issuer,
-			Audience: jwa.Audience{keyConfig.Token.Audience},
-			Subject:  keyConfig.Token.Subject,
-		},
-		TTL: keyConfig.Token.TTL,
+		TargetConfig: tokenTarget(keyConfig.Token),
+		TTL:          keyConfig.Token.TTL,
 	})
 	if err != nil {
 		return "", otel.ReportError(span, fmt.Errorf("create claims: %w", err))
@@ -71,9 +67,8 @@ func (service *ClaimsSign) Exec(ctx context.Context, request *ClaimsSignRequest)
 
 	producer := jwt.NewProducer(jwt.ProducerConfig{Plugins: producerPlugins})
 
-	// A caller claim that collides with the envelope above is rejected at
-	// encoding time, inside Issue. The request is malformed, so it is classified;
-	// the wrapped error names the members.
+	// A caller claim that collides with the envelope fails inside Issue, at encoding time. The
+	// wrapped error names the colliding members.
 	token, err := producer.Issue(ctx, claims, nil)
 	if errors.Is(err, jwa.ErrReservedMember) {
 		return "", otel.ReportError(span, fmt.Errorf("%w: %w", ErrReservedClaim, err))

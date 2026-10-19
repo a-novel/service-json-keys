@@ -15,9 +15,8 @@ import (
 
 var errGenerate = errors.New("generate")
 
-// recordingGenerator records the usages it was asked to rotate, and fails once it
-// has been called failAfter times. Failing partway is the only case that
-// distinguishes a real unit of work from writes that merely look grouped.
+// recordingGenerator records the usages it was asked to rotate, and fails once it has been
+// called failAfter times.
 type recordingGenerator struct {
 	failAfter int
 	usages    []string
@@ -35,57 +34,64 @@ func (generator *recordingGenerator) Exec(
 	return &core.Jwk{}, nil
 }
 
-func twoUsages() map[string]*config.Jwk {
-	return map[string]*config.Jwk{"auth": {}, "refresh": {}}
-}
-
-func TestJwkRotateAllProcessesEveryUsage(t *testing.T) {
-	t.Parallel()
-
-	generator := &recordingGenerator{}
-	transactor := transactiontest.NewTransactor()
-
-	service := core.NewJwkRotateAll(generator, transactor, twoUsages())
-
-	resp, err := service.Exec(t.Context(), &core.JwkRotateAllRequest{})
-	require.NoError(t, err)
-	require.Equal(t, 2, resp.Processed)
-	require.ElementsMatch(t, []string{"auth", "refresh"}, generator.usages)
-	require.Equal(t, 1, transactor.Calls(), "every usage belongs to one unit of work, not one each")
-}
-
-// TestRotateKeysReportsNothingProcessedOnFailure covers the count's contract. A partial
-// number describes work that has been rolled back, so the count reports zero.
-func TestJwkRotateAllReportsNothingProcessedOnFailure(t *testing.T) {
-	t.Parallel()
-
-	generator := &recordingGenerator{failAfter: 1}
-
-	service := core.NewJwkRotateAll(generator, transactiontest.NewTransactor(), twoUsages())
-
-	resp, err := service.Exec(t.Context(), &core.JwkRotateAllRequest{})
-	require.ErrorIs(t, err, errGenerate)
-	require.Nil(t, resp)
-}
-
-// TestRotateKeysIsOneUnitOfWork is the regression test for the defect this
-// replaced: the rotation opened a transaction and then handed each generation the
-// surrounding context, so every key committed on its own and a failure on a later
-// usage left the earlier ones rotated.
-//
-// A transactor that refuses to open reproduces that boundary exactly. If the
-// generations are inside the scope, none of them runs.
-func TestJwkRotateAllIsOneUnitOfWork(t *testing.T) {
+func TestJwkRotateAll(t *testing.T) {
 	t.Parallel()
 
 	errNoTransaction := errors.New("transaction unavailable")
 
-	generator := &recordingGenerator{}
+	testCases := []struct {
+		name string
 
-	service := core.NewJwkRotateAll(generator, transactiontest.NewFailingTransactor(errNoTransaction), twoUsages())
+		failAfter  int
+		transactor *transactiontest.Transactor
 
-	resp, err := service.Exec(t.Context(), &core.JwkRotateAllRequest{})
-	require.ErrorIs(t, err, errNoTransaction)
-	require.Nil(t, resp)
-	require.Empty(t, generator.usages, "a generation ran outside the unit of work")
+		expect       *core.JwkRotateAllResponse
+		expectErr    error
+		expectUsages []string
+	}{
+		{
+			name: "Success",
+
+			transactor: transactiontest.NewTransactor(),
+
+			expect:       &core.JwkRotateAllResponse{Processed: 2},
+			expectUsages: []string{"auth", "refresh"},
+		},
+		{
+			// The second usage fails after the first succeeded. The count reports nothing, because
+			// the transaction rolls the first one back.
+			name: "Error/Generate",
+
+			failAfter:  2,
+			transactor: transactiontest.NewTransactor(),
+
+			expectErr:    errGenerate,
+			expectUsages: []string{"auth", "refresh"},
+		},
+		{
+			// Every generation runs inside the unit of work, so none runs when it cannot open.
+			name: "Error/Transaction",
+
+			transactor: transactiontest.NewFailingTransactor(errNoTransaction),
+
+			expectErr: errNoTransaction,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			generator := &recordingGenerator{failAfter: testCase.failAfter}
+			keys := map[string]*config.Jwk{"auth": {}, "refresh": {}}
+
+			service := core.NewJwkRotateAll(generator, testCase.transactor, keys)
+
+			resp, err := service.Exec(t.Context(), &core.JwkRotateAllRequest{})
+			require.ErrorIs(t, err, testCase.expectErr)
+			require.Equal(t, testCase.expect, resp)
+			require.ElementsMatch(t, testCase.expectUsages, generator.usages)
+			require.Equal(t, 1, testCase.transactor.Calls(), "every usage belongs to one unit of work")
+		})
+	}
 }

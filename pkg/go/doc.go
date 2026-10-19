@@ -1,12 +1,11 @@
-// Package servicejsonkeys provides a gRPC client for the JSON-keys service.
+// Package servicejsonkeys provides a gRPC client for the JSON Keys service.
 //
 // # How the service works
 //
-// The JSON-keys service is a centralized key manager. Services register named usages; each
-// usage has its own signing algorithm, key rotation schedule, and token parameters. The
-// service holds all private keys and performs signing on behalf of callers — private key
-// material never leaves the server. Any service with access to the public keys can verify
-// tokens locally.
+// The JSON Keys service is a centralized key manager. Services register named usages, each with
+// its own signing algorithm, key rotation schedule and token parameters. The service holds all
+// private keys and signs on behalf of callers, so private key material never leaves the server.
+// Any service with access to the public keys can verify tokens locally.
 //
 // # Tokens and claims
 //
@@ -17,16 +16,17 @@
 //
 // # Using this package
 //
-// [NewClient] dials the service and sets up per-usage public-key sources. Keys are fetched
-// lazily on first use and cached, so repeated token verification requires no network call
-// per token:
+// [NewClient] dials the service, and [NewClaimsVerifier] builds per-usage public-key sources
+// on top of it. A source fetches its keys on first use and caches them, so token verification
+// needs no network call per token:
 //
 //	c, err := servicejsonkeys.NewClient("host:port", grpc.WithTransportCredentials(...))
 //	if err != nil { ... }
 //	defer c.Close()
 //
 //	// Verify a token locally; MyClaims must match the claims type used when signing for KeyUsageAuth.
-//	verifier := servicejsonkeys.NewClaimsVerifier[MyClaims](c)
+//	verifier, err := servicejsonkeys.NewClaimsVerifier[MyClaims](c)
+//	if err != nil { ... }
 //	claims, err := verifier.VerifyClaims(ctx, &servicejsonkeys.VerifyClaimsRequest{
 //	    Usage:       servicejsonkeys.KeyUsageAuth,
 //	    AccessToken: tokenString, // compact JWT string

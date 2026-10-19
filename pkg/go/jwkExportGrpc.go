@@ -10,8 +10,8 @@ import (
 	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/internal/handlers/protogen/anovel/jsonkeys/v2"
 )
 
-// A jwkExportGrpc adapts a [BaseClient] to the key-source fetch interface used when initializing
-// a [Client], bridging the gRPC JwkList call into the key-source mechanism.
+// A jwkExportGrpc adapts a [BaseClient] to the key source [NewClaimsVerifier] builds, fetching
+// the public keys of a usage through the JwkList RPC.
 type jwkExportGrpc struct {
 	client BaseClient
 }
@@ -26,20 +26,19 @@ func (api *jwkExportGrpc) SearchKeys(ctx context.Context, usage string) ([]*jwa.
 		return nil, err
 	}
 
-	keys := lo.Map(res.GetKeys(), func(item *jsonkeysv2.Jwk, index int) *jwa.JWK {
-		return &jwa.JWK{
-			JWKCommon: jwa.JWKCommon{
-				KTY: jwa.KTY(item.GetKty()),
-				Use: jwa.Use(item.GetUse()),
-				KeyOps: lo.Map(item.GetKeyOps(), func(item string, index int) jwa.KeyOp {
-					return jwa.KeyOp(item)
-				}),
-				Alg: jwa.Alg(item.GetAlg()),
-				KID: item.GetKid(),
-			},
-			Payload: item.GetPayload(),
-		}
-	})
+	return lo.Map(res.GetKeys(), func(key *jsonkeysv2.Jwk, _ int) *jwa.JWK { return jwkFromProto(key) }), nil
+}
 
-	return keys, nil
+// jwkFromProto converts a protobuf key into its jwt form.
+func jwkFromProto(key *jsonkeysv2.Jwk) *jwa.JWK {
+	return &jwa.JWK{
+		JWKCommon: jwa.JWKCommon{
+			KTY:    jwa.KTY(key.GetKty()),
+			Use:    jwa.Use(key.GetUse()),
+			KeyOps: lo.Map(key.GetKeyOps(), func(op string, _ int) jwa.KeyOp { return jwa.KeyOp(op) }),
+			Alg:    jwa.Alg(key.GetAlg()),
+			KID:    key.GetKid(),
+		},
+		Payload: key.GetPayload(),
+	}
 }

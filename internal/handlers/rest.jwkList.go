@@ -32,9 +32,7 @@ func (handler *RestJwkList) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx, span := otel.Tracer().Start(r.Context(), "rest.JwkList")
 	defer span.End()
 
-	usage := r.URL.Query().Get("usage")
-
-	jwks, err := handler.service.Exec(ctx, &core.JwkSearchRequest{Usage: usage})
+	jwks, err := handler.service.Exec(ctx, &core.JwkSearchRequest{Usage: r.URL.Query().Get("usage")})
 	if err != nil {
 		httpf.HandleError(ctx, handler.logger, w, span, httpf.ErrMap{}, err)
 

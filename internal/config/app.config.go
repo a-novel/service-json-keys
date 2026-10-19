@@ -14,8 +14,8 @@ import (
 type Main struct {
 	// Name is the application name, as it appears in logs and tracing.
 	Name string `json:"name" yaml:"name"`
-	// MasterKey is a secure, 32-byte random secret used to encrypt private JSON Web Keys
-	// in the database.
+	// MasterKey is the hex-encoded 32-byte secret that encrypts private JSON Web Keys in the
+	// database.
 	MasterKey string `json:"masterKey" yaml:"masterKey"`
 	// DowntimeStart is when a planned downtime starts; nil when none is planned. From then until
 	// it is removed, the service refuses work and leaves its database alone.

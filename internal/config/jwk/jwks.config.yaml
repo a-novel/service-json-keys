@@ -1,7 +1,7 @@
-# Default JWK configuration for all registered key usages.
-# Loaded at startup by both the gRPC server and the rotate-keys job.
-# Each top-level key is a usage name; its value configures the signing algorithm,
-# key lifetime, and the JWT claims applied to every token signed under that usage.
+# Default JWK configuration for all registered key usages. The gRPC server, the
+# rotate-keys job and the Go client embed it.
+# Each top-level key is a usage name. Its value configures the signing algorithm,
+# the key lifetime and the JWT claims of every token signed under that usage.
 
 # Short-lived access tokens issued by the authentication service.
 auth:

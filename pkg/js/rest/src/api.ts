@@ -15,9 +15,9 @@ export type HealthDependency = {
 };
 
 /**
- * HTTP client for the JSON-keys REST API.
+ * HTTP client for the JSON Keys REST API.
  *
- * The REST API is the public read-only interface of the JSON-keys service. It exposes
+ * The REST API is the public read-only interface of the JSON Keys service. It exposes
  * JSON Web Key endpoints so that any client can fetch public keys for local token
  * verification. Signing and private key operations live on the private gRPC API.
  */

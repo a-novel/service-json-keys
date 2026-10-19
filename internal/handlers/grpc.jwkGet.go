@@ -37,14 +37,12 @@ func (handler *GrpcJwkGet) JwkGet(
 	ctx, span := otel.Tracer().Start(ctx, "grpc.JwkGet")
 	defer span.End()
 
-	keyId, err := uuid.Parse(request.GetId())
+	keyID, err := uuid.Parse(request.GetId())
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid key id")
 	}
 
-	jwk, err := handler.service.Exec(ctx, &core.JwkSelectRequest{
-		ID: keyId,
-	})
+	jwk, err := handler.service.Exec(ctx, &core.JwkSelectRequest{ID: keyID})
 	if errors.Is(err, core.ErrJwkNotFound) {
 		return nil, status.Error(codes.NotFound, "jwk not found")
 	}
@@ -55,14 +53,17 @@ func (handler *GrpcJwkGet) JwkGet(
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	return &jsonkeysv2.JwkGetResponse{
-		Jwk: &jsonkeysv2.Jwk{
-			Kty:     jwk.KTY.String(),
-			Use:     jwk.Use.String(),
-			KeyOps:  jwk.KeyOps.Strings(),
-			Alg:     jwk.Alg.String(),
-			Kid:     jwk.KID,
-			Payload: jwk.Payload,
-		},
-	}, nil
+	return &jsonkeysv2.JwkGetResponse{Jwk: jwkToProto(jwk)}, nil
+}
+
+// jwkToProto converts a core key into its protobuf form.
+func jwkToProto(jwk *core.Jwk) *jsonkeysv2.Jwk {
+	return &jsonkeysv2.Jwk{
+		Kty:     jwk.KTY.String(),
+		Use:     jwk.Use.String(),
+		KeyOps:  jwk.KeyOps.Strings(),
+		Alg:     jwk.Alg.String(),
+		Kid:     jwk.KID,
+		Payload: jwk.Payload,
+	}
 }

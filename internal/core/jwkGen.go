@@ -46,8 +46,7 @@ type JwkGenRequest struct {
 // A JwkGen generates new keys for a configured usage.
 //
 // Generation is conditional: it reads the usage's latest key and generates only once the
-// rotation window has elapsed. Within the window it returns that key and records the skip
-// on the trace span.
+// rotation window has elapsed. Within the window it returns that key.
 type JwkGen struct {
 	daoSearch      JwkGenDaoSearch
 	daoInsert      JwkGenDaoInsert
@@ -113,8 +112,6 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 			return nil, otel.ReportError(span, fmt.Errorf("encrypt private key: %w", err))
 		}
 
-		privateKeyEncoded := base64.RawURLEncoding.EncodeToString(privateKeyEncrypted)
-
 		// Both private and public keys share the same KID.
 		kid, err := uuid.Parse(generatedKey.PrivateKID)
 		if err != nil {
@@ -136,7 +133,7 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 
 		latestKey, err = service.daoInsert.Exec(ctx, &dao.JwkInsertRequest{
 			ID:         kid,
-			PrivateKey: privateKeyEncoded,
+			PrivateKey: base64.RawURLEncoding.EncodeToString(privateKeyEncrypted),
 			PublicKey:  publicKeyEncoded,
 			Usage:      request.Usage,
 			Now:        now,

@@ -50,7 +50,6 @@ func (handler *RestHealth) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer span.End()
 
 	statusCode := http.StatusOK
-	statusResp := map[string]any{}
 
 	err := handler.reportPostgres(ctx)
 	if err != nil {
@@ -58,9 +57,9 @@ func (handler *RestHealth) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		statusCode = http.StatusServiceUnavailable
 	}
 
-	statusResp["client:postgres"] = NewRestHealthStatus(err)
-
-	httpf.SendJSONStatus(ctx, w, span, statusCode, statusResp)
+	httpf.SendJSONStatus(ctx, w, span, statusCode, map[string]any{
+		"client:postgres": NewRestHealthStatus(err),
+	})
 }
 
 func (handler *RestHealth) reportPostgres(ctx context.Context) error {

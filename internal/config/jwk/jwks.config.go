@@ -23,9 +23,9 @@ type JwkKey struct {
 	// The newest cached key keeps signing through an outage. Rotation + Cache + StaleIfError should stay
 	// below the TTL, which keeps that key unexpired once fetching recovers.
 	StaleIfError time.Duration `json:"staleIfError" yaml:"staleIfError"`
-	// UnknownKeyIDInterval bounds how often a verifier may refetch when it meets a key id its cache
-	// does not hold — the shape a just-rotated key takes before Cache expires. It caps a caller
-	// sending unknown ids to one fetch per interval. Zero uses the jwt default.
+	// UnknownKeyIDInterval bounds how often a verifier refetches when it meets a key id its cache
+	// does not hold, as a just-rotated key does before Cache expires. A caller sending unknown ids
+	// gets one fetch per interval. Zero uses the jwt default.
 	UnknownKeyIDInterval time.Duration `json:"unknownKeyIDInterval" yaml:"unknownKeyIDInterval"`
 }
 

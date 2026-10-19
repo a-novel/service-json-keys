@@ -1,8 +1,8 @@
-// Command rest runs the public REST server for the JSON-keys service. It serves read-only
-// JSON Web Key endpoints, unauthenticated, so any client can fetch public keys for local
-// token verification. Public-key retrieval requires database access but no master key.
+// Command rest runs the public REST server of the JSON Keys service. It serves the public keys,
+// unauthenticated, so any client can verify tokens locally. It reads the database but never
+// the master key.
 //
-// For the private authenticated gRPC API (including token signing), see cmd/grpc.
+// cmd/grpc serves the private API, token signing included.
 package main
 
 import (
@@ -33,10 +33,8 @@ import (
 func main() {
 	cfg := config.AppPresetDefault
 
-	processCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-
-	ctx := processCtx
 
 	otel.SetAppName(cfg.App.Name)
 
@@ -98,13 +96,7 @@ func main() {
 
 	log.Println("Starting REST server on :" + strconv.Itoa(cfg.Rest.Port))
 
-	err := httpf.ListenAndServe(ctx, cfg.Rest, router)
-
-	stop()
-
-	if err != nil {
-		panic(err)
-	}
+	lo.Must0(httpf.ListenAndServe(ctx, cfg.Rest, router))
 }
 
 func closeDatabase(database io.Closer) {

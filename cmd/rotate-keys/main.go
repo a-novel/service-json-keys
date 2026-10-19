@@ -1,8 +1,7 @@
-// Command rotate-keys rotates active JSON Web Keys: for each configured usage, it generates a
-// new key once the rotation interval has elapsed. Consumers pick the key up on their next
-// fetch, since active_keys is a plain view with no snapshot to refresh.
+// Command rotate-keys generates a new JSON Web Key for each configured usage whose rotation
+// interval has elapsed. Consumers pick the new key up on their next fetch.
 //
-// Designed to run as a periodic job (e.g., a Kubernetes CronJob).
+// It runs as a scheduled job, such as a Kubernetes CronJob.
 package main
 
 import (

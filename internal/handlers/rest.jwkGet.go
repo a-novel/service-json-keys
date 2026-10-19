@@ -34,9 +34,7 @@ func (handler *RestJwkGet) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx, span := otel.Tracer().Start(r.Context(), "rest.JwkGet")
 	defer span.End()
 
-	rawID := r.URL.Query().Get("id")
-
-	keyID, err := uuid.Parse(rawID)
+	keyID, err := uuid.Parse(r.URL.Query().Get("id"))
 	if err != nil {
 		httpf.HandleError(ctx, handler.logger, w, span, httpf.ErrMap{nil: http.StatusBadRequest}, err)
 
