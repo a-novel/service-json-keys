@@ -36,10 +36,8 @@ import (
 func main() {
 	cfg := config.AppPresetDefault
 
-	processCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-
-	ctx := processCtx
 
 	otel.SetAppName(cfg.App.Name)
 
@@ -124,13 +122,7 @@ func main() {
 
 	log.Println("Starting gRPC server on :" + strconv.Itoa(cfg.Grpc.Port))
 
-	err := grpcf.ListenAndServe(ctx, cfg.Grpc, server)
-
-	stop()
-
-	if err != nil {
-		panic(err)
-	}
+	lo.Must0(grpcf.ListenAndServe(ctx, cfg.Grpc, server))
 }
 
 func closeDatabase(database io.Closer) {

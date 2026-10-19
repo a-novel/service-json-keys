@@ -33,10 +33,8 @@ import (
 func main() {
 	cfg := config.AppPresetDefault
 
-	processCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-
-	ctx := processCtx
 
 	otel.SetAppName(cfg.App.Name)
 
@@ -98,13 +96,7 @@ func main() {
 
 	log.Println("Starting REST server on :" + strconv.Itoa(cfg.Rest.Port))
 
-	err := httpf.ListenAndServe(ctx, cfg.Rest, router)
-
-	stop()
-
-	if err != nil {
-		panic(err)
-	}
+	lo.Must0(httpf.ListenAndServe(ctx, cfg.Rest, router))
 }
 
 func closeDatabase(database io.Closer) {
