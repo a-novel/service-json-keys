@@ -67,64 +67,31 @@ func JwkGeneratorEd25519(alg jwa.Alg) JwkGenAny {
 
 		priv.Alg, pub.Alg = alg, alg
 
-		return &JwkGeneratorResult{
-			PrivateKey: priv,
-			PublicKey:  pub,
-			PrivateKID: priv.KID,
-			PublicKID:  pub.KID,
-		}, nil
+		return newJwkGeneratorResult(priv, pub, nil)
 	}
 }
 
 // JwkGeneratorEs returns a generator for the given ECDSA algorithm.
 func JwkGeneratorEs(alg jwa.Alg) JwkGenAny {
 	return func() (*JwkGeneratorResult, error) {
-		var (
-			preset jwk.ECDSAPreset
-			ok     bool
-		)
-
-		if preset, ok = jwkconfig.JwkPresetsEcdsa[alg]; !ok {
+		preset, ok := jwkconfig.JwkPresetsEcdsa[alg]
+		if !ok {
 			return nil, fmt.Errorf("%w (ecdsa): %s", ErrJwkPresetUnknown, alg)
 		}
 
-		priv, pub, err := jwk.GenerateECDSA(preset)
-		if err != nil {
-			return nil, err
-		}
-
-		return &JwkGeneratorResult{
-			PrivateKey: priv,
-			PublicKey:  pub,
-			PrivateKID: priv.KID,
-			PublicKID:  pub.KID,
-		}, nil
+		return newJwkGeneratorResult(jwk.GenerateECDSA(preset))
 	}
 }
 
 // JwkGeneratorRsa returns a generator for the given RSA algorithm (covers both PKCS#1 and PSS).
 func JwkGeneratorRsa(alg jwa.Alg) JwkGenAny {
 	return func() (*JwkGeneratorResult, error) {
-		var (
-			preset jwk.RSAPreset
-			ok     bool
-		)
-
-		if preset, ok = jwkconfig.JwkPresetsRsa[alg]; !ok {
+		preset, ok := jwkconfig.JwkPresetsRsa[alg]
+		if !ok {
 			return nil, fmt.Errorf("%w (rsa): %s", ErrJwkPresetUnknown, alg)
 		}
 
-		priv, pub, err := jwk.GenerateRSA(preset)
-		if err != nil {
-			return nil, err
-		}
-
-		return &JwkGeneratorResult{
-			PrivateKey: priv,
-			PublicKey:  pub,
-			PrivateKID: priv.KID,
-			PublicKID:  pub.KID,
-		}, nil
+		return newJwkGeneratorResult(jwk.GenerateRSA(preset))
 	}
 }
 
@@ -136,18 +103,25 @@ func JwkGeneratorMLDSA(alg jwa.Alg) JwkGenAny {
 			return nil, fmt.Errorf("%w (ml-dsa): %s", ErrJwkPresetUnknown, alg)
 		}
 
-		priv, pub, err := jwk.GenerateMLDSA(preset)
-		if err != nil {
-			return nil, err
-		}
-
-		return &JwkGeneratorResult{
-			PrivateKey: priv,
-			PublicKey:  pub,
-			PrivateKID: priv.KID,
-			PublicKID:  pub.KID,
-		}, nil
+		return newJwkGeneratorResult(jwk.GenerateMLDSA(preset))
 	}
+}
+
+// newJwkGeneratorResult wraps the output of a jwt key-pair generator, so a generator can return
+// its call directly.
+func newJwkGeneratorResult[Private, Public any](
+	priv *jwk.Key[Private], pub *jwk.Key[Public], err error,
+) (*JwkGeneratorResult, error) {
+	if err != nil {
+		return nil, err
+	}
+
+	return &JwkGeneratorResult{
+		PrivateKey: priv,
+		PublicKey:  pub,
+		PrivateKID: priv.KID,
+		PublicKID:  pub.KID,
+	}, nil
 }
 
 // JwkPrivateSource provides the private JWKs used by [NewJwkProducers].

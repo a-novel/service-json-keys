@@ -69,12 +69,13 @@ func (service *JwkExtract) Exec(ctx context.Context, request *JwkExtractRequest)
 
 	var deserialized *Jwk
 
-	err = lo.TernaryF(
-		request.Private,
-		// Private key material is encrypted at rest and must be decrypted before use.
-		func() error { return lib.DecryptMasterKey(ctx, decoded, &deserialized) },
-		func() error { return json.Unmarshal(decoded, &deserialized) },
-	)
+	if request.Private {
+		// Private key material is encrypted at rest.
+		err = lib.DecryptMasterKey(ctx, decoded, &deserialized)
+	} else {
+		err = json.Unmarshal(decoded, &deserialized)
+	}
+
 	if err != nil {
 		return nil, otel.ReportError(span, fmt.Errorf("deserialize request.Jwk: %w", err))
 	}

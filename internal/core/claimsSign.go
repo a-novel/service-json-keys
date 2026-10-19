@@ -53,12 +53,8 @@ func (service *ClaimsSign) Exec(ctx context.Context, request *ClaimsSignRequest)
 	// Attach the standard JWT claim envelope from the usage config; these claims are
 	// checked during verification alongside the token signature.
 	claims, err := jwt.NewBasicClaims(request.Claims, jwt.ClaimsProducerConfig{
-		TargetConfig: jwt.TargetConfig{
-			Issuer:   keyConfig.Token.Issuer,
-			Audience: jwa.Audience{keyConfig.Token.Audience},
-			Subject:  keyConfig.Token.Subject,
-		},
-		TTL: keyConfig.Token.TTL,
+		TargetConfig: tokenTarget(keyConfig.Token),
+		TTL:          keyConfig.Token.TTL,
 	})
 	if err != nil {
 		return "", otel.ReportError(span, fmt.Errorf("create claims: %w", err))

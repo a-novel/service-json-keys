@@ -8,7 +8,6 @@ import (
 
 	"github.com/a-novel-kit/golib/otel"
 	"github.com/a-novel-kit/jwt/v2"
-	"github.com/a-novel-kit/jwt/v2/jwa"
 	"github.com/a-novel-kit/jwt/v2/jwp"
 
 	jwkconfig "github.com/a-novel/service-json-keys/v2/internal/config/jwk"
@@ -52,15 +51,9 @@ func (service *ClaimsVerify[Out]) Exec(ctx context.Context, request *ClaimsVerif
 		return nil, otel.ReportError(span, fmt.Errorf("%w: %s", ErrConfigNotFound, request.Usage))
 	}
 
-	var claims Out
-
 	// Validate the claims against the usage's configured target, and its expiry unless waived.
 	checks := []jwp.ClaimsCheck{
-		jwp.NewClaimsCheckTarget(jwt.TargetConfig{
-			Issuer:   keyConfig.Token.Issuer,
-			Audience: jwa.Audience{keyConfig.Token.Audience},
-			Subject:  keyConfig.Token.Subject,
-		}),
+		jwp.NewClaimsCheckTarget(tokenTarget(keyConfig.Token)),
 	}
 	if !request.IgnoreExpired {
 		checks = append(checks, jwp.NewClaimsCheckTimestamp(keyConfig.Token.Leeway, true))
@@ -77,11 +70,12 @@ func (service *ClaimsVerify[Out]) Exec(ctx context.Context, request *ClaimsVerif
 		)
 	}
 
-	recipient := jwt.NewRecipient(
-		jwt.RecipientConfig{
-			Plugins:      recipientPlugins,
-			Deserializer: deserializer.Unmarshal,
-		})
+	recipient := jwt.NewRecipient(jwt.RecipientConfig{
+		Plugins:      recipientPlugins,
+		Deserializer: deserializer.Unmarshal,
+	})
+
+	var claims Out
 
 	err := recipient.Consume(ctx, request.Token, &claims)
 	if err != nil {

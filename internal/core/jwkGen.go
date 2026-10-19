@@ -113,8 +113,6 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 			return nil, otel.ReportError(span, fmt.Errorf("encrypt private key: %w", err))
 		}
 
-		privateKeyEncoded := base64.RawURLEncoding.EncodeToString(privateKeyEncrypted)
-
 		// Both private and public keys share the same KID.
 		kid, err := uuid.Parse(generatedKey.PrivateKID)
 		if err != nil {
@@ -136,7 +134,7 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 
 		latestKey, err = service.daoInsert.Exec(ctx, &dao.JwkInsertRequest{
 			ID:         kid,
-			PrivateKey: privateKeyEncoded,
+			PrivateKey: base64.RawURLEncoding.EncodeToString(privateKeyEncrypted),
 			PublicKey:  publicKeyEncoded,
 			Usage:      request.Usage,
 			Now:        now,

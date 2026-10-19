@@ -3,6 +3,10 @@ package core
 import (
 	"errors"
 
+	"github.com/a-novel-kit/jwt/v2"
+	"github.com/a-novel-kit/jwt/v2/jwa"
+
+	jwkconfig "github.com/a-novel/service-json-keys/v2/internal/config/jwk"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 )
 
@@ -17,3 +21,13 @@ var ErrJwkNotFound = dao.ErrJwkSelectNotFound
 // config, so a caller setting one is asking for a token that contradicts the
 // terms it was signed under. It reports a malformed request, not a fault.
 var ErrReservedClaim = errors.New("claims may not set a registered JWT parameter")
+
+// tokenTarget returns the issuer, audience and subject a usage stamps on its tokens. Signing and
+// verification both read it, so a token verifies against the target it was signed with.
+func tokenTarget(token jwkconfig.JwkToken) jwt.TargetConfig {
+	return jwt.TargetConfig{
+		Issuer:   token.Issuer,
+		Audience: jwa.Audience{token.Audience},
+		Subject:  token.Subject,
+	}
+}
