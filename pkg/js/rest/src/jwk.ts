@@ -74,7 +74,6 @@ export async function jwkList(api: JsonKeysApi, usage?: string): Promise<Jwk[]> 
  * Throws with HTTP 404 if no key with the given `id` exists.
  */
 export async function jwkGet(api: JsonKeysApi, id: string): Promise<Jwk> {
-  const params = new URLSearchParams();
-  params.set("id", id);
+  const params = new URLSearchParams({ id });
   return await api.fetch(`/v2/jwk?${params.toString()}`, JwkSchema, { method: "GET", headers: HTTP_HEADERS.JSON });
 }
