@@ -1,6 +1,6 @@
 # JSON Keys service
 
-Centralized signing-key manager for the A-Novel platform: it holds every private key, signs tokens over a private gRPC API, and serves the matching public keys over REST so callers verify locally.
+Holds the signing keys of A-Novel services, signs their tokens and serves the public keys that verify them.
 
 [![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/agorastoryverse)](https://twitter.com/agorastoryverse)
 [![Discord](https://img.shields.io/discord/1315240114691248138?logo=discord)](https://discord.gg/rp4Qr8cA)
@@ -18,16 +18,13 @@ Centralized signing-key manager for the A-Novel platform: it holds every private
 
 ## What it does
 
-Services register named **usages** (`auth`, `auth-refresh`, …), each with its own signing algorithm, rotation schedule, and claim parameters. JSON Keys holds every private key and signs on callers' behalf — key material never leaves the server. Consumers fetch the matching public keys once and verify tokens locally, with no per-token round-trip.
+Services register named **usages**, such as `auth` or `auth-refresh`. Each usage has its own signing algorithm, rotation schedule and token claims. JSON Keys holds every private key and signs on behalf of its callers, so key material never leaves the server. Consumers cache the public keys and verify tokens locally, with no call per token.
 
-Two APIs:
-
-- **Private gRPC API** — signing, key retrieval, status — for internal service-to-service traffic. Everything touching private keys lives here. The server has no application-layer auth; access control is external (network policy, ingress, service mesh).
-- **Public REST API** — public-key fetch, health — for anyone verifying tokens.
+Other services sign tokens and read keys through the private gRPC API. The gRPC server authenticates no caller, so network policy, an ingress or a service mesh decides who reaches it. The public REST API serves the public keys and a health check to anyone verifying tokens.
 
 ## Deploying
 
-The service runs as published OCI images plus a PostgreSQL database. Both servers are stateless, so each scales to as many replicas as you need behind a load balancer; all state lives in Postgres.
+The service runs as published OCI images plus a PostgreSQL database. All state lives in the database, so each server scales to any number of replicas behind a load balancer.
 
 > **OpenTofu modules are the planned canonical deployment path.** Until they land, deploy the images with any container orchestrator — the composition below is the reference for which images to run, how they wire together, and the environment they expect.
 
@@ -37,9 +34,9 @@ The service runs as published OCI images plus a PostgreSQL database. Both server
 | `service-json-keys/rest`            | Public key-fetch + health API.                                                   |
 | `service-json-keys/jobs/migrations` | One-shot schema migration job; runs to completion before the servers start.      |
 | `service-json-keys/jobs/rotatekeys` | Scheduled key-rotation job (see [CONTRIBUTING](./CONTRIBUTING.md#key-rotation)). |
-| `service-json-keys/database`        | Pre-tuned PostgreSQL image — or bring your own Postgres.                         |
+| `service-json-keys/database`        | Pre-tuned PostgreSQL image. Any PostgreSQL server works too.                     |
 
-Pin every image to the same release tag — see the [latest release](https://github.com/a-novel/service-json-keys/releases/latest). A production deployment runs `database`, then the migrations job to completion, then any number of `grpc` and/or `rest` replicas. Provide `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DATABASE` through the orchestrator; store the password as a secret.
+Pin every image to the same tag, the [latest release](https://github.com/a-novel/service-json-keys/releases/latest) for a new deployment. Start `database`, run the migrations job to completion, then start any number of `grpc` and `rest` replicas.
 
 ```yaml
 services:
@@ -62,7 +59,7 @@ services:
       retries: 10
 
   migrations-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/jobs/migrations:v2.3.2
+    image: ghcr.io/a-novel/service-json-keys/jobs/migrations:v2.10.4
     depends_on:
       postgres-json-keys: { condition: service_healthy }
     environment:
@@ -75,7 +72,7 @@ services:
     networks: [api]
 
   service-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/grpc:v2.10.4 # or .../rest:v2.3.2 for the public REST API
+    image: ghcr.io/a-novel/service-json-keys/grpc:v2.10.4 # or .../rest for the public REST API
     ports: ["${GRPC_PORT}:8080"] # the container always listens on 8080; map ${REST_PORT} for the rest image
     depends_on:
       postgres-json-keys: { condition: service_healthy }
@@ -97,45 +94,40 @@ volumes:
   json-keys-postgres-data:
 ```
 
-Run both servers by adding a second service that reuses the same database and migrations with the `rest` image. Omit `APP_MASTER_KEY` from that REST service. Key rotation is a separate scheduled job — run the `service-json-keys/jobs/rotatekeys` image on a timer (see [CONTRIBUTING](./CONTRIBUTING.md#key-rotation)); without it, active keys eventually age out and signing stops.
+To serve REST as well, add a service with the `rest` image, the same database and no `APP_MASTER_KEY`.
+
+Schedule the `jobs/rotatekeys` image, and run it once before the servers take traffic. Keys expire after their TTL and only this job replaces them, so signing stops without it.
 
 ### Database image
 
-The database image packages PostgreSQL and pgBackRest on Wolfi. Its
-[package manifest](./builds/database.apko.yaml) is assembled with apko during the container
-build; Docker and Podman users need no additional host tools. PostgreSQL keeps its standard
-`POSTGRES_*` initialization variables, `uuid-ossp` extension and volume at
-`/var/lib/postgresql`. Backup scheduling and repository credentials remain the operator's
-responsibility.
+The database image runs PostgreSQL and pgBackRest on Wolfi. The container build assembles its
+[package manifest](./builds/database.apko.yaml) with apko, so Docker and Podman need no extra
+host tool. PostgreSQL keeps its standard `POSTGRES_*` initialization variables, the `uuid-ossp`
+extension and its volume at `/var/lib/postgresql`. You schedule the backups and hold the
+repository credentials.
 
-Use a fresh volume when moving from the Debian-based image. To keep existing data, take a
-logical dump and restore it into the new database, then validate it before switching traffic.
-Do not reuse a Debian data directory or assume its physical backups are portable: the libc,
-collation and extension environment changed. Retain the previous image with its backups.
+A database moving from the Debian-based image needs a fresh volume. Its data directory and
+physical backups do not carry over, because the libc, collation and extension environment
+changed. To keep the data, restore a logical dump into the new database and validate it before
+switching traffic. Keep the previous image with its backups.
 
-Wolfi's package repository rolls forward. Retain published service images for recovery rather
-than relying on an old package manifest remaining rebuildable indefinitely.
+Wolfi's package repository rolls forward, so an old package manifest may stop building. Keep the
+published service images for recovery.
 
 ### Configuration
 
-Every variable is read from the process environment. Set `POSTGRES_HOST` to use the discrete
-connection fields. `POSTGRES_DSN` remains a deprecated compatibility fallback while existing
-deployments migrate.
+| Name                   | Description                                                                                                                                                                                                                              | Images                                                                   |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `POSTGRES_HOST`        | PostgreSQL hostname or IP address. Selects the discrete connection fields. **Required for new deployments.**                                                                                                                             | all                                                                      |
+| `POSTGRES_PORT`        | PostgreSQL port. Defaults to `5432`.                                                                                                                                                                                                     | all                                                                      |
+| `POSTGRES_USER`        | PostgreSQL login role. **Required when `POSTGRES_HOST` is set.**                                                                                                                                                                         | all                                                                      |
+| `POSTGRES_PASSWORD`    | PostgreSQL login password. **Required when `POSTGRES_HOST` is set; inject it as a secret.**                                                                                                                                              | all                                                                      |
+| `POSTGRES_DATABASE`    | PostgreSQL database name. **Required when `POSTGRES_HOST` is set.**                                                                                                                                                                      | all                                                                      |
+| `POSTGRES_TLS_ENABLED` | Encrypt the PostgreSQL connection. Defaults to `true`; disable only when another trusted boundary protects the database link.                                                                                                            | all                                                                      |
+| `POSTGRES_DSN`         | Deprecated connection-URL fallback, read only when `POSTGRES_HOST` is empty.                                                                                                                                                             | all                                                                      |
+| `APP_MASTER_KEY`       | Hex-encoded 32-byte key that encrypts private keys at rest. **Required** by every image that signs or rotates keys. Changing it leaves every stored private key unreadable: see [CONTRIBUTING](./CONTRIBUTING.md#master-key-encryption). | `grpc`<br/>`standalone-grpc`<br/>`standalone-rest`<br/>`jobs/rotatekeys` |
 
-| Name                   | Description                                                                                                                                                                                                                                                                                  | Images                                                                   |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `POSTGRES_HOST`        | PostgreSQL hostname or IP address. Selects the discrete connection fields. **Required for new deployments.**                                                                                                                                                                                 | all                                                                      |
-| `POSTGRES_PORT`        | PostgreSQL port. Defaults to `5432`.                                                                                                                                                                                                                                                         | all                                                                      |
-| `POSTGRES_USER`        | PostgreSQL login role. **Required when `POSTGRES_HOST` is set.**                                                                                                                                                                                                                             | all                                                                      |
-| `POSTGRES_PASSWORD`    | PostgreSQL login password. **Required when `POSTGRES_HOST` is set; inject it as a secret.**                                                                                                                                                                                                  | all                                                                      |
-| `POSTGRES_DATABASE`    | PostgreSQL database name. **Required when `POSTGRES_HOST` is set.**                                                                                                                                                                                                                          | all                                                                      |
-| `POSTGRES_TLS_ENABLED` | Encrypt the PostgreSQL connection. Defaults to `true`; disable only when another trusted boundary protects the database link.                                                                                                                                                                | all                                                                      |
-| `POSTGRES_DSN`         | Deprecated connection-URL fallback, read only when `POSTGRES_HOST` is empty.                                                                                                                                                                                                                 | all                                                                      |
-| `APP_MASTER_KEY`       | 32-byte hex-encoded key that encrypts private keys at rest. **Required** for private-key operations, including startup rotation in standalone images. **Never rotate** unless you can afford to invalidate every existing key — see [CONTRIBUTING](./CONTRIBUTING.md#master-key-encryption). | `grpc`<br/>`standalone-grpc`<br/>`standalone-rest`<br/>`jobs/rotatekeys` |
-
-The production `rest` image serves stored public keys without decrypting private keys. Deploy it without the master-key secret or permission to retrieve it. It still requires database credentials and reads the shared key table; this does not provide database isolation.
-
-The gRPC server exposes private-key operations and must run on an isolated, access-controlled network — the server does not authenticate callers itself.
+The `rest` image never decrypts a private key, so deploy it without the master key or any right to read it. It still reads the shared key table with database credentials, so it gives no database isolation.
 
 <details>
 <summary>Optional configuration (server tuning, OpenTelemetry)</summary>
@@ -167,7 +159,7 @@ REST tuning (images `rest`, `standalone-rest`):
 | `REST_CORS_ALLOW_CREDENTIALS` | CORS allow-credentials flag.                                                                            | `false`         |
 | `REST_CORS_MAX_AGE`           | CORS max-age, in seconds.                                                                               | `3600`          |
 
-Database connection pool (server images). The limits are **per process**. The database's `max_connections` has to cover every replica plus the migration job; the stock `postgres` default is 100.
+Database connection pool (server images). Each process holds its own pool, so the database's `max_connections`, 100 by default, must cover every replica and the migration job.
 
 | Name                      | Description                               | Default |
 | ------------------------- | ----------------------------------------- | ------- |
@@ -176,26 +168,26 @@ Database connection pool (server images). The limits are **per process**. The da
 
 Planned downtime (all server images, `jobs/rotatekeys`):
 
-| Name             | Description                                                                                                                                                                                                                                   | Default |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| `DOWNTIME_START` | When a planned downtime starts, in RFC 3339. From then until it is removed, even past the announced end, the servers answer `503` / `UNAVAILABLE` except for ping and gRPC health, start without the database, and key rotation does nothing. |         |
+| Name             | Description                                                                                                                                                                                                     | Default |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| `DOWNTIME_START` | When a planned downtime starts, in RFC 3339. Until the variable is removed, the servers answer `503` / `UNAVAILABLE` except to ping and gRPC health, and start without the database. Key rotation does nothing. |         |
 
-Logs and tracing — OpenTelemetry supports a stdout and a Google Cloud exporter (all server images):
+Logs and tracing (server images, `jobs/rotatekeys`):
 
-| Name                | Description                                                           | Default             |
-| ------------------- | --------------------------------------------------------------------- | ------------------- |
-| `OTEL`              | Enable OTel tracing; the variables below pick the exporter.           | `false`             |
-| `GCLOUD_PROJECT_ID` | Google Cloud project ID. When set, switches the OTel exporter to GCP. |                     |
-| `APP_NAME`          | Application name attached to traces and logs.                         | `service-json-keys` |
+| Name                | Description                                                                                                  | Default             |
+| ------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------- |
+| `OTEL`              | Enable OpenTelemetry tracing.                                                                                | `false`             |
+| `GCLOUD_PROJECT_ID` | Google Cloud project ID. When set, logs and traces go to Google Cloud. Otherwise they go to standard output. |                     |
+| `APP_NAME`          | Application name attached to traces and logs.                                                                | `service-json-keys` |
 
 </details>
 
 ## Using the client packages
 
-Two clients ship with the service. Each snippet is the **minimum viable call**; the full surface is what your editor's intellisense, [pkg.go.dev](https://pkg.go.dev/github.com/a-novel/service-json-keys/v2), and the [API reference](https://a-novel.github.io/service-json-keys-v2) are for.
+Each snippet below is the minimum call. [pkg.go.dev](https://pkg.go.dev/github.com/a-novel/service-json-keys/v2) and the [API reference](https://a-novel.github.io/service-json-keys-v2) document the rest.
 
-- **Go** talks gRPC — use it from a backend service that signs tokens or verifies them with cached public keys.
-- **JavaScript / TypeScript** talks REST — use it from a frontend or Node service that only needs public keys for local verification.
+- **Go** calls the gRPC API. Use it from a backend service that signs tokens or verifies them.
+- **JavaScript / TypeScript** calls the REST API. Use it from a frontend or a Node service that only needs the public keys.
 
 ### Go (gRPC)
 
@@ -224,9 +216,8 @@ type MyClaims struct {
 func main() {
 	ctx := context.Background()
 
-	// In production, swap insecure.NewCredentials() for a TLS or mTLS credential — the
-	// server has no application-layer auth, so transport security is the only thing
-	// protecting private-key operations from a network adversary.
+	// Use TLS or mTLS credentials in production. The server authenticates no caller, so
+	// transport security alone protects private-key operations.
 	client, err := servicejsonkeys.NewClient(
 		"service-json-keys:8080",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -249,8 +240,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Verify locally — no extra network call per token.
-	verifier := servicejsonkeys.NewClaimsVerifier[MyClaims](client)
+	// Verify locally, with no network call per token.
+	verifier, err := servicejsonkeys.NewClaimsVerifier[MyClaims](client)
+	if err != nil {
+		log.Fatal(err)
+	}
 	claims, err := verifier.VerifyClaims(ctx, &servicejsonkeys.VerifyClaimsRequest{
 		Usage:       servicejsonkeys.KeyUsageAuth,
 		AccessToken: res.GetToken(),
@@ -264,7 +258,7 @@ func main() {
 
 ### JavaScript / TypeScript (REST)
 
-The package is published to GitHub Packages, which requires a Personal Access Token with the `read:packages` scope even for public packages ([why](https://github.com/orgs/community/discussions/23386#discussioncomment-3240193)). Add to `.npmrc` (project root or `$HOME`):
+GitHub Packages hosts the package. It needs a personal access token with the `read:packages` scope, even for a public package ([why](https://github.com/orgs/community/discussions/23386#discussioncomment-3240193)). Add the registry to the `.npmrc` of your project or home directory:
 
 ```ini
 @a-novel:registry=https://npm.pkg.github.com
@@ -281,15 +275,13 @@ import { JsonKeysApi, jwkList } from "@a-novel/service-json-keys-rest";
 
 const api = new JsonKeysApi("http://service-json-keys:8080");
 
-// Fetch the active public keys for a usage; cache them client-side and verify locally.
+// Fetch the active public keys of a usage. Cache them and verify tokens locally.
 const keys = await jwkList(api, "auth");
 ```
 
-API reference: [a-novel.github.io/service-json-keys-v2](https://a-novel.github.io/service-json-keys-v2).
-
 ## Running locally
 
-For a throwaway instance without the dev toolchain, the **standalone** images bundle the server and migrations in one container. They run migrations on every boot — handy for a quick spin-up, unsafe under multi-replica production restarts.
+The **standalone** images run a throwaway instance without the development toolchain. Each bundles a server with the migrations and rotation jobs, and runs both jobs at every boot. Replicas restarting together run them concurrently, so keep standalone images out of production.
 
 ```yaml
 services:
@@ -328,8 +320,8 @@ networks:
   api:
 ```
 
-Working on the service itself? Use the `a-novel` CLI (`a-novel run start service-json-keys/grpc`) instead — see [CONTRIBUTING](./CONTRIBUTING.md).
+To work on the service itself, run it with the `a-novel` CLI instead, as [CONTRIBUTING](./CONTRIBUTING.md) shows.
 
 ## Contributing
 
-Platform setup and the day-to-day commands live in the [developer guide](https://a-novel-kit.github.io/stack/). Service-specific concepts and local interactions are in [CONTRIBUTING.md](./CONTRIBUTING.md).
+The [developer guide](https://a-novel-kit.github.io/stack/) sets up the platform. [CONTRIBUTING.md](./CONTRIBUTING.md) covers what is specific to this service.
