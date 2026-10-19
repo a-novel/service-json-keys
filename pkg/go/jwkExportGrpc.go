@@ -10,8 +10,8 @@ import (
 	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/internal/handlers/protogen/anovel/jsonkeys/v2"
 )
 
-// A jwkExportGrpc adapts a [BaseClient] to the key-source fetch interface used when initializing
-// a [Client], bridging the gRPC JwkList call into the key-source mechanism.
+// A jwkExportGrpc adapts a [BaseClient] to the key source [NewClaimsVerifier] builds, fetching
+// the public keys of a usage through the JwkList RPC.
 type jwkExportGrpc struct {
 	client BaseClient
 }

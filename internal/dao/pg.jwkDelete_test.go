@@ -188,18 +188,15 @@ func TestPgJwkDelete(t *testing.T) {
 	}
 }
 
-// TestPgJwkDeleteTakesEffectImmediately pins that a revoked key stops being served from the
-// moment it is revoked, with no refresh in between.
-//
-// It reads through PgJwkSelect, because the guarantee lives on the read path: active_keys is a
-// plain view, so its predicates are evaluated per query and a revocation takes effect at once.
+// TestPgJwkDeleteTakesEffectImmediately checks that a revoked key stops being served from the
+// moment it is revoked. It reads through PgJwkSelect, because active_keys evaluates its
+// predicates on every read.
 func TestPgJwkDeleteTakesEffectImmediately(t *testing.T) {
 	t.Parallel()
 
-	// Truncate, never Round: this value becomes deleted_at, and the view keeps a key
-	// visible while deleted_at > CURRENT_TIMESTAMP. Round goes to the nearest second, so
-	// half the time it lands in the future and the key stays active for up to 500ms —
-	// which the assertion below then reads as "revocation did not take effect".
+	// This value becomes deleted_at, and the view serves a key while deleted_at is in the
+	// future. Truncate keeps it in the past, where rounding up would serve the key for up to
+	// 500ms more.
 	now := time.Now().UTC().Truncate(time.Second)
 	keyID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 
@@ -239,7 +236,7 @@ func TestPgJwkDeleteTakesEffectImmediately(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			// No refresh here on purpose — that is the whole assertion.
+			// The revocation applies with nothing run in between.
 			_, err = selectDAO.Exec(ctx, &dao.JwkSelectRequest{ID: keyID})
 			require.ErrorIs(t, err, dao.ErrJwkSelectNotFound)
 		},

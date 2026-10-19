@@ -86,9 +86,8 @@ func TestGrpcClaimsSign(t *testing.T) {
 			expectStatus: codes.Unavailable,
 		},
 		{
-			// A caller naming a registered claim sent a bad request. Reporting it
-			// as Internal would blame the service for the caller's input and give
-			// them nothing to correct.
+			// A registered claim is the caller's mistake, so the status tells them what to
+			// correct.
 			name: "Error/ReservedClaim",
 
 			request: &jsonkeysv2.ClaimsSignRequest{

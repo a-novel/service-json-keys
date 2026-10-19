@@ -38,9 +38,8 @@ type Jwk struct {
 	// key for the usage.
 	Usage string `bun:"usage"`
 
-	// CreatedAt is when the key was generated and persisted; it determines the
-	// rotation schedule — a new key is created when the main key's age exceeds the
-	// configured rotation interval.
+	// CreatedAt is when the key was generated and persisted. A new key is generated once the
+	// main key is older than the configured rotation interval.
 	CreatedAt time.Time `bun:"created_at"`
 	// ExpiresAt is the hard expiry date. Once passed, the key leaves the active view
 	// and is only accessible via direct database queries.

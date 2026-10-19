@@ -67,9 +67,8 @@ func (service *ClaimsSign) Exec(ctx context.Context, request *ClaimsSignRequest)
 
 	producer := jwt.NewProducer(jwt.ProducerConfig{Plugins: producerPlugins})
 
-	// A caller claim that collides with the envelope above is rejected at
-	// encoding time, inside Issue. The request is malformed, so it is classified;
-	// the wrapped error names the members.
+	// A caller claim that collides with the envelope fails inside Issue, at encoding time. The
+	// wrapped error names the colliding members.
 	token, err := producer.Issue(ctx, claims, nil)
 	if errors.Is(err, jwa.ErrReservedMember) {
 		return "", otel.ReportError(span, fmt.Errorf("%w: %w", ErrReservedClaim, err))

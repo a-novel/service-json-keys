@@ -172,13 +172,10 @@ func TestJwkSearch(t *testing.T) {
 	}
 }
 
-// TestJwkSearchRefusesSymmetricKeysWithoutPrivateAuthorization wires the real
-// extraction into the search, so it covers what the public read path actually
-// does rather than what a mock was told to return.
+// TestJwkSearchRefusesSymmetricKeysWithoutPrivateAuthorization wires the real extraction into
+// the search and makes the request of the REST handlers, which leave Private false.
 //
-// The REST handlers leave Private false, so this is the request they make. A
-// symmetric key has only private material, and the search must fail before any of
-// it is deserialized for a caller that may not have it.
+// A symmetric key has only private material, so the search fails before deserializing any of it.
 func TestJwkSearchRefusesSymmetricKeysWithoutPrivateAuthorization(t *testing.T) {
 	t.Parallel()
 

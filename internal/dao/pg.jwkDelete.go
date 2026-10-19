@@ -34,9 +34,8 @@ type JwkDeleteRequest struct {
 // A PgJwkDelete prematurely soft-deletes a JSON Web Key: the key leaves the active view and
 // disappears from API results, while the row is retained for auditing.
 //
-// Only active keys can be targeted; an already deleted or expired key yields
-// [ErrJwkDeleteNotFound]. Natural expiry needs no call here — the active view drops expired
-// keys on its own.
+// Only active keys can be targeted: an already deleted or expired key yields
+// [ErrJwkDeleteNotFound]. The active view drops expired keys on its own.
 type PgJwkDelete struct{}
 
 // NewPgJwkDelete returns a new PgJwkDelete dao.

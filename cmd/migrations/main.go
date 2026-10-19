@@ -1,5 +1,5 @@
-// Command migrations applies pending SQL migrations to the JSON-keys database.
-// Run this once on first deploy and after each schema change.
+// Command migrations applies pending SQL migrations to the JSON Keys database. Run it on first
+// deploy and after each schema change.
 package main
 
 import (

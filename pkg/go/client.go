@@ -29,7 +29,7 @@ type (
 	JwkConfig = jwkconfig.Jwk
 )
 
-// BaseClient is the minimal gRPC interface for the JSON-keys service. It exposes every RPC
+// BaseClient is the minimal gRPC interface for the JSON Keys service. It exposes every RPC
 // endpoint and a Close method to release the underlying connection.
 //
 // Prefer [Client] when you need the pre-built JWT verification helpers. Use BaseClient
@@ -92,7 +92,7 @@ func (c *client) Close() {
 	_ = c.conn.Close()
 }
 
-// NewClient dials the JSON-keys gRPC server at addr and prepares the client for use,
+// NewClient dials the JSON Keys gRPC server at addr and prepares the client for use,
 // returning an error if any setup step fails. Any grpc.DialOption values accepted by
 // grpc.NewClient may be forwarded via opts.
 //

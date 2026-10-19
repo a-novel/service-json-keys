@@ -46,8 +46,7 @@ type JwkGenRequest struct {
 // A JwkGen generates new keys for a configured usage.
 //
 // Generation is conditional: it reads the usage's latest key and generates only once the
-// rotation window has elapsed. Within the window it returns that key and records the skip
-// on the trace span.
+// rotation window has elapsed. Within the window it returns that key.
 type JwkGen struct {
 	daoSearch      JwkGenDaoSearch
 	daoInsert      JwkGenDaoInsert

@@ -25,12 +25,11 @@ var ErrJwkExtractNoPublicKey = errors.New("jwk has no public key")
 type JwkExtractRequest struct {
 	// Jwk is the DAO entity to extract key material from.
 	Jwk *dao.Jwk
-	// Private authorizes private key material. It gates the private branch: with it
-	// false, a key that has only private material yields [ErrJwkExtractNoPublicKey].
+	// Private authorizes private key material. Without it, a key that has only private
+	// material yields [ErrJwkExtractNoPublicKey].
 	//
-	// Only the gRPC signing path sets it. gRPC is internal and may carry private
-	// material; the HTTP API is public and never may, which is why the gate lives
-	// here, where both transports pass through.
+	// The signing path and the rotation job set it, and the public REST API never does. The gate
+	// lives here because every caller passes through it.
 	Private bool
 }
 

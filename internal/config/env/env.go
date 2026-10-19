@@ -61,10 +61,10 @@ var (
 
 	// AppName is the application name, as it appears in logs and tracing.
 	AppName = config.LoadEnv(getEnv("APP_NAME"), AppNameDefault, config.StringParser)
-	// AppMasterKey is a secure, 32-byte random secret used to encrypt private JSON Web Keys
-	// in the database.
+	// AppMasterKey is the hex-encoded 32-byte secret that encrypts private JSON Web Keys in the
+	// database.
 	AppMasterKey = getEnv("APP_MASTER_KEY")
-	// Otel configures whether to enable OpenTelemetry tracing.
+	// Otel enables OpenTelemetry tracing.
 	Otel = config.LoadEnv(getEnv("OTEL"), false, config.BoolParser)
 
 	// GrpcUrl is the address of the gRPC service, in the form <host>:<port>.
@@ -75,9 +75,8 @@ var (
 	// Rest configures the REST server from the REST_* variables.
 	Rest = httpf.LoadServerConfig(getEnv, restDefaults())
 
-	// GcloudProjectId is the Google Cloud project ID. When set, the service switches to
-	// Google Cloud Logging and Google Cloud Trace for observability. When empty, it falls
-	// back to local-development logging and disabled tracing.
+	// GcloudProjectId is the Google Cloud project ID. When set, logs and traces go to Google
+	// Cloud. When empty, they go to standard output.
 	GcloudProjectId = getEnv("GCLOUD_PROJECT_ID")
 
 	// DowntimeStart is when a planned downtime of this service starts, in RFC 3339. From then

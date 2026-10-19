@@ -1,8 +1,8 @@
-// Command grpc runs the private gRPC server for the JSON-keys service: the authenticated
-// service-to-service API covering token signing and key retrieval. Signing needs the private
-// key material, so APP_MASTER_KEY must be set before the server starts.
+// Command grpc runs the private gRPC server of the JSON Keys service, which other services call
+// to sign tokens and read keys. It authenticates no caller, so only a private network may reach
+// it. Signing decrypts private keys, so the server refuses to start without APP_MASTER_KEY.
 //
-// For the public read-only REST API, see cmd/rest.
+// cmd/rest serves the public keys over REST.
 package main
 
 import (

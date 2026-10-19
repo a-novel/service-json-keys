@@ -4,6 +4,7 @@ import { HTTP_HEADERS } from "@a-novel-kit/nodelib-browser/http";
 
 import { z } from "zod";
 
+/** Parses a {@link JwkKeyOp}. */
 export const JwkKeyOpSchema = z.enum([
   "sign",
   "verify",
@@ -40,7 +41,7 @@ export const JwkSchema = z.looseObject({
 });
 
 /**
- * A JSON Web Key (RFC 7517) as returned by the JSON-keys service.
+ * A JSON Web Key (RFC 7517) as returned by the JSON Keys service.
  *
  * Only public keys are exposed over the REST API — private key material never leaves
  * the server. Use the `kid` field to match a key against the `kid` header in a JWT

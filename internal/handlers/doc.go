@@ -1,4 +1,4 @@
-// Package handlers is the transport layer of the JSON-keys application, sitting above the
+// Package handlers is the transport layer of the JSON Keys application, sitting above the
 // core layer. Handlers translate incoming requests into core calls and map the results back
 // to protocol-level responses; business logic lives in core.
 //
