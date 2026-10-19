@@ -29,6 +29,7 @@ const (
 // StatusService returns the health of the gRPC server dependencies.
 type StatusServiceClient interface {
 	// Returns the current health of all server dependencies checked at request time.
+	// Returns UNAVAILABLE when a dependency probe fails.
 	Status(ctx context.Context, in *StatusRequest, opts ...grpc.CallOption) (*StatusResponse, error)
 }
 
@@ -57,6 +58,7 @@ func (c *statusServiceClient) Status(ctx context.Context, in *StatusRequest, opt
 // StatusService returns the health of the gRPC server dependencies.
 type StatusServiceServer interface {
 	// Returns the current health of all server dependencies checked at request time.
+	// Returns UNAVAILABLE when a dependency probe fails.
 	Status(context.Context, *StatusRequest) (*StatusResponse, error)
 	mustEmbedUnimplementedStatusServiceServer()
 }

@@ -32,10 +32,8 @@ type ClaimsSignRequest struct {
 	// The claims payload to embed in the token. Its inner type should remain consistent for
 	// a given usage.
 	//
-	// The registered claims — iss, sub, aud, exp, nbf, iat, jti — belong to the envelope the
-	// server stamps from the usage config, and naming one here is rejected rather than
-	// applied. Verification checks the server's values, so a token carrying the caller's
-	// would not verify.
+	// The server stamps the registered claims (iss, sub, aud, exp, nbf, iat, jti) from the
+	// usage config. A payload naming one fails with INVALID_ARGUMENT.
 	Payload       *anypb.Any `protobuf:"bytes,2,opt,name=payload,proto3" json:"payload,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
