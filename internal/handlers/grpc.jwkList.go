@@ -46,15 +46,6 @@ func (handler *GrpcJwkList) JwkList(
 	}
 
 	return &jsonkeysv2.JwkListResponse{
-		Keys: lo.Map(jwks, func(item *core.Jwk, index int) *jsonkeysv2.Jwk {
-			return &jsonkeysv2.Jwk{
-				Kty:     item.KTY.String(),
-				Use:     item.Use.String(),
-				KeyOps:  item.KeyOps.Strings(),
-				Alg:     item.Alg.String(),
-				Kid:     item.KID,
-				Payload: item.Payload,
-			}
-		}),
+		Keys: lo.Map(jwks, func(jwk *core.Jwk, _ int) *jsonkeysv2.Jwk { return jwkToProto(jwk) }),
 	}, nil
 }
