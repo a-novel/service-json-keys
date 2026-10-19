@@ -21,53 +21,123 @@ import (
 	coremocks "github.com/a-novel/service-json-keys/v2/internal/core/mocks"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 	"github.com/a-novel/service-json-keys/v2/internal/lib"
-	testutils "github.com/a-novel/service-json-keys/v2/internal/lib/test"
+	"github.com/a-novel/service-json-keys/v2/internal/lib/libtest"
 )
 
-func checkGeneratedPrivateKey(ctx context.Context, t *testing.T, key string) (*jwa.JWK, error) {
-	t.Helper()
-
-	// Decode base64 value.
+// checkGeneratedPrivateKey checks that key is a base64 ciphertext of a JSON Web Key under the
+// master key held by ctx.
+func checkGeneratedPrivateKey(ctx context.Context, key string) error {
 	decoded, err := base64.RawURLEncoding.DecodeString(key)
 	if err != nil {
-		return nil, fmt.Errorf("decode base64: %w", err)
+		return fmt.Errorf("decode base64: %w", err)
 	}
 
-	// Decrypt.
 	var decrypted jwa.JWK
 
 	err = lib.DecryptMasterKey(ctx, decoded, &decrypted)
 	if err != nil {
-		return nil, fmt.Errorf("decrypt key: %w", err)
+		return fmt.Errorf("decrypt key: %w", err)
 	}
 
-	return &decrypted, nil
+	return nil
 }
 
-func checkGeneratedPublicKey(t *testing.T, key string) (*jwa.JWK, error) {
-	t.Helper()
-
-	// Decode base64 value.
+// checkGeneratedPublicKey checks that key is a base64 serialization of a JSON Web Key.
+func checkGeneratedPublicKey(key string) error {
 	decoded, err := base64.RawURLEncoding.DecodeString(key)
 	if err != nil {
-		return nil, fmt.Errorf("decode base64: %w", err)
+		return fmt.Errorf("decode base64: %w", err)
 	}
 
-	// Unmarshal.
 	var deserialized jwa.JWK
 
 	err = deserialized.UnmarshalJSON(decoded)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal key: %w", err)
+		return fmt.Errorf("unmarshal key: %w", err)
 	}
 
-	return &deserialized, nil
+	return nil
+}
+
+// checkJwkInsertRequest reports whether request stores a well-formed generated key, failing the
+// test on the first defect it finds.
+func checkJwkInsertRequest(ctx context.Context, t *testing.T, request *dao.JwkInsertRequest) bool {
+	t.Helper()
+
+	if request == nil {
+		t.Errorf("request is nil")
+
+		return false
+	}
+
+	if request.ID == uuid.Nil {
+		t.Error("expected KID to be set, got nil")
+
+		return false
+	}
+
+	err := checkGeneratedPrivateKey(ctx, request.PrivateKey)
+	if err != nil {
+		t.Errorf("checking private key: %s", err)
+
+		return false
+	}
+
+	if request.PublicKey != nil {
+		err = checkGeneratedPublicKey(*request.PublicKey)
+		if err != nil {
+			t.Errorf("checking public key: %s", err)
+
+			return false
+		}
+	}
+
+	if request.Expiration.IsZero() {
+		t.Error("expected expiration to be set, got zero")
+
+		return false
+	}
+
+	if request.Expiration.Before(request.Now) {
+		t.Error("expected expiration to be after creation date")
+
+		return false
+	}
+
+	return true
+}
+
+// jwkGenKeys configures test-usage to rotate keys of alg every 12 hours.
+func jwkGenKeys(alg jwa.Alg) map[string]*config.Jwk {
+	return map[string]*config.Jwk{
+		"test-usage": {
+			Alg: alg,
+			Key: config.JwkKey{
+				TTL:      24 * time.Hour,
+				Rotation: 12 * time.Hour,
+				Cache:    6 * time.Hour,
+			},
+		},
+	}
+}
+
+// jwkGenExtracted is the key the extraction mock returns for a stored key of alg and kid.
+func jwkGenExtracted(alg jwa.Alg, kid string) *core.Jwk {
+	return &core.Jwk{
+		JWKCommon: jwa.JWKCommon{
+			KTY: "test-kty",
+			Use: "test-use",
+			Alg: alg,
+			KID: kid,
+		},
+		Payload: json.RawMessage(`{"message":"hello world"}`),
+	}
 }
 
 func TestJwkGen(t *testing.T) {
 	t.Parallel()
 
-	ctx, err := lib.NewMasterKeyContext(t.Context(), testutils.TestMasterKey)
+	ctx, err := lib.NewMasterKeyContext(t.Context(), libtest.MasterKey)
 	require.NoError(t, err)
 
 	errFoo := errors.New("foo")
@@ -101,318 +171,113 @@ func TestJwkGen(t *testing.T) {
 		expectErr error
 	}
 
+	// The rotation interval is 12 hours: the stale key is past it, the recent key within it.
+	staleKey := &dao.Jwk{
+		ID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
+		PrivateKey: "cHJpdmF0ZS1rZXktMQ",
+		PublicKey:  lo.ToPtr("cHVibGljLWtleS0x"),
+		Usage:      "test-usage",
+		CreatedAt:  time.Now().Add(-13 * time.Hour),
+		ExpiresAt:  time.Now().Add(time.Hour),
+	}
+	recentKey := &dao.Jwk{
+		ID:         staleKey.ID,
+		PrivateKey: staleKey.PrivateKey,
+		PublicKey:  staleKey.PublicKey,
+		Usage:      staleKey.Usage,
+		CreatedAt:  time.Now().Add(-11 * time.Hour),
+		ExpiresAt:  staleKey.ExpiresAt,
+	}
+	insertedKey := &dao.Jwk{
+		ID:         uuid.MustParse("00000000-0000-0000-0000-000000000001"),
+		PrivateKey: "cHJpdmF0ZS1rZXktMQ",
+		PublicKey:  lo.ToPtr("cHVibGljLWtleS0x"),
+		Usage:      "test-usage",
+		CreatedAt:  time.Now(),
+		ExpiresAt:  time.Now().Add(24 * time.Hour),
+	}
+
 	testCases := []testCaseDef{
 		{
 			name: "Success/OldKeys",
 
-			request: &core.JwkGenRequest{
-				Usage: "test-usage",
-			},
+			request: &core.JwkGenRequest{Usage: "test-usage"},
+			keys:    jwkGenKeys(jwa.Ed25519),
 
-			keys: map[string]*config.Jwk{
-				"test-usage": {
-					Alg: jwa.Ed25519,
-					Key: config.JwkKey{
-						TTL:      24 * time.Hour,
-						Rotation: 12 * time.Hour,
-						Cache:    6 * time.Hour,
-					},
-				},
-			},
+			daoSearchMock:      &daoSearchMock{resp: []*dao.Jwk{staleKey}},
+			daoInsertMock:      &daoInsertMock{resp: insertedKey},
+			serviceExtractMock: &serviceExtractMock{resp: jwkGenExtracted(jwa.Ed25519, insertedKey.ID.String())},
 
-			daoSearchMock: &daoSearchMock{
-				resp: []*dao.Jwk{
-					{
-						ID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
-						PrivateKey: "cHJpdmF0ZS1rZXktMQ",
-						PublicKey:  lo.ToPtr("cHVibGljLWtleS0x"),
-						Usage:      "test-usage",
-						CreatedAt:  time.Now().Add(-13 * time.Hour),
-						ExpiresAt:  time.Now().Add(time.Hour),
-					},
-				},
-			},
-
-			daoInsertMock: &daoInsertMock{
-				resp: &dao.Jwk{
-					ID:         uuid.MustParse("00000000-0000-0000-0000-000000000001"),
-					PrivateKey: "cHJpdmF0ZS1rZXktMQ",
-					PublicKey:  lo.ToPtr("cHVibGljLWtleS0x"),
-					Usage:      "test-usage",
-					CreatedAt:  time.Now(),
-					ExpiresAt:  time.Now().Add(24 * time.Hour),
-				},
-			},
-
-			serviceExtractMock: &serviceExtractMock{
-				resp: &core.Jwk{
-					JWKCommon: jwa.JWKCommon{
-						KTY: "test-kty",
-						Use: "test-use",
-						Alg: jwa.Ed25519,
-						KID: "00000000-0000-0000-0000-000000000001",
-					},
-					Payload: json.RawMessage(`{"message":"hello world"}`),
-				},
-			},
-
-			expect: &core.Jwk{
-				JWKCommon: jwa.JWKCommon{
-					KTY: "test-kty",
-					Use: "test-use",
-					Alg: jwa.Ed25519,
-					KID: "00000000-0000-0000-0000-000000000001",
-				},
-				Payload: json.RawMessage(`{"message":"hello world"}`),
-			},
+			expect: jwkGenExtracted(jwa.Ed25519, insertedKey.ID.String()),
 		},
 		{
 			name: "Success/RecentKeys",
 
-			request: &core.JwkGenRequest{
-				Usage: "test-usage",
-			},
+			request: &core.JwkGenRequest{Usage: "test-usage"},
+			keys:    jwkGenKeys(jwa.Ed25519),
 
-			keys: map[string]*config.Jwk{
-				"test-usage": {
-					Alg: jwa.Ed25519,
-					Key: config.JwkKey{
-						TTL:      24 * time.Hour,
-						Rotation: 12 * time.Hour,
-						Cache:    6 * time.Hour,
-					},
-				},
-			},
+			daoSearchMock:      &daoSearchMock{resp: []*dao.Jwk{recentKey}},
+			serviceExtractMock: &serviceExtractMock{resp: jwkGenExtracted(jwa.Ed25519, recentKey.ID.String())},
 
-			daoSearchMock: &daoSearchMock{
-				resp: []*dao.Jwk{
-					{
-						ID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
-						PrivateKey: "cHJpdmF0ZS1rZXktMQ",
-						PublicKey:  lo.ToPtr("cHVibGljLWtleS0x"),
-						Usage:      "test-usage",
-						CreatedAt:  time.Now().Add(-11 * time.Hour),
-						ExpiresAt:  time.Now().Add(time.Hour),
-					},
-				},
-			},
-
-			serviceExtractMock: &serviceExtractMock{
-				resp: &core.Jwk{
-					JWKCommon: jwa.JWKCommon{
-						KTY: "test-kty",
-						Use: "test-use",
-						Alg: jwa.Ed25519,
-						KID: "00000000-0000-0000-0000-000000000002",
-					},
-					Payload: json.RawMessage(`{"message":"hello world"}`),
-				},
-			},
-
-			expect: &core.Jwk{
-				JWKCommon: jwa.JWKCommon{
-					KTY: "test-kty",
-					Use: "test-use",
-					Alg: jwa.Ed25519,
-					KID: "00000000-0000-0000-0000-000000000002",
-				},
-				Payload: json.RawMessage(`{"message":"hello world"}`),
-			},
+			expect: jwkGenExtracted(jwa.Ed25519, recentKey.ID.String()),
 		},
 		{
 			name: "Error/Extract",
 
-			request: &core.JwkGenRequest{
-				Usage: "test-usage",
-			},
+			request: &core.JwkGenRequest{Usage: "test-usage"},
+			keys:    jwkGenKeys(jwa.Ed25519),
 
-			keys: map[string]*config.Jwk{
-				"test-usage": {
-					Alg: jwa.Ed25519,
-					Key: config.JwkKey{
-						TTL:      24 * time.Hour,
-						Rotation: 12 * time.Hour,
-						Cache:    6 * time.Hour,
-					},
-				},
-			},
-
-			daoSearchMock: &daoSearchMock{
-				resp: []*dao.Jwk{
-					{
-						ID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
-						PrivateKey: "cHJpdmF0ZS1rZXktMQ",
-						PublicKey:  lo.ToPtr("cHVibGljLWtleS0x"),
-						Usage:      "test-usage",
-						CreatedAt:  time.Now().Add(-13 * time.Hour),
-						ExpiresAt:  time.Now().Add(time.Hour),
-					},
-				},
-			},
-
-			daoInsertMock: &daoInsertMock{
-				resp: &dao.Jwk{
-					ID:         uuid.MustParse("00000000-0000-0000-0000-000000000001"),
-					PrivateKey: "cHJpdmF0ZS1rZXktMQ",
-					PublicKey:  lo.ToPtr("cHVibGljLWtleS0x"),
-					Usage:      "test-usage",
-					CreatedAt:  time.Now(),
-					ExpiresAt:  time.Now().Add(24 * time.Hour),
-				},
-			},
-
-			serviceExtractMock: &serviceExtractMock{
-				err: errFoo,
-			},
+			daoSearchMock:      &daoSearchMock{resp: []*dao.Jwk{staleKey}},
+			daoInsertMock:      &daoInsertMock{resp: insertedKey},
+			serviceExtractMock: &serviceExtractMock{err: errFoo},
 
 			expectErr: errFoo,
 		},
 		{
 			name: "Error/Insert",
 
-			request: &core.JwkGenRequest{
-				Usage: "test-usage",
-			},
+			request: &core.JwkGenRequest{Usage: "test-usage"},
+			keys:    jwkGenKeys(jwa.Ed25519),
 
-			keys: map[string]*config.Jwk{
-				"test-usage": {
-					Alg: jwa.Ed25519,
-					Key: config.JwkKey{
-						TTL:      24 * time.Hour,
-						Rotation: 12 * time.Hour,
-						Cache:    6 * time.Hour,
-					},
-				},
-			},
-
-			daoSearchMock: &daoSearchMock{
-				resp: []*dao.Jwk{
-					{
-						ID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
-						PrivateKey: "cHJpdmF0ZS1rZXktMQ",
-						PublicKey:  lo.ToPtr("cHVibGljLWtleS0x"),
-						Usage:      "test-usage",
-						CreatedAt:  time.Now().Add(-13 * time.Hour),
-						ExpiresAt:  time.Now().Add(time.Hour),
-					},
-				},
-			},
-
-			daoInsertMock: &daoInsertMock{
-				err: errFoo,
-			},
+			daoSearchMock: &daoSearchMock{resp: []*dao.Jwk{staleKey}},
+			daoInsertMock: &daoInsertMock{err: errFoo},
 
 			expectErr: errFoo,
 		},
 		{
 			name: "Error/Search",
 
-			request: &core.JwkGenRequest{
-				Usage: "test-usage",
-			},
+			request: &core.JwkGenRequest{Usage: "test-usage"},
+			keys:    jwkGenKeys(jwa.Ed25519),
 
-			keys: map[string]*config.Jwk{
-				"test-usage": {
-					Alg: jwa.Ed25519,
-					Key: config.JwkKey{
-						TTL:      24 * time.Hour,
-						Rotation: 12 * time.Hour,
-						Cache:    6 * time.Hour,
-					},
-				},
-			},
-
-			daoSearchMock: &daoSearchMock{
-				err: errFoo,
-			},
+			daoSearchMock: &daoSearchMock{err: errFoo},
 
 			expectErr: errFoo,
 		},
 		{
 			name: "Error/ConfigNotFound",
 
-			request: &core.JwkGenRequest{
-				Usage: "test-usage",
-			},
+			request: &core.JwkGenRequest{Usage: "test-usage"},
+			keys:    map[string]*config.Jwk{},
 
-			keys: map[string]*config.Jwk{},
-
-			daoSearchMock: &daoSearchMock{
-				resp: []*dao.Jwk{},
-			},
+			daoSearchMock: &daoSearchMock{resp: []*dao.Jwk{}},
 
 			expectErr: core.ErrConfigNotFound,
 		},
 	}
 
-	for _, alg := range []jwa.Alg{
-		jwa.Ed25519,
-		jwa.EdDSA, //nolint:staticcheck // The legacy label is under test.
-		jwa.RS256,
-		jwa.RS384,
-		jwa.RS512,
-		jwa.PS256,
-		jwa.PS384,
-		jwa.PS512,
-		jwa.ES256,
-		jwa.ES384,
-		jwa.ES512,
-		jwa.MLDSA44,
-		jwa.MLDSA65,
-		jwa.MLDSA87,
-	} {
+	for _, alg := range supportedAlgorithms {
 		testCases = append(testCases, testCaseDef{
 			name: "Success/" + string(alg),
 
-			request: &core.JwkGenRequest{
-				Usage: "test-usage",
-			},
+			request: &core.JwkGenRequest{Usage: "test-usage"},
+			keys:    jwkGenKeys(alg),
 
-			keys: map[string]*config.Jwk{
-				"test-usage": {
-					Alg: alg,
-					Key: config.JwkKey{
-						TTL:      24 * time.Hour,
-						Rotation: 12 * time.Hour,
-						Cache:    6 * time.Hour,
-					},
-				},
-			},
+			daoSearchMock:      &daoSearchMock{},
+			daoInsertMock:      &daoInsertMock{resp: insertedKey},
+			serviceExtractMock: &serviceExtractMock{resp: jwkGenExtracted(alg, insertedKey.ID.String())},
 
-			daoSearchMock: &daoSearchMock{},
-
-			daoInsertMock: &daoInsertMock{
-				resp: &dao.Jwk{
-					ID:         uuid.MustParse("00000000-0000-0000-0000-000000000001"),
-					PrivateKey: "cHJpdmF0ZS1rZXktMQ",
-					PublicKey:  lo.ToPtr("cHVibGljLWtleS0x"),
-					Usage:      "test-usage",
-					CreatedAt:  time.Now(),
-					ExpiresAt:  time.Now().Add(24 * time.Hour),
-				},
-			},
-
-			serviceExtractMock: &serviceExtractMock{
-				resp: &core.Jwk{
-					JWKCommon: jwa.JWKCommon{
-						KTY: "test-kty",
-						Use: "test-use",
-						Alg: alg,
-						KID: "00000000-0000-0000-0000-000000000001",
-					},
-					Payload: json.RawMessage(`{"message":"hello world"}`),
-				},
-			},
-
-			expect: &core.Jwk{
-				JWKCommon: jwa.JWKCommon{
-					KTY: "test-kty",
-					Use: "test-use",
-					Alg: alg,
-					KID: "00000000-0000-0000-0000-000000000001",
-				},
-				Payload: json.RawMessage(`{"message":"hello world"}`),
-			},
+			expect: jwkGenExtracted(alg, insertedKey.ID.String()),
 		})
 	}
 
@@ -432,54 +297,11 @@ func TestJwkGen(t *testing.T) {
 					Return(testCase.daoSearchMock.resp, testCase.daoSearchMock.err)
 			}
 
-			checkInsertData := func(request *dao.JwkInsertRequest) bool {
-				if request == nil {
-					t.Errorf("request is nil")
-
-					return false
-				}
-
-				if request.ID == uuid.Nil {
-					t.Error("expected KID to be set, got nil")
-
-					return false
-				}
-
-				// Ensure private key is encrypted.
-				_, err := checkGeneratedPrivateKey(ctx, t, request.PrivateKey)
-				if err != nil {
-					t.Errorf("checking private key: %s", err)
-
-					return false
-				}
-
-				if request.PublicKey != nil {
-					_, err = checkGeneratedPublicKey(t, *request.PublicKey)
-					if err != nil {
-						t.Errorf("checking public key: %s", err)
-
-						return false
-					}
-				}
-
-				if request.Expiration.IsZero() {
-					t.Error("expected expiration to be set, got zero")
-
-					return false
-				}
-
-				if request.Expiration.Before(request.Now) {
-					t.Error("expected expiration to be after creation date")
-
-					return false
-				}
-
-				return true
-			}
-
 			if testCase.daoInsertMock != nil {
 				daoInsert.EXPECT().
-					Exec(mock.Anything, mock.MatchedBy(checkInsertData)).
+					Exec(mock.Anything, mock.MatchedBy(func(request *dao.JwkInsertRequest) bool {
+						return checkJwkInsertRequest(ctx, t, request)
+					})).
 					Return(testCase.daoInsertMock.resp, testCase.daoInsertMock.err)
 			}
 

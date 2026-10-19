@@ -2,6 +2,7 @@ package servicejsonkeys_test
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"net"
 	"os"
@@ -26,6 +27,22 @@ import (
 	servicejsonkeys "github.com/a-novel/service-json-keys/v2/pkg/go"
 )
 
+// consumerGoMod is the go.mod of a module importing this client from the checkout at the path
+// it formats in.
+const consumerGoMod = `module test/client
+
+go 1.27.1
+
+require github.com/a-novel/service-json-keys/v2 v2.0.0
+
+replace github.com/a-novel/service-json-keys/v2 => %s
+`
+
+// consumerMain is the program of that module.
+//
+//go:embed testdata/consumer/main.go
+var consumerMain []byte
+
 func TestClient(t *testing.T) {
 	t.Parallel()
 
@@ -36,40 +53,9 @@ func TestClient(t *testing.T) {
 		require.NoError(t, err)
 
 		consumerDir := t.TempDir()
-		require.NoError(t, os.WriteFile(filepath.Join(consumerDir, "go.mod"), []byte(fmt.Sprintf(`module test/client
-
-go 1.27.1
-
-require github.com/a-novel/service-json-keys/v2 v2.0.0
-
-replace github.com/a-novel/service-json-keys/v2 => %s
-`, filepath.ToSlash(moduleRoot))), 0o600))
-		require.NoError(t, os.WriteFile(filepath.Join(consumerDir, "main.go"), []byte(`package main
-
-import (
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-
-	servicejsonkeys "github.com/a-novel/service-json-keys/v2/pkg/go"
-)
-
-func main() {
-	request := &servicejsonkeys.JwkListRequest{Usage: servicejsonkeys.KeyUsageAuth}
-	if request.GetUsage() != servicejsonkeys.KeyUsageAuth {
-		panic("client request alias lost its generated methods")
-	}
-
-	client, err := servicejsonkeys.NewClient("localhost:1", grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		panic(err)
-	}
-	defer client.Close()
-
-	if _, err := servicejsonkeys.NewClaimsVerifier[map[string]any](client); err != nil {
-		panic(err)
-	}
-}
-`), 0o600))
+		goMod := fmt.Sprintf(consumerGoMod, filepath.ToSlash(moduleRoot))
+		require.NoError(t, os.WriteFile(filepath.Join(consumerDir, "go.mod"), []byte(goMod), 0o600))
+		require.NoError(t, os.WriteFile(filepath.Join(consumerDir, "main.go"), consumerMain, 0o600))
 
 		consumerPath := filepath.Join(consumerDir, "consumer")
 		build := exec.CommandContext(t.Context(), "go", "build", "-mod=mod", "-o", "consumer", ".")

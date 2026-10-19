@@ -17,13 +17,13 @@ import (
 	coremocks "github.com/a-novel/service-json-keys/v2/internal/core/mocks"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 	"github.com/a-novel/service-json-keys/v2/internal/lib"
-	testutils "github.com/a-novel/service-json-keys/v2/internal/lib/test"
+	"github.com/a-novel/service-json-keys/v2/internal/lib/libtest"
 )
 
 func TestJwkSelect(t *testing.T) {
 	t.Parallel()
 
-	ctx, err := lib.NewMasterKeyContext(t.Context(), testutils.TestMasterKey)
+	ctx, err := lib.NewMasterKeyContext(t.Context(), libtest.MasterKey)
 	require.NoError(t, err)
 
 	errFoo := errors.New("foo")
@@ -38,6 +38,25 @@ func TestJwkSelect(t *testing.T) {
 		err  error
 	}
 
+	storedKey := &dao.Jwk{
+		ID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
+		PrivateKey: "cHJpdmF0ZS1rZXktMg",
+		PublicKey:  lo.ToPtr("cHVibGljLWtleS0y"),
+		Usage:      "test-usage",
+		CreatedAt:  time.Now().Add(-time.Hour),
+		ExpiresAt:  time.Now().Add(time.Hour),
+	}
+	extractedKey := &core.Jwk{
+		JWKCommon: jwa.JWKCommon{
+			KTY: "test-kty",
+			Use: "test-use",
+			Alg: "test-alg",
+			KID: storedKey.ID.String(),
+		},
+		Payload: json.RawMessage(`{"message":"hello world"}`),
+	}
+	request := &core.JwkSelectRequest{ID: storedKey.ID, Private: true}
+
 	testCases := []struct {
 		name string
 
@@ -50,96 +69,36 @@ func TestJwkSelect(t *testing.T) {
 		expectErr error
 	}{
 		{
-			name: "Success",
+			name:    "Success",
+			request: request,
 
-			request: &core.JwkSelectRequest{
-				ID:      uuid.MustParse("00000000-0000-0000-0000-000000000002"),
-				Private: true,
-			},
+			daoSelectMock:      &daoSelectMock{resp: storedKey},
+			serviceExtractMock: &serviceExtractMock{resp: extractedKey},
 
-			daoSelectMock: &daoSelectMock{
-				resp: &dao.Jwk{
-					ID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
-					PrivateKey: "cHJpdmF0ZS1rZXktMg",
-					PublicKey:  lo.ToPtr("cHVibGljLWtleS0y"),
-					Usage:      "test-usage",
-					CreatedAt:  time.Now().Add(-time.Hour),
-					ExpiresAt:  time.Now().Add(time.Hour),
-				},
-			},
-
-			serviceExtractMock: &serviceExtractMock{
-				resp: &core.Jwk{
-					JWKCommon: jwa.JWKCommon{
-						KTY: "test-kty",
-						Use: "test-use",
-						Alg: "test-alg",
-						KID: "00000000-0000-0000-0000-000000000002",
-					},
-					Payload: json.RawMessage(`{"message":"hello world"}`),
-				},
-			},
-
-			expect: &core.Jwk{
-				JWKCommon: jwa.JWKCommon{
-					KTY: "test-kty",
-					Use: "test-use",
-					Alg: "test-alg",
-					KID: "00000000-0000-0000-0000-000000000002",
-				},
-				Payload: json.RawMessage(`{"message":"hello world"}`),
-			},
+			expect: extractedKey,
 		},
 		{
-			name: "Error/Extract",
+			name:    "Error/Extract",
+			request: request,
 
-			request: &core.JwkSelectRequest{
-				ID:      uuid.MustParse("00000000-0000-0000-0000-000000000002"),
-				Private: true,
-			},
-
-			daoSelectMock: &daoSelectMock{
-				resp: &dao.Jwk{
-					ID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
-					PrivateKey: "cHJpdmF0ZS1rZXktMg",
-					PublicKey:  lo.ToPtr("cHVibGljLWtleS0y"),
-					Usage:      "test-usage",
-					CreatedAt:  time.Now().Add(-time.Hour),
-					ExpiresAt:  time.Now().Add(time.Hour),
-				},
-			},
-
-			serviceExtractMock: &serviceExtractMock{
-				err: errFoo,
-			},
+			daoSelectMock:      &daoSelectMock{resp: storedKey},
+			serviceExtractMock: &serviceExtractMock{err: errFoo},
 
 			expectErr: errFoo,
 		},
 		{
-			name: "Error/NotFound",
+			name:    "Error/NotFound",
+			request: request,
 
-			request: &core.JwkSelectRequest{
-				ID:      uuid.MustParse("00000000-0000-0000-0000-000000000002"),
-				Private: true,
-			},
-
-			daoSelectMock: &daoSelectMock{
-				err: dao.ErrJwkSelectNotFound,
-			},
+			daoSelectMock: &daoSelectMock{err: dao.ErrJwkSelectNotFound},
 
 			expectErr: core.ErrJwkNotFound,
 		},
 		{
-			name: "Error/Select",
+			name:    "Error/Select",
+			request: request,
 
-			request: &core.JwkSelectRequest{
-				ID:      uuid.MustParse("00000000-0000-0000-0000-000000000002"),
-				Private: true,
-			},
-
-			daoSelectMock: &daoSelectMock{
-				err: errFoo,
-			},
+			daoSelectMock: &daoSelectMock{err: errFoo},
 
 			expectErr: errFoo,
 		},

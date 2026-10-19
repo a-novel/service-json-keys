@@ -58,10 +58,7 @@ func TestNewMasterKeyContext(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, testCase.expect, value)
 
-			nCtx := t.Context()
-			nCtx = lib.TransferMasterKeyContext(ctx, nCtx)
-
-			transferredValue, err := lib.MasterKeyContext(nCtx)
+			transferredValue, err := lib.MasterKeyContext(lib.TransferMasterKeyContext(ctx, t.Context()))
 			require.NoError(t, err)
 			require.Equal(t, testCase.expect, transferredValue)
 		})
@@ -71,9 +68,6 @@ func TestNewMasterKeyContext(t *testing.T) {
 func TestMasterKeyContextMissing(t *testing.T) {
 	t.Parallel()
 
-	// Context without a master key should return ErrInvalidMasterKey.
-	ctx := t.Context()
-
-	_, err := lib.MasterKeyContext(ctx)
+	_, err := lib.MasterKeyContext(t.Context())
 	require.ErrorIs(t, err, lib.ErrInvalidMasterKey)
 }
