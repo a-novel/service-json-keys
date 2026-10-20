@@ -158,7 +158,7 @@ func TestPgJwkDelete(t *testing.T) {
 		},
 	}
 
-	dao := dao.NewPgJwkDelete()
+	daoJwkDelete := dao.NewPgJwkDelete()
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
@@ -179,7 +179,7 @@ func TestPgJwkDelete(t *testing.T) {
 						require.NoError(t, err)
 					}
 
-					key, err := dao.Exec(ctx, testCase.request)
+					key, err := daoJwkDelete.Exec(ctx, testCase.request)
 					require.ErrorIs(t, err, testCase.expectErr)
 					require.Equal(t, testCase.expect, key)
 				},
