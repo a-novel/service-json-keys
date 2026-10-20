@@ -29,8 +29,13 @@ func (source *JwkExportLocal) SearchKeys(ctx context.Context, usage string) ([]*
 	ctx, span := otel.Tracer().Start(ctx, "core.JwkExportLocal.SearchKeys")
 	defer span.End()
 
-	return source.service.Exec(ctx, &JwkSearchRequest{
+	keys, err := source.service.Exec(ctx, &JwkSearchRequest{
 		Usage:   usage,
 		Private: true,
 	})
+	if err != nil {
+		return nil, otel.ReportError(span, err)
+	}
+
+	return keys, nil
 }
