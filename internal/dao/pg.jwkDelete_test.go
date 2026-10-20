@@ -186,59 +186,58 @@ func TestPgJwkDelete(t *testing.T) {
 			)
 		})
 	}
-}
 
-// TestPgJwkDeleteTakesEffectImmediately checks that a revoked key stops being served from the
-// moment it is revoked. It reads through PgJwkSelect, because active_keys evaluates its
-// predicates on every read.
-func TestPgJwkDeleteTakesEffectImmediately(t *testing.T) {
-	t.Parallel()
+	// The view evaluates its predicates on every read, so a revoked key stops being served the
+	// moment it is revoked.
+	t.Run("Success/TakesEffectImmediately", func(t *testing.T) {
+		t.Parallel()
 
-	// This value becomes deleted_at, and the view serves a key while deleted_at is in the
-	// future. Truncate keeps it in the past, where rounding up would serve the key for up to
-	// 500ms more.
-	now := time.Now().UTC().Truncate(time.Second)
-	keyID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
+		// This value becomes deleted_at, and the view serves a key while deleted_at is in the
+		// future. Truncate keeps it in the past, where rounding up would serve the key for up to
+		// 500ms more.
+		now := time.Now().UTC().Truncate(time.Second)
+		keyID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 
-	postgrestest.RunDBTest(
-		t,
-		configtest.PostgresPreset,
-		migrations.Migrations,
-		func(ctx context.Context, t *testing.T) {
-			t.Helper()
+		postgrestest.RunDBTest(
+			t,
+			configtest.PostgresPreset,
+			migrations.Migrations,
+			func(ctx context.Context, t *testing.T) {
+				t.Helper()
 
-			db, err := postgres.GetContext(ctx)
-			require.NoError(t, err)
+				db, err := postgres.GetContext(ctx)
+				require.NoError(t, err)
 
-			fixture := &dao.Jwk{
-				ID:         keyID,
-				PrivateKey: "private-key",
-				PublicKey:  lo.ToPtr("public-key"),
-				Usage:      "auth",
-				CreatedAt:  now.Add(-time.Hour),
-				ExpiresAt:  now.Add(time.Hour),
-			}
+				fixture := &dao.Jwk{
+					ID:         keyID,
+					PrivateKey: "private-key",
+					PublicKey:  lo.ToPtr("public-key"),
+					Usage:      "auth",
+					CreatedAt:  now.Add(-time.Hour),
+					ExpiresAt:  now.Add(time.Hour),
+				}
 
-			_, err = db.NewInsert().Model(fixture).Exec(ctx)
-			require.NoError(t, err)
+				_, err = db.NewInsert().Model(fixture).Exec(ctx)
+				require.NoError(t, err)
 
-			selectDAO := dao.NewPgJwkSelect()
+				daoJwkSelect := dao.NewPgJwkSelect()
 
-			// Precondition: the key is served before revocation.
-			got, err := selectDAO.Exec(ctx, &dao.JwkSelectRequest{ID: keyID})
-			require.NoError(t, err)
-			require.Equal(t, keyID, got.ID)
+				// Precondition: the key is served before revocation.
+				got, err := daoJwkSelect.Exec(ctx, &dao.JwkSelectRequest{ID: keyID})
+				require.NoError(t, err)
+				require.Equal(t, keyID, got.ID)
 
-			_, err = dao.NewPgJwkDelete().Exec(ctx, &dao.JwkDeleteRequest{
-				ID:      keyID,
-				Now:     now,
-				Comment: "compromised",
-			})
-			require.NoError(t, err)
+				_, err = daoJwkDelete.Exec(ctx, &dao.JwkDeleteRequest{
+					ID:      keyID,
+					Now:     now,
+					Comment: "compromised",
+				})
+				require.NoError(t, err)
 
-			// The revocation applies with nothing run in between.
-			_, err = selectDAO.Exec(ctx, &dao.JwkSelectRequest{ID: keyID})
-			require.ErrorIs(t, err, dao.ErrJwkSelectNotFound)
-		},
-	)
+				// The revocation applies with nothing run in between.
+				_, err = daoJwkSelect.Exec(ctx, &dao.JwkSelectRequest{ID: keyID})
+				require.ErrorIs(t, err, dao.ErrJwkSelectNotFound)
+			},
+		)
+	})
 }

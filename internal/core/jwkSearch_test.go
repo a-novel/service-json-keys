@@ -170,34 +170,29 @@ func TestJwkSearch(t *testing.T) {
 			serviceExtract.AssertExpectations(t)
 		})
 	}
-}
 
-// TestJwkSearchRefusesSymmetricKeysWithoutPrivateAuthorization wires the real extraction into
-// the search and makes the request of the REST handlers, which leave Private false.
-//
-// A symmetric key has only private material, so the search fails before deserializing any of it.
-func TestJwkSearchRefusesSymmetricKeysWithoutPrivateAuthorization(t *testing.T) {
-	t.Parallel()
+	// The real extraction, with the request of the REST handlers, which leave Private false. A
+	// symmetric key has only private material, so the search fails before deserializing any of it.
+	t.Run("Error/SymmetricKeyWithoutPrivateAuthorization", func(t *testing.T) {
+		t.Parallel()
 
-	ctx, err := lib.NewMasterKeyContext(t.Context(), libtest.MasterKey)
-	require.NoError(t, err)
+		symmetric := &dao.Jwk{
+			ID:    uuid.MustParse("00000000-0000-0000-0000-000000000001"),
+			Usage: "auth",
+			// No public key: the shape a symmetric algorithm is stored in.
+			PrivateKey: mustEncryptBase64Value(ctx, t, &jwa.JWK{
+				JWKCommon: jwa.JWKCommon{KTY: "oct", Alg: "HS256", KID: "00000000-0000-0000-0000-000000000001"},
+				Payload:   []byte(`{"k":"secret-octets"}`),
+			}),
+		}
 
-	symmetric := &dao.Jwk{
-		ID:    uuid.MustParse("00000000-0000-0000-0000-000000000001"),
-		Usage: "auth",
-		// No public key: the shape a symmetric algorithm is stored in.
-		PrivateKey: mustEncryptBase64Value(ctx, t, &jwa.JWK{
-			JWKCommon: jwa.JWKCommon{KTY: "oct", Alg: "HS256", KID: "00000000-0000-0000-0000-000000000001"},
-			Payload:   []byte(`{"k":"secret-octets"}`),
-		}),
-	}
+		daoSearch := coremocks.NewMockJwkSearchDao(t)
+		daoSearch.EXPECT().Exec(mock.Anything, mock.Anything).Return([]*dao.Jwk{symmetric}, nil)
 
-	daoSearch := coremocks.NewMockJwkSearchDao(t)
-	daoSearch.EXPECT().Exec(mock.Anything, mock.Anything).Return([]*dao.Jwk{symmetric}, nil)
+		service := core.NewJwkSearch(daoSearch, core.NewJwkExtract())
 
-	service := core.NewJwkSearch(daoSearch, core.NewJwkExtract())
-
-	keys, err := service.Exec(ctx, &core.JwkSearchRequest{Usage: "auth"})
-	require.ErrorIs(t, err, core.ErrJwkExtractNoPublicKey)
-	require.Nil(t, keys)
+		keys, err := service.Exec(ctx, &core.JwkSearchRequest{Usage: "auth"})
+		require.ErrorIs(t, err, core.ErrJwkExtractNoPublicKey)
+		require.Nil(t, keys)
+	})
 }

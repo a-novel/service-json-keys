@@ -65,9 +65,13 @@ func TestNewMasterKeyContext(t *testing.T) {
 	}
 }
 
-func TestMasterKeyContextMissing(t *testing.T) {
+func TestMasterKeyContext(t *testing.T) {
 	t.Parallel()
 
-	_, err := lib.MasterKeyContext(t.Context())
-	require.ErrorIs(t, err, lib.ErrInvalidMasterKey)
+	t.Run("Error/Missing", func(t *testing.T) {
+		t.Parallel()
+
+		_, err := lib.MasterKeyContext(t.Context())
+		require.ErrorIs(t, err, lib.ErrInvalidMasterKey)
+	})
 }
