@@ -26,7 +26,7 @@ func NewJwkExportLocal(service JwkExportLocalSource) *JwkExportLocal {
 }
 
 func (source *JwkExportLocal) SearchKeys(ctx context.Context, usage string) ([]*jwa.JWK, error) {
-	ctx, span := otel.Tracer().Start(ctx, "core.JwkExportLocal.SearchKeys")
+	ctx, span := otel.Tracer().Start(ctx, "core.JwkExportLocal")
 	defer span.End()
 
 	searchRequest := &JwkSearchRequest{

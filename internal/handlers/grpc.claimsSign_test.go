@@ -71,7 +71,7 @@ func TestGrpcClaimsSign(t *testing.T) {
 			expectStatus: codes.InvalidArgument,
 		},
 		{
-			name: "Error/BadConfig",
+			name: "Error/UnknownUsage",
 
 			request: &jsonkeysv2.ClaimsSignRequest{
 				Payload: lo.Must(grpcf.MarshalJSONAsAny(map[string]any{"message": "hello world"})),
@@ -83,7 +83,8 @@ func TestGrpcClaimsSign(t *testing.T) {
 				err: core.ErrConfigNotFound,
 			},
 
-			expectStatus: codes.Unavailable,
+			expectStatus:  codes.InvalidArgument,
+			expectMessage: "unknown usage",
 		},
 		{
 			// A registered claim is the caller's mistake, so the status tells them what to

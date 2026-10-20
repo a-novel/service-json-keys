@@ -116,6 +116,28 @@ func TestPgJwkSelect(t *testing.T) {
 
 			expectErr: dao.ErrJwkSelectNotFound,
 		},
+		{
+			name: "Error/Revoked",
+
+			request: &dao.JwkSelectRequest{
+				ID: uuid.MustParse("00000000-0000-0000-0000-000000000001"),
+			},
+
+			fixtures: []*dao.Jwk{
+				{
+					ID:             uuid.MustParse("00000000-0000-0000-0000-000000000001"),
+					PrivateKey:     "cHJpdmF0ZS1rZXktMQ",
+					PublicKey:      lo.ToPtr("cHVibGljLWtleS0x"),
+					Usage:          "test-usage",
+					CreatedAt:      hourAgo,
+					ExpiresAt:      hourLater,
+					DeletedAt:      lo.ToPtr(hourAgo),
+					DeletedComment: lo.ToPtr("compromised"),
+				},
+			},
+
+			expectErr: dao.ErrJwkSelectNotFound,
+		},
 	}
 
 	daoJwkSelect := dao.NewPgJwkSelect()

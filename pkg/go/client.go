@@ -58,6 +58,7 @@ type BaseClient interface {
 	JwkList(ctx context.Context, req *JwkListRequest, opts ...grpc.CallOption) (*JwkListResponse, error)
 	// ClaimsSign asks the service to sign claims and returns a compact JWT.
 	// The request payload must be a protobuf Any wrapping the claims to embed.
+	// A usage the service has no configuration for fails with InvalidArgument.
 	//
 	// The payload carries application claims only. The service stamps the registered
 	// ones (iss, sub, aud, exp, nbf, iat, jti) from the usage's server-side config, and
