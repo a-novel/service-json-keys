@@ -75,7 +75,7 @@ func DecryptMasterKey(ctx context.Context, data []byte, output any) error {
 		return otel.ReportError(span, fmt.Errorf("decrypt data: %w", ErrInvalidSecret))
 	}
 
-	err = json.Unmarshal(decrypted, &output)
+	err = json.Unmarshal(decrypted, output)
 	if err != nil {
 		return otel.ReportError(span, fmt.Errorf("unmarshal data: %w", err))
 	}
