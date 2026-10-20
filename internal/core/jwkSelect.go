@@ -26,8 +26,8 @@ type JwkSelectServiceExtract interface {
 type JwkSelectRequest struct {
 	// ID is the key to retrieve; it corresponds to the "kid" field in the JWT header.
 	ID uuid.UUID
-	// Private controls whether to return the private key material. Set to true only for the signing
-	// path (gRPC ClaimsSign); public key endpoints must leave this false.
+	// Private controls whether to return the private key material. The key-by-ID endpoints serve
+	// public keys and leave it false; the signing path reads its keys through [JwkSearch].
 	Private bool
 }
 

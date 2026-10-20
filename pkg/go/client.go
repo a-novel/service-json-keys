@@ -14,18 +14,26 @@ import (
 )
 
 type (
-	StatusRequest      = jsonkeysv2.StatusRequest
-	StatusResponse     = jsonkeysv2.StatusResponse
-	JwkListRequest     = jsonkeysv2.JwkListRequest
-	JwkListResponse    = jsonkeysv2.JwkListResponse
-	JwkGetRequest      = jsonkeysv2.JwkGetRequest
-	JwkGetResponse     = jsonkeysv2.JwkGetResponse
-	ClaimsSignRequest  = jsonkeysv2.ClaimsSignRequest
+	// StatusRequest is the request of [BaseClient.Status]. It carries no parameters.
+	StatusRequest = jsonkeysv2.StatusRequest
+	// StatusResponse reports the health of each dependency [BaseClient.Status] checked.
+	StatusResponse = jsonkeysv2.StatusResponse
+	// JwkListRequest names the usage whose public keys [BaseClient.JwkList] returns.
+	JwkListRequest = jsonkeysv2.JwkListRequest
+	// JwkListResponse holds the active public keys of a usage, newest first.
+	JwkListResponse = jsonkeysv2.JwkListResponse
+	// JwkGetRequest names the key ID [BaseClient.JwkGet] looks up.
+	JwkGetRequest = jsonkeysv2.JwkGetRequest
+	// JwkGetResponse holds the public key [BaseClient.JwkGet] found.
+	JwkGetResponse = jsonkeysv2.JwkGetResponse
+	// ClaimsSignRequest carries the claims [BaseClient.ClaimsSign] signs and the usage that
+	// selects the key.
+	ClaimsSignRequest = jsonkeysv2.ClaimsSignRequest
+	// ClaimsSignResponse holds the compact JWT [BaseClient.ClaimsSign] produced.
 	ClaimsSignResponse = jsonkeysv2.ClaimsSignResponse
 
-	// JwkConfig holds the full configuration for a single key usage — the signing algorithm
-	// and the key and token parameters applied to every JWT signed under it.
-	// Keyed by usage name in the map returned by [Client.Keys].
+	// JwkConfig holds the configuration of one key usage: its signing algorithm, and the key and
+	// token parameters of every JWT signed under it. [Client.Keys] maps each usage name to one.
 	JwkConfig = jwkconfig.Jwk
 )
 
@@ -49,12 +57,11 @@ type BaseClient interface {
 	// JwkList returns the active public keys for a given usage.
 	JwkList(ctx context.Context, req *JwkListRequest, opts ...grpc.CallOption) (*JwkListResponse, error)
 	// ClaimsSign asks the service to sign claims and returns a compact JWT.
-	// The request payload must be a protobuf Any wrapping the claims to embed;
-	// the response token is the resulting compact JWT string.
+	// The request payload must be a protobuf Any wrapping the claims to embed.
 	//
-	// The payload carries application claims only. The registered ones — iss,
-	// sub, aud, exp, nbf, iat, jti — come from the usage's server-side config,
-	// and a payload naming one fails with InvalidArgument.
+	// The payload carries application claims only. The service stamps the registered
+	// ones (iss, sub, aud, exp, nbf, iat, jti) from the usage's server-side config, and
+	// a payload naming one fails with InvalidArgument.
 	ClaimsSign(ctx context.Context, req *ClaimsSignRequest, opts ...grpc.CallOption) (*ClaimsSignResponse, error)
 
 	// Close releases the underlying gRPC connection. Typically called via defer after NewClient.

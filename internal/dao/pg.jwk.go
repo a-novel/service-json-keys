@@ -45,7 +45,7 @@ type Jwk struct {
 	// and is only accessible via direct database queries.
 	ExpiresAt time.Time `bun:"expires_at"`
 
-	// DeletedAt is set when the key is revoked prematurely — for example, due to a compromise.
+	// DeletedAt is set when the key is revoked before it expires, after a compromise for example.
 	// It is nil for keys that expire naturally. See [Jwk.DeletedComment] for the reason.
 	DeletedAt *time.Time `bun:"deleted_at"`
 	// DeletedComment is the human-readable reason for the early revocation. See [Jwk.DeletedAt].

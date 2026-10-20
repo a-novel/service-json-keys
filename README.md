@@ -34,7 +34,7 @@ The service runs as published OCI images plus a PostgreSQL database. All state l
 | `service-json-keys/rest`            | Public key-fetch + health API.                                                   |
 | `service-json-keys/jobs/migrations` | One-shot schema migration job; runs to completion before the servers start.      |
 | `service-json-keys/jobs/rotatekeys` | Scheduled key-rotation job (see [CONTRIBUTING](./CONTRIBUTING.md#key-rotation)). |
-| `service-json-keys/database`        | Pre-tuned PostgreSQL image. Any PostgreSQL server works too.                     |
+| `service-json-keys/database`        | PostgreSQL with pgBackRest, on Wolfi. Any PostgreSQL server works too.           |
 
 Pin every image to the same tag, the [latest release](https://github.com/a-novel/service-json-keys/releases/latest) for a new deployment. Start `database`, run the migrations job to completion, then start any number of `grpc` and `rest` replicas.
 
@@ -184,10 +184,10 @@ Logs and tracing (server images, `jobs/rotatekeys`):
 
 ## Using the client packages
 
-Each snippet below is the minimum call. [pkg.go.dev](https://pkg.go.dev/github.com/a-novel/service-json-keys/v2) and the [API reference](https://a-novel.github.io/service-json-keys-v2) document the rest.
-
 - **Go** calls the gRPC API. Use it from a backend service that signs tokens or verifies them.
 - **JavaScript / TypeScript** calls the REST API. Use it from a frontend or a Node service that only needs the public keys.
+
+The examples make the minimum call. [pkg.go.dev](https://pkg.go.dev/github.com/a-novel/service-json-keys/v2) and the [API reference](https://a-novel.github.io/service-json-keys-v2) document the full surface.
 
 ### Go (gRPC)
 

@@ -18,8 +18,8 @@ var jwkSearchQuery string
 // safeguard against misconfiguration or unexpected key accumulation.
 const KeysMaxBatchSize = 100
 
-// ErrJwkSearchTooManyResults is logged (not returned) when a search hits the [KeysMaxBatchSize]
-// limit. Results are still returned, but the condition indicates a likely misconfiguration.
+// ErrJwkSearchTooManyResults is logged when a search hits the [KeysMaxBatchSize] limit, which
+// signals a likely misconfiguration. The search still returns its results.
 var ErrJwkSearchTooManyResults = fmt.Errorf("the query returned %d or more results", KeysMaxBatchSize)
 
 // JwkSearchRequest holds the parameters for a [PgJwkSearch.Exec] call.
@@ -31,8 +31,8 @@ type JwkSearchRequest struct {
 // A PgJwkSearch lists the active keys for a given usage. Keys are returned
 // newest first: the first element is the main key, the rest are legacy.
 //
-// There is no pagination for this query; regular rotation and expiration keep
-// the active key count well below [KeysMaxBatchSize] under normal operation.
+// Regular rotation and expiration keep the active key count well below
+// [KeysMaxBatchSize], so one query returns them all.
 type PgJwkSearch struct{}
 
 // NewPgJwkSearch returns a new PgJwkSearch dao.

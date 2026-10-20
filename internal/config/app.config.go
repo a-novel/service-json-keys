@@ -22,7 +22,7 @@ type Main struct {
 	DowntimeStart *time.Time `json:"downtimeStart" yaml:"downtimeStart"`
 }
 
-// App aggregates the configuration needed to run the gRPC and REST servers.
+// App is the complete configuration the servers read at startup.
 type App struct {
 	// App holds the core application identity and secrets.
 	App Main `json:"app" yaml:"app"`
@@ -33,7 +33,7 @@ type App struct {
 
 	// Otel configures the OpenTelemetry exporter for traces and metrics.
 	Otel otel.Config `json:"otel" yaml:"otel"`
-	// Logger is the base application logger used for general output.
+	// Logger is the application logger the REST handlers report their errors to.
 	Logger logging.Log `json:"logger" yaml:"logger"`
 	// GrpcLogger configures the gRPC request logging middleware.
 	GrpcLogger logging.RPCConfig `json:"grpcLogger" yaml:"grpcLogger"`

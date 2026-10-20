@@ -24,7 +24,7 @@ FROM docker.io/library/alpine:3.24.2
 
 COPY --from=builder /rest /rest
 
-# Alpine ships BusyBox wget — no extra package needed for the healthcheck.
+# The healthcheck uses the wget of Alpine's BusyBox.
 HEALTHCHECK --interval=1s --timeout=5s --retries=10 --start-period=1s \
   CMD ["wget", "-qO", "/dev/null", "http://localhost:8080/v2/ping"]
 

@@ -14,11 +14,9 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/config/env"
 )
 
-const (
-	// OtelFlushTimeout is the maximum time allowed for the OpenTelemetry exporter to
-	// flush pending spans on shutdown.
-	OtelFlushTimeout = 2 * time.Second
-)
+// OtelFlushTimeout bounds how long the OpenTelemetry exporter waits to flush pending spans on
+// shutdown.
+const OtelFlushTimeout = 2 * time.Second
 
 // OtelPresetDefault is the OpenTelemetry exporter of the servers and the rotation job. It exports
 // nothing unless OTEL is set, then exports to Google Cloud when GCLOUD_PROJECT_ID is set, and to
@@ -38,20 +36,21 @@ var LoggerProdGrpc = loggingpresets.GRPCGcloud{
 	ProjectId: env.GcloudProjectId,
 }
 
-// LoggerDevGrpc prints gRPC request logs to the console in a human-readable format.
+// LoggerDevGrpc prints gRPC request logs to the console for local development.
 var LoggerDevGrpc = loggingpresets.GRPCLocal{}
 
-// LoggerDev prints HTTP request logs to the console in a human-readable format.
+// LoggerDev prints application and REST request logs to the console for local development.
 var LoggerDev = &loggingpresets.LogLocal{
 	Out: os.Stdout,
 }
 
-// LoggerProd sends HTTP request logs to Google Cloud Logging.
+// LoggerProd sends application and REST request logs to Google Cloud Logging.
 var LoggerProd = &loggingpresets.LogGcloud{
 	ProjectId: env.GcloudProjectId,
 }
 
-// AppPresetDefault is the default [App] configuration populated from environment variables.
+// AppPresetDefault is the configuration the servers start with. It reads every value from the
+// environment, and picks the Google Cloud logging and tracing backends once a project ID is set.
 var AppPresetDefault = App{
 	App: Main{
 		Name:          env.AppName,

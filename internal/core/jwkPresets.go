@@ -37,8 +37,8 @@ type JwkGeneratorResult struct {
 // JwkGenAny is the common generator signature used by [JwkGenerators].
 type JwkGenAny func() (*JwkGeneratorResult, error)
 
-// JwkGenerators is the registry of key generators keyed by algorithm. JwkGen.Exec uses this
-// to look up the correct generator for a given usage's configured algorithm.
+// JwkGenerators is the registry of key generators keyed by algorithm. [JwkGen.Exec] uses it to
+// look up the generator of a usage's configured algorithm.
 var JwkGenerators = map[jwa.Alg]JwkGenAny{
 	jwa.EdDSA:   JwkGeneratorEd25519(jwa.EdDSA), //nolint:staticcheck // A configured legacy label is honored.
 	jwa.Ed25519: JwkGeneratorEd25519(jwa.Ed25519),
@@ -136,6 +136,7 @@ type JwkPublicSource interface {
 	SearchKeys(ctx context.Context, usage string) ([]*jwa.JWK, error)
 }
 
+// newJwkSource returns a key source that caches the keys searchKeys returns for usage.
 func newJwkSource(
 	searchKeys func(context.Context, string) ([]*jwa.JWK, error),
 	usage string,
