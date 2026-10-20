@@ -93,10 +93,7 @@ func main() {
 	// =================================================================================================================
 
 	ctxInterceptor := func(rpCtx context.Context) context.Context {
-		rpCtx = postgres.TransferContext(ctx, rpCtx)
-		rpCtx = lib.TransferMasterKeyContext(ctx, rpCtx)
-
-		return rpCtx
+		return lib.TransferMasterKeyContext(ctx, postgres.TransferContext(ctx, rpCtx))
 	}
 
 	server := grpcf.NewServer(ctx, cfg.Otel, cfg.GrpcLogger, cfg.App.DowntimeStart, ctxInterceptor)

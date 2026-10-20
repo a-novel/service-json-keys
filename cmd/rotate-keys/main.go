@@ -44,7 +44,7 @@ func main() {
 	}
 
 	ctx = lo.Must(lib.NewMasterKeyContext(ctx, cfg.App.MasterKey))
-	ctx = lo.Must(postgres.NewContext(ctx, config.PostgresPresetDefault))
+	ctx = lo.Must(postgres.NewContext(ctx, cfg.Postgres))
 
 	ctx, span := otel.Tracer().Start(ctx, "job.RotateKeys")
 	defer span.End()
@@ -54,19 +54,11 @@ func main() {
 	daoJwkInsert := dao.NewPgJwkInsert()
 
 	serviceJwkExtract := core.NewJwkExtract()
-	serviceJwkGen := core.NewJwkGen(
-		daoJwkSearch,
-		daoJwkInsert,
-		serviceJwkExtract,
-		config.JwkPresetDefault,
-	)
+	serviceJwkGen := core.NewJwkGen(daoJwkSearch, daoJwkInsert, serviceJwkExtract, cfg.Jwk)
+	serviceJwkRotateAll := core.NewJwkRotateAll(serviceJwkGen, postgres.NewTransactor(nil), cfg.Jwk)
 
 	// --- Rotate keys for each usage, as one unit of work ---
-	log.Printf("rotating keys for %d configured usage(s)", len(config.JwkPresetDefault))
-
-	serviceJwkRotateAll := core.NewJwkRotateAll(
-		serviceJwkGen, postgres.NewTransactor(nil), config.JwkPresetDefault,
-	)
+	log.Printf("rotating keys for %d configured usage(s)", len(cfg.Jwk))
 
 	resp, err := serviceJwkRotateAll.Exec(ctx, &core.JwkRotateAllRequest{})
 	if err != nil {
