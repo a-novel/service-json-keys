@@ -58,9 +58,9 @@ func (dao *PgJwkDelete) Exec(ctx context.Context, request *JwkDeleteRequest) (*J
 		return nil, otel.ReportError(span, fmt.Errorf("get transaction: %w", err))
 	}
 
-	entity := new(Jwk)
+	var entity Jwk
 
-	err = tx.NewRaw(jwkDeleteQuery, request.Now, request.Comment, request.ID).Scan(ctx, entity)
+	err = tx.NewRaw(jwkDeleteQuery, request.Now, request.Comment, request.ID).Scan(ctx, &entity)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, otel.ReportError(span, ErrJwkDeleteNotFound)
@@ -69,5 +69,5 @@ func (dao *PgJwkDelete) Exec(ctx context.Context, request *JwkDeleteRequest) (*J
 		return nil, otel.ReportError(span, fmt.Errorf("execute query: %w", err))
 	}
 
-	return entity, nil
+	return &entity, nil
 }

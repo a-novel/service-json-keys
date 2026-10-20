@@ -58,7 +58,7 @@ func (dao *PgJwkInsert) Exec(ctx context.Context, request *JwkInsertRequest) (*J
 		return nil, otel.ReportError(span, fmt.Errorf("get transaction: %w", err))
 	}
 
-	entity := new(Jwk)
+	var entity Jwk
 
 	err = tx.
 		NewRaw(
@@ -70,10 +70,10 @@ func (dao *PgJwkInsert) Exec(ctx context.Context, request *JwkInsertRequest) (*J
 			request.Now,
 			request.Expiration,
 		).
-		Scan(ctx, entity)
+		Scan(ctx, &entity)
 	if err != nil {
 		return nil, otel.ReportError(span, fmt.Errorf("execute query: %w", err))
 	}
 
-	return entity, nil
+	return &entity, nil
 }
