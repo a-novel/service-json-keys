@@ -26,6 +26,15 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lmsgprefix)
 	log.SetPrefix("rotate-keys: ")
 
+	err := rotateKeys()
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+}
+
+// rotateKeys runs the job. It returns its error to main, so the job's span ends and its telemetry
+// flushes before the process exits.
+func rotateKeys() error {
 	start := time.Now()
 
 	// --- Bootstrap: load config, init telemetry and context ---
@@ -40,7 +49,7 @@ func main() {
 	if downtime.Started(cfg.App.DowntimeStart, start) {
 		log.Println("planned downtime in progress: no rotation")
 
-		return
+		return nil
 	}
 
 	ctx = lo.Must(lib.NewMasterKeyContext(ctx, cfg.App.MasterKey))
@@ -62,10 +71,11 @@ func main() {
 
 	resp, err := serviceJwkRotateAll.Exec(ctx, &core.JwkRotateAllRequest{})
 	if err != nil {
-		err = otel.ReportError(span, fmt.Errorf("rotate keys: %w", err))
-		log.Fatalln(err.Error()) //nolint:gocritic
+		return otel.ReportError(span, fmt.Errorf("rotate keys: %w", err))
 	}
 
 	log.Printf("done — %d usage(s) processed, completed in %s",
 		resp.Processed, time.Since(start).Round(time.Millisecond))
+
+	return nil
 }
