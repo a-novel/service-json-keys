@@ -7,16 +7,18 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/uptrace/bun/driver/pgdriver"
 
+	postgrespresets "github.com/a-novel-kit/golib/postgres/presets"
+
 	"github.com/a-novel/service-json-keys/v2/internal/config"
 )
 
-func TestPostgresConnection(t *testing.T) {
+func TestNewPostgresPreset(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
 		name string
 
-		connection config.PostgresConnection
+		connection postgrespresets.Connection
 
 		expectAddr       string
 		expectUser       string
@@ -27,7 +29,7 @@ func TestPostgresConnection(t *testing.T) {
 	}{
 		{
 			name: "Success/Discrete",
-			connection: config.PostgresConnection{
+			connection: postgrespresets.Connection{
 				DSN:        "not-used",
 				Host:       "postgres.internal",
 				Port:       5433,
@@ -44,7 +46,7 @@ func TestPostgresConnection(t *testing.T) {
 		},
 		{
 			name: "Success/DiscreteTLS",
-			connection: config.PostgresConnection{
+			connection: postgrespresets.Connection{
 				Host:       "postgres.internal",
 				Port:       5432,
 				User:       "json-keys",
@@ -60,7 +62,7 @@ func TestPostgresConnection(t *testing.T) {
 		},
 		{
 			name: "Success/LegacyDSN",
-			connection: config.PostgresConnection{
+			connection: postgrespresets.Connection{
 				DSN: "postgres://legacy-user@legacy.internal:6432/legacy-db?sslmode=disable",
 			},
 			expectAddr:       "legacy.internal:6432",
@@ -71,7 +73,7 @@ func TestPostgresConnection(t *testing.T) {
 		},
 		{
 			name: "Error/MissingDiscretePassword",
-			connection: config.PostgresConnection{
+			connection: postgrespresets.Connection{
 				Host:     "postgres.internal",
 				Port:     5432,
 				User:     "json-keys",
