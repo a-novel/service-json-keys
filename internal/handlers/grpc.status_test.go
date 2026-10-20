@@ -7,17 +7,12 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/uptrace/bun"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
 
-	"github.com/a-novel-kit/golib/postgres"
-	postgrespresets "github.com/a-novel-kit/golib/postgres/presets"
-
-	"github.com/a-novel/service-json-keys/v2/internal/config/configtest"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
 	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/internal/handlers/protogen/anovel/jsonkeys/v2"
 	"github.com/a-novel/service-json-keys/v2/pkg/go"
@@ -27,77 +22,44 @@ func TestGrpcStatus(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
-		name          string
-		skipPostgres  bool
-		closePostgres bool
-		transaction   bool
-		cancel        bool
-		expectStatus  codes.Code
+		name string
+
+		setup probeSetup
+
+		expect       *jsonkeysv2.StatusResponse
+		expectStatus codes.Code
 	}{
-		{name: "Success", expectStatus: codes.OK},
-		{name: "Error/MissingPostgres", skipPostgres: true, expectStatus: codes.Unavailable},
-		{name: "Error/ClosedPostgres", closePostgres: true, expectStatus: codes.Unavailable},
-		{name: "Error/TransactionContext", transaction: true, expectStatus: codes.Unavailable},
-		{name: "Error/CancelledProbe", cancel: true, expectStatus: codes.Unavailable},
+		{
+			name:  "Success",
+			setup: probeHealthy,
+			expect: &jsonkeysv2.StatusResponse{
+				Postgres: &jsonkeysv2.DependencyHealth{
+					Status: jsonkeysv2.DependencyStatus_DEPENDENCY_STATUS_UP,
+				},
+			},
+			expectStatus: codes.OK,
+		},
+		{name: "Error/MissingPostgres", setup: probeWithoutPostgres, expectStatus: codes.Unavailable},
+		{name: "Error/ClosedPostgres", setup: probeClosedPostgres, expectStatus: codes.Unavailable},
+		{name: "Error/TransactionContext", setup: probeInTransaction, expectStatus: codes.Unavailable},
+		{name: "Error/CancelledProbe", setup: probeCancelled, expectStatus: codes.Unavailable},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			ctx := t.Context()
-
-			if !testCase.skipPostgres {
-				var err error
-
-				preset := postgrespresets.NewDefault(configtest.PostgresPreset.Options()...)
-				ctx, err = postgres.NewContext(ctx, preset)
-				require.NoError(t, err)
-				pg, err := postgres.GetContext(ctx)
-				require.NoError(t, err)
-
-				db, ok := pg.(*bun.DB)
-				require.True(t, ok)
-				t.Cleanup(func() { require.NoError(t, db.Close()) })
-
-				if testCase.closePostgres {
-					require.NoError(t, db.Close())
-				}
-
-				if testCase.transaction {
-					tx, err := db.BeginTx(ctx, nil)
-
-					require.NoError(t, err)
-					defer func() {
-						require.NoError(t, ctx.Err())
-						require.NoError(t, tx.Rollback())
-					}()
-
-					ctx = context.WithValue(ctx, postgres.ContextKey{}, tx)
-				}
-			}
-
-			if testCase.cancel {
-				cancelled, cancel := context.WithCancel(ctx)
-				cancel()
-
-				ctx = cancelled
-			}
+			ctx := newProbeContext(t, testCase.setup)
 
 			response, err := handlers.NewGrpcStatus().Status(ctx, &jsonkeysv2.StatusRequest{})
 			result, ok := status.FromError(err)
 			require.True(t, ok)
-			require.Equal(t, testCase.expectStatus, result.Code())
+			require.Equal(t, testCase.expectStatus, result.Code(), "got %s (%v)", result.Code(), err)
+			require.Equal(t, testCase.expect, response)
 
 			if testCase.expectStatus != codes.OK {
-				require.Nil(t, response)
+				// The message carries no raw dependency error.
 				require.Equal(t, "service dependencies unavailable", result.Message())
-			} else {
-				require.Equal(t, &jsonkeysv2.StatusResponse{
-					Postgres: &jsonkeysv2.DependencyHealth{
-						Status: jsonkeysv2.DependencyStatus_DEPENDENCY_STATUS_UP,
-					},
-				}, response)
 			}
 		})
 	}

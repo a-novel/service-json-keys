@@ -42,10 +42,12 @@ func (handler *GrpcClaimsSign) ClaimsSign(
 		return nil, status.Error(codes.InvalidArgument, "invalid payload")
 	}
 
-	signed, err := handler.service.Exec(ctx, &core.ClaimsSignRequest{
+	serviceRequest := &core.ClaimsSignRequest{
 		Claims: extractedClaims,
 		Usage:  request.GetUsage(),
-	})
+	}
+
+	signed, err := handler.service.Exec(ctx, serviceRequest)
 	if errors.Is(err, core.ErrConfigNotFound) {
 		_ = otel.ReportError(span, err)
 

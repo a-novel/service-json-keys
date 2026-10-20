@@ -1,4 +1,5 @@
 name: run-migrations
+description: Apply the service's migrations to the database the job started.
 
 runs:
   using: "composite"

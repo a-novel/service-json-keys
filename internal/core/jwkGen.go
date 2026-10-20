@@ -81,78 +81,89 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 		return nil, otel.ReportError(span, fmt.Errorf("list keys: %w", err))
 	}
 
-	var lastCreated time.Time
-	if len(keys) > 0 {
-		lastCreated = keys[0].CreatedAt
-	}
-
 	keyConfig, ok := service.keysConfig[request.Usage]
 	if !ok {
 		return nil, otel.ReportError(span, ErrConfigNotFound)
 	}
 
+	latestKey := lo.FirstOrEmpty(keys)
+	lastCreated := lo.FromPtr(latestKey).CreatedAt
+
 	span.SetAttributes(attribute.Int64("key.last_created", lastCreated.Unix()))
 
-	var latestKey *dao.Jwk
-
 	if time.Since(lastCreated) >= keyConfig.Key.Rotation {
-		keyGenerator, ok := JwkGenerators[keyConfig.Alg]
-		if !ok {
-			return nil, otel.ReportError(span, fmt.Errorf("%w: %s", ErrJwkGenUnknownKeyUsage, request.Usage))
-		}
-
-		generatedKey, err := keyGenerator()
+		latestKey, err = service.generate(ctx, request.Usage, keyConfig)
 		if err != nil {
-			return nil, otel.ReportError(span, fmt.Errorf("generate key: %w", err))
+			return nil, otel.ReportError(span, err)
 		}
-
-		// Encrypt the private key with the master key, so a database dump does not expose it.
-		privateKeyEncrypted, err := lib.EncryptMasterKey(ctx, generatedKey.PrivateKey)
-		if err != nil {
-			return nil, otel.ReportError(span, fmt.Errorf("encrypt private key: %w", err))
-		}
-
-		// Both private and public keys share the same KID.
-		kid, err := uuid.Parse(generatedKey.PrivateKID)
-		if err != nil {
-			return nil, otel.ReportError(span, fmt.Errorf("parse KID: %w", err))
-		}
-
-		var publicKeyEncoded *string
-
-		if generatedKey.PublicKey != nil {
-			publicKeySerialized, err := json.Marshal(generatedKey.PublicKey)
-			if err != nil {
-				return nil, otel.ReportError(span, fmt.Errorf("serialize public key: %w", err))
-			}
-
-			publicKeyEncoded = lo.ToPtr(base64.RawURLEncoding.EncodeToString(publicKeySerialized))
-		}
-
-		now := time.Now()
-
-		latestKey, err = service.daoInsert.Exec(ctx, &dao.JwkInsertRequest{
-			ID:         kid,
-			PrivateKey: base64.RawURLEncoding.EncodeToString(privateKeyEncrypted),
-			PublicKey:  publicKeyEncoded,
-			Usage:      request.Usage,
-			Now:        now,
-			Expiration: now.Add(keyConfig.Key.TTL),
-		})
-		if err != nil {
-			return nil, otel.ReportError(span, fmt.Errorf("insert key: %w", err))
-		}
-	} else {
-		latestKey = keys[0]
 	}
 
-	output, err := service.serviceExtract.Exec(ctx, &JwkExtractRequest{
+	extractRequest := &JwkExtractRequest{
 		Jwk:     latestKey,
 		Private: true,
-	})
+	}
+
+	output, err := service.serviceExtract.Exec(ctx, extractRequest)
 	if err != nil {
 		return nil, otel.ReportError(span, err)
 	}
 
 	return output, nil
+}
+
+// generate creates a key for usage and stores it as the usage's newest key.
+func (service *JwkGen) generate(ctx context.Context, usage string, keyConfig *jwkconfig.Jwk) (*dao.Jwk, error) {
+	ctx, span := otel.Tracer().Start(ctx, "core.JwkGen(generate)")
+	defer span.End()
+
+	keyGenerator, ok := JwkGenerators[keyConfig.Alg]
+	if !ok {
+		return nil, otel.ReportError(span, fmt.Errorf("%w: %s", ErrJwkGenUnknownKeyUsage, usage))
+	}
+
+	generatedKey, err := keyGenerator()
+	if err != nil {
+		return nil, otel.ReportError(span, fmt.Errorf("generate key: %w", err))
+	}
+
+	// Encrypt the private key with the master key, so a database dump does not expose it.
+	privateKeyEncrypted, err := lib.EncryptMasterKey(ctx, generatedKey.PrivateKey)
+	if err != nil {
+		return nil, otel.ReportError(span, fmt.Errorf("encrypt private key: %w", err))
+	}
+
+	// Both private and public keys share the same KID.
+	kid, err := uuid.Parse(generatedKey.PrivateKID)
+	if err != nil {
+		return nil, otel.ReportError(span, fmt.Errorf("parse KID: %w", err))
+	}
+
+	var publicKeyEncoded *string
+
+	if generatedKey.PublicKey != nil {
+		publicKeySerialized, err := json.Marshal(generatedKey.PublicKey)
+		if err != nil {
+			return nil, otel.ReportError(span, fmt.Errorf("serialize public key: %w", err))
+		}
+
+		publicKeyEncoded = lo.ToPtr(base64.RawURLEncoding.EncodeToString(publicKeySerialized))
+	}
+
+	now := time.Now()
+
+	daoRequest := &dao.JwkInsertRequest{
+		ID:         kid,
+		PrivateKey: base64.RawURLEncoding.EncodeToString(privateKeyEncrypted),
+		PublicKey:  publicKeyEncoded,
+		Usage:      usage,
+		Now:        now,
+		Expiration: now.Add(keyConfig.Key.TTL),
+	}
+
+	key, err := service.daoInsert.Exec(ctx, daoRequest)
+	if err != nil {
+		return nil, otel.ReportError(span, fmt.Errorf("insert key: %w", err))
+	}
+
+	return key, nil
 }

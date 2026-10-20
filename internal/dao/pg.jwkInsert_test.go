@@ -49,7 +49,7 @@ func TestPgJwkInsert(t *testing.T) {
 		},
 	}
 
-	dao := dao.NewPgJwkInsert()
+	daoJwkInsert := dao.NewPgJwkInsert()
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
@@ -62,7 +62,7 @@ func TestPgJwkInsert(t *testing.T) {
 				func(ctx context.Context, t *testing.T) {
 					t.Helper()
 
-					key, err := dao.Exec(ctx, testCase.request)
+					key, err := daoJwkInsert.Exec(ctx, testCase.request)
 					require.NoError(t, err)
 					require.NotNil(t, key)
 				},

@@ -26,8 +26,8 @@ type JwkSelectServiceExtract interface {
 type JwkSelectRequest struct {
 	// ID is the key to retrieve; it corresponds to the "kid" field in the JWT header.
 	ID uuid.UUID
-	// Private controls whether to return the private key material. Set to true only for the signing
-	// path (gRPC ClaimsSign); public key endpoints must leave this false.
+	// Private controls whether to return the private key material. The key-by-ID endpoints serve
+	// public keys and leave it false; the signing path reads its keys through [JwkSearch].
 	Private bool
 }
 
@@ -57,17 +57,17 @@ func (service *JwkSelect) Exec(ctx context.Context, request *JwkSelectRequest) (
 		attribute.Bool("key.private", request.Private),
 	)
 
-	entity, err := service.dao.Exec(ctx, &dao.JwkSelectRequest{
-		ID: request.ID,
-	})
+	entity, err := service.dao.Exec(ctx, &dao.JwkSelectRequest{ID: request.ID})
 	if err != nil {
 		return nil, otel.ReportError(span, fmt.Errorf("select key: %w", err))
 	}
 
-	deserialized, err := service.serviceExtract.Exec(ctx, &JwkExtractRequest{
+	extractRequest := &JwkExtractRequest{
 		Jwk:     entity,
 		Private: request.Private,
-	})
+	}
+
+	deserialized, err := service.serviceExtract.Exec(ctx, extractRequest)
 	if err != nil {
 		return nil, otel.ReportError(span, fmt.Errorf("deserialize key: %w", err))
 	}

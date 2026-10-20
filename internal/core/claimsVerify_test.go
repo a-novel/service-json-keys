@@ -2,7 +2,6 @@ package core_test
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 
@@ -19,23 +18,7 @@ func TestClaimsVerify(t *testing.T) {
 		Foo string `json:"foo"`
 	}
 
-	testConfig := map[string]*config.Jwk{
-		"test-usage": {
-			Alg: jwa.Ed25519,
-			Key: config.JwkKey{
-				TTL:      168 * time.Hour,
-				Rotation: 24 * time.Hour,
-				Cache:    30 * time.Minute,
-			},
-			Token: config.JwkToken{
-				TTL:      24 * time.Hour,
-				Issuer:   "test-issuer",
-				Audience: "test-audience",
-				Subject:  "test-subject",
-				Leeway:   5 * time.Minute,
-			},
-		},
-	}
+	testConfig := testKeys(jwa.Ed25519, config.JwkKey{})
 
 	testCases := []struct {
 		name string

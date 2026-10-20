@@ -58,9 +58,7 @@ func (service *JwkSearch) Exec(ctx context.Context, request *JwkSearchRequest) (
 		attribute.Bool("key.private", request.Private),
 	)
 
-	entities, err := service.dao.Exec(ctx, &dao.JwkSearchRequest{
-		Usage: request.Usage,
-	})
+	entities, err := service.dao.Exec(ctx, &dao.JwkSearchRequest{Usage: request.Usage})
 	if err != nil {
 		return nil, otel.ReportError(span, fmt.Errorf("search entities: %w", err))
 	}
@@ -68,10 +66,12 @@ func (service *JwkSearch) Exec(ctx context.Context, request *JwkSearchRequest) (
 	deserialized := make([]*Jwk, len(entities))
 
 	for i, entity := range entities {
-		deserialized[i], err = service.serviceExtract.Exec(ctx, &JwkExtractRequest{
+		extractRequest := &JwkExtractRequest{
 			Jwk:     entity,
 			Private: request.Private,
-		})
+		}
+
+		deserialized[i], err = service.serviceExtract.Exec(ctx, extractRequest)
 		if err != nil {
 			return nil, otel.ReportError(span, fmt.Errorf("consume DAO entity (kid %s): %w", entity.ID, err))
 		}

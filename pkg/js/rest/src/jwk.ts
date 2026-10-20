@@ -43,9 +43,8 @@ export const JwkSchema = z.looseObject({
 /**
  * A JSON Web Key (RFC 7517) as returned by the JSON Keys service.
  *
- * Only public keys are exposed over the REST API — private key material never leaves
- * the server. Use the `kid` field to match a key against the `kid` header in a JWT
- * when selecting the right key for verification.
+ * The REST API exposes public keys only; private key material never leaves the server.
+ * Match a key's `kid` against the `kid` header of a JWT to pick the key that verifies it.
  */
 export type Jwk = z.infer<typeof JwkSchema>;
 

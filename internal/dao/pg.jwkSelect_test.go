@@ -118,7 +118,7 @@ func TestPgJwkSelect(t *testing.T) {
 		},
 	}
 
-	dao := dao.NewPgJwkSelect()
+	daoJwkSelect := dao.NewPgJwkSelect()
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
@@ -139,7 +139,7 @@ func TestPgJwkSelect(t *testing.T) {
 						require.NoError(t, err)
 					}
 
-					key, err := dao.Exec(ctx, testCase.request)
+					key, err := daoJwkSelect.Exec(ctx, testCase.request)
 					require.ErrorIs(t, err, testCase.expectErr)
 					require.Equal(t, testCase.expect, key)
 				},

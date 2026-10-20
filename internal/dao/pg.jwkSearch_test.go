@@ -160,7 +160,7 @@ func TestPgJwkSearch(t *testing.T) {
 		},
 	}
 
-	dao := dao.NewPgJwkSearch()
+	daoJwkSearch := dao.NewPgJwkSearch()
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
@@ -181,7 +181,7 @@ func TestPgJwkSearch(t *testing.T) {
 						require.NoError(t, err)
 					}
 
-					key, err := dao.Exec(ctx, testCase.request)
+					key, err := daoJwkSearch.Exec(ctx, testCase.request)
 					require.ErrorIs(t, err, testCase.expectErr)
 					require.Equal(t, testCase.expect, key)
 				},

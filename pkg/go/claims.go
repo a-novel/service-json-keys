@@ -69,9 +69,11 @@ func NewClaimsVerifier[C any](c Client) (ClaimsVerifier[C], error) {
 }
 
 func (verifier *claimsVerifier[C]) VerifyClaims(ctx context.Context, req *VerifyClaimsRequest) (*C, error) {
-	return verifier.service.Exec(ctx, &core.ClaimsVerifyRequest{
+	serviceRequest := &core.ClaimsVerifyRequest{
 		Token:         req.AccessToken,
 		Usage:         req.Usage,
 		IgnoreExpired: lo.FromPtr(req.Options).IgnoreExpired,
-	})
+	}
+
+	return verifier.service.Exec(ctx, serviceRequest)
 }

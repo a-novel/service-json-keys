@@ -8,13 +8,11 @@ node_modules
 
 # Test files — excluded from production images.
 **/*_test.go
-**/*.test.go
 
 # Go client package — not part of any server build.
 pkg/
 
-# Scripts, docs, and frontend config — not part of any server build.
-scripts/
+# Docs and frontend files — not part of any server build.
 *.md
 **/*.ts
 **/*.js

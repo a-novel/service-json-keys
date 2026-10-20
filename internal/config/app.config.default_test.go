@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestApp(t *testing.T) {
+func TestAppPresetDefault(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -40,6 +40,8 @@ func TestApp(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
+			// The preset resolves at package initialization, so each case reads it in a process of its
+			// own. The unprefixed variable proves the prefix is applied.
 			command := exec.CommandContext(t.Context(), "go", "run", "./testdata/app")
 
 			command.Env = append(os.Environ(),

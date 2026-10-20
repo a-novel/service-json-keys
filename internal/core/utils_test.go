@@ -5,9 +5,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"testing"
+	"time"
 
 	"github.com/a-novel-kit/jwt/v2/jwa"
 
+	"github.com/a-novel/service-json-keys/v2/internal/config"
 	"github.com/a-novel/service-json-keys/v2/internal/lib"
 )
 
@@ -27,6 +29,24 @@ var supportedAlgorithms = []jwa.Alg{
 	jwa.MLDSA44,
 	jwa.MLDSA65,
 	jwa.MLDSA87,
+}
+
+// testKeys configures test-usage to sign with alg, under the key lifetimes of key and a fixed token
+// target.
+func testKeys(alg jwa.Alg, key config.JwkKey) map[string]*config.Jwk {
+	return map[string]*config.Jwk{
+		"test-usage": {
+			Alg: alg,
+			Key: key,
+			Token: config.JwkToken{
+				TTL:      24 * time.Hour,
+				Issuer:   "test-issuer",
+				Audience: "test-audience",
+				Subject:  "test-subject",
+				Leeway:   5 * time.Minute,
+			},
+		},
+	}
 }
 
 // mustEncryptBase64Value encrypts data with the master key held by ctx, in the form private keys

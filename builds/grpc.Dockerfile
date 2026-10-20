@@ -21,7 +21,6 @@ COPY ./internal/handlers ./internal/handlers
 COPY ./internal/dao ./internal/dao
 COPY ./internal/lib ./internal/lib
 COPY ./internal/core ./internal/core
-COPY ./internal/models ./internal/models
 COPY ./internal/config ./internal/config
 
 # -ldflags="-s -w" strips the symbol table and DWARF debug info, shrinking the binary.

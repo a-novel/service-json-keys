@@ -25,7 +25,7 @@ const (
 type Jwk struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Key type identifier. Corresponds to the "kty" JWK parameter (RFC 7517 §4.1).
-	// Names the cryptographic algorithm family (e.g., "OKP" for an EdDSA key).
+	// Names the cryptographic algorithm family (e.g., "OKP" for an Ed25519 key).
 	Kty string `protobuf:"bytes,1,opt,name=kty,proto3" json:"kty,omitempty"`
 	// Intended public key use. Corresponds to the "use" JWK parameter (RFC 7517 §4.2).
 	// Typically "sig" for signing keys used to produce or verify JWTs.
@@ -34,12 +34,12 @@ type Jwk struct {
 	// A public verification key carries "verify".
 	KeyOps []string `protobuf:"bytes,3,rep,name=key_ops,json=keyOps,proto3" json:"key_ops,omitempty"`
 	// Algorithm. Corresponds to the "alg" JWK parameter (RFC 7517 §4.4).
-	// Identifies the specific signing algorithm (e.g., "EdDSA").
+	// Identifies the specific signing algorithm (e.g., "Ed25519").
 	Alg string `protobuf:"bytes,4,opt,name=alg,proto3" json:"alg,omitempty"`
 	// Key ID. Corresponds to the "kid" JWK parameter (RFC 7517 §4.5).
 	// Carried in the JWT header to identify which key was used to sign the token.
 	Kid string `protobuf:"bytes,5,opt,name=kid,proto3" json:"kid,omitempty"`
-	// Algorithm-specific key parameters (e.g., x and crv for EdDSA keys), encoded as JSON bytes.
+	// Algorithm-specific key parameters (e.g., x and crv for Ed25519 keys), encoded as JSON bytes.
 	Payload       []byte `protobuf:"bytes,6,opt,name=payload,proto3" json:"payload,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache

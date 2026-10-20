@@ -74,21 +74,7 @@ func TestJwkProducers(t *testing.T) {
 		privateKey, _, err := jwk.GenerateED25519()
 		require.NoError(t, err)
 
-		keys := map[string]*config.Jwk{
-			"test-usage": {
-				Alg: jwa.Ed25519,
-				Key: config.JwkKey{
-					Cache:        time.Millisecond,
-					StaleIfError: time.Hour,
-				},
-				Token: config.JwkToken{
-					TTL:      time.Hour,
-					Issuer:   "test-issuer",
-					Audience: "test-audience",
-					Subject:  "test-subject",
-				},
-			},
-		}
+		keys := testKeys(jwa.Ed25519, config.JwkKey{Cache: time.Millisecond, StaleIfError: time.Hour})
 
 		// The first fetch fills the cache and the refetch fails, as during an outage.
 		privateSource := coremocks.NewMockJwkPrivateSource(t)
@@ -109,19 +95,15 @@ func TestJwkProducers(t *testing.T) {
 		}
 
 		signer := core.NewClaimsSign(producers, keys)
+		freshRequest := &core.ClaimsSignRequest{Claims: &testClaims{Message: "fresh"}, Usage: "test-usage"}
+		staleRequest := &core.ClaimsSignRequest{Claims: &testClaims{Message: "stale"}, Usage: "test-usage"}
 
-		_, err = signer.Exec(t.Context(), &core.ClaimsSignRequest{
-			Claims: &testClaims{Message: "fresh"},
-			Usage:  "test-usage",
-		})
+		_, err = signer.Exec(t.Context(), freshRequest)
 		require.NoError(t, err)
 
 		time.Sleep(2 * time.Millisecond)
 
-		_, err = signer.Exec(t.Context(), &core.ClaimsSignRequest{
-			Claims: &testClaims{Message: "stale"},
-			Usage:  "test-usage",
-		})
+		_, err = signer.Exec(t.Context(), staleRequest)
 		require.NoError(t, err)
 
 		privateSource.AssertExpectations(t)
@@ -185,21 +167,7 @@ func TestJwkRecipients(t *testing.T) {
 		require.NoError(t, err)
 		require.NotEqual(t, key1Public.KID, key2Public.KID)
 
-		keys := map[string]*config.Jwk{
-			"test-usage": {
-				Alg: jwa.Ed25519,
-				Key: config.JwkKey{
-					Cache:                time.Hour,
-					UnknownKeyIDInterval: time.Millisecond,
-				},
-				Token: config.JwkToken{
-					TTL:      time.Hour,
-					Issuer:   "test-issuer",
-					Audience: "test-audience",
-					Subject:  "test-subject",
-				},
-			},
-		}
+		keys := testKeys(jwa.Ed25519, config.JwkKey{Cache: time.Hour, UnknownKeyIDInterval: time.Millisecond})
 
 		privateSource1 := coremocks.NewMockJwkPrivateSource(t)
 		privateSource1.EXPECT().
@@ -242,33 +210,29 @@ func TestJwkRecipients(t *testing.T) {
 		}
 
 		signer1 := core.NewClaimsSign(producers1, keys)
-		token1, err := signer1.Exec(t.Context(), &core.ClaimsSignRequest{
-			Claims: &testClaims{Message: "first"},
-			Usage:  "test-usage",
-		})
+		signRequest1 := &core.ClaimsSignRequest{Claims: &testClaims{Message: "first"}, Usage: "test-usage"}
+
+		token1, err := signer1.Exec(t.Context(), signRequest1)
 		require.NoError(t, err)
 
 		verifier := core.NewClaimsVerify[testClaims](recipients, keys)
-		claims1, err := verifier.Exec(t.Context(), &core.ClaimsVerifyRequest{
-			Token: token1,
-			Usage: "test-usage",
-		})
+		verifyRequest1 := &core.ClaimsVerifyRequest{Token: token1, Usage: "test-usage"}
+
+		claims1, err := verifier.Exec(t.Context(), verifyRequest1)
 		require.NoError(t, err)
 		require.Equal(t, &testClaims{Message: "first"}, claims1)
 
 		time.Sleep(2 * time.Millisecond)
 
 		signer2 := core.NewClaimsSign(producers2, keys)
-		token2, err := signer2.Exec(t.Context(), &core.ClaimsSignRequest{
-			Claims: &testClaims{Message: "second"},
-			Usage:  "test-usage",
-		})
+		signRequest2 := &core.ClaimsSignRequest{Claims: &testClaims{Message: "second"}, Usage: "test-usage"}
+
+		token2, err := signer2.Exec(t.Context(), signRequest2)
 		require.NoError(t, err)
 
-		claims2, err := verifier.Exec(t.Context(), &core.ClaimsVerifyRequest{
-			Token: token2,
-			Usage: "test-usage",
-		})
+		verifyRequest2 := &core.ClaimsVerifyRequest{Token: token2, Usage: "test-usage"}
+
+		claims2, err := verifier.Exec(t.Context(), verifyRequest2)
 		require.NoError(t, err)
 		require.Equal(t, &testClaims{Message: "second"}, claims2)
 		require.Equal(t, 2, publicFetches)
@@ -286,21 +250,7 @@ func TestJwkRecipients(t *testing.T) {
 		privateKey, publicKey, err := jwk.GenerateED25519()
 		require.NoError(t, err)
 
-		keys := map[string]*config.Jwk{
-			"test-usage": {
-				Alg: jwa.Ed25519,
-				Key: config.JwkKey{
-					Cache:        time.Millisecond,
-					StaleIfError: time.Hour,
-				},
-				Token: config.JwkToken{
-					TTL:      time.Hour,
-					Issuer:   "test-issuer",
-					Audience: "test-audience",
-					Subject:  "test-subject",
-				},
-			},
-		}
+		keys := testKeys(jwa.Ed25519, config.JwkKey{Cache: time.Millisecond, StaleIfError: time.Hour})
 
 		// The signer reads its key once for the header and once for the signature. The millisecond
 		// cache can expire between the two reads on a loaded runner, which refetches the key.
@@ -330,27 +280,21 @@ func TestJwkRecipients(t *testing.T) {
 			Message string `json:"message"`
 		}
 
-		token, err := core.NewClaimsSign(producers, keys).Exec(t.Context(), &core.ClaimsSignRequest{
-			Claims: &testClaims{Message: "test"},
-			Usage:  "test-usage",
-		})
+		signRequest := &core.ClaimsSignRequest{Claims: &testClaims{Message: "test"}, Usage: "test-usage"}
+
+		token, err := core.NewClaimsSign(producers, keys).Exec(t.Context(), signRequest)
 		require.NoError(t, err)
 
 		verifier := core.NewClaimsVerify[testClaims](recipients, keys)
+		verifyRequest := &core.ClaimsVerifyRequest{Token: token, Usage: "test-usage"}
 
-		claims, err := verifier.Exec(t.Context(), &core.ClaimsVerifyRequest{
-			Token: token,
-			Usage: "test-usage",
-		})
+		claims, err := verifier.Exec(t.Context(), verifyRequest)
 		require.NoError(t, err)
 		require.Equal(t, &testClaims{Message: "test"}, claims)
 
 		time.Sleep(2 * time.Millisecond)
 
-		claims, err = verifier.Exec(t.Context(), &core.ClaimsVerifyRequest{
-			Token: token,
-			Usage: "test-usage",
-		})
+		claims, err = verifier.Exec(t.Context(), verifyRequest)
 		require.NoError(t, err)
 		require.Equal(t, &testClaims{Message: "test"}, claims)
 
@@ -404,23 +348,7 @@ func TestJwkGenerators(t *testing.T) {
 			require.Equal(t, generatedKey.PrivateKID, privateKey.KID)
 			require.Equal(t, generatedKey.PublicKID, publicKey.KID)
 
-			keys := map[string]*config.Jwk{
-				"test-usage": {
-					Alg: alg,
-					Key: config.JwkKey{
-						TTL:      168 * time.Hour,
-						Rotation: 24 * time.Hour,
-						Cache:    30 * time.Minute,
-					},
-					Token: config.JwkToken{
-						TTL:      24 * time.Hour,
-						Issuer:   "test-issuer",
-						Audience: "test-audience",
-						Subject:  "test-subject",
-						Leeway:   5 * time.Minute,
-					},
-				},
-			}
+			keys := testKeys(alg, config.JwkKey{Cache: 30 * time.Minute})
 
 			privateSource := coremocks.NewMockJwkPrivateSource(t)
 			privateSource.EXPECT().
@@ -444,16 +372,14 @@ func TestJwkGenerators(t *testing.T) {
 			signer := core.NewClaimsSign(producers, keys)
 			verifier := core.NewClaimsVerify[testClaims](recipients, keys)
 
-			signedClaims, err := signer.Exec(t.Context(), &core.ClaimsSignRequest{
-				Claims: claims,
-				Usage:  "test-usage",
-			})
+			signRequest := &core.ClaimsSignRequest{Claims: claims, Usage: "test-usage"}
+
+			signedClaims, err := signer.Exec(t.Context(), signRequest)
 			require.NoError(t, err)
 
-			verifiedClaims, err := verifier.Exec(t.Context(), &core.ClaimsVerifyRequest{
-				Token: signedClaims,
-				Usage: "test-usage",
-			})
+			verifyRequest := &core.ClaimsVerifyRequest{Token: signedClaims, Usage: "test-usage"}
+
+			verifiedClaims, err := verifier.Exec(t.Context(), verifyRequest)
 			require.NoError(t, err)
 			require.Equal(t, claims, verifiedClaims)
 
