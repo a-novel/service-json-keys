@@ -14,7 +14,6 @@ COPY ./internal/handlers ./internal/handlers
 COPY ./internal/dao ./internal/dao
 COPY ./internal/lib ./internal/lib
 COPY ./internal/core ./internal/core
-COPY ./internal/models ./internal/models
 COPY ./internal/config ./internal/config
 
 RUN --mount=type=cache,target=/go/pkg/mod \
