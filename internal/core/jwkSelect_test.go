@@ -55,7 +55,7 @@ func TestJwkSelect(t *testing.T) {
 		},
 		Payload: json.RawMessage(`{"message":"hello world"}`),
 	}
-	request := &core.JwkSelectRequest{ID: storedKey.ID, Private: true}
+	request := &core.JwkSelectRequest{ID: storedKey.ID}
 
 	testCases := []struct {
 		name string
@@ -118,13 +118,8 @@ func TestJwkSelect(t *testing.T) {
 			}
 
 			if testCase.serviceExtractMock != nil {
-				extractRequest := &core.JwkExtractRequest{
-					Jwk:     testCase.daoSelectMock.resp,
-					Private: testCase.request.Private,
-				}
-
 				serviceExtract.EXPECT().
-					Exec(mock.Anything, extractRequest).
+					Exec(mock.Anything, &core.JwkExtractRequest{Jwk: testCase.daoSelectMock.resp}).
 					Return(testCase.serviceExtractMock.resp, testCase.serviceExtractMock.err).
 					Once()
 			}
