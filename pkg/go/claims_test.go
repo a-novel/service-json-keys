@@ -32,20 +32,24 @@ func TestClaimsVerifier(t *testing.T) {
 	cp, err := grpcf.MarshalJSONAsAny(c)
 	require.NoError(t, err)
 
-	signed, err := client.ClaimsSign(t.Context(), &servicejsonkeys.ClaimsSignRequest{
+	signRequest := &servicejsonkeys.ClaimsSignRequest{
 		Usage:   servicejsonkeys.KeyUsageAuth,
 		Payload: cp,
-	})
+	}
+
+	signed, err := client.ClaimsSign(t.Context(), signRequest)
 	require.NoError(t, err)
 	require.NotEmpty(t, signed)
 
 	verifier, err := servicejsonkeys.NewClaimsVerifier[claims](client)
 	require.NoError(t, err)
 
-	res, err := verifier.VerifyClaims(t.Context(), &servicejsonkeys.VerifyClaimsRequest{
+	verifyRequest := &servicejsonkeys.VerifyClaimsRequest{
 		Usage:       servicejsonkeys.KeyUsageAuth,
 		AccessToken: signed.GetToken(),
-	})
+	}
+
+	res, err := verifier.VerifyClaims(t.Context(), verifyRequest)
 	require.NoError(t, err)
 	require.Equal(t, &c, res)
 }

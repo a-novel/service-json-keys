@@ -254,7 +254,7 @@ func TestJwkGen(t *testing.T) {
 	}
 
 	for _, alg := range supportedAlgorithms {
-		testCases = append(testCases, testCaseDef{
+		algCase := testCaseDef{
 			name: "Success/" + string(alg),
 
 			request: &core.JwkGenRequest{Usage: "test-usage"},
@@ -265,7 +265,9 @@ func TestJwkGen(t *testing.T) {
 			serviceExtractMock: &serviceExtractMock{resp: jwkGenExtracted(alg, insertedKey.ID.String())},
 
 			expect: jwkGenExtracted(alg, insertedKey.ID.String()),
-		})
+		}
+
+		testCases = append(testCases, algCase)
 	}
 
 	for _, testCase := range testCases {
@@ -278,9 +280,7 @@ func TestJwkGen(t *testing.T) {
 
 			if testCase.daoSearchMock != nil {
 				daoSearch.EXPECT().
-					Exec(mock.Anything, &dao.JwkSearchRequest{
-						Usage: testCase.request.Usage,
-					}).
+					Exec(mock.Anything, &dao.JwkSearchRequest{Usage: testCase.request.Usage}).
 					Return(testCase.daoSearchMock.resp, testCase.daoSearchMock.err)
 			}
 

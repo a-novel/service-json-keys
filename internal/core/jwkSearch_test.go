@@ -140,9 +140,7 @@ func TestJwkSearch(t *testing.T) {
 
 			if testCase.daoSearchMock != nil {
 				daoSearch.EXPECT().
-					Exec(mock.Anything, &dao.JwkSearchRequest{
-						Usage: testCase.request.Usage,
-					}).
+					Exec(mock.Anything, &dao.JwkSearchRequest{Usage: testCase.request.Usage}).
 					Return(testCase.daoSearchMock.resp, testCase.daoSearchMock.err)
 			}
 
@@ -150,11 +148,13 @@ func TestJwkSearch(t *testing.T) {
 				require.GreaterOrEqual(t, len(testCase.serviceExtractMock), len(testCase.daoSearchMock.resp))
 
 				for i, extracted := range testCase.serviceExtractMock {
+					extractRequest := &core.JwkExtractRequest{
+						Jwk:     testCase.daoSearchMock.resp[i],
+						Private: testCase.request.Private,
+					}
+
 					serviceExtract.EXPECT().
-						Exec(mock.Anything, &core.JwkExtractRequest{
-							Jwk:     testCase.daoSearchMock.resp[i],
-							Private: testCase.request.Private,
-						}).
+						Exec(mock.Anything, extractRequest).
 						Return(extracted.resp, extracted.err).
 						Once()
 				}
@@ -176,14 +176,15 @@ func TestJwkSearch(t *testing.T) {
 	t.Run("Error/SymmetricKeyWithoutPrivateAuthorization", func(t *testing.T) {
 		t.Parallel()
 
+		symmetricJwk := &jwa.JWK{
+			JWKCommon: jwa.JWKCommon{KTY: "oct", Alg: "HS256", KID: "00000000-0000-0000-0000-000000000001"},
+			Payload:   []byte(`{"k":"secret-octets"}`),
+		}
 		symmetric := &dao.Jwk{
 			ID:    uuid.MustParse("00000000-0000-0000-0000-000000000001"),
 			Usage: "auth",
 			// No public key: the shape a symmetric algorithm is stored in.
-			PrivateKey: mustEncryptBase64Value(ctx, t, &jwa.JWK{
-				JWKCommon: jwa.JWKCommon{KTY: "oct", Alg: "HS256", KID: "00000000-0000-0000-0000-000000000001"},
-				Payload:   []byte(`{"k":"secret-octets"}`),
-			}),
+			PrivateKey: mustEncryptBase64Value(ctx, t, symmetricJwk),
 		}
 
 		daoSearch := coremocks.NewMockJwkSearchDao(t)

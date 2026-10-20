@@ -227,11 +227,13 @@ func TestPgJwkDelete(t *testing.T) {
 				require.NoError(t, err)
 				require.Equal(t, keyID, got.ID)
 
-				_, err = daoJwkDelete.Exec(ctx, &dao.JwkDeleteRequest{
+				deleteRequest := &dao.JwkDeleteRequest{
 					ID:      keyID,
 					Now:     now,
 					Comment: "compromised",
-				})
+				}
+
+				_, err = daoJwkDelete.Exec(ctx, deleteRequest)
 				require.NoError(t, err)
 
 				// The revocation applies with nothing run in between.

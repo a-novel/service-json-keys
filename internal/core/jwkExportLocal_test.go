@@ -68,11 +68,13 @@ func TestJwkExportLocal(t *testing.T) {
 			source := coremocks.NewMockJwkExportLocalSource(t)
 
 			if testCase.sourceMock != nil {
+				searchRequest := &core.JwkSearchRequest{
+					Usage:   testCase.usage,
+					Private: true,
+				}
+
 				source.EXPECT().
-					Exec(mock.Anything, &core.JwkSearchRequest{
-						Usage:   testCase.usage,
-						Private: true,
-					}).
+					Exec(mock.Anything, searchRequest).
 					Return(testCase.sourceMock.resp, testCase.sourceMock.err)
 			}
 

@@ -113,18 +113,18 @@ func TestJwkSelect(t *testing.T) {
 
 			if testCase.daoSelectMock != nil {
 				daoSelect.EXPECT().
-					Exec(mock.Anything, &dao.JwkSelectRequest{
-						ID: testCase.request.ID,
-					}).
+					Exec(mock.Anything, &dao.JwkSelectRequest{ID: testCase.request.ID}).
 					Return(testCase.daoSelectMock.resp, testCase.daoSelectMock.err)
 			}
 
 			if testCase.serviceExtractMock != nil {
+				extractRequest := &core.JwkExtractRequest{
+					Jwk:     testCase.daoSelectMock.resp,
+					Private: testCase.request.Private,
+				}
+
 				serviceExtract.EXPECT().
-					Exec(mock.Anything, &core.JwkExtractRequest{
-						Jwk:     testCase.daoSelectMock.resp,
-						Private: testCase.request.Private,
-					}).
+					Exec(mock.Anything, extractRequest).
 					Return(testCase.serviceExtractMock.resp, testCase.serviceExtractMock.err).
 					Once()
 			}

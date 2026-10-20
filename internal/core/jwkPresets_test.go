@@ -95,19 +95,15 @@ func TestJwkProducers(t *testing.T) {
 		}
 
 		signer := core.NewClaimsSign(producers, keys)
+		freshRequest := &core.ClaimsSignRequest{Claims: &testClaims{Message: "fresh"}, Usage: "test-usage"}
+		staleRequest := &core.ClaimsSignRequest{Claims: &testClaims{Message: "stale"}, Usage: "test-usage"}
 
-		_, err = signer.Exec(t.Context(), &core.ClaimsSignRequest{
-			Claims: &testClaims{Message: "fresh"},
-			Usage:  "test-usage",
-		})
+		_, err = signer.Exec(t.Context(), freshRequest)
 		require.NoError(t, err)
 
 		time.Sleep(2 * time.Millisecond)
 
-		_, err = signer.Exec(t.Context(), &core.ClaimsSignRequest{
-			Claims: &testClaims{Message: "stale"},
-			Usage:  "test-usage",
-		})
+		_, err = signer.Exec(t.Context(), staleRequest)
 		require.NoError(t, err)
 
 		privateSource.AssertExpectations(t)
@@ -214,33 +210,29 @@ func TestJwkRecipients(t *testing.T) {
 		}
 
 		signer1 := core.NewClaimsSign(producers1, keys)
-		token1, err := signer1.Exec(t.Context(), &core.ClaimsSignRequest{
-			Claims: &testClaims{Message: "first"},
-			Usage:  "test-usage",
-		})
+		signRequest1 := &core.ClaimsSignRequest{Claims: &testClaims{Message: "first"}, Usage: "test-usage"}
+
+		token1, err := signer1.Exec(t.Context(), signRequest1)
 		require.NoError(t, err)
 
 		verifier := core.NewClaimsVerify[testClaims](recipients, keys)
-		claims1, err := verifier.Exec(t.Context(), &core.ClaimsVerifyRequest{
-			Token: token1,
-			Usage: "test-usage",
-		})
+		verifyRequest1 := &core.ClaimsVerifyRequest{Token: token1, Usage: "test-usage"}
+
+		claims1, err := verifier.Exec(t.Context(), verifyRequest1)
 		require.NoError(t, err)
 		require.Equal(t, &testClaims{Message: "first"}, claims1)
 
 		time.Sleep(2 * time.Millisecond)
 
 		signer2 := core.NewClaimsSign(producers2, keys)
-		token2, err := signer2.Exec(t.Context(), &core.ClaimsSignRequest{
-			Claims: &testClaims{Message: "second"},
-			Usage:  "test-usage",
-		})
+		signRequest2 := &core.ClaimsSignRequest{Claims: &testClaims{Message: "second"}, Usage: "test-usage"}
+
+		token2, err := signer2.Exec(t.Context(), signRequest2)
 		require.NoError(t, err)
 
-		claims2, err := verifier.Exec(t.Context(), &core.ClaimsVerifyRequest{
-			Token: token2,
-			Usage: "test-usage",
-		})
+		verifyRequest2 := &core.ClaimsVerifyRequest{Token: token2, Usage: "test-usage"}
+
+		claims2, err := verifier.Exec(t.Context(), verifyRequest2)
 		require.NoError(t, err)
 		require.Equal(t, &testClaims{Message: "second"}, claims2)
 		require.Equal(t, 2, publicFetches)
@@ -288,27 +280,21 @@ func TestJwkRecipients(t *testing.T) {
 			Message string `json:"message"`
 		}
 
-		token, err := core.NewClaimsSign(producers, keys).Exec(t.Context(), &core.ClaimsSignRequest{
-			Claims: &testClaims{Message: "test"},
-			Usage:  "test-usage",
-		})
+		signRequest := &core.ClaimsSignRequest{Claims: &testClaims{Message: "test"}, Usage: "test-usage"}
+
+		token, err := core.NewClaimsSign(producers, keys).Exec(t.Context(), signRequest)
 		require.NoError(t, err)
 
 		verifier := core.NewClaimsVerify[testClaims](recipients, keys)
+		verifyRequest := &core.ClaimsVerifyRequest{Token: token, Usage: "test-usage"}
 
-		claims, err := verifier.Exec(t.Context(), &core.ClaimsVerifyRequest{
-			Token: token,
-			Usage: "test-usage",
-		})
+		claims, err := verifier.Exec(t.Context(), verifyRequest)
 		require.NoError(t, err)
 		require.Equal(t, &testClaims{Message: "test"}, claims)
 
 		time.Sleep(2 * time.Millisecond)
 
-		claims, err = verifier.Exec(t.Context(), &core.ClaimsVerifyRequest{
-			Token: token,
-			Usage: "test-usage",
-		})
+		claims, err = verifier.Exec(t.Context(), verifyRequest)
 		require.NoError(t, err)
 		require.Equal(t, &testClaims{Message: "test"}, claims)
 
@@ -386,16 +372,14 @@ func TestJwkGenerators(t *testing.T) {
 			signer := core.NewClaimsSign(producers, keys)
 			verifier := core.NewClaimsVerify[testClaims](recipients, keys)
 
-			signedClaims, err := signer.Exec(t.Context(), &core.ClaimsSignRequest{
-				Claims: claims,
-				Usage:  "test-usage",
-			})
+			signRequest := &core.ClaimsSignRequest{Claims: claims, Usage: "test-usage"}
+
+			signedClaims, err := signer.Exec(t.Context(), signRequest)
 			require.NoError(t, err)
 
-			verifiedClaims, err := verifier.Exec(t.Context(), &core.ClaimsVerifyRequest{
-				Token: signedClaims,
-				Usage: "test-usage",
-			})
+			verifyRequest := &core.ClaimsVerifyRequest{Token: signedClaims, Usage: "test-usage"}
+
+			verifiedClaims, err := verifier.Exec(t.Context(), verifyRequest)
 			require.NoError(t, err)
 			require.Equal(t, claims, verifiedClaims)
 

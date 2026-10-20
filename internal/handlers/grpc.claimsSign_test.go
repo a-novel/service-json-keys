@@ -127,11 +127,13 @@ func TestGrpcClaimsSign(t *testing.T) {
 			service := handlersmocks.NewMockGrpcClaimsSignService(t)
 
 			if testCase.serviceMock != nil {
+				claimsSignRequest := &core.ClaimsSignRequest{
+					Claims: testCase.serviceMock.req,
+					Usage:  testCase.request.GetUsage(),
+				}
+
 				service.EXPECT().
-					Exec(mock.Anything, &core.ClaimsSignRequest{
-						Claims: testCase.serviceMock.req,
-						Usage:  testCase.request.GetUsage(),
-					}).
+					Exec(mock.Anything, claimsSignRequest).
 					Return(testCase.serviceMock.resp, testCase.serviceMock.err)
 			}
 
