@@ -57,17 +57,17 @@ func (service *JwkSelect) Exec(ctx context.Context, request *JwkSelectRequest) (
 		attribute.Bool("key.private", request.Private),
 	)
 
-	entity, err := service.dao.Exec(ctx, &dao.JwkSelectRequest{
-		ID: request.ID,
-	})
+	entity, err := service.dao.Exec(ctx, &dao.JwkSelectRequest{ID: request.ID})
 	if err != nil {
 		return nil, otel.ReportError(span, fmt.Errorf("select key: %w", err))
 	}
 
-	deserialized, err := service.serviceExtract.Exec(ctx, &JwkExtractRequest{
+	extractRequest := &JwkExtractRequest{
 		Jwk:     entity,
 		Private: request.Private,
-	})
+	}
+
+	deserialized, err := service.serviceExtract.Exec(ctx, extractRequest)
 	if err != nil {
 		return nil, otel.ReportError(span, fmt.Errorf("deserialize key: %w", err))
 	}

@@ -43,9 +43,7 @@ func (handler *RestJwkGet) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	jwk, err := handler.service.Exec(ctx, &core.JwkSelectRequest{ID: keyID})
 	if err != nil {
-		httpf.HandleError(ctx, handler.logger, w, span, httpf.ErrMap{
-			core.ErrJwkNotFound: http.StatusNotFound,
-		}, err)
+		httpf.HandleError(ctx, handler.logger, w, span, httpf.ErrMap{core.ErrJwkNotFound: http.StatusNotFound}, err)
 
 		return
 	}

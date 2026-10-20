@@ -98,10 +98,12 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 		}
 	}
 
-	output, err := service.serviceExtract.Exec(ctx, &JwkExtractRequest{
+	extractRequest := &JwkExtractRequest{
 		Jwk:     latestKey,
 		Private: true,
-	})
+	}
+
+	output, err := service.serviceExtract.Exec(ctx, extractRequest)
 	if err != nil {
 		return nil, otel.ReportError(span, err)
 	}
@@ -149,14 +151,16 @@ func (service *JwkGen) generate(ctx context.Context, usage string, keyConfig *jw
 
 	now := time.Now()
 
-	key, err := service.daoInsert.Exec(ctx, &dao.JwkInsertRequest{
+	daoRequest := &dao.JwkInsertRequest{
 		ID:         kid,
 		PrivateKey: base64.RawURLEncoding.EncodeToString(privateKeyEncrypted),
 		PublicKey:  publicKeyEncoded,
 		Usage:      usage,
 		Now:        now,
 		Expiration: now.Add(keyConfig.Key.TTL),
-	})
+	}
+
+	key, err := service.daoInsert.Exec(ctx, daoRequest)
 	if err != nil {
 		return nil, otel.ReportError(span, fmt.Errorf("insert key: %w", err))
 	}

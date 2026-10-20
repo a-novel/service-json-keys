@@ -70,10 +70,12 @@ func (service *ClaimsVerify[Out]) Exec(ctx context.Context, request *ClaimsVerif
 		)
 	}
 
-	recipient := jwt.NewRecipient(jwt.RecipientConfig{
+	recipientConfig := jwt.RecipientConfig{
 		Plugins:      recipientPlugins,
 		Deserializer: deserializer.Unmarshal,
-	})
+	}
+
+	recipient := jwt.NewRecipient(recipientConfig)
 
 	var claims Out
 
