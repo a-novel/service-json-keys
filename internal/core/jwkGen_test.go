@@ -107,20 +107,6 @@ func checkJwkInsertRequest(ctx context.Context, t *testing.T, request *dao.JwkIn
 	return true
 }
 
-// jwkGenKeys configures test-usage to rotate keys of alg every 12 hours.
-func jwkGenKeys(alg jwa.Alg) map[string]*config.Jwk {
-	return map[string]*config.Jwk{
-		"test-usage": {
-			Alg: alg,
-			Key: config.JwkKey{
-				TTL:      24 * time.Hour,
-				Rotation: 12 * time.Hour,
-				Cache:    6 * time.Hour,
-			},
-		},
-	}
-}
-
 // jwkGenExtracted is the key the extraction mock returns for a stored key of alg and kid.
 func jwkGenExtracted(alg jwa.Alg, kid string) *core.Jwk {
 	return &core.Jwk{
@@ -172,6 +158,7 @@ func TestJwkGen(t *testing.T) {
 	}
 
 	// The rotation interval is 12 hours: the stale key is past it, the recent key within it.
+	rotation := config.JwkKey{TTL: 24 * time.Hour, Rotation: 12 * time.Hour, Cache: 6 * time.Hour}
 	staleKey := &dao.Jwk{
 		ID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
 		PrivateKey: "cHJpdmF0ZS1rZXktMQ",
@@ -202,7 +189,7 @@ func TestJwkGen(t *testing.T) {
 			name: "Success/OldKeys",
 
 			request: &core.JwkGenRequest{Usage: "test-usage"},
-			keys:    jwkGenKeys(jwa.Ed25519),
+			keys:    testKeys(jwa.Ed25519, rotation),
 
 			daoSearchMock:      &daoSearchMock{resp: []*dao.Jwk{staleKey}},
 			daoInsertMock:      &daoInsertMock{resp: insertedKey},
@@ -214,7 +201,7 @@ func TestJwkGen(t *testing.T) {
 			name: "Success/RecentKeys",
 
 			request: &core.JwkGenRequest{Usage: "test-usage"},
-			keys:    jwkGenKeys(jwa.Ed25519),
+			keys:    testKeys(jwa.Ed25519, rotation),
 
 			daoSearchMock:      &daoSearchMock{resp: []*dao.Jwk{recentKey}},
 			serviceExtractMock: &serviceExtractMock{resp: jwkGenExtracted(jwa.Ed25519, recentKey.ID.String())},
@@ -225,7 +212,7 @@ func TestJwkGen(t *testing.T) {
 			name: "Error/Extract",
 
 			request: &core.JwkGenRequest{Usage: "test-usage"},
-			keys:    jwkGenKeys(jwa.Ed25519),
+			keys:    testKeys(jwa.Ed25519, rotation),
 
 			daoSearchMock:      &daoSearchMock{resp: []*dao.Jwk{staleKey}},
 			daoInsertMock:      &daoInsertMock{resp: insertedKey},
@@ -237,7 +224,7 @@ func TestJwkGen(t *testing.T) {
 			name: "Error/Insert",
 
 			request: &core.JwkGenRequest{Usage: "test-usage"},
-			keys:    jwkGenKeys(jwa.Ed25519),
+			keys:    testKeys(jwa.Ed25519, rotation),
 
 			daoSearchMock: &daoSearchMock{resp: []*dao.Jwk{staleKey}},
 			daoInsertMock: &daoInsertMock{err: errFoo},
@@ -248,7 +235,7 @@ func TestJwkGen(t *testing.T) {
 			name: "Error/Search",
 
 			request: &core.JwkGenRequest{Usage: "test-usage"},
-			keys:    jwkGenKeys(jwa.Ed25519),
+			keys:    testKeys(jwa.Ed25519, rotation),
 
 			daoSearchMock: &daoSearchMock{err: errFoo},
 
@@ -271,7 +258,7 @@ func TestJwkGen(t *testing.T) {
 			name: "Success/" + string(alg),
 
 			request: &core.JwkGenRequest{Usage: "test-usage"},
-			keys:    jwkGenKeys(alg),
+			keys:    testKeys(alg, rotation),
 
 			daoSearchMock:      &daoSearchMock{},
 			daoInsertMock:      &daoInsertMock{resp: insertedKey},

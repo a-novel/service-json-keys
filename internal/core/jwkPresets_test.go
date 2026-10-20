@@ -74,21 +74,7 @@ func TestJwkProducers(t *testing.T) {
 		privateKey, _, err := jwk.GenerateED25519()
 		require.NoError(t, err)
 
-		keys := map[string]*config.Jwk{
-			"test-usage": {
-				Alg: jwa.Ed25519,
-				Key: config.JwkKey{
-					Cache:        time.Millisecond,
-					StaleIfError: time.Hour,
-				},
-				Token: config.JwkToken{
-					TTL:      time.Hour,
-					Issuer:   "test-issuer",
-					Audience: "test-audience",
-					Subject:  "test-subject",
-				},
-			},
-		}
+		keys := testKeys(jwa.Ed25519, config.JwkKey{Cache: time.Millisecond, StaleIfError: time.Hour})
 
 		// The first fetch fills the cache and the refetch fails, as during an outage.
 		privateSource := coremocks.NewMockJwkPrivateSource(t)
@@ -185,21 +171,7 @@ func TestJwkRecipients(t *testing.T) {
 		require.NoError(t, err)
 		require.NotEqual(t, key1Public.KID, key2Public.KID)
 
-		keys := map[string]*config.Jwk{
-			"test-usage": {
-				Alg: jwa.Ed25519,
-				Key: config.JwkKey{
-					Cache:                time.Hour,
-					UnknownKeyIDInterval: time.Millisecond,
-				},
-				Token: config.JwkToken{
-					TTL:      time.Hour,
-					Issuer:   "test-issuer",
-					Audience: "test-audience",
-					Subject:  "test-subject",
-				},
-			},
-		}
+		keys := testKeys(jwa.Ed25519, config.JwkKey{Cache: time.Hour, UnknownKeyIDInterval: time.Millisecond})
 
 		privateSource1 := coremocks.NewMockJwkPrivateSource(t)
 		privateSource1.EXPECT().
@@ -286,21 +258,7 @@ func TestJwkRecipients(t *testing.T) {
 		privateKey, publicKey, err := jwk.GenerateED25519()
 		require.NoError(t, err)
 
-		keys := map[string]*config.Jwk{
-			"test-usage": {
-				Alg: jwa.Ed25519,
-				Key: config.JwkKey{
-					Cache:        time.Millisecond,
-					StaleIfError: time.Hour,
-				},
-				Token: config.JwkToken{
-					TTL:      time.Hour,
-					Issuer:   "test-issuer",
-					Audience: "test-audience",
-					Subject:  "test-subject",
-				},
-			},
-		}
+		keys := testKeys(jwa.Ed25519, config.JwkKey{Cache: time.Millisecond, StaleIfError: time.Hour})
 
 		// The signer reads its key once for the header and once for the signature. The millisecond
 		// cache can expire between the two reads on a loaded runner, which refetches the key.
@@ -404,23 +362,7 @@ func TestJwkGenerators(t *testing.T) {
 			require.Equal(t, generatedKey.PrivateKID, privateKey.KID)
 			require.Equal(t, generatedKey.PublicKID, publicKey.KID)
 
-			keys := map[string]*config.Jwk{
-				"test-usage": {
-					Alg: alg,
-					Key: config.JwkKey{
-						TTL:      168 * time.Hour,
-						Rotation: 24 * time.Hour,
-						Cache:    30 * time.Minute,
-					},
-					Token: config.JwkToken{
-						TTL:      24 * time.Hour,
-						Issuer:   "test-issuer",
-						Audience: "test-audience",
-						Subject:  "test-subject",
-						Leeway:   5 * time.Minute,
-					},
-				},
-			}
+			keys := testKeys(alg, config.JwkKey{Cache: 30 * time.Minute})
 
 			privateSource := coremocks.NewMockJwkPrivateSource(t)
 			privateSource.EXPECT().
