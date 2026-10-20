@@ -160,44 +160,52 @@ func NewJwkProducers(
 	output := make(JwkProducers)
 
 	for usage, keyConfig := range keys {
-		keySource := newJwkSource(source.SearchKeys, usage, jwk.SourceConfig{
+		sourceConfig := jwk.SourceConfig{
 			CacheDuration: keyConfig.Key.Cache,
 			StaleIfError:  keyConfig.Key.StaleIfError,
-		})
+		}
 
-		var signer jwt.ProducerPlugin
+		keySource := newJwkSource(source.SearchKeys, usage, sourceConfig)
 
-		switch keyConfig.Alg {
-		// The token label follows the configured algorithm, so a usage left on "EdDSA" stays verifiable
-		// by consumers on jwt v2.2.x, which reject "Ed25519".
-		case jwa.EdDSA: //nolint:staticcheck // A configured legacy label is honored.
-			signer = jws.NewSourcedEdDSASigner(keySource) //nolint:staticcheck // See above.
-		case jwa.Ed25519:
-			signer = jws.NewSourcedED25519Signer(keySource)
-		case jwa.ES256, jwa.ES384, jwa.ES512:
-			ecdsaPreset, ok := jwkconfig.JwsPresetsEcdsa[keyConfig.Alg]
-			if !ok {
-				return nil, fmt.Errorf("%w (ecdsa) for usage: %s", ErrJwkPresetUnknown, usage)
-			}
-
-			signer = jws.NewSourcedECDSASigner(keySource, ecdsaPreset)
-		case jwa.RS256, jwa.RS384, jwa.RS512, jwa.PS256, jwa.PS384, jwa.PS512:
-			rsaPreset, ok := jwkconfig.JwsPresetsRsa[keyConfig.Alg]
-			if !ok {
-				return nil, fmt.Errorf("%w (rsa) for usage: %s", ErrJwkPresetUnknown, usage)
-			}
-
-			signer = jws.NewSourcedRSASigner(keySource, rsaPreset)
-		case jwa.MLDSA44, jwa.MLDSA65, jwa.MLDSA87:
-			signer = jws.NewSourcedMLDSASigner(keySource)
-		default:
-			return nil, fmt.Errorf("%w: %s", ErrJwkPresetUnknownAlgorithm, keyConfig.Alg)
+		signer, err := newJwkSigner(keySource, usage, keyConfig.Alg)
+		if err != nil {
+			return nil, err
 		}
 
 		output[usage] = []jwt.ProducerPlugin{signer}
 	}
 
 	return output, nil
+}
+
+// newJwkSigner returns the plugin that signs the tokens of usage with the keys of keySource.
+func newJwkSigner(keySource *jwk.Source, usage string, alg jwa.Alg) (jwt.ProducerPlugin, error) {
+	switch alg {
+	// The token label follows the configured algorithm, so a usage left on "EdDSA" stays verifiable
+	// by consumers on jwt v2.2.x, which reject "Ed25519".
+	case jwa.EdDSA: //nolint:staticcheck // A configured legacy label is honored.
+		return jws.NewSourcedEdDSASigner(keySource), nil //nolint:staticcheck // See above.
+	case jwa.Ed25519:
+		return jws.NewSourcedED25519Signer(keySource), nil
+	case jwa.ES256, jwa.ES384, jwa.ES512:
+		ecdsaPreset, ok := jwkconfig.JwsPresetsEcdsa[alg]
+		if !ok {
+			return nil, fmt.Errorf("%w (ecdsa) for usage: %s", ErrJwkPresetUnknown, usage)
+		}
+
+		return jws.NewSourcedECDSASigner(keySource, ecdsaPreset), nil
+	case jwa.RS256, jwa.RS384, jwa.RS512, jwa.PS256, jwa.PS384, jwa.PS512:
+		rsaPreset, ok := jwkconfig.JwsPresetsRsa[alg]
+		if !ok {
+			return nil, fmt.Errorf("%w (rsa) for usage: %s", ErrJwkPresetUnknown, usage)
+		}
+
+		return jws.NewSourcedRSASigner(keySource, rsaPreset), nil
+	case jwa.MLDSA44, jwa.MLDSA65, jwa.MLDSA87:
+		return jws.NewSourcedMLDSASigner(keySource), nil
+	default:
+		return nil, fmt.Errorf("%w: %s", ErrJwkPresetUnknownAlgorithm, alg)
+	}
 }
 
 // JwkRecipients maps each key usage to the set of JWT recipient plugins used for verifying tokens
@@ -212,43 +220,51 @@ func NewJwkRecipients(
 	output := make(JwkRecipients)
 
 	for usage, keyConfig := range keys {
-		keySource := newJwkSource(source.SearchKeys, usage, jwk.SourceConfig{
+		sourceConfig := jwk.SourceConfig{
 			CacheDuration: keyConfig.Key.Cache,
 			StaleIfError:  keyConfig.Key.StaleIfError,
 			// A rotated signing key can appear before the verifier's normal cache refresh.
 			// An unknown key ID triggers one rate-limited refetch so verification can continue.
 			RefreshOnUnknownKeyID: true,
 			UnknownKeyIDInterval:  keyConfig.Key.UnknownKeyIDInterval,
-		})
+		}
 
-		var recipient jwt.RecipientPlugin
+		keySource := newJwkSource(source.SearchKeys, usage, sourceConfig)
 
-		switch keyConfig.Alg {
-		// The Ed25519 verifier accepts tokens and keys under either label.
-		case jwa.Ed25519, jwa.EdDSA: //nolint:staticcheck // A configured legacy label is honored.
-			recipient = jws.NewSourcedED25519Verifier(keySource)
-		case jwa.ES256, jwa.ES384, jwa.ES512:
-			ecdsaPreset, ok := jwkconfig.JwsPresetsEcdsa[keyConfig.Alg]
-			if !ok {
-				return nil, fmt.Errorf("%w (ecdsa) for usage: %s", ErrJwkPresetUnknown, usage)
-			}
-
-			recipient = jws.NewSourcedECDSAVerifier(keySource, ecdsaPreset)
-		case jwa.RS256, jwa.RS384, jwa.RS512, jwa.PS256, jwa.PS384, jwa.PS512:
-			rsaPreset, ok := jwkconfig.JwsPresetsRsa[keyConfig.Alg]
-			if !ok {
-				return nil, fmt.Errorf("%w (rsa) for usage: %s", ErrJwkPresetUnknown, usage)
-			}
-
-			recipient = jws.NewSourcedRSAVerifier(keySource, rsaPreset)
-		case jwa.MLDSA44, jwa.MLDSA65, jwa.MLDSA87:
-			recipient = jws.NewSourcedMLDSAVerifier(keySource)
-		default:
-			return nil, fmt.Errorf("%w: %s", ErrJwkPresetUnknownAlgorithm, keyConfig.Alg)
+		recipient, err := newJwkVerifier(keySource, usage, keyConfig.Alg)
+		if err != nil {
+			return nil, err
 		}
 
 		output[usage] = []jwt.RecipientPlugin{recipient}
 	}
 
 	return output, nil
+}
+
+// newJwkVerifier returns the plugin that verifies the tokens of usage with the keys of keySource.
+func newJwkVerifier(keySource *jwk.Source, usage string, alg jwa.Alg) (jwt.RecipientPlugin, error) {
+	switch alg {
+	// The Ed25519 verifier accepts tokens and keys under either label.
+	case jwa.Ed25519, jwa.EdDSA: //nolint:staticcheck // A configured legacy label is honored.
+		return jws.NewSourcedED25519Verifier(keySource), nil
+	case jwa.ES256, jwa.ES384, jwa.ES512:
+		ecdsaPreset, ok := jwkconfig.JwsPresetsEcdsa[alg]
+		if !ok {
+			return nil, fmt.Errorf("%w (ecdsa) for usage: %s", ErrJwkPresetUnknown, usage)
+		}
+
+		return jws.NewSourcedECDSAVerifier(keySource, ecdsaPreset), nil
+	case jwa.RS256, jwa.RS384, jwa.RS512, jwa.PS256, jwa.PS384, jwa.PS512:
+		rsaPreset, ok := jwkconfig.JwsPresetsRsa[alg]
+		if !ok {
+			return nil, fmt.Errorf("%w (rsa) for usage: %s", ErrJwkPresetUnknown, usage)
+		}
+
+		return jws.NewSourcedRSAVerifier(keySource, rsaPreset), nil
+	case jwa.MLDSA44, jwa.MLDSA65, jwa.MLDSA87:
+		return jws.NewSourcedMLDSAVerifier(keySource), nil
+	default:
+		return nil, fmt.Errorf("%w: %s", ErrJwkPresetUnknownAlgorithm, alg)
+	}
 }
