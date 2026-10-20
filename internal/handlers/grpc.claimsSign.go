@@ -49,9 +49,7 @@ func (handler *GrpcClaimsSign) ClaimsSign(
 
 	signed, err := handler.service.Exec(ctx, serviceRequest)
 	if errors.Is(err, core.ErrConfigNotFound) {
-		_ = otel.ReportError(span, err)
-
-		return nil, status.Error(codes.Unavailable, "unknown usage")
+		return nil, status.Error(codes.InvalidArgument, "unknown usage")
 	}
 
 	// The registered claims belong to the usage's envelope. Naming the set keeps

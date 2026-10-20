@@ -8,9 +8,8 @@ import "google/protobuf/any.proto";
 // sign a token depend on the intended usage.
 service ClaimsSignService {
   // Signs the provided claims and returns a compact JWT. The signing key and all token
-  // parameters are determined by the requested usage. Returns UNAVAILABLE if the usage is
-  // not configured on the server, and INVALID_ARGUMENT if the payload names a registered
-  // claim.
+  // parameters are determined by the requested usage. Returns INVALID_ARGUMENT if the usage
+  // is not configured on the server or the payload names a registered claim.
   rpc ClaimsSign(ClaimsSignRequest) returns (ClaimsSignResponse);
 }
 
