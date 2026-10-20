@@ -41,7 +41,7 @@
     "sync": "pnpm build && pnpm i",
     "test": "vitest run -c vitest.config.ts",
     "test:ci": "pnpm build && pnpm i && pnpm test",
-    "types:rest": "tsc --build pkg/js/rest/tsconfig.build.json",
+    "types:rest": "tsc --p pkg/js/rest/tsconfig.build.json",
     "types:rest-test": "tsc --p ./pkg/js/test/rest/tsconfig.json --noEmit"
   },
   "devDependencies": {
