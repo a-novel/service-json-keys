@@ -35,7 +35,6 @@ type JwkSelect struct {
 	serviceExtract JwkSelectServiceExtract
 }
 
-// NewJwkSelect returns a new JwkSelect service.
 func NewJwkSelect(
 	dao JwkSelectDao,
 	serviceExtract JwkSelectServiceExtract,

@@ -25,7 +25,6 @@ type GrpcStatus struct {
 	jsonkeysv2.UnimplementedStatusServiceServer
 }
 
-// NewGrpcStatus returns a new GrpcStatus handler.
 func NewGrpcStatus() *GrpcStatus {
 	return &GrpcStatus{}
 }

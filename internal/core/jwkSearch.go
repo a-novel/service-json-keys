@@ -38,7 +38,6 @@ type JwkSearch struct {
 	serviceExtract JwkSearchServiceExtract
 }
 
-// NewJwkSearch returns a new JwkSearch service.
 func NewJwkSearch(
 	dao JwkSearchDao,
 	serviceExtract JwkSearchServiceExtract,

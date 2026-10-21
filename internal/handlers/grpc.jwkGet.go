@@ -26,7 +26,6 @@ type GrpcJwkGet struct {
 	service GrpcJwkGetService
 }
 
-// NewGrpcJwkGet returns a new GrpcJwkGet handler backed by the given service.
 func NewGrpcJwkGet(service GrpcJwkGetService) *GrpcJwkGet {
 	return &GrpcJwkGet{service: service}
 }

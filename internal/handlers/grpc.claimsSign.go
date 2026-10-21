@@ -26,7 +26,6 @@ type GrpcClaimsSign struct {
 	service GrpcClaimsSignService
 }
 
-// NewGrpcClaimsSign returns a new GrpcClaimsSign handler backed by the given service.
 func NewGrpcClaimsSign(service GrpcClaimsSignService) *GrpcClaimsSign {
 	return &GrpcClaimsSign{service: service}
 }
@@ -52,9 +51,8 @@ func (handler *GrpcClaimsSign) ClaimsSign(
 		return nil, status.Error(codes.InvalidArgument, "unknown usage")
 	}
 
-	// The registered claims belong to the usage's envelope. Naming the set keeps
-	// the caller from having to guess which of their claims was refused, without
-	// echoing the service's own error text back to them.
+	// The message names the registered claims, so the caller knows which ones to drop. It never
+	// echoes the service's own error text.
 	if errors.Is(err, core.ErrReservedClaim) {
 		return nil, status.Error(codes.InvalidArgument,
 			"payload may not set a registered claim (iss, sub, aud, exp, nbf, iat, jti)")

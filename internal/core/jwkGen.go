@@ -54,7 +54,6 @@ type JwkGen struct {
 	keysConfig     map[string]*jwkconfig.Jwk
 }
 
-// NewJwkGen returns a new JwkGen service.
 func NewJwkGen(
 	daoSearch JwkGenDaoSearch,
 	daoInsert JwkGenDaoInsert,

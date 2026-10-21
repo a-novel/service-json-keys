@@ -10,30 +10,29 @@ import (
 	"github.com/a-novel-kit/golib/httpf"
 )
 
-// prefix is the value of SERVICE_JSON_KEYS_ENV_PREFIX, prepended to all environment
-// variable names read by this package. Set it to avoid conflicts when multiple instances
-// of this service run in the same environment.
+// prefix is prepended to every configuration variable name that this package reads. Set
+// SERVICE_JSON_KEYS_ENV_PREFIX when several instances of the service share one environment.
 var prefix = os.Getenv("SERVICE_JSON_KEYS_ENV_PREFIX")
 
 func getEnv(name string) string {
 	return os.Getenv(prefix + name)
 }
 
-// Default values used when the corresponding environment variable is absent.
 const (
+	// AppNameDefault names the application in logs and traces when APP_NAME is unset.
 	AppNameDefault = "service-json-keys"
 
-	// PostgresMaxOpenConnsDefault keeps the pool well under a stock PostgreSQL
-	// max_connections of 100 once multiplied by a service's replica count, leaving
-	// room for the migration job and a psql session. Go's own default is unlimited,
-	// which turns a spike into connection refusals for everything on that database
-	// rather than queueing inside this process.
+	// PostgresMaxOpenConnsDefault caps the connections one instance opens. Multiplied by the replica
+	// count, the cap stays well under PostgreSQL's default max_connections of 100. That leaves room
+	// for the migration job and a psql session. A spike waits inside the process for a free connection.
 	PostgresMaxOpenConnsDefault = 20
-	// PostgresMaxIdleConnsDefault matches the open limit so a burst does not close
-	// connections it is about to reopen.
+	// PostgresMaxIdleConnsDefault matches the open limit, so a burst keeps the connections it is about
+	// to reuse.
 	PostgresMaxIdleConnsDefault = 20
-	PostgresPortDefault         = 5432
-	PostgresTLSEnabledDefault   = true
+	// PostgresPortDefault is PostgreSQL's standard port.
+	PostgresPortDefault = 5432
+	// PostgresTLSEnabledDefault encrypts the connection unless a deployment turns it off.
+	PostgresTLSEnabledDefault = true
 )
 
 var (

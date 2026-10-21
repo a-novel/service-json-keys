@@ -21,14 +21,7 @@ const OtelFlushTimeout = 2 * time.Second
 // OtelPresetDefault is the OpenTelemetry exporter of the servers and the rotation job. It exports
 // nothing unless OTEL is set, then exports to Google Cloud when GCLOUD_PROJECT_ID is set, and to
 // standard output otherwise.
-var OtelPresetDefault = lo.If[otel.Config](!env.Otel, &otelpresets.Disabled{}).
-	ElseIf(env.GcloudProjectId == "", &otelpresets.Local{
-		FlushTimeout: OtelFlushTimeout,
-	}).
-	Else(&otelpresets.Gcloud{
-		ProjectID:    env.GcloudProjectId,
-		FlushTimeout: OtelFlushTimeout,
-	})
+var OtelPresetDefault = newOtelPreset()
 
 // LoggerProdGrpc sends gRPC request logs to Google Cloud Logging.
 var LoggerProdGrpc = loggingpresets.GRPCGcloud{
@@ -69,4 +62,16 @@ var AppPresetDefault = App{
 		&loggingpresets.HTTPGcloud{BaseLogger: LoggerProd},
 	),
 	Postgres: PostgresPresetDefault,
+}
+
+// newOtelPreset picks the exporter [OtelPresetDefault] describes.
+func newOtelPreset() otel.Config {
+	switch {
+	case !env.Otel:
+		return &otelpresets.Disabled{}
+	case env.GcloudProjectId == "":
+		return &otelpresets.Local{FlushTimeout: OtelFlushTimeout}
+	default:
+		return &otelpresets.Gcloud{ProjectID: env.GcloudProjectId, FlushTimeout: OtelFlushTimeout}
+	}
 }
