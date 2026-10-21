@@ -17,7 +17,7 @@ const postgresDialTimeout = 3 * time.Minute
 
 // postgresConnection reaches PostgreSQL through the POSTGRES_* variables.
 var postgresConnection = postgrespresets.Connection{
-	DSN:        env.PostgresDsn,
+	DSN:        env.PostgresDSN,
 	Host:       env.PostgresHost,
 	Port:       env.PostgresPort,
 	User:       env.PostgresUser,

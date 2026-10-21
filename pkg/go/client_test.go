@@ -164,7 +164,7 @@ func TestClient(t *testing.T) {
 		t.Parallel()
 
 		client, err := servicejsonkeys.NewClient(
-			env.GrpcUrl,
+			env.GrpcURL,
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 		)
 		require.NoError(t, err)
