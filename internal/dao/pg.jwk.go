@@ -7,8 +7,8 @@ import (
 	"github.com/uptrace/bun"
 )
 
-// A Jwk is a JSON Web Key row. Both halves are stored as base64 raw URL encoded strings, and the
-// private half is encrypted with the master key.
+// A Jwk is a JSON Web Key row. Key material is stored as base64 raw URL encoded strings, and the
+// private key is encrypted with the master key.
 //
 // Rows stay in the table once they expire or are revoked. DAOs read through the active_keys view,
 // which hides those rows.
