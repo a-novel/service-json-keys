@@ -17,3 +17,9 @@ packages:
       pkgname: pkgmocks
       dir: pkg/go/mocks
       filename: mocks.go
+  github.com/a-novel/service-json-keys/v2/pkg/go/internal/tokens:
+    config:
+      all: true
+      pkgname: tokensmocks
+      dir: pkg/go/internal/tokens/mocks
+      filename: mocks.go

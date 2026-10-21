@@ -1,10 +1,15 @@
 package jwk
 
 import (
+	"errors"
 	"time"
 
+	"github.com/a-novel-kit/jwt/v2"
 	"github.com/a-novel-kit/jwt/v2/jwa"
 )
+
+// ErrConfigNotFound is returned when no JWK configuration is registered for a given key usage.
+var ErrConfigNotFound = errors.New("no config found for the requested usage")
 
 // JwkKey holds the lifetime and caching parameters for a JSON Web Key.
 type JwkKey struct {
@@ -41,6 +46,16 @@ type JwkToken struct {
 	Subject string `json:"subject" yaml:"subject"`
 	// Leeway is the allowed clock skew when checking token validity.
 	Leeway time.Duration `json:"leeway" yaml:"leeway"`
+}
+
+// Target returns the issuer, audience and subject a usage stamps on its tokens. Signing and
+// verification both read it, so a token verifies against the target it was signed with.
+func (token JwkToken) Target() jwt.TargetConfig {
+	return jwt.TargetConfig{
+		Issuer:   token.Issuer,
+		Audience: jwa.Audience{token.Audience},
+		Subject:  token.Subject,
+	}
 }
 
 // Jwk holds the full configuration for a single key usage.

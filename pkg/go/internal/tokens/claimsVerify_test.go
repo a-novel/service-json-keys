@@ -1,4 +1,4 @@
-package core_test
+package tokens_test
 
 import (
 	"testing"
@@ -8,7 +8,9 @@ import (
 	"github.com/a-novel-kit/jwt/v2/jwa"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
-	"github.com/a-novel/service-json-keys/v2/internal/core"
+	"github.com/a-novel/service-json-keys/v2/internal/config/configtest"
+	jwkconfig "github.com/a-novel/service-json-keys/v2/internal/config/jwk"
+	"github.com/a-novel/service-json-keys/v2/pkg/go/internal/tokens"
 )
 
 func TestClaimsVerify(t *testing.T) {
@@ -18,14 +20,14 @@ func TestClaimsVerify(t *testing.T) {
 		Foo string `json:"foo"`
 	}
 
-	testConfig := testKeys(jwa.Ed25519, config.JwkKey{})
+	testConfig := configtest.TestKeys(jwa.Ed25519, config.JwkKey{})
 
 	testCases := []struct {
 		name string
 
-		request *core.ClaimsVerifyRequest
+		request *tokens.ClaimsVerifyRequest
 
-		recipients core.JwkRecipients
+		recipients tokens.JwkRecipients
 		keysConfig map[string]*config.Jwk
 
 		expectErr error
@@ -33,28 +35,28 @@ func TestClaimsVerify(t *testing.T) {
 		{
 			name: "Error/ConfigNotFound",
 
-			request: &core.ClaimsVerifyRequest{
+			request: &tokens.ClaimsVerifyRequest{
 				Token: "some.token.value",
 				Usage: "unknown-usage",
 			},
 
 			keysConfig: testConfig,
-			recipients: make(core.JwkRecipients),
+			recipients: make(tokens.JwkRecipients),
 
-			expectErr: core.ErrConfigNotFound,
+			expectErr: jwkconfig.ErrConfigNotFound,
 		},
 		{
 			name: "Error/NoRecipients",
 
-			request: &core.ClaimsVerifyRequest{
+			request: &tokens.ClaimsVerifyRequest{
 				Token: "some.token.value",
 				Usage: "test-usage",
 			},
 
 			keysConfig: testConfig,
-			recipients: make(core.JwkRecipients),
+			recipients: make(tokens.JwkRecipients),
 
-			expectErr: core.ErrConfigNotFound,
+			expectErr: jwkconfig.ErrConfigNotFound,
 		},
 	}
 
@@ -62,7 +64,7 @@ func TestClaimsVerify(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			service := core.NewClaimsVerify[testClaims](testCase.recipients, testCase.keysConfig)
+			service := tokens.NewClaimsVerify[testClaims](testCase.recipients, testCase.keysConfig)
 
 			claims, err := service.Exec(t.Context(), testCase.request)
 			require.ErrorIs(t, err, testCase.expectErr)
