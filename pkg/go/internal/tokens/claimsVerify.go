@@ -1,4 +1,4 @@
-package core
+package tokens
 
 import (
 	"context"
@@ -41,19 +41,19 @@ func NewClaimsVerify[Out any](
 
 // Exec authenticates the token and decodes its claims using the configured usage policy.
 func (service *ClaimsVerify[Out]) Exec(ctx context.Context, request *ClaimsVerifyRequest) (*Out, error) {
-	ctx, span := otel.Tracer().Start(ctx, "core.ClaimsVerify")
+	ctx, span := otel.Tracer().Start(ctx, "tokens.ClaimsVerify")
 	defer span.End()
 
 	span.SetAttributes(attribute.String("key.usage", request.Usage))
 
 	keyConfig, ok := service.keysConfig[request.Usage]
 	if !ok {
-		return nil, otel.ReportError(span, fmt.Errorf("%w: %s", ErrConfigNotFound, request.Usage))
+		return nil, otel.ReportError(span, fmt.Errorf("%w: %s", jwkconfig.ErrConfigNotFound, request.Usage))
 	}
 
 	// Validate the claims against the usage's configured target, and its expiry unless waived.
 	checks := []jwp.ClaimsCheck{
-		jwp.NewClaimsCheckTarget(tokenTarget(keyConfig.Token)),
+		jwp.NewClaimsCheckTarget(keyConfig.Token.Target()),
 	}
 	if !request.IgnoreExpired {
 		checks = append(checks, jwp.NewClaimsCheckTimestamp(keyConfig.Token.Leeway, true))
@@ -66,7 +66,7 @@ func (service *ClaimsVerify[Out]) Exec(ctx context.Context, request *ClaimsVerif
 	recipientPlugins, ok := service.recipients[request.Usage]
 	if !ok {
 		return nil, otel.ReportError(span,
-			fmt.Errorf("%w: no recipients found for usage %s", ErrConfigNotFound, request.Usage),
+			fmt.Errorf("%w: no recipients found for usage %s", jwkconfig.ErrConfigNotFound, request.Usage),
 		)
 	}
 

@@ -52,7 +52,7 @@ func (service *ClaimsSign) Exec(ctx context.Context, request *ClaimsSignRequest)
 
 	// The usage config sets the standard JWT claims. Verification checks them with the signature.
 	claimsConfig := jwt.ClaimsProducerConfig{
-		TargetConfig: tokenTarget(keyConfig.Token),
+		TargetConfig: keyConfig.Token.Target(),
 		TTL:          keyConfig.Token.TTL,
 	}
 

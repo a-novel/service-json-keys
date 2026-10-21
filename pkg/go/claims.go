@@ -6,7 +6,7 @@ import (
 
 	"github.com/samber/lo"
 
-	"github.com/a-novel/service-json-keys/v2/internal/core"
+	"github.com/a-novel/service-json-keys/v2/pkg/go/internal/tokens"
 )
 
 // KeyUsage identifies the intended purpose of a token. It selects the signing key and full
@@ -48,7 +48,7 @@ type ClaimsVerifier[C any] interface {
 }
 
 type claimsVerifier[C any] struct {
-	service *core.ClaimsVerify[C]
+	service *tokens.ClaimsVerify[C]
 }
 
 // NewClaimsVerifier creates a token verifier backed by the key configuration carried by c. It
@@ -60,16 +60,16 @@ func NewClaimsVerifier[C any](c Client) (ClaimsVerifier[C], error) {
 	// and a sign-only consumer never pays for the setup.
 	adapter := newJwkExportGrpc(c)
 
-	recipients, err := core.NewJwkRecipients(adapter, c.Keys())
+	recipients, err := tokens.NewJwkRecipients(adapter, c.Keys())
 	if err != nil {
 		return nil, fmt.Errorf("(NewClaimsVerifier) new public sources: %w", err)
 	}
 
-	return &claimsVerifier[C]{service: core.NewClaimsVerify[C](recipients, c.Keys())}, nil
+	return &claimsVerifier[C]{service: tokens.NewClaimsVerify[C](recipients, c.Keys())}, nil
 }
 
 func (verifier *claimsVerifier[C]) VerifyClaims(ctx context.Context, req *VerifyClaimsRequest) (*C, error) {
-	serviceRequest := &core.ClaimsVerifyRequest{
+	serviceRequest := &tokens.ClaimsVerifyRequest{
 		Token:         req.AccessToken,
 		Usage:         req.Usage,
 		IgnoreExpired: lo.FromPtr(req.Options).IgnoreExpired,

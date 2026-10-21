@@ -17,6 +17,7 @@ import (
 	"github.com/a-novel-kit/jwt/v2/jwa"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
+	"github.com/a-novel/service-json-keys/v2/internal/config/configtest"
 	"github.com/a-novel/service-json-keys/v2/internal/core"
 	coremocks "github.com/a-novel/service-json-keys/v2/internal/core/mocks"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
@@ -189,7 +190,7 @@ func TestJwkGen(t *testing.T) {
 			name: "Success/OldKeys",
 
 			request: &core.JwkGenRequest{Usage: "test-usage"},
-			keys:    testKeys(jwa.Ed25519, rotation),
+			keys:    configtest.TestKeys(jwa.Ed25519, rotation),
 
 			daoSearchMock:      &daoSearchMock{resp: []*dao.Jwk{staleKey}},
 			daoInsertMock:      &daoInsertMock{resp: insertedKey},
@@ -201,7 +202,7 @@ func TestJwkGen(t *testing.T) {
 			name: "Success/RecentKeys",
 
 			request: &core.JwkGenRequest{Usage: "test-usage"},
-			keys:    testKeys(jwa.Ed25519, rotation),
+			keys:    configtest.TestKeys(jwa.Ed25519, rotation),
 
 			daoSearchMock:      &daoSearchMock{resp: []*dao.Jwk{recentKey}},
 			serviceExtractMock: &serviceExtractMock{resp: jwkGenExtracted(jwa.Ed25519, recentKey.ID.String())},
@@ -212,7 +213,7 @@ func TestJwkGen(t *testing.T) {
 			name: "Error/Extract",
 
 			request: &core.JwkGenRequest{Usage: "test-usage"},
-			keys:    testKeys(jwa.Ed25519, rotation),
+			keys:    configtest.TestKeys(jwa.Ed25519, rotation),
 
 			daoSearchMock:      &daoSearchMock{resp: []*dao.Jwk{staleKey}},
 			daoInsertMock:      &daoInsertMock{resp: insertedKey},
@@ -224,7 +225,7 @@ func TestJwkGen(t *testing.T) {
 			name: "Error/Insert",
 
 			request: &core.JwkGenRequest{Usage: "test-usage"},
-			keys:    testKeys(jwa.Ed25519, rotation),
+			keys:    configtest.TestKeys(jwa.Ed25519, rotation),
 
 			daoSearchMock: &daoSearchMock{resp: []*dao.Jwk{staleKey}},
 			daoInsertMock: &daoInsertMock{err: errFoo},
@@ -235,7 +236,7 @@ func TestJwkGen(t *testing.T) {
 			name: "Error/Search",
 
 			request: &core.JwkGenRequest{Usage: "test-usage"},
-			keys:    testKeys(jwa.Ed25519, rotation),
+			keys:    configtest.TestKeys(jwa.Ed25519, rotation),
 
 			daoSearchMock: &daoSearchMock{err: errFoo},
 
@@ -253,12 +254,12 @@ func TestJwkGen(t *testing.T) {
 		},
 	}
 
-	for _, alg := range supportedAlgorithms {
+	for _, alg := range configtest.SupportedAlgorithms {
 		algCase := testCaseDef{
 			name: "Success/" + string(alg),
 
 			request: &core.JwkGenRequest{Usage: "test-usage"},
-			keys:    testKeys(alg, rotation),
+			keys:    configtest.TestKeys(alg, rotation),
 
 			daoSearchMock:      &daoSearchMock{},
 			daoInsertMock:      &daoInsertMock{resp: insertedKey},

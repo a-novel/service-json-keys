@@ -1,9 +1,20 @@
 package jwk
 
 import (
+	"errors"
+
 	"github.com/a-novel-kit/jwt/v2/jwa"
 	jwtjwk "github.com/a-novel-kit/jwt/v2/jwk"
 	"github.com/a-novel-kit/jwt/v2/jws"
+)
+
+var (
+	// ErrJwkPresetUnknown is returned when a requested algorithm has no corresponding preset entry.
+	ErrJwkPresetUnknown = errors.New("unknown jwk preset")
+	// ErrJwkPresetUnknownAlgorithm is returned when a key configuration references an algorithm
+	// with no signing or verification plugin. Only asymmetric algorithms are supported because
+	// symmetric secrets have no public half to publish on the REST surface.
+	ErrJwkPresetUnknownAlgorithm = errors.New("unknown jwk algorithm")
 )
 
 // JwkPresetsEcdsa maps ECDSA algorithm identifiers to their JWK generation presets.

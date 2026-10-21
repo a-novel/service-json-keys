@@ -8,6 +8,7 @@ import (
 	"github.com/a-novel-kit/jwt/v2/jwa"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
+	"github.com/a-novel/service-json-keys/v2/internal/config/configtest"
 	"github.com/a-novel/service-json-keys/v2/internal/core"
 )
 
@@ -18,7 +19,7 @@ func TestClaimsSign(t *testing.T) {
 		Foo string `json:"foo"`
 	}
 
-	testConfig := testKeys(jwa.Ed25519, config.JwkKey{})
+	testConfig := configtest.TestKeys(jwa.Ed25519, config.JwkKey{})
 
 	testCases := []struct {
 		name string
