@@ -48,5 +48,5 @@ func (handler *RestJwkGet) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpf.SendJSONStatus(ctx, w, span, http.StatusOK, jwk)
+	httpf.SendJSONStatus(w, span, http.StatusOK, jwk)
 }
