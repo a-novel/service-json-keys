@@ -40,7 +40,6 @@ func NewRestHealthStatus(err error) *RestHealthStatus {
 // and its dependencies as a JSON object, with HTTP 503 when a probe fails.
 type RestHealth struct{}
 
-// NewRestHealth returns a new RestHealth handler.
 func NewRestHealth() *RestHealth {
 	return &RestHealth{}
 }

@@ -38,7 +38,6 @@ type JwkInsertRequest struct {
 // than any existing key for this usage, the new key becomes the main key.
 type PgJwkInsert struct{}
 
-// NewPgJwkInsert returns a new PgJwkInsert dao.
 func NewPgJwkInsert() *PgJwkInsert {
 	return &PgJwkInsert{}
 }

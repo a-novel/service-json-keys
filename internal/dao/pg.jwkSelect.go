@@ -28,7 +28,6 @@ type JwkSelectRequest struct {
 // A PgJwkSelect retrieves a single active key by its ID.
 type PgJwkSelect struct{}
 
-// NewPgJwkSelect returns a new PgJwkSelect dao.
 func NewPgJwkSelect() *PgJwkSelect {
 	return &PgJwkSelect{}
 }

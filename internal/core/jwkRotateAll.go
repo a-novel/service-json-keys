@@ -17,21 +17,18 @@ type JwkRotateAllServiceGen interface {
 	Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, error)
 }
 
-// JwkRotateAllRequest holds the parameters for a [JwkRotateAll.Exec] call. The set of usages
-// to rotate comes from configuration, so it is empty; it exists so the operation can gain a
-// parameter without breaking callers.
+// JwkRotateAllRequest holds the parameters for a [JwkRotateAll.Exec] call. It is empty: the usages
+// to rotate come from configuration.
 type JwkRotateAllRequest struct{}
 
 // JwkRotateAllResponse reports the outcome of a [JwkRotateAll.Exec] call.
 type JwkRotateAllResponse struct {
-	// Processed counts the usages that were ensured. It is meaningful only when the call
-	// returned no error; on failure the transaction rolls back and nothing was rotated.
+	// Processed counts the usages the call ensured.
 	Processed int
 }
 
-// A JwkRotateAll ensures every configured usage has a current key, as a single unit of work:
-// the injected transactor wraps the whole rotation, so a failure partway through leaves none
-// of the usages rotated.
+// A JwkRotateAll ensures every configured usage has a current key. One transaction wraps the whole
+// rotation, so a failure partway rotates no usage.
 type JwkRotateAll struct {
 	serviceGen JwkRotateAllServiceGen
 	transactor transaction.Transactor

@@ -23,7 +23,6 @@ type RestJwkList struct {
 	logger  logging.Log
 }
 
-// NewRestJwkList returns a new RestJwkList handler backed by the given service.
 func NewRestJwkList(service RestJwkListService, logger logging.Log) *RestJwkList {
 	return &RestJwkList{service: service, logger: logger}
 }

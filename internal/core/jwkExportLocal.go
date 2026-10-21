@@ -20,7 +20,6 @@ type JwkExportLocal struct {
 	service JwkExportLocalSource
 }
 
-// NewJwkExportLocal returns a new JwkExportLocal service backed by the given search service.
 func NewJwkExportLocal(service JwkExportLocalSource) *JwkExportLocal {
 	return &JwkExportLocal{service: service}
 }

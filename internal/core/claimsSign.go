@@ -16,8 +16,8 @@ import (
 
 // ClaimsSignRequest holds the parameters for a [ClaimsSign.Exec] call.
 type ClaimsSignRequest struct {
-	// Claims is the caller-supplied payload to embed in the JWT. Any JSON-serializable value
-	// is accepted; the service adds the standard JWT claim envelope before signing.
+	// Claims is the caller's payload, any JSON-serializable value. The service adds the standard JWT
+	// claims before signing.
 	Claims any
 	// Usage identifies the key and token parameters to use for signing. See [jwkconfig.Jwk].
 	Usage string
@@ -50,8 +50,7 @@ func (service *ClaimsSign) Exec(ctx context.Context, request *ClaimsSignRequest)
 		return "", otel.ReportError(span, fmt.Errorf("%w: %s", ErrConfigNotFound, request.Usage))
 	}
 
-	// Attach the standard JWT claim envelope from the usage config; these claims are
-	// checked during verification alongside the token signature.
+	// The usage config sets the standard JWT claims. Verification checks them with the signature.
 	claimsConfig := jwt.ClaimsProducerConfig{
 		TargetConfig: tokenTarget(keyConfig.Token),
 		TTL:          keyConfig.Token.TTL,

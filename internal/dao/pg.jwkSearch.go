@@ -35,7 +35,6 @@ type JwkSearchRequest struct {
 // [KeysMaxBatchSize], so one query returns them all.
 type PgJwkSearch struct{}
 
-// NewPgJwkSearch returns a new PgJwkSearch dao.
 func NewPgJwkSearch() *PgJwkSearch {
 	return &PgJwkSearch{}
 }

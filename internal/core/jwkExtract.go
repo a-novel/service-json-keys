@@ -36,7 +36,6 @@ type JwkExtractRequest struct {
 // A JwkExtract decodes the raw keys returned from the DAO layer.
 type JwkExtract struct{}
 
-// NewJwkExtract returns a new JwkExtract service.
 func NewJwkExtract() *JwkExtract {
 	return &JwkExtract{}
 }

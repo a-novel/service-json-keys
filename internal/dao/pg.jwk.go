@@ -7,13 +7,11 @@ import (
 	"github.com/uptrace/bun"
 )
 
-// A Jwk represents a JSON Web Key stored in the database. Keys are stored as base64 raw URL encoded strings.
+// A Jwk is a JSON Web Key row. Both halves are stored as base64 raw URL encoded strings, and the
+// private half is encrypted with the master key.
 //
-// Private keys must be encrypted with the master key before storage.
-//
-// Rows are soft-deleted and stay in the table; DAOs read through an "active_keys" view that
-// excludes expired and soft-deleted rows. Keys are grouped by [Jwk.Usage]; for each usage there
-// is a single main key (the latest) and zero or more legacy keys (older active versions).
+// Rows stay in the table once they expire or are revoked. DAOs read through the active_keys view,
+// which hides those rows.
 type Jwk struct {
 	bun.BaseModel `bun:"table:keys,select:active_keys"`
 

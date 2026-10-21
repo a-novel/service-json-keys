@@ -25,7 +25,6 @@ type RestJwkGet struct {
 	logger  logging.Log
 }
 
-// NewRestJwkGet returns a new RestJwkGet handler backed by the given service.
 func NewRestJwkGet(service RestJwkGetService, logger logging.Log) *RestJwkGet {
 	return &RestJwkGet{service: service, logger: logger}
 }

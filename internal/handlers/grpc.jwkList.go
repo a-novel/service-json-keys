@@ -25,7 +25,6 @@ type GrpcJwkList struct {
 	service GrpcJwkListService
 }
 
-// NewGrpcJwkList returns a new GrpcJwkList handler backed by the given service.
 func NewGrpcJwkList(service GrpcJwkListService) *GrpcJwkList {
 	return &GrpcJwkList{service: service}
 }
