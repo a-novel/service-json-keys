@@ -4,7 +4,7 @@ go 1.27.3
 
 require (
 	github.com/a-novel-kit/golib v0.47.1
-	github.com/a-novel-kit/jwt/v2 v2.4.3
+	github.com/a-novel-kit/jwt/v2 v2.4.5
 	github.com/go-chi/chi/v5 v5.5.0
 	github.com/goccy/go-yaml v1.19.2
 	github.com/google/uuid v1.6.0
