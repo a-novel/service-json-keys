@@ -26,7 +26,7 @@ Other services sign tokens and read keys through the private gRPC API. The gRPC 
 
 The service runs as published OCI images plus a PostgreSQL database. All state lives in the database, so each server scales to any number of replicas behind a load balancer.
 
-> **OpenTofu modules are the planned canonical deployment path.** Until they land, deploy the images with any container orchestrator — the composition below is the reference for which images to run, how they wire together, and the environment they expect.
+Deploy the images with any container orchestrator. The composition below shows which images to run, how they wire together, and the environment they expect.
 
 | Image                               | Role                                                                             |
 | ----------------------------------- | -------------------------------------------------------------------------------- |
