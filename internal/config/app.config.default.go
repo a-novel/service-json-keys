@@ -26,7 +26,7 @@ var OtelPresetDefault = newOtelPreset()
 // LoggerProdGrpc sends gRPC request logs to Google Cloud Logging.
 var LoggerProdGrpc = loggingpresets.GRPCGcloud{
 	Component: env.AppName,
-	ProjectID: env.GcloudProjectId,
+	ProjectID: env.GcloudProjectID,
 }
 
 // LoggerDevGrpc prints gRPC request logs to the console for local development.
@@ -39,7 +39,7 @@ var LoggerDev = &loggingpresets.LogLocal{
 
 // LoggerProd sends application and REST request logs to Google Cloud Logging.
 var LoggerProd = &loggingpresets.LogGcloud{
-	ProjectID: env.GcloudProjectId,
+	ProjectID: env.GcloudProjectID,
 }
 
 // AppPresetDefault is the configuration the servers start with. It reads every value from the
@@ -54,10 +54,10 @@ var AppPresetDefault = App{
 	Rest: env.Rest,
 
 	Otel:       OtelPresetDefault,
-	Logger:     lo.Ternary[logging.Log](env.GcloudProjectId == "", LoggerDev, LoggerProd),
-	GrpcLogger: lo.Ternary[logging.RPCConfig](env.GcloudProjectId == "", &LoggerDevGrpc, &LoggerProdGrpc),
+	Logger:     lo.Ternary[logging.Log](env.GcloudProjectID == "", LoggerDev, LoggerProd),
+	GrpcLogger: lo.Ternary[logging.RPCConfig](env.GcloudProjectID == "", &LoggerDevGrpc, &LoggerProdGrpc),
 	RestLogger: lo.Ternary[logging.HTTPConfig](
-		env.GcloudProjectId == "",
+		env.GcloudProjectID == "",
 		&loggingpresets.HTTPLocal{BaseLogger: LoggerDev},
 		&loggingpresets.HTTPGcloud{BaseLogger: LoggerProd},
 	),
@@ -69,9 +69,9 @@ func newOtelPreset() otel.Config {
 	switch {
 	case !env.Otel:
 		return &otelpresets.Disabled{}
-	case env.GcloudProjectId == "":
+	case env.GcloudProjectID == "":
 		return &otelpresets.Local{FlushTimeout: OtelFlushTimeout}
 	default:
-		return &otelpresets.Gcloud{ProjectID: env.GcloudProjectId, FlushTimeout: OtelFlushTimeout}
+		return &otelpresets.Gcloud{ProjectID: env.GcloudProjectID, FlushTimeout: OtelFlushTimeout}
 	}
 }
