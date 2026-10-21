@@ -53,14 +53,14 @@ func (dao *PgJwkInsert) Exec(ctx context.Context, request *JwkInsertRequest) (*J
 		attribute.Int64("key.expires_at", request.Expiration.Unix()),
 	)
 
-	tx, err := postgres.GetContext(ctx)
+	db, err := postgres.GetContext(ctx)
 	if err != nil {
 		return nil, otel.ReportError(span, fmt.Errorf("get transaction: %w", err))
 	}
 
 	var entity Jwk
 
-	err = tx.
+	err = db.
 		NewRaw(
 			jwkInsertQuery,
 			request.ID,

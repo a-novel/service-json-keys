@@ -44,14 +44,14 @@ func (dao *PgJwkSearch) Exec(ctx context.Context, request *JwkSearchRequest) ([]
 	ctx, span := otel.Tracer().Start(ctx, "dao.PgJwkSearch")
 	defer span.End()
 
-	tx, err := postgres.GetContext(ctx)
+	db, err := postgres.GetContext(ctx)
 	if err != nil {
 		return nil, otel.ReportError(span, fmt.Errorf("get transaction: %w", err))
 	}
 
 	var entities []*Jwk
 
-	err = tx.NewRaw(jwkSearchQuery, request.Usage, KeysMaxBatchSize).Scan(ctx, &entities)
+	err = db.NewRaw(jwkSearchQuery, request.Usage, KeysMaxBatchSize).Scan(ctx, &entities)
 	if err != nil {
 		return nil, otel.ReportError(span, fmt.Errorf("execute query: %w", err))
 	}

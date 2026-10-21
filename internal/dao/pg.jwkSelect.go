@@ -37,19 +37,19 @@ func (dao *PgJwkSelect) Exec(ctx context.Context, request *JwkSelectRequest) (*J
 	ctx, span := otel.Tracer().Start(ctx, "dao.PgJwkSelect")
 	defer span.End()
 
-	tx, err := postgres.GetContext(ctx)
+	db, err := postgres.GetContext(ctx)
 	if err != nil {
 		return nil, otel.ReportError(span, fmt.Errorf("get transaction: %w", err))
 	}
 
 	var entity Jwk
 
-	err = tx.NewRaw(jwkSelectQuery, request.ID).Scan(ctx, &entity)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, otel.ReportError(span, ErrJwkSelectNotFound)
-		}
+	err = db.NewRaw(jwkSelectQuery, request.ID).Scan(ctx, &entity)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, otel.ReportError(span, ErrJwkSelectNotFound)
+	}
 
+	if err != nil {
 		return nil, otel.ReportError(span, fmt.Errorf("execute query: %w", err))
 	}
 
