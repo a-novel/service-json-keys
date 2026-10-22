@@ -154,8 +154,9 @@ func NewJwkProducers(
 
 	for usage, keyConfig := range keys {
 		sourceConfig := jwk.SourceConfig{
-			CacheDuration: keyConfig.Key.Cache,
-			StaleIfError:  keyConfig.Key.StaleIfError,
+			CacheDuration:        keyConfig.Key.Cache,
+			StaleIfError:         keyConfig.Key.StaleIfError,
+			StaleWhileRevalidate: keyConfig.Key.StaleWhileRevalidate,
 		}
 
 		keySource := newJwkSource(source.SearchKeys, usage, sourceConfig)
