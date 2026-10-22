@@ -28,6 +28,10 @@ type JwkKey struct {
 	// The newest cached key keeps signing through an outage. Rotation + Cache + StaleIfError should stay
 	// below the TTL, which keeps that key unexpired once fetching recovers.
 	StaleIfError time.Duration `json:"staleIfError" yaml:"staleIfError"`
+	// StaleWhileRevalidate configures how long past Cache the cached keys keep serving while one
+	// background fetch refreshes them, so no request waits on the database when the cache expires.
+	// Zero makes the requests that find the cache expired wait for the refresh.
+	StaleWhileRevalidate time.Duration `json:"staleWhileRevalidate" yaml:"staleWhileRevalidate"`
 	// UnknownKeyIDInterval bounds how often a verifier refetches when it meets a key id its cache
 	// does not hold, as a just-rotated key does before Cache expires. A caller sending unknown ids
 	// gets one fetch per interval. Zero uses the jwt default.

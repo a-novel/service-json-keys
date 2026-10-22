@@ -1,6 +1,7 @@
 package core_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -102,6 +103,56 @@ func TestJwkProducers(t *testing.T) {
 
 		_, err = signer.Exec(t.Context(), staleRequest)
 		require.NoError(t, err)
+
+		privateSource.AssertExpectations(t)
+	})
+	t.Run("Success/StaleWhileRevalidate", func(t *testing.T) {
+		t.Parallel()
+
+		privateKey, _, err := jwk.GenerateED25519()
+		require.NoError(t, err)
+
+		keys := configtest.TestKeys(jwa.Ed25519, config.JwkKey{Cache: time.Millisecond, StaleWhileRevalidate: time.Hour})
+
+		// The refetch blocks until the test releases it. Signing must not wait on it.
+		fetching := make(chan struct{})
+		release := make(chan struct{})
+
+		privateSource := coremocks.NewMockJwkPrivateSource(t)
+		privateSource.EXPECT().
+			SearchKeys(mock.Anything, "test-usage").
+			Return([]*jwa.JWK{privateKey.JWK}, nil).
+			Once()
+		privateSource.EXPECT().
+			SearchKeys(mock.Anything, "test-usage").
+			RunAndReturn(func(_ context.Context, _ string) ([]*jwa.JWK, error) {
+				close(fetching)
+				<-release
+
+				return []*jwa.JWK{privateKey.JWK}, nil
+			}).
+			Once()
+
+		producers, err := core.NewJwkProducers(privateSource, keys)
+		require.NoError(t, err)
+
+		type testClaims struct {
+			Message string `json:"message"`
+		}
+
+		signer := core.NewClaimsSign(producers, keys)
+		request := &core.ClaimsSignRequest{Claims: &testClaims{Message: "test"}, Usage: "test-usage"}
+
+		_, err = signer.Exec(t.Context(), request)
+		require.NoError(t, err)
+
+		time.Sleep(2 * time.Millisecond)
+
+		_, err = signer.Exec(t.Context(), request)
+		require.NoError(t, err)
+
+		<-fetching
+		close(release)
 
 		privateSource.AssertExpectations(t)
 	})

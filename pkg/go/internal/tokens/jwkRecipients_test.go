@@ -215,6 +215,70 @@ func TestJwkRecipients(t *testing.T) {
 		privateSource.AssertExpectations(t)
 		publicSource.AssertExpectations(t)
 	})
+	t.Run("Success/StaleWhileRevalidate", func(t *testing.T) {
+		t.Parallel()
+
+		privateKey, publicKey, err := jwk.GenerateED25519()
+		require.NoError(t, err)
+
+		keys := configtest.TestKeys(jwa.Ed25519, config.JwkKey{Cache: time.Millisecond, StaleWhileRevalidate: time.Hour})
+
+		privateSource := coremocks.NewMockJwkPrivateSource(t)
+		privateSource.EXPECT().
+			SearchKeys(mock.Anything, "test-usage").
+			Return([]*jwa.JWK{privateKey.JWK}, nil)
+
+		producers, err := core.NewJwkProducers(privateSource, keys)
+		require.NoError(t, err)
+
+		// The refetch blocks until the test releases it. Verification must not wait on it.
+		fetching := make(chan struct{})
+		release := make(chan struct{})
+
+		publicSource := tokensmocks.NewMockJwkPublicSource(t)
+		publicSource.EXPECT().
+			SearchKeys(mock.Anything, "test-usage").
+			Return([]*jwa.JWK{publicKey.JWK}, nil).
+			Once()
+		publicSource.EXPECT().
+			SearchKeys(mock.Anything, "test-usage").
+			RunAndReturn(func(_ context.Context, _ string) ([]*jwa.JWK, error) {
+				close(fetching)
+				<-release
+
+				return []*jwa.JWK{publicKey.JWK}, nil
+			}).
+			Once()
+
+		recipients, err := tokens.NewJwkRecipients(publicSource, keys)
+		require.NoError(t, err)
+
+		type testClaims struct {
+			Message string `json:"message"`
+		}
+
+		signRequest := &core.ClaimsSignRequest{Claims: &testClaims{Message: "test"}, Usage: "test-usage"}
+
+		token, err := core.NewClaimsSign(producers, keys).Exec(t.Context(), signRequest)
+		require.NoError(t, err)
+
+		verifier := tokens.NewClaimsVerify[testClaims](recipients, keys)
+		verifyRequest := &tokens.ClaimsVerifyRequest{Token: token, Usage: "test-usage"}
+
+		_, err = verifier.Exec(t.Context(), verifyRequest)
+		require.NoError(t, err)
+
+		time.Sleep(2 * time.Millisecond)
+
+		claims, err := verifier.Exec(t.Context(), verifyRequest)
+		require.NoError(t, err)
+		require.Equal(t, &testClaims{Message: "test"}, claims)
+
+		<-fetching
+		close(release)
+
+		publicSource.AssertExpectations(t)
+	})
 }
 
 // loadGeneratedJWK decodes a generated key into the JSON Web Key a key source serves.

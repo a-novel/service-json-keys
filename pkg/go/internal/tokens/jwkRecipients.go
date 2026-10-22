@@ -31,8 +31,9 @@ func NewJwkRecipients(
 
 	for usage, keyConfig := range keys {
 		sourceConfig := jwk.SourceConfig{
-			CacheDuration: keyConfig.Key.Cache,
-			StaleIfError:  keyConfig.Key.StaleIfError,
+			CacheDuration:        keyConfig.Key.Cache,
+			StaleIfError:         keyConfig.Key.StaleIfError,
+			StaleWhileRevalidate: keyConfig.Key.StaleWhileRevalidate,
 			// A rotated signing key can appear before the verifier's normal cache refresh.
 			// An unknown key ID triggers one rate-limited refetch so verification can continue.
 			RefreshOnUnknownKeyID: true,
