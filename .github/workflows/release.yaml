@@ -100,7 +100,12 @@ jobs:
       attestations: write
       id-token: write
     env:
-      POSTGRES_DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DATABASE: postgres
+      POSTGRES_TLS_ENABLED: "false"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -116,7 +121,13 @@ jobs:
           file: builds/migrations.Dockerfile
           image_name: ${{ github.repository }}/jobs/migrations
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          run_args: -e POSTGRES_DSN="${POSTGRES_DSN}"
+          run_args: >-
+            -e POSTGRES_HOST="${POSTGRES_HOST}"
+            -e POSTGRES_PORT="${POSTGRES_PORT}"
+            -e POSTGRES_USER="${POSTGRES_USER}"
+            -e POSTGRES_PASSWORD="${POSTGRES_PASSWORD}"
+            -e POSTGRES_DATABASE="${POSTGRES_DATABASE}"
+            -e POSTGRES_TLS_ENABLED="${POSTGRES_TLS_ENABLED}"
 
   build-job-rotate-keys:
     runs-on: ubuntu-latest
@@ -128,7 +139,12 @@ jobs:
       attestations: write
       id-token: write
     env:
-      POSTGRES_DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DATABASE: postgres
+      POSTGRES_TLS_ENABLED: "false"
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -141,7 +157,14 @@ jobs:
           file: builds/rotate-keys.Dockerfile
           image_name: ${{ github.repository }}/jobs/rotatekeys
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          run_args: -e POSTGRES_DSN="${POSTGRES_DSN}" -e APP_MASTER_KEY="${APP_MASTER_KEY}"
+          run_args: >-
+            -e POSTGRES_HOST="${POSTGRES_HOST}"
+            -e POSTGRES_PORT="${POSTGRES_PORT}"
+            -e POSTGRES_USER="${POSTGRES_USER}"
+            -e POSTGRES_PASSWORD="${POSTGRES_PASSWORD}"
+            -e POSTGRES_DATABASE="${POSTGRES_DATABASE}"
+            -e POSTGRES_TLS_ENABLED="${POSTGRES_TLS_ENABLED}"
+            -e APP_MASTER_KEY="${APP_MASTER_KEY}"
 
   build-grpc:
     needs: [build-database]
@@ -153,7 +176,12 @@ jobs:
       attestations: write
       id-token: write
     env:
-      POSTGRES_DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DATABASE: postgres
+      POSTGRES_TLS_ENABLED: "false"
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -166,7 +194,14 @@ jobs:
           file: builds/grpc.Dockerfile
           image_name: ${{ github.repository }}/grpc
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          run_args: -e POSTGRES_DSN="${POSTGRES_DSN}" -e APP_MASTER_KEY="${APP_MASTER_KEY}"
+          run_args: >-
+            -e POSTGRES_HOST="${POSTGRES_HOST}"
+            -e POSTGRES_PORT="${POSTGRES_PORT}"
+            -e POSTGRES_USER="${POSTGRES_USER}"
+            -e POSTGRES_PASSWORD="${POSTGRES_PASSWORD}"
+            -e POSTGRES_DATABASE="${POSTGRES_DATABASE}"
+            -e POSTGRES_TLS_ENABLED="${POSTGRES_TLS_ENABLED}"
+            -e APP_MASTER_KEY="${APP_MASTER_KEY}"
 
   build-standalone-grpc:
     needs: [build-database]
@@ -178,7 +213,12 @@ jobs:
       attestations: write
       id-token: write
     env:
-      POSTGRES_DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DATABASE: postgres
+      POSTGRES_TLS_ENABLED: "false"
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -191,7 +231,14 @@ jobs:
           file: builds/standalone.grpc.Dockerfile
           image_name: ${{ github.repository }}/standalone-grpc
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          run_args: -e POSTGRES_DSN="${POSTGRES_DSN}" -e APP_MASTER_KEY="${APP_MASTER_KEY}"
+          run_args: >-
+            -e POSTGRES_HOST="${POSTGRES_HOST}"
+            -e POSTGRES_PORT="${POSTGRES_PORT}"
+            -e POSTGRES_USER="${POSTGRES_USER}"
+            -e POSTGRES_PASSWORD="${POSTGRES_PASSWORD}"
+            -e POSTGRES_DATABASE="${POSTGRES_DATABASE}"
+            -e POSTGRES_TLS_ENABLED="${POSTGRES_TLS_ENABLED}"
+            -e APP_MASTER_KEY="${APP_MASTER_KEY}"
 
   build-rest:
     needs: [build-database]
@@ -203,7 +250,12 @@ jobs:
       attestations: write
       id-token: write
     env:
-      POSTGRES_DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DATABASE: postgres
+      POSTGRES_TLS_ENABLED: "false"
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -216,7 +268,14 @@ jobs:
           file: builds/rest.Dockerfile
           image_name: ${{ github.repository }}/rest
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          run_args: -e POSTGRES_DSN="${POSTGRES_DSN}" -e APP_MASTER_KEY="${APP_MASTER_KEY}"
+          run_args: >-
+            -e POSTGRES_HOST="${POSTGRES_HOST}"
+            -e POSTGRES_PORT="${POSTGRES_PORT}"
+            -e POSTGRES_USER="${POSTGRES_USER}"
+            -e POSTGRES_PASSWORD="${POSTGRES_PASSWORD}"
+            -e POSTGRES_DATABASE="${POSTGRES_DATABASE}"
+            -e POSTGRES_TLS_ENABLED="${POSTGRES_TLS_ENABLED}"
+            -e APP_MASTER_KEY="${APP_MASTER_KEY}"
 
   build-standalone-rest:
     needs: [build-database]
@@ -228,7 +287,12 @@ jobs:
       attestations: write
       id-token: write
     env:
-      POSTGRES_DSN: postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DATABASE: postgres
+      POSTGRES_TLS_ENABLED: "false"
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -241,7 +305,14 @@ jobs:
           file: builds/standalone.rest.Dockerfile
           image_name: ${{ github.repository }}/standalone-rest
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          run_args: -e POSTGRES_DSN="${POSTGRES_DSN}" -e APP_MASTER_KEY="${APP_MASTER_KEY}"
+          run_args: >-
+            -e POSTGRES_HOST="${POSTGRES_HOST}"
+            -e POSTGRES_PORT="${POSTGRES_PORT}"
+            -e POSTGRES_USER="${POSTGRES_USER}"
+            -e POSTGRES_PASSWORD="${POSTGRES_PASSWORD}"
+            -e POSTGRES_DATABASE="${POSTGRES_DATABASE}"
+            -e POSTGRES_TLS_ENABLED="${POSTGRES_TLS_ENABLED}"
+            -e APP_MASTER_KEY="${APP_MASTER_KEY}"
 
   # Publish the JS client from the checked-out release tag.
   build-js:
