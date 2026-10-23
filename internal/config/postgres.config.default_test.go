@@ -26,11 +26,12 @@ func TestNewPostgresPreset(t *testing.T) {
 		expectDatabase   string
 		expectTLSEnabled bool
 		expectPanic      string
+
+		expectConnectorPanic bool
 	}{
 		{
-			name: "Success/Discrete",
+			name: "Success",
 			connection: postgrespresets.Connection{
-				DSN:        "not-used",
 				Host:       "postgres.internal",
 				Port:       5433,
 				User:       "json-keys",
@@ -45,7 +46,7 @@ func TestNewPostgresPreset(t *testing.T) {
 			expectTLSEnabled: false,
 		},
 		{
-			name: "Success/DiscreteTLS",
+			name: "Success/TLS",
 			connection: postgrespresets.Connection{
 				Host:       "postgres.internal",
 				Port:       5432,
@@ -61,18 +62,7 @@ func TestNewPostgresPreset(t *testing.T) {
 			expectTLSEnabled: true,
 		},
 		{
-			name: "Success/LegacyDSN",
-			connection: postgrespresets.Connection{
-				DSN: "postgres://legacy-user@legacy.internal:6432/legacy-db?sslmode=disable",
-			},
-			expectAddr:       "legacy.internal:6432",
-			expectUser:       "legacy-user",
-			expectPassword:   "",
-			expectDatabase:   "legacy-db",
-			expectTLSEnabled: false,
-		},
-		{
-			name: "Error/MissingDiscretePassword",
+			name: "Error/MissingPassword",
 			connection: postgrespresets.Connection{
 				Host:     "postgres.internal",
 				Port:     5432,
@@ -80,6 +70,17 @@ func TestNewPostgresPreset(t *testing.T) {
 				Database: "json-keys",
 			},
 			expectPanic: "postgres password is empty",
+		},
+		{
+			// An unset host never reaches the driver's default server.
+			name: "Error/MissingHost",
+			connection: postgrespresets.Connection{
+				Port:     5432,
+				User:     "json-keys",
+				Password: "password",
+				Database: "json-keys",
+			},
+			expectConnectorPanic: true,
 		},
 	}
 
@@ -96,6 +97,13 @@ func TestNewPostgresPreset(t *testing.T) {
 			}
 
 			preset := config.NewPostgresPreset(testCase.connection, 12, 8)
+
+			if testCase.expectConnectorPanic {
+				require.Panics(t, func() { pgdriver.NewConnector(preset.Options()...) })
+
+				return
+			}
+
 			driverConfig := pgdriver.NewConnector(preset.Options()...).Config()
 
 			require.Equal(t, testCase.expectAddr, driverConfig.Addr)
