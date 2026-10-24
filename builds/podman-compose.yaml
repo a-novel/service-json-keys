@@ -6,6 +6,8 @@ x-postgres-healthcheck: &postgres-healthcheck
   timeout: 5s
   retries: 10
 
+# The targets leave POSTGRES_PORT unset and reach the database on its default port, 5432. The
+# a-novel daemon owns that name for the host port it publishes the database on.
 services:
   # ====================================================================================================================
   # DATABASE
@@ -43,7 +45,11 @@ services:
       postgres-json-keys:
         condition: service_healthy
     environment:
-      POSTGRES_DSN: "postgres://postgres:postgres@postgres-json-keys:5432/postgres?sslmode=disable"
+      POSTGRES_HOST: postgres-json-keys
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DATABASE: postgres
+      POSTGRES_TLS_ENABLED: false
     networks:
       - api
 
@@ -58,7 +64,11 @@ services:
       service-json-keys-migrations:
         condition: service_completed_successfully
     environment:
-      POSTGRES_DSN: "postgres://postgres:postgres@postgres-json-keys:5432/postgres?sslmode=disable"
+      POSTGRES_HOST: postgres-json-keys
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DATABASE: postgres
+      POSTGRES_TLS_ENABLED: false
       # Local-dev test key — never used in production.
       APP_MASTER_KEY: fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca
     networks:
@@ -79,7 +89,11 @@ services:
       postgres-json-keys:
         condition: service_healthy
     environment:
-      POSTGRES_DSN: "postgres://postgres:postgres@postgres-json-keys:5432/postgres?sslmode=disable"
+      POSTGRES_HOST: postgres-json-keys
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DATABASE: postgres
+      POSTGRES_TLS_ENABLED: false
       APP_MASTER_KEY: fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca
     networks:
       - api
@@ -95,7 +109,11 @@ services:
       postgres-json-keys:
         condition: service_healthy
     environment:
-      POSTGRES_DSN: "postgres://postgres:postgres@postgres-json-keys:5432/postgres?sslmode=disable"
+      POSTGRES_HOST: postgres-json-keys
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DATABASE: postgres
+      POSTGRES_TLS_ENABLED: false
       APP_MASTER_KEY: fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca
     networks:
       - api
