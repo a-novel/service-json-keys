@@ -80,7 +80,7 @@ jobs:
         with:
           pr_comment: false
 
-  lint-node:
+  lint-js:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -521,8 +521,8 @@ jobs:
   publish-docs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master' && success()
-    # lint-node is what checks the openapi files this deploys.
-    needs: [lint-node]
+    # lint-js is what checks the openapi files this deploys.
+    needs: [lint-js]
     # GitHub Pages allows one deployment in flight per site. The group serializes concurrent
     # master runs.
     concurrency:
