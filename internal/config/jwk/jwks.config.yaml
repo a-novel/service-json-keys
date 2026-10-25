@@ -13,7 +13,7 @@ auth:
     staleIfError: 24h # cached keys stay in use this long past the cache while re-fetching fails
     staleWhileRevalidate: 30m # cached keys keep serving this long past the cache while one fetch refreshes them
   token:
-    ttl: 24h
+    ttl: 1h # recipients verify tokens offline, so a token stays valid up to this long after sign-out
     issuer: "anovel-authentication"
     audience: "anovel-client"
     subject: "user-access"
