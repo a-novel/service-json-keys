@@ -53,3 +53,48 @@ func TestJwkKey(t *testing.T) {
 		})
 	}
 }
+
+func TestJwkToken(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name string
+
+		usage string
+
+		expect jwk.JwkToken
+	}{
+		{
+			name:  "Success/Auth",
+			usage: "auth",
+			expect: jwk.JwkToken{
+				TTL:      time.Hour,
+				Issuer:   "anovel-authentication",
+				Audience: "anovel-client",
+				Subject:  "user-access",
+				Leeway:   5 * time.Minute,
+			},
+		},
+		{
+			name:  "Success/AuthRefresh",
+			usage: "auth-refresh",
+			expect: jwk.JwkToken{
+				TTL:      168 * time.Hour,
+				Issuer:   "anovel-authentication",
+				Audience: "anovel-client",
+				Subject:  "user-refresh",
+				Leeway:   5 * time.Minute,
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			usage, ok := jwk.PresetDefault[testCase.usage]
+			require.True(t, ok)
+			require.Equal(t, testCase.expect, usage.Token)
+		})
+	}
+}
