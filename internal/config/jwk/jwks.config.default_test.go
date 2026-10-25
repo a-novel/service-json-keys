@@ -16,14 +16,18 @@ func TestJwkKey(t *testing.T) {
 		name string
 
 		usage string
+		// verifiedFor names the usage whose token lifetime a key must outlast after its last
+		// signature: the access token's signature is re-verified until its refresh token expires.
+		verifiedFor string
 
 		expect jwk.JwkKey
 	}{
 		{
-			name:  "Success/Auth",
-			usage: "auth",
+			name:        "Success/Auth",
+			usage:       "auth",
+			verifiedFor: "auth-refresh",
 			expect: jwk.JwkKey{
-				TTL:                  168 * time.Hour,
+				TTL:                  194 * time.Hour,
 				Rotation:             24 * time.Hour,
 				Cache:                30 * time.Minute,
 				StaleIfError:         24 * time.Hour,
@@ -31,8 +35,9 @@ func TestJwkKey(t *testing.T) {
 			},
 		},
 		{
-			name:  "Success/AuthRefresh",
-			usage: "auth-refresh",
+			name:        "Success/AuthRefresh",
+			usage:       "auth-refresh",
+			verifiedFor: "auth-refresh",
 			expect: jwk.JwkKey{
 				TTL:                  720 * time.Hour,
 				Rotation:             168 * time.Hour,
@@ -50,6 +55,14 @@ func TestJwkKey(t *testing.T) {
 			usage, ok := jwk.PresetDefault[testCase.usage]
 			require.True(t, ok)
 			require.Equal(t, testCase.expect, usage.Key)
+
+			// A key signs until the next rotation reaches every producer cache.
+			verified, ok := jwk.PresetDefault[testCase.verifiedFor]
+			require.True(t, ok)
+			require.GreaterOrEqual(t,
+				usage.Key.TTL,
+				usage.Key.Rotation+usage.Key.Cache+verified.Token.TTL+verified.Token.Leeway,
+			)
 		})
 	}
 }

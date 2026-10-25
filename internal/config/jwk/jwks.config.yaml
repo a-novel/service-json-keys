@@ -7,7 +7,11 @@
 auth:
   alg: Ed25519
   key:
-    ttl: 168h # 7 days — how long a key version stays active before expiring
+    # A refresh re-verifies the access token's signature until the refresh token expires. A key
+    # therefore stays active for the auth-refresh token ttl and leeway after its last signature,
+    # which comes up to rotation + cache after its creation. The remaining margin covers a
+    # rotation job that runs hourly, which creates the next key up to an hour late.
+    ttl: 194h # 8 days 2 hours — how long a key version stays active before expiring
     rotation: 24h # a new key is generated every 24h; older keys remain active until their TTL
     cache: 30m # how long public keys are cached locally before re-fetching
     staleIfError: 24h # cached keys stay in use this long past the cache while re-fetching fails
