@@ -14,6 +14,10 @@ var ErrConfigNotFound = errors.New("no config found for the requested usage")
 // JwkKey holds the lifetime and caching parameters for a JSON Web Key.
 type JwkKey struct {
 	// TTL configures how long a key version remains available after creation.
+	//
+	// A key signs for up to Rotation + Cache. The TTL should exceed that by the longest time a
+	// recipient verifies a token it signed: the token's TTL plus leeway, or longer when a flow
+	// verifies tokens past their expiry.
 	TTL time.Duration `json:"ttl" yaml:"ttl"`
 	// Rotation configures the interval at which new versions of the key are created.
 	// It should be significantly lower than the TTL.
