@@ -59,9 +59,7 @@ func (handler *GrpcClaimsSign) ClaimsSign(
 	}
 
 	if err != nil {
-		_ = otel.ReportError(span, err)
-
-		return nil, status.Error(codes.Internal, "internal error")
+		return nil, grpcf.Fault(codes.Internal, "internal error", otel.ReportError(span, err))
 	}
 
 	return &jsonkeysv2.ClaimsSignResponse{Token: signed}, nil

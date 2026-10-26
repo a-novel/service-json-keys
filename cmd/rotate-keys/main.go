@@ -15,6 +15,7 @@ import (
 	"github.com/a-novel-kit/golib/downtime"
 	"github.com/a-novel-kit/golib/otel"
 	"github.com/a-novel-kit/golib/postgres"
+	"github.com/a-novel-kit/golib/sentryf"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
 	"github.com/a-novel/service-json-keys/v2/internal/core"
@@ -33,7 +34,7 @@ func main() {
 }
 
 // rotateKeys runs the job. It returns its error to main, so the job's span ends and its telemetry
-// flushes before the process exits.
+// and error report flush before the process exits.
 func rotateKeys() error {
 	start := time.Now()
 
@@ -45,6 +46,10 @@ func rotateKeys() error {
 
 	lo.Must0(otel.Init(cfg.Otel))
 	defer cfg.Otel.Flush()
+
+	lo.Must0(sentryf.Init(cfg.Sentry))
+
+	defer sentryf.Flush(config.SentryFlushTimeout)
 
 	if downtime.Started(cfg.App.DowntimeStart, start) {
 		log.Println("planned downtime in progress: no rotation")
@@ -71,7 +76,10 @@ func rotateKeys() error {
 
 	resp, err := serviceJwkRotateAll.Exec(ctx, &core.JwkRotateAllRequest{})
 	if err != nil {
-		return otel.ReportError(span, fmt.Errorf("rotate keys: %w", err))
+		err = otel.ReportError(span, fmt.Errorf("rotate keys: %w", err))
+		sentryf.Capture(ctx, "rotate-keys", err)
+
+		return err
 	}
 
 	log.Printf("done — %d usage(s) processed, completed in %s",

@@ -129,7 +129,7 @@ published service images for recovery.
 The `rest` image never decrypts a private key, so deploy it without the master key or any right to read it. It still reads the shared key table with database credentials, so it gives no database isolation.
 
 <details>
-<summary>Optional configuration (server tuning, OpenTelemetry)</summary>
+<summary>Optional configuration (server tuning, OpenTelemetry, Sentry)</summary>
 
 gRPC tuning (images `grpc`, `standalone-grpc`):
 
@@ -178,6 +178,14 @@ Logs and tracing (server images, `jobs/rotatekeys`):
 | `OTEL`              | Enable OpenTelemetry tracing.                                                                                | `false`             |
 | `GCLOUD_PROJECT_ID` | Google Cloud project ID. When set, logs and traces go to Google Cloud. Otherwise they go to standard output. |                     |
 | `APP_NAME`          | Application name attached to traces and logs.                                                                | `service-json-keys` |
+
+Error reporting (server images, `jobs/rotatekeys`). With a DSN, server faults reach Sentry: a `5xx` answer, an `INTERNAL` or `UNAVAILABLE` gRPC call, a server panic and a failed key rotation. Without one, nothing is sent.
+
+| Name                 | Description                                                                | Default |
+| -------------------- | -------------------------------------------------------------------------- | ------- |
+| `SENTRY_DSN`         | Client key of the Sentry project.                                          |         |
+| `SENTRY_RELEASE`     | Deployed build, as `service-json-keys@<version>`. **Required with a DSN.** |         |
+| `SENTRY_ENVIRONMENT` | Deployment name, such as `production`. **Required with a DSN.**            |         |
 
 </details>
 

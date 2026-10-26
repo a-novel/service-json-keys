@@ -8,6 +8,7 @@ import (
 	"github.com/a-novel-kit/golib/downtime"
 	"github.com/a-novel-kit/golib/grpcf"
 	"github.com/a-novel-kit/golib/httpf"
+	"github.com/a-novel-kit/golib/sentryf"
 )
 
 // prefix is prepended to every configuration variable name that this package reads. Set
@@ -61,6 +62,9 @@ var (
 	AppMasterKey = getEnv("APP_MASTER_KEY")
 	// Otel enables OpenTelemetry tracing.
 	Otel = config.LoadEnv(getEnv("OTEL"), false, config.BoolParser)
+	// Sentry configures the error reporter from the SENTRY_* variables. Without SENTRY_DSN, it
+	// reports nothing.
+	Sentry = sentryf.LoadConfig(getEnv)
 
 	// GrpcURL is the address of the gRPC service, in the form <host>:<port>.
 	GrpcURL = getEnv("GRPC_URL")

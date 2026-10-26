@@ -38,6 +38,8 @@ func TestGrpcJwkGet(t *testing.T) {
 
 		expect       *jsonkeysv2.JwkGetResponse
 		expectStatus codes.Code
+		// expectCause is the error a server fault keeps, so Sentry groups the fault by it.
+		expectCause error
 	}{
 		{
 			name: "Success",
@@ -105,6 +107,7 @@ func TestGrpcJwkGet(t *testing.T) {
 			},
 
 			expectStatus: codes.Internal,
+			expectCause:  errFoo,
 		},
 	}
 
@@ -133,6 +136,10 @@ func TestGrpcJwkGet(t *testing.T) {
 				"expected status code %s, got %s (%v)", testCase.expectStatus, resSt.Code(), err,
 			)
 			require.Equal(t, testCase.expect, res)
+
+			if testCase.expectCause != nil {
+				require.ErrorIs(t, err, testCase.expectCause)
+			}
 
 			service.AssertExpectations(t)
 		})

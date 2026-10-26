@@ -2,6 +2,7 @@ package handlers_test
 
 import (
 	"context"
+	"errors"
 	"net"
 	"testing"
 	"time"
@@ -58,8 +59,9 @@ func TestGrpcStatus(t *testing.T) {
 			require.Equal(t, testCase.expect, response)
 
 			if testCase.expectStatus != codes.OK {
-				// The message carries no raw dependency error.
+				// The message carries no raw dependency error. The fault keeps it for Sentry.
 				require.Equal(t, "service dependencies unavailable", result.Message())
+				require.Error(t, errors.Unwrap(err))
 			}
 		})
 	}
