@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/a-novel-kit/golib/otel"
 	"github.com/a-novel-kit/golib/postgres"
+	"github.com/a-novel-kit/golib/sentryf"
 )
 
 // JobRotateKeys is the configuration for the key-rotation background job.
@@ -14,6 +15,8 @@ type JobRotateKeys struct {
 
 	// Otel configures the OpenTelemetry exporter for traces and metrics.
 	Otel otel.Config `json:"otel" yaml:"otel"`
+	// Sentry configures the reporter that sends the job's failure to Sentry.
+	Sentry sentryf.Config `json:"sentry" yaml:"sentry"`
 	// Postgres configures the PostgreSQL connection.
 	Postgres postgres.Config `json:"postgres" yaml:"postgres"`
 }
