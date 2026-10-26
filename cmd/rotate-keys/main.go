@@ -38,9 +38,8 @@ func main() {
 func rotateKeys() error {
 	start := time.Now()
 
-	// --- Bootstrap: load config, init telemetry and context ---
+	// --- Bootstrap: load config, init telemetry ---
 	cfg := config.JobRotateKeysPresetDefault
-	ctx := context.Background()
 
 	otel.SetAppName(cfg.App.Name)
 
@@ -57,11 +56,36 @@ func rotateKeys() error {
 		return nil
 	}
 
-	ctx = lo.Must(lib.NewMasterKeyContext(ctx, cfg.App.MasterKey))
-	ctx = lo.Must(postgres.NewContext(ctx, cfg.Postgres))
+	return run(context.Background(), cfg, start)
+}
 
+// run rotates the keys under the job's span, and reports its failure to Sentry, a failure to load
+// the master key or to reach the database included.
+func run(ctx context.Context, cfg config.JobRotateKeys, start time.Time) error {
 	ctx, span := otel.Tracer().Start(ctx, "job.RotateKeys")
 	defer span.End()
+
+	err := rotate(ctx, cfg, start)
+	if err != nil {
+		err = otel.ReportError(span, err)
+		sentryf.Capture(ctx, "rotate-keys", err)
+	}
+
+	return err
+}
+
+// rotate connects to the database, then rotates the keys of each configured usage as one unit of
+// work.
+func rotate(ctx context.Context, cfg config.JobRotateKeys, start time.Time) error {
+	ctx, err := lib.NewMasterKeyContext(ctx, cfg.App.MasterKey)
+	if err != nil {
+		return fmt.Errorf("load master key: %w", err)
+	}
+
+	ctx, err = postgres.NewContext(ctx, cfg.Postgres)
+	if err != nil {
+		return fmt.Errorf("connect to database: %w", err)
+	}
 
 	// --- Wire dependencies ---
 	daoJwkSearch := dao.NewPgJwkSearch()
@@ -76,10 +100,7 @@ func rotateKeys() error {
 
 	resp, err := serviceJwkRotateAll.Exec(ctx, &core.JwkRotateAllRequest{})
 	if err != nil {
-		err = otel.ReportError(span, fmt.Errorf("rotate keys: %w", err))
-		sentryf.Capture(ctx, "rotate-keys", err)
-
-		return err
+		return fmt.Errorf("rotate keys: %w", err)
 	}
 
 	log.Printf("done — %d usage(s) processed, completed in %s",
