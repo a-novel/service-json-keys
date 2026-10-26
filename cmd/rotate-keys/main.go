@@ -49,7 +49,7 @@ func rotateKeys() error {
 
 	lo.Must0(sentryf.Init(cfg.Sentry))
 
-	defer sentryf.Flush(config.SentryFlushTimeout)
+	defer sentryf.Flush(config.SentryJobFlushTimeout)
 
 	if downtime.Started(cfg.App.DowntimeStart, start) {
 		log.Println("planned downtime in progress: no rotation")
