@@ -41,6 +41,8 @@ func TestGrpcClaimsSign(t *testing.T) {
 		// expectMessage is a fragment the status message must carry, so a caller
 		// can tell what to fix without reading the service's logs.
 		expectMessage string
+		// expectCause is the error a server fault keeps, so Sentry groups the fault by it.
+		expectCause error
 	}{
 		{
 			name: "Success",
@@ -118,6 +120,7 @@ func TestGrpcClaimsSign(t *testing.T) {
 			},
 
 			expectStatus: codes.Internal,
+			expectCause:  errFoo,
 		},
 	}
 
@@ -154,6 +157,10 @@ func TestGrpcClaimsSign(t *testing.T) {
 			}
 
 			require.Equal(t, testCase.expect, res)
+
+			if testCase.expectCause != nil {
+				require.ErrorIs(t, err, testCase.expectCause)
+			}
 
 			service.AssertExpectations(t)
 		})

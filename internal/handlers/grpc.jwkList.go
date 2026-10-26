@@ -5,8 +5,8 @@ import (
 
 	"github.com/samber/lo"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
+	"github.com/a-novel-kit/golib/grpcf"
 	"github.com/a-novel-kit/golib/otel"
 
 	"github.com/a-novel/service-json-keys/v2/internal/core"
@@ -39,9 +39,7 @@ func (handler *GrpcJwkList) JwkList(
 		Usage: request.GetUsage(),
 	})
 	if err != nil {
-		_ = otel.ReportError(span, err)
-
-		return nil, status.Error(codes.Internal, "internal error")
+		return nil, grpcf.Fault(codes.Internal, "internal error", otel.ReportError(span, err))
 	}
 
 	return &jsonkeysv2.JwkListResponse{
