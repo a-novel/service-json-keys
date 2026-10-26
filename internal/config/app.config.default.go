@@ -10,6 +10,7 @@ import (
 	loggingpresets "github.com/a-novel-kit/golib/logging/presets"
 	"github.com/a-novel-kit/golib/otel"
 	otelpresets "github.com/a-novel-kit/golib/otel/presets"
+	"github.com/a-novel-kit/golib/sentryf"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config/env"
 )
@@ -22,9 +23,9 @@ const OtelFlushTimeout = 2 * time.Second
 // the platform's shutdown grace period.
 const SentryFlushTimeout = 2 * time.Second
 
-// SentryJobFlushTimeout bounds a job's wait on exit for its pending Sentry events. A fresh job's
-// first connection out can wait 30 seconds or more for Cloud NAT, and a job can afford to wait.
-const SentryJobFlushTimeout = time.Minute
+// SentryJobFlushTimeout bounds a job's wait on exit for its pending Sentry events. It outlasts
+// sentryf.SendTimeout, so an event sent before the network came up still leaves.
+const SentryJobFlushTimeout = sentryf.SendTimeout + time.Minute
 
 // OtelPresetDefault is the OpenTelemetry exporter of the servers and the rotation job. It exports
 // nothing unless OTEL is set, then exports to Google Cloud when GCLOUD_PROJECT_ID is set, and to
