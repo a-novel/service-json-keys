@@ -3,6 +3,7 @@ package env
 import (
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/a-novel-kit/golib/config"
 	"github.com/a-novel-kit/golib/downtime"
@@ -22,6 +23,10 @@ func getEnv(name string) string {
 const (
 	// AppNameDefault names the application in logs and traces when APP_NAME is unset.
 	AppNameDefault = "service-json-keys"
+
+	// TimeoutShutdownDefault ends a server's drain 6 seconds after SIGTERM, so its Sentry and
+	// OpenTelemetry flushes, up to 2 seconds each, finish before Cloud Run kills it at 10 seconds.
+	TimeoutShutdownDefault = 6 * time.Second
 
 	// PostgresMaxOpenConnsDefault caps the connections one instance opens. Multiplied by the replica
 	// count, the cap stays well under PostgreSQL's default max_connections of 100. That leaves room
@@ -70,7 +75,7 @@ var (
 	GrpcURL = getEnv("GRPC_URL")
 
 	// Grpc configures the gRPC server from the GRPC_* variables.
-	Grpc = grpcf.LoadServerConfig(getEnv, grpcf.ServerConfigDefault)
+	Grpc = grpcf.LoadServerConfig(getEnv, grpcDefaults())
 	// Rest configures the REST server from the REST_* variables.
 	Rest = httpf.LoadServerConfig(getEnv, restDefaults())
 
@@ -87,7 +92,16 @@ var (
 func restDefaults() httpf.ServerConfig {
 	defaults := httpf.ServerConfigDefault
 	defaults.Liveness = "/v2/ping"
+	defaults.Timeouts.Shutdown = TimeoutShutdownDefault
 	defaults.Cors.AllowedMethods = []string{http.MethodHead, http.MethodGet}
+
+	return defaults
+}
+
+// grpcDefaults keeps golib's gRPC defaults but for the drain, which fits Cloud Run's kill window.
+func grpcDefaults() grpcf.ServerConfig {
+	defaults := grpcf.ServerConfigDefault
+	defaults.Shutdown = TimeoutShutdownDefault
 
 	return defaults
 }
