@@ -173,11 +173,14 @@ Planned downtime (all server images, `jobs/rotatekeys`):
 
 Logs and tracing (server images, `jobs/rotatekeys`):
 
-| Name                | Description                                                                                                  | Default             |
-| ------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------- |
-| `OTEL`              | Enable OpenTelemetry tracing.                                                                                | `false`             |
-| `GCLOUD_PROJECT_ID` | Google Cloud project ID. When set, logs and traces go to Google Cloud. Otherwise they go to standard output. |                     |
-| `APP_NAME`          | Application name attached to traces and logs.                                                                | `service-json-keys` |
+| Name                             | Description                                                                                                      | Default             |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------- |
+| `OTEL`                           | Enable OpenTelemetry tracing.                                                                                    | `false`             |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`    | Base URL of the OTLP/HTTP backend. When set, traces and logs export there, and the servers write no request log. |                     |
+| `OTEL_EXPORTER_OTLP_HEADERS`     | Headers each export sends, such as the backend's key. Inject it as a secret.                                     |                     |
+| `OTEL_EXPORTER_OTLP_COMPRESSION` | `gzip` compresses each export.                                                                                   |                     |
+| `OTEL_SERVICE_NAME`              | Service name every span and log record carries.                                                                  |                     |
+| `APP_NAME`                       | Application name attached to traces and logs.                                                                    | `service-json-keys` |
 
 Error reporting (server images, `jobs/rotatekeys`). With a DSN, server faults reach Sentry: a `5xx` answer, an `INTERNAL` or `UNAVAILABLE` gRPC call, a server panic and a failed key rotation. Without one, nothing is sent.
 
