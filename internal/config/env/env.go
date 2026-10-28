@@ -79,6 +79,16 @@ var (
 	// Rest configures the REST server from the REST_* variables.
 	Rest = httpf.LoadServerConfig(getEnv, restDefaults())
 
+	// ServiceTokenIssuer is the issuer of the service tokens the gRPC server accepts, as a token's
+	// "iss" claim names it. When empty, the server takes every call without a service token.
+	ServiceTokenIssuer = getEnv("SERVICE_TOKEN_ISSUER")
+	// ServiceTokenAudience is the audience the gRPC server answers to. Each caller requests its token
+	// for it.
+	ServiceTokenAudience = getEnv("SERVICE_TOKEN_AUDIENCE")
+	// ServiceTokenCallers are the service accounts allowed to call, as a comma-separated list of
+	// system:serviceaccount:<namespace>:<name>.
+	ServiceTokenCallers = config.LoadEnv(getEnv("SERVICE_TOKEN_CALLERS"), nil, config.SliceParser(config.StringParser))
+
 	// OTLPEndpoint is the standard OTEL_EXPORTER_OTLP_ENDPOINT. When set, traces and logs export
 	// over OTLP/HTTP, which the OTEL_EXPORTER_OTLP_* variables configure. When empty, they go to
 	// standard output. The OpenTelemetry SDK reads these variables without the prefix, so this one
