@@ -20,7 +20,7 @@ Holds the signing keys of A-Novel services, signs their tokens and serves the pu
 
 Services register named **usages**, such as `auth` or `auth-refresh`. Each usage has its own signing algorithm, rotation schedule and token claims. JSON Keys holds every private key and signs on behalf of its callers, so key material never leaves the server. Consumers cache the public keys and verify tokens locally, with no call per token.
 
-Other services sign tokens and read keys through the private gRPC API. The gRPC server authenticates no caller, so network policy, an ingress or a service mesh decides who reaches it. The public REST API serves the public keys and a health check to anyone verifying tokens.
+Other services sign tokens and read keys through the private gRPC API. Once service tokens are configured, the gRPC server admits only the callers they allow. Otherwise it authenticates no caller, so network policy, an ingress or a service mesh decides who reaches it. The public REST API serves the public keys and a health check to anyone verifying tokens.
 
 ## Deploying
 
@@ -129,7 +129,7 @@ published service images for recovery.
 The `rest` image never decrypts a private key, so deploy it without the master key or any right to read it. It still reads the shared key table with database credentials, so it gives no database isolation.
 
 <details>
-<summary>Optional configuration (server tuning, OpenTelemetry, Sentry)</summary>
+<summary>Optional configuration (server tuning, service tokens, OpenTelemetry, Sentry)</summary>
 
 gRPC tuning (images `grpc`, `standalone-grpc`):
 
@@ -157,6 +157,14 @@ REST tuning (images `rest`, `standalone-rest`):
 | `REST_CORS_ALLOWED_METHODS`   | CORS allowed methods, comma-separated.                                                                                       | `HEAD,GET`      |
 | `REST_CORS_ALLOW_CREDENTIALS` | CORS allow-credentials flag.                                                                                                 | `false`         |
 | `REST_CORS_MAX_AGE`           | CORS max-age, in seconds.                                                                                                    | `3600`          |
+
+Service tokens (images `grpc`, `standalone-grpc`). Without `SERVICE_TOKEN_ISSUER`, the server takes every call. With it, the server refuses a call unless its `X-Service-Authorization` header carries a token from an allowed caller. The gRPC health service stays open for probes:
+
+| Name                     | Description                                                                                                                                                                                                                                                                 | Default |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| `SERVICE_TOKEN_ISSUER`   | Issuer of the service tokens the server accepts, such as a GKE cluster's `https://container.googleapis.com/v1/projects/<project>/locations/<location>/clusters/<cluster>`. The server reads its keys through its OpenID discovery document, so it needs egress to its host. |         |
+| `SERVICE_TOKEN_AUDIENCE` | Audience the server answers to. Each caller's projected token names it.                                                                                                                                                                                                     |         |
+| `SERVICE_TOKEN_CALLERS`  | Service accounts allowed to call, comma-separated, each as `system:serviceaccount:<namespace>:<name>`. In production, Authentication's API and the JSON Keys smoke check.                                                                                                   |         |
 
 Database connection pool (server images). Each process holds its own pool, so the database's `max_connections`, 100 by default, must cover every replica and the migration job.
 
@@ -226,8 +234,9 @@ type MyClaims struct {
 func main() {
 	ctx := context.Background()
 
-	// Use TLS or mTLS credentials in production. The server authenticates no caller, so
-	// transport security alone protects private-key operations.
+	// In production, pass the options of golib's grpcf.ServiceTokenCredentialsProvider when the
+	// server verifies service tokens. Otherwise use TLS or mTLS credentials: transport security
+	// alone then protects private-key operations.
 	client, err := servicejsonkeys.NewClient(
 		"service-json-keys:8080",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
