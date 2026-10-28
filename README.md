@@ -197,7 +197,7 @@ Error reporting (server images, `jobs/rotatekeys`). With a DSN, server faults re
 - **Go** calls the gRPC API. Use it from a backend service that signs tokens or verifies them.
 - **JavaScript / TypeScript** calls the REST API. Use it from a frontend or a Node service that only needs the public keys.
 
-The examples make the minimum call. [pkg.go.dev](https://pkg.go.dev/github.com/a-novel/service-json-keys/v2) and the [API reference](https://a-novel.github.io/service-json-keys-v2) document the full surface.
+The examples make the minimum call. [pkg.go.dev](https://pkg.go.dev/github.com/a-novel/service-json-keys/v2) and the [API reference](https://a-novel.github.io/service-json-keys) document the full surface.
 
 ### Go (gRPC)
 
