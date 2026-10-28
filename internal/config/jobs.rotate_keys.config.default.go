@@ -11,7 +11,7 @@ var JobRotateKeysPresetDefault = JobRotateKeys{
 	},
 	Jwk: JwkPresetDefault,
 
-	Otel:     OtelPresetDefault,
+	Otel:     OtelJobPresetDefault,
 	Sentry:   env.Sentry,
 	Postgres: PostgresPresetDefault,
 }
