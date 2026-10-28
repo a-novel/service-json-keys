@@ -11,6 +11,7 @@ import (
 	"github.com/a-novel-kit/golib/otel"
 	otelpresets "github.com/a-novel-kit/golib/otel/presets"
 	"github.com/a-novel-kit/golib/sentryf"
+	"github.com/a-novel-kit/golib/servicetoken"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config/env"
 )
@@ -67,6 +68,11 @@ var AppPresetDefault = App{
 	},
 	Grpc: env.Grpc,
 	Rest: env.Rest,
+	ServiceToken: servicetoken.Config{
+		Issuer:   env.ServiceTokenIssuer,
+		Audience: env.ServiceTokenAudience,
+		Callers:  env.ServiceTokenCallers,
+	},
 
 	Otel:       OtelPresetDefault,
 	Sentry:     env.Sentry,

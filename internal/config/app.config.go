@@ -9,6 +9,7 @@ import (
 	"github.com/a-novel-kit/golib/otel"
 	"github.com/a-novel-kit/golib/postgres"
 	"github.com/a-novel-kit/golib/sentryf"
+	"github.com/a-novel-kit/golib/servicetoken"
 )
 
 // Main holds the core application identity and secrets.
@@ -31,6 +32,9 @@ type App struct {
 	Grpc grpcf.ServerConfig `json:"grpc" yaml:"grpc"`
 	// Rest holds the REST server configuration.
 	Rest httpf.ServerConfig `json:"rest" yaml:"rest"`
+	// ServiceToken names the service tokens the gRPC server accepts. Without an issuer, it takes every
+	// call without one.
+	ServiceToken servicetoken.Config `json:"serviceToken" yaml:"serviceToken"`
 
 	// Otel configures the OpenTelemetry exporter for traces and metrics.
 	Otel otel.Config `json:"otel" yaml:"otel"`

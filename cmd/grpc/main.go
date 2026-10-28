@@ -1,6 +1,7 @@
 // Command grpc runs the private gRPC server of the JSON Keys service, which other services call
-// to sign tokens and read keys. It authenticates no caller, so only a private network may reach
-// it. Signing decrypts private keys, so the server refuses to start without APP_MASTER_KEY.
+// to sign tokens and read keys. Once service tokens are configured, it admits only the callers they
+// allow. Otherwise it authenticates no caller, so only a private network may reach it. Signing
+// decrypts private keys, so the server refuses to start without APP_MASTER_KEY.
 //
 // cmd/rest serves the public keys over REST.
 package main
@@ -21,6 +22,7 @@ import (
 
 	"github.com/a-novel-kit/golib/downtime"
 	"github.com/a-novel-kit/golib/grpcf"
+	"github.com/a-novel-kit/golib/httpf"
 	"github.com/a-novel-kit/golib/otel"
 	"github.com/a-novel-kit/golib/postgres"
 	"github.com/a-novel-kit/golib/sentryf"
@@ -101,7 +103,9 @@ func main() {
 		return lib.TransferMasterKeyContext(ctx, postgres.TransferContext(ctx, rpCtx))
 	}
 
-	server := grpcf.NewServer(ctx, cfg.Otel, cfg.GrpcLogger, cfg.App.DowntimeStart, ctxInterceptor)
+	serviceToken := handlers.GrpcServiceToken(cfg.ServiceToken, httpf.NewPoolClient(httpf.PoolOptions{}))
+
+	server := grpcf.NewServer(ctx, cfg.Otel, cfg.GrpcLogger, cfg.App.DowntimeStart, ctxInterceptor, serviceToken...)
 
 	healthcheck := grpcf.RegisterEchoServers(server)
 	healthcheck.SetServingStatus("", healthpb.HealthCheckResponse_SERVING)

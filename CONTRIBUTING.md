@@ -96,7 +96,7 @@ To add a usage, add it to that file. The Go client embeds the same file, so cons
 
 | API               | Audience                       | Operations                                           | Spec                                                                                       |
 | ----------------- | ------------------------------ | ---------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| gRPC (`cmd/grpc`) | Internal, private network only | `anovel.jsonkeys.v2` services                        | [`internal/models/proto/anovel/jsonkeys/v2/`](./internal/models/proto/anovel/jsonkeys/v2/) |
+| gRPC (`cmd/grpc`) | Internal, allowed callers only | `anovel.jsonkeys.v2` services                        | [`internal/models/proto/anovel/jsonkeys/v2/`](./internal/models/proto/anovel/jsonkeys/v2/) |
 | REST (`cmd/rest`) | Public, unauthenticated        | `/v2/ping`, `/v2/healthcheck`, `/v2/jwks`, `/v2/jwk` | [`openapi.yaml`](./openapi.yaml)                                                           |
 
 Only [`cmd/grpc/main.go`](./cmd/grpc/main.go) loads the master key and registers the signing handler, so the REST server can neither sign nor decrypt a private key.
