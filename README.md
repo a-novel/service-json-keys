@@ -133,9 +133,13 @@ The `rest` image never decrypts a private key, so deploy it without the master k
 
 gRPC tuning (images `grpc`, `standalone-grpc`):
 
-| Name                    | Description                                                                                                                  | Default |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------- |
-| `GRPC_TIMEOUT_SHUTDOWN` | Graceful shutdown budget. With the 2 seconds of telemetry flushes after it, it fits Kubernetes' 30 seconds before `SIGKILL`. | `6s`    |
+| Name                    | Description                                                                                                                                                                    | Default |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| `GRPC_PORT`             | Port the server listens on. It serves TLS once `GRPC_TLS_CERT_FILE` and `GRPC_TLS_KEY_FILE` are set.                                                                           | `8080`  |
+| `GRPC_TLS_CERT_FILE`    | PEM certificate chain the server presents, leaf first. The server loads it again at the first connection after the file changes, as when cert-manager renews a mounted Secret. |         |
+| `GRPC_TLS_KEY_FILE`     | PEM private key of that certificate.                                                                                                                                           |         |
+| `GRPC_PLAINTEXT_PORT`   | Also serve plaintext on this port beside the TLS one, while callers move to TLS. Unset serves none.                                                                            |         |
+| `GRPC_TIMEOUT_SHUTDOWN` | Graceful shutdown budget. With the 2 seconds of telemetry flushes after it, it fits Kubernetes' 30 seconds before `SIGKILL`.                                                   | `6s`    |
 
 REST tuning (images `rest`, `standalone-rest`):
 
