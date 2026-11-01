@@ -37,7 +37,7 @@ func TestGrpcJwkList(t *testing.T) {
 
 		expect       *jsonkeysv2.JwkListResponse
 		expectStatus codes.Code
-		// expectCause is the error a server fault keeps, so Sentry groups the fault by it.
+		// expectCause is the error a server fault keeps, so the call's server span names its type.
 		expectCause error
 	}{
 		{

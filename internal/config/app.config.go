@@ -8,7 +8,6 @@ import (
 	"github.com/a-novel-kit/golib/logging"
 	"github.com/a-novel-kit/golib/otel"
 	"github.com/a-novel-kit/golib/postgres"
-	"github.com/a-novel-kit/golib/sentryf"
 	"github.com/a-novel-kit/golib/servicetoken"
 )
 
@@ -38,8 +37,6 @@ type App struct {
 
 	// Otel configures the OpenTelemetry exporter for traces and metrics.
 	Otel otel.Config `json:"otel" yaml:"otel"`
-	// Sentry configures the reporter that sends server faults to Sentry.
-	Sentry sentryf.Config `json:"sentry" yaml:"sentry"`
 	// Logger is the application logger the REST handlers report their errors to.
 	Logger logging.Log `json:"logger" yaml:"logger"`
 	// GrpcLogger configures the gRPC request logging middleware.

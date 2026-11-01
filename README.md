@@ -129,13 +129,13 @@ published service images for recovery.
 The `rest` image never decrypts a private key, so deploy it without the master key or any right to read it. It still reads the shared key table with database credentials, so it gives no database isolation.
 
 <details>
-<summary>Optional configuration (server tuning, service tokens, OpenTelemetry, Sentry)</summary>
+<summary>Optional configuration (server tuning, service tokens, OpenTelemetry)</summary>
 
 gRPC tuning (images `grpc`, `standalone-grpc`):
 
 | Name                    | Description                                                                                                                  | Default |
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------- |
-| `GRPC_TIMEOUT_SHUTDOWN` | Graceful shutdown budget. With the 4 seconds of telemetry flushes after it, it fits Cloud Run's 10 seconds before `SIGKILL`. | `6s`    |
+| `GRPC_TIMEOUT_SHUTDOWN` | Graceful shutdown budget. With the 2 seconds of telemetry flushes after it, it fits Kubernetes' 30 seconds before `SIGKILL`. | `6s`    |
 
 REST tuning (images `rest`, `standalone-rest`):
 
@@ -151,7 +151,7 @@ REST tuning (images `rest`, `standalone-rest`):
 | `REST_TIMEOUT_WRITE`          | Write timeout.                                                                                                               | `30s`           |
 | `REST_TIMEOUT_IDLE`           | Idle keep-alive timeout.                                                                                                     | `60s`           |
 | `REST_TIMEOUT_REQUEST`        | Per-request timeout.                                                                                                         | `60s`           |
-| `REST_TIMEOUT_SHUTDOWN`       | Graceful shutdown budget. With the 4 seconds of telemetry flushes after it, it fits Cloud Run's 10 seconds before `SIGKILL`. | `6s`            |
+| `REST_TIMEOUT_SHUTDOWN`       | Graceful shutdown budget. With the 2 seconds of telemetry flushes after it, it fits Kubernetes' 30 seconds before `SIGKILL`. | `6s`            |
 | `REST_CORS_ALLOWED_ORIGINS`   | CORS allowed origins.                                                                                                        | `*`             |
 | `REST_CORS_ALLOWED_HEADERS`   | CORS allowed headers.                                                                                                        | `*`             |
 | `REST_CORS_ALLOWED_METHODS`   | CORS allowed methods, comma-separated.                                                                                       | `HEAD,GET`      |
@@ -189,14 +189,6 @@ Logs and tracing (server images, `jobs/rotatekeys`):
 | `OTEL_EXPORTER_OTLP_COMPRESSION` | `gzip` compresses each export.                                                                                   |                     |
 | `OTEL_SERVICE_NAME`              | Service name every span and log record carries.                                                                  |                     |
 | `APP_NAME`                       | Application name attached to traces and logs.                                                                    | `service-json-keys` |
-
-Error reporting (server images, `jobs/rotatekeys`). With a DSN, server faults reach Sentry: a `5xx` answer, an `INTERNAL` or `UNAVAILABLE` gRPC call, a server panic and a failed key rotation. Without one, nothing is sent.
-
-| Name                 | Description                                                                | Default |
-| -------------------- | -------------------------------------------------------------------------- | ------- |
-| `SENTRY_DSN`         | Client key of the Sentry project.                                          |         |
-| `SENTRY_RELEASE`     | Deployed build, as `service-json-keys@<version>`. **Required with a DSN.** |         |
-| `SENTRY_ENVIRONMENT` | Deployment name, such as `production`. **Required with a DSN.**            |         |
 
 </details>
 

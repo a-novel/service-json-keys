@@ -41,7 +41,7 @@ func TestGrpcClaimsSign(t *testing.T) {
 		// expectMessage is a fragment the status message must carry, so a caller
 		// can tell what to fix without reading the service's logs.
 		expectMessage string
-		// expectCause is the error a server fault keeps, so Sentry groups the fault by it.
+		// expectCause is the error a server fault keeps, so the call's server span names its type.
 		expectCause error
 	}{
 		{
