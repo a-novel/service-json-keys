@@ -59,7 +59,8 @@ func TestGrpcStatus(t *testing.T) {
 			require.Equal(t, testCase.expect, response)
 
 			if testCase.expectStatus != codes.OK {
-				// The message carries no raw dependency error. The fault keeps it for Sentry.
+				// The message carries no raw dependency error. The fault keeps that error, so the server
+				// span names its type.
 				require.Equal(t, "service dependencies unavailable", result.Message())
 				require.Error(t, errors.Unwrap(err))
 			}
