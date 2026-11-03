@@ -3,6 +3,7 @@ package env
 import (
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/a-novel-kit/golib/config"
@@ -44,7 +45,7 @@ var (
 	// PostgresHost is the PostgreSQL server hostname or IP address.
 	PostgresHost = getEnv("POSTGRES_HOST")
 	// PostgresPort is the PostgreSQL server port.
-	PostgresPort = config.LoadEnv(getEnv("POSTGRES_PORT"), PostgresPortDefault, config.IntParser)
+	PostgresPort = config.LoadEnv(getEnv("POSTGRES_PORT"), PostgresPortDefault, strconv.Atoi)
 	// PostgresUser is the PostgreSQL login role.
 	PostgresUser = getEnv("POSTGRES_USER")
 	// PostgresPassword is the PostgreSQL login credential.
@@ -52,12 +53,12 @@ var (
 	// PostgresDatabase is the PostgreSQL database name.
 	PostgresDatabase = getEnv("POSTGRES_DATABASE")
 	// PostgresTLSEnabled controls transport encryption for the PostgreSQL connection.
-	PostgresTLSEnabled = config.LoadEnv(getEnv("POSTGRES_TLS_ENABLED"), PostgresTLSEnabledDefault, config.BoolParser)
+	PostgresTLSEnabled = config.LoadEnv(getEnv("POSTGRES_TLS_ENABLED"), PostgresTLSEnabledDefault, strconv.ParseBool)
 
 	// PostgresMaxOpenConns is the maximum number of open connections to the database.
-	PostgresMaxOpenConns = config.LoadEnv(getEnv("POSTGRES_MAX_OPEN_CONNS"), PostgresMaxOpenConnsDefault, config.IntParser)
+	PostgresMaxOpenConns = config.LoadEnv(getEnv("POSTGRES_MAX_OPEN_CONNS"), PostgresMaxOpenConnsDefault, strconv.Atoi)
 	// PostgresMaxIdleConns is the maximum number of connections kept open while idle.
-	PostgresMaxIdleConns = config.LoadEnv(getEnv("POSTGRES_MAX_IDLE_CONNS"), PostgresMaxIdleConnsDefault, config.IntParser)
+	PostgresMaxIdleConns = config.LoadEnv(getEnv("POSTGRES_MAX_IDLE_CONNS"), PostgresMaxIdleConnsDefault, strconv.Atoi)
 
 	// AppName is the application name, as it appears in logs and tracing.
 	AppName = config.LoadEnv(getEnv("APP_NAME"), AppNameDefault, config.StringParser)
@@ -65,7 +66,7 @@ var (
 	// database.
 	AppMasterKey = getEnv("APP_MASTER_KEY")
 	// Otel enables OpenTelemetry tracing.
-	Otel = config.LoadEnv(getEnv("OTEL"), false, config.BoolParser)
+	Otel = config.LoadEnv(getEnv("OTEL"), false, strconv.ParseBool)
 
 	// GrpcURL is the address of the gRPC service, in the form <host>:<port>.
 	GrpcURL = getEnv("GRPC_URL")
