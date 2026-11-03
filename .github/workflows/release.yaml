@@ -196,6 +196,7 @@ jobs:
           file: builds/grpc.Dockerfile
           image_name: ${{ github.repository }}/grpc
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          # The server refuses to start without a token issuer, which the smoke run has none of.
           run_args: >-
             -e POSTGRES_HOST="${POSTGRES_HOST}"
             -e POSTGRES_PORT="${POSTGRES_PORT}"
@@ -204,6 +205,7 @@ jobs:
             -e POSTGRES_DATABASE="${POSTGRES_DATABASE}"
             -e POSTGRES_TLS_ENABLED="${POSTGRES_TLS_ENABLED}"
             -e APP_MASTER_KEY="${APP_MASTER_KEY}"
+            -e SERVICE_ISSUER_OPTIONAL=true
 
   build-standalone-grpc:
     needs: [build-database]
