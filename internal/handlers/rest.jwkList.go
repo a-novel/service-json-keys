@@ -17,7 +17,8 @@ type RestJwkListService interface {
 }
 
 // RestJwkList is the REST handler that returns the active public keys for a given usage,
-// reading the usage from the "usage" query parameter.
+// reading the usage from the "usage" query parameter. A cache revalidates the keys on every use, so
+// a rotated or revoked key shows on the next read; see [sendPublicKeys].
 type RestJwkList struct {
 	service RestJwkListService
 	logger  logging.Log
@@ -38,5 +39,8 @@ func (handler *RestJwkList) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpf.SendJSONStatus(w, span, http.StatusOK, jwks)
+	err = sendPublicKeys(w, r, jwks)
+	if err != nil {
+		httpf.HandleError(ctx, handler.logger, w, span, httpf.ErrMap{}, err)
+	}
 }
