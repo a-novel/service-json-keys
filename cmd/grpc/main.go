@@ -1,6 +1,6 @@
 // Command grpc runs the private gRPC server of the JSON Keys service, which other services call
-// to sign tokens and read keys. Once service tokens are configured, it admits only the callers they
-// allow. Otherwise it authenticates no caller, so only a private network may reach it. Signing
+// to sign tokens and read keys. It admits only the callers its service tokens allow, and refuses to
+// start without a token issuer unless SERVICE_TOKEN_ISSUER_OPTIONAL opts a local stack out. Signing
 // decrypts private keys, so the server refuses to start without APP_MASTER_KEY.
 //
 // cmd/rest serves the public keys over REST.
@@ -98,7 +98,9 @@ func main() {
 		return lib.TransferMasterKeyContext(ctx, postgres.TransferContext(ctx, rpCtx))
 	}
 
-	serviceToken := handlers.GrpcServiceToken(cfg.ServiceToken, httpf.NewPoolClient(httpf.PoolOptions{}))
+	serviceToken := lo.Must(handlers.GrpcServiceToken(
+		cfg.ServiceToken, cfg.ServiceTokenIssuerOptional, httpf.NewPoolClient(httpf.PoolOptions{}),
+	))
 
 	server := grpcf.NewServer(ctx, cfg.Otel, cfg.GrpcLogger, cfg.App.DowntimeStart, ctxInterceptor, serviceToken...)
 

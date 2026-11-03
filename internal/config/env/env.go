@@ -76,7 +76,8 @@ var (
 	Rest = httpf.LoadServerConfig(getEnv, restDefaults())
 
 	// ServiceTokenIssuer is the issuer of the service tokens the gRPC server accepts, as a token's
-	// "iss" claim names it. When empty, the server takes every call without a service token.
+	// "iss" claim names it. When empty, the server refuses to start unless
+	// [ServiceTokenIssuerOptional] is set.
 	ServiceTokenIssuer = getEnv("SERVICE_TOKEN_ISSUER")
 	// ServiceTokenAudience is the audience the gRPC server answers to. Each caller requests its token
 	// for it.
@@ -84,6 +85,9 @@ var (
 	// ServiceTokenCallers are the service accounts allowed to call, as a comma-separated list of
 	// system:serviceaccount:<namespace>:<name>.
 	ServiceTokenCallers = config.LoadEnv(getEnv("SERVICE_TOKEN_CALLERS"), nil, config.SliceParser(config.StringParser))
+	// ServiceTokenIssuerOptional lets the gRPC server start without [ServiceTokenIssuer], and then
+	// take every call. Only a local or test stack sets it, as the standalone image does.
+	ServiceTokenIssuerOptional = config.LoadEnv(getEnv("SERVICE_TOKEN_ISSUER_OPTIONAL"), false, config.BoolParser)
 
 	// OTLPEndpoint is the standard OTEL_EXPORTER_OTLP_ENDPOINT. When set, traces and logs export
 	// over OTLP/HTTP, which the OTEL_EXPORTER_OTLP_* variables configure. When empty, they go to
