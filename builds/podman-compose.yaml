@@ -69,7 +69,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DATABASE: postgres
       POSTGRES_TLS_ENABLED: false
-      # Local-dev test key — never used in production.
+      # Local-dev test key, never used in production.
       APP_MASTER_KEY: fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca
     networks:
       - api

@@ -50,7 +50,7 @@ func (service *JwkRotateAll) Exec(
 	ctx, span := otel.Tracer().Start(ctx, "core.JwkRotateAll")
 	defer span.End()
 
-	processed := 0
+	var processed int
 
 	err := service.transactor.WithinTx(ctx, func(ctx context.Context) error {
 		for usage := range service.keysConfig {

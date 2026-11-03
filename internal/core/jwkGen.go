@@ -74,15 +74,15 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 
 	span.SetAttributes(attribute.String("key.usage", request.Usage))
 
+	keyConfig, ok := service.keysConfig[request.Usage]
+	if !ok {
+		return nil, otel.ReportError(span, ErrConfigNotFound)
+	}
+
 	// The newest key for the usage decides whether the rotation window has elapsed.
 	keys, err := service.daoSearch.Exec(ctx, &dao.JwkSearchRequest{Usage: request.Usage})
 	if err != nil {
 		return nil, otel.ReportError(span, fmt.Errorf("list keys: %w", err))
-	}
-
-	keyConfig, ok := service.keysConfig[request.Usage]
-	if !ok {
-		return nil, otel.ReportError(span, ErrConfigNotFound)
 	}
 
 	latestKey := lo.FirstOrEmpty(keys)
@@ -145,7 +145,7 @@ func (service *JwkGen) generate(ctx context.Context, usage string, keyConfig *jw
 			return nil, otel.ReportError(span, fmt.Errorf("serialize public key: %w", err))
 		}
 
-		publicKeyEncoded = lo.ToPtr(base64.RawURLEncoding.EncodeToString(publicKeySerialized))
+		publicKeyEncoded = new(base64.RawURLEncoding.EncodeToString(publicKeySerialized))
 	}
 
 	now := time.Now()

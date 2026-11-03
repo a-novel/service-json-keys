@@ -97,7 +97,7 @@ func rotate(ctx context.Context, cfg config.JobRotateKeys, start time.Time) erro
 		return fmt.Errorf("rotate keys: %w", err)
 	}
 
-	log.Printf("done — %d usage(s) processed, completed in %s",
+	log.Printf("done: %d usage(s) processed, completed in %s",
 		resp.Processed, time.Since(start).Round(time.Millisecond))
 
 	return nil

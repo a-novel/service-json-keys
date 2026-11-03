@@ -41,9 +41,7 @@ func EncryptMasterKey(ctx context.Context, data any) ([]byte, error) {
 		return nil, fmt.Errorf("generate nonce: %w", err)
 	}
 
-	encrypted := secretbox.Seal(nonce[:], serializedData, &nonce, &secret)
-
-	return encrypted, nil
+	return secretbox.Seal(nonce[:], serializedData, &nonce, &secret), nil
 }
 
 // DecryptMasterKey decrypts a ciphertext produced by [EncryptMasterKey] using the master key stored
@@ -59,8 +57,7 @@ func DecryptMasterKey(ctx context.Context, data []byte, output any) error {
 		return fmt.Errorf("decrypt data: %w", ErrInvalidCiphertext)
 	}
 
-	var decryptNonce [NonceLength]byte
-	copy(decryptNonce[:], data[:NonceLength])
+	decryptNonce := [NonceLength]byte(data[:NonceLength])
 
 	decrypted, ok := secretbox.Open(nil, data[NonceLength:], &decryptNonce, &secret)
 	if !ok {

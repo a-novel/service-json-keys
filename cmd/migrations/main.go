@@ -39,6 +39,6 @@ func main() {
 	log.Println("applying pending migrations...")
 	lo.Must0(postgres.RunMigrationsContext(ctx, migrations.Migrations))
 
-	log.Printf("done — %d migration(s) examined, completed in %s",
+	log.Printf("done: %d migration(s) examined, completed in %s",
 		len(discovered), time.Since(start).Round(time.Millisecond))
 }

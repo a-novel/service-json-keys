@@ -30,7 +30,10 @@ func NewJwkRecipients(
 	output := make(JwkRecipients)
 
 	for usage, keyConfig := range keys {
-		sourceConfig := jwk.SourceConfig{
+		keySource := jwk.NewSource(jwk.SourceConfig{
+			Fetch: func(ctx context.Context) ([]*jwa.JWK, error) {
+				return source.SearchKeys(ctx, usage)
+			},
 			CacheDuration:        keyConfig.Key.Cache,
 			StaleIfError:         keyConfig.Key.StaleIfError,
 			StaleWhileRevalidate: keyConfig.Key.StaleWhileRevalidate,
@@ -38,9 +41,7 @@ func NewJwkRecipients(
 			// An unknown key ID triggers one rate-limited refetch so verification can continue.
 			RefreshOnUnknownKeyID: true,
 			UnknownKeyIDInterval:  keyConfig.Key.UnknownKeyIDInterval,
-		}
-
-		keySource := newJwkSource(source.SearchKeys, usage, sourceConfig)
+		})
 
 		recipient, err := newJwkVerifier(keySource, usage, keyConfig.Alg)
 		if err != nil {
@@ -51,19 +52,6 @@ func NewJwkRecipients(
 	}
 
 	return output, nil
-}
-
-// newJwkSource returns a key source that caches the keys searchKeys returns for usage.
-func newJwkSource(
-	searchKeys func(context.Context, string) ([]*jwa.JWK, error),
-	usage string,
-	sourceConfig jwk.SourceConfig,
-) *jwk.Source {
-	sourceConfig.Fetch = func(ctx context.Context) ([]*jwa.JWK, error) {
-		return searchKeys(ctx, usage)
-	}
-
-	return jwk.NewSource(sourceConfig)
 }
 
 // newJwkVerifier returns the plugin that verifies the tokens of usage with the keys of keySource.

@@ -66,7 +66,7 @@ func TestGrpcClaimsSign(t *testing.T) {
 			name: "Error/InvalidPayload",
 
 			request: &jsonkeysv2.ClaimsSignRequest{
-				// Payload not set — grpcf.UnmarshalJSONFromAny(nil) returns an error.
+				// Payload not set: grpcf.UnmarshalJSONFromAny(nil) returns an error.
 				Usage: "test-usage",
 			},
 
