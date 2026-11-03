@@ -38,10 +38,7 @@ func NewMasterKeyContext(ctx context.Context, masterKeyRaw string) (context.Cont
 	}
 
 	// secretbox needs the key as a fixed-size array.
-	var masterKey [MasterKeyLength]byte
-	copy(masterKey[:], masterKeyBytes)
-
-	return context.WithValue(ctx, masterKeyContext{}, masterKey), nil
+	return context.WithValue(ctx, masterKeyContext{}, [MasterKeyLength]byte(masterKeyBytes)), nil
 }
 
 // MasterKeyContext returns the master key stored in the context.

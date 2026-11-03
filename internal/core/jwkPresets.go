@@ -128,19 +128,6 @@ type JwkPrivateSource interface {
 	SearchKeys(ctx context.Context, usage string) ([]*jwa.JWK, error)
 }
 
-// newJwkSource returns a key source that caches the keys searchKeys returns for usage.
-func newJwkSource(
-	searchKeys func(context.Context, string) ([]*jwa.JWK, error),
-	usage string,
-	sourceConfig jwk.SourceConfig,
-) *jwk.Source {
-	sourceConfig.Fetch = func(ctx context.Context) ([]*jwa.JWK, error) {
-		return searchKeys(ctx, usage)
-	}
-
-	return jwk.NewSource(sourceConfig)
-}
-
 // JwkProducers maps each key usage to the set of JWT producer plugins used for signing tokens
 // under that usage.
 type JwkProducers map[string][]jwt.ProducerPlugin
@@ -153,13 +140,15 @@ func NewJwkProducers(
 	output := make(JwkProducers)
 
 	for usage, keyConfig := range keys {
-		sourceConfig := jwk.SourceConfig{
+		// The source caches the usage's keys, so signing reads the database once per cache period.
+		keySource := jwk.NewSource(jwk.SourceConfig{
+			Fetch: func(ctx context.Context) ([]*jwa.JWK, error) {
+				return source.SearchKeys(ctx, usage)
+			},
 			CacheDuration:        keyConfig.Key.Cache,
 			StaleIfError:         keyConfig.Key.StaleIfError,
 			StaleWhileRevalidate: keyConfig.Key.StaleWhileRevalidate,
-		}
-
-		keySource := newJwkSource(source.SearchKeys, usage, sourceConfig)
+		})
 
 		signer, err := newJwkSigner(keySource, usage, keyConfig.Alg)
 		if err != nil {

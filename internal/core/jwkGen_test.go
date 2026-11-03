@@ -248,8 +248,6 @@ func TestJwkGen(t *testing.T) {
 			request: &core.JwkGenRequest{Usage: "test-usage"},
 			keys:    map[string]*config.Jwk{},
 
-			daoSearchMock: &daoSearchMock{resp: []*dao.Jwk{}},
-
 			expectErr: core.ErrConfigNotFound,
 		},
 	}
