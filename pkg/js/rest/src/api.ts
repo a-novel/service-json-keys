@@ -23,9 +23,16 @@ export type HealthDependency = {
  */
 export class JsonKeysApi {
   private readonly _baseUrl: string;
+  private readonly _fetch: typeof fetch;
 
-  constructor(baseUrl: string) {
+  /**
+   * @param baseUrl - The server's base URL.
+   * @param fetcher - Sends every request. A server-side caller wraps `fetch` to give each request a
+   *   deadline.
+   */
+  constructor(baseUrl: string, fetcher: typeof fetch = (input, init) => fetch(input, init)) {
     this._baseUrl = baseUrl;
+    this._fetch = fetcher;
   }
 
   /**
@@ -33,7 +40,7 @@ export class JsonKeysApi {
    * Throws if the server returns a non-2xx status.
    */
   async fetchVoid(input: string, init?: RequestInit): Promise<void> {
-    await fetch(`${this._baseUrl}${input}`, init).then(handleHttpResponse);
+    await this.send(input, init).then(handleHttpResponse);
   }
 
   /**
@@ -43,9 +50,15 @@ export class JsonKeysApi {
    * body does not satisfy the schema.
    */
   async fetch<T>(input: string, validator?: ZodType<T>, init?: RequestInit): Promise<T> {
-    return await fetch(`${this._baseUrl}${input}`, init)
+    return await this.send(input, init)
       .then(handleHttpResponse)
       .then(validator ? decodeHttpResponse(validator) : decodeRawHttpResponse<T>);
+  }
+
+  private async send(input: string, init?: RequestInit): Promise<Response> {
+    // Called unbound: browsers reject a native fetch invoked as another object's method.
+    const fetcher = this._fetch;
+    return await fetcher(`${this._baseUrl}${input}`, init);
   }
 
   /** Checks that the server is reachable. Throws on any non-2xx response. */

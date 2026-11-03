@@ -289,9 +289,13 @@ pnpm add @a-novel/service-json-keys-rest
 ```typescript
 import { JsonKeysApi, jwkList } from "@a-novel/service-json-keys-rest";
 
-const api = new JsonKeysApi("http://service-json-keys:8080");
+// A server bounds each request through its own fetch.
+const api = new JsonKeysApi("http://service-json-keys:8080", (input, init) =>
+  fetch(input, { ...init, signal: AbortSignal.timeout(2_000) })
+);
 
-// Fetch the active public keys of a usage. Cache them and verify tokens locally.
+// Fetch the active public keys of a usage. createJwtVerifier, from @a-novel-kit/nodelib-server,
+// caches them and verifies tokens locally.
 const keys = await jwkList(api, "auth");
 ```
 
