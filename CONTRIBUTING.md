@@ -82,6 +82,8 @@ Each usage has at most one **main** key, the latest by `created_at`, and any num
 
 Reads go through the `active_keys` view, which excludes expired and revoked rows on every query. A key stops being served the moment its `expires_at` or `deleted_at` passes.
 
+A cached key outlives its revocation. The gRPC server signs with it, and verifiers accept it, until their cache refreshes: up to `key.cache` later, or `key.staleIfError` past that while the database is unreachable. Restart the gRPC server and the verifying services to drop a compromised key at once. A revoked main key leaves the usage signing with its newest legacy key, so run the rotation job to give it a new one.
+
 ### Key configuration
 
 Each top-level key of [`internal/config/jwk/jwks.config.yaml`](./internal/config/jwk/jwks.config.yaml) is a usage. [`jwk.Jwk`](./internal/config/jwk/jwks.config.go) documents every field. A usage signs with Ed25519 (or its legacy label EdDSA), ES256/384/512, RS256/384/512, PS256/384/512 or ML-DSA-44/65/87.

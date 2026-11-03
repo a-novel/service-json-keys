@@ -73,13 +73,19 @@ paths:
       description: |
         Returns the list of public JSON Web Keys (JWK) for a given usage. This can be used by any
         recipient to verify signatures on tokens issued by this service.
+
+        A cache may store the list, and revalidates it on every use with `If-None-Match`. A key
+        signs as soon as it is rotated in, so a stored list never answers without revalidation.
       tags: [jwk]
       security: []
       parameters:
         - $ref: "#/components/parameters/usage"
+        - $ref: "#/components/parameters/ifNoneMatch"
       responses:
         "200":
           $ref: "#/components/responses/jwkList"
+        "304":
+          $ref: "#/components/responses/notModified"
         "429":
           $ref: "#/components/responses/tooManyRequests"
         "503":
@@ -93,13 +99,19 @@ paths:
       summary: Get a public JSON Web Key by ID.
       description: |
         Returns a single public JSON Web Key (JWK) by its unique identifier.
+
+        A cache may store the key, and revalidates it on every use with `If-None-Match`, so a
+        revoked key stops verifying on the next read.
       tags: [jwk]
       security: []
       parameters:
         - $ref: "#/components/parameters/jwkID"
+        - $ref: "#/components/parameters/ifNoneMatch"
       responses:
         "200":
           $ref: "#/components/responses/jwkGet"
+        "304":
+          $ref: "#/components/responses/notModified"
         "400":
           $ref: "#/components/responses/badRequest"
         "404":
@@ -148,6 +160,11 @@ components:
 
     jwkList:
       description: A list of public JSON Web Keys.
+      headers:
+        ETag:
+          $ref: "#/components/headers/etag"
+        Cache-Control:
+          $ref: "#/components/headers/cacheControl"
       content:
         application/json:
           schema:
@@ -168,6 +185,11 @@ components:
 
     jwkGet:
       description: A single public JSON Web Key.
+      headers:
+        ETag:
+          $ref: "#/components/headers/etag"
+        Cache-Control:
+          $ref: "#/components/headers/cacheControl"
       content:
         application/json:
           schema:
@@ -181,6 +203,16 @@ components:
                 alg: Ed25519
                 kid: "44de7cd7-aff1-e6c4-4204-74e8341d792c"
                 x: "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo"
+
+    notModified:
+      description: |
+        The stored answer whose ETag the request sent in `If-None-Match` is still current. The body
+        is empty; reuse the stored one.
+      headers:
+        ETag:
+          $ref: "#/components/headers/etag"
+        Cache-Control:
+          $ref: "#/components/headers/cacheControl"
 
     notFound:
       description: |
@@ -309,7 +341,34 @@ components:
       examples:
         - "44de7cd7-aff1-e6c4-4204-74e8341d792c"
 
+  headers:
+    etag:
+      description: |
+        A strong validator of the answer, derived from its content (RFC 9110 §8.8.3). Send it back
+        in `If-None-Match` to revalidate a stored answer.
+      schema:
+        type: string
+        examples: ['"ciIFXG359yAXz4WSHLz3UGEu-BkVwVSIHZosYj-pFPA"']
+
+    cacheControl:
+      description: |
+        Always `no-cache` (RFC 9111 §5.2.2.4): a cache may store the answer, but revalidates it before
+        every use, since a rotated key signs at once and a revoked key must stop verifying.
+      schema:
+        type: string
+        const: no-cache
+
   parameters:
+    ifNoneMatch:
+      name: If-None-Match
+      in: header
+      required: false
+      description: |
+        The ETag of a stored answer. When it still matches, the server answers 304 with no body.
+      schema:
+        type: string
+        examples: ['"ciIFXG359yAXz4WSHLz3UGEu-BkVwVSIHZosYj-pFPA"']
+
     jwkID:
       name: id
       in: query

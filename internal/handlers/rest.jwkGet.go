@@ -19,7 +19,8 @@ type RestJwkGetService interface {
 }
 
 // RestJwkGet is the REST handler that returns a single public JWK by its ID,
-// reading the key ID from the "id" query parameter.
+// reading the key ID from the "id" query parameter. A cache revalidates the key on every use; see
+// [sendPublicKeys].
 type RestJwkGet struct {
 	service RestJwkGetService
 	logger  logging.Log
@@ -47,5 +48,8 @@ func (handler *RestJwkGet) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpf.SendJSONStatus(w, span, http.StatusOK, jwk)
+	err = sendPublicKeys(w, r, jwk)
+	if err != nil {
+		httpf.HandleError(ctx, handler.logger, w, span, httpf.ErrMap{}, err)
+	}
 }

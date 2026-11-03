@@ -30,15 +30,33 @@ func TestRestJwkGet(t *testing.T) {
 		err  error
 	}
 
+	key := &core.Jwk{
+		JWKCommon: jwa.JWKCommon{
+			KTY:    "test-kty",
+			Use:    "test-use",
+			KeyOps: jwa.KeyOps{jwa.KeyOpSign, jwa.KeyOpVerify},
+			Alg:    "test-alg",
+			KID:    "00000000-0000-0000-0000-000000000001",
+		},
+		Payload: json.RawMessage(`{"x":"test-x"}`),
+	}
+
+	// The SHA-256 of the JSON answer holding key.
+	keyETag := `"YreQv29aO6Evlfah7FAOfLs5PjHw1xQynf6cYHlNrl8"`
+
 	testCases := []struct {
 		name string
 
 		id string
+		// ifNoneMatch, when set, revalidates a stored answer as a cache does.
+		ifNoneMatch string
 
 		serviceMock *serviceMock
 
 		expectStatus   int
 		expectResponse any
+		// expectETag is the validator of a successful answer, a 304 included.
+		expectETag string
 	}{
 		{
 			name: "Success",
@@ -46,16 +64,7 @@ func TestRestJwkGet(t *testing.T) {
 			id: "00000000-0000-0000-0000-000000000001",
 
 			serviceMock: &serviceMock{
-				resp: &core.Jwk{
-					JWKCommon: jwa.JWKCommon{
-						KTY:    "test-kty",
-						Use:    "test-use",
-						KeyOps: jwa.KeyOps{jwa.KeyOpSign, jwa.KeyOpVerify},
-						Alg:    "test-alg",
-						KID:    "00000000-0000-0000-0000-000000000001",
-					},
-					Payload: json.RawMessage(`{"x":"test-x"}`),
-				},
+				resp: key,
 			},
 
 			expectStatus: http.StatusOK,
@@ -67,6 +76,20 @@ func TestRestJwkGet(t *testing.T) {
 				"kid":     "00000000-0000-0000-0000-000000000001",
 				"x":       "test-x",
 			},
+			expectETag: keyETag,
+		},
+		{
+			name: "Success/NotModified",
+
+			id:          "00000000-0000-0000-0000-000000000001",
+			ifNoneMatch: keyETag,
+
+			serviceMock: &serviceMock{
+				resp: key,
+			},
+
+			expectStatus: http.StatusNotModified,
+			expectETag:   keyETag,
 		},
 		{
 			name: "Error/InvalidID",
@@ -111,15 +134,31 @@ func TestRestJwkGet(t *testing.T) {
 					Return(testCase.serviceMock.resp, testCase.serviceMock.err)
 			}
 
+			request := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/v2/jwk?id="+testCase.id, nil)
+			if testCase.ifNoneMatch != "" {
+				request.Header.Set("If-None-Match", testCase.ifNoneMatch)
+			}
+
 			handler := handlers.NewRestJwkGet(service, config.LoggerDev)
 			w := httptest.NewRecorder()
 
-			handler.ServeHTTP(w, httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/v2/jwk?id="+testCase.id, nil))
+			handler.ServeHTTP(w, request)
 
 			res := w.Result()
 
 			service.AssertExpectations(t)
 			require.Equal(t, testCase.expectStatus, res.StatusCode)
+
+			if testCase.expectETag != "" {
+				require.Equal(t, testCase.expectETag, res.Header.Get("ETag"))
+				require.Equal(t, "no-cache", res.Header.Get("Cache-Control"))
+			}
+
+			if testCase.expectStatus == http.StatusNotModified {
+				data, err := io.ReadAll(res.Body)
+				require.NoError(t, errors.Join(err, res.Body.Close()))
+				require.Empty(t, data)
+			}
 
 			if testCase.expectResponse != nil {
 				data, err := io.ReadAll(res.Body)

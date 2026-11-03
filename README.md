@@ -20,7 +20,7 @@ Holds the signing keys of A-Novel services, signs their tokens and serves the pu
 
 Services register named **usages**, such as `auth` or `auth-refresh`. Each usage has its own signing algorithm, rotation schedule and token claims. JSON Keys holds every private key and signs on behalf of its callers, so key material never leaves the server. Consumers cache the public keys and verify tokens locally, with no call per token.
 
-Other services sign tokens and read keys through the private gRPC API. Once service tokens are configured, the gRPC server admits only the callers they allow. Otherwise it authenticates no caller, so network policy, an ingress or a service mesh decides who reaches it. The public REST API serves the public keys and a health check to anyone verifying tokens.
+Other services sign tokens and read keys through the private gRPC API. Once service tokens are configured, the gRPC server admits only the callers they allow. Otherwise it authenticates no caller, so network policy, an ingress or a service mesh decides who reaches it. The public REST API serves the public keys and a health check to anyone verifying tokens. A cache may store the keys, and revalidates them with their `ETag` on every read, so a rotated or revoked key shows at once.
 
 ## Deploying
 
