@@ -3,6 +3,7 @@ package env
 import (
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/a-novel-kit/golib/config"
@@ -87,7 +88,7 @@ var (
 	ServiceTokenCallers = config.LoadEnv(getEnv("SERVICE_TOKEN_CALLERS"), nil, config.SliceParser(config.StringParser))
 	// ServiceTokenIssuerOptional lets the gRPC server start without [ServiceTokenIssuer], and then
 	// take every call. Only a local or test stack sets it, as the standalone image does.
-	ServiceTokenIssuerOptional = config.LoadEnv(getEnv("SERVICE_TOKEN_ISSUER_OPTIONAL"), false, config.BoolParser)
+	ServiceTokenIssuerOptional = config.LoadEnv(getEnv("SERVICE_TOKEN_ISSUER_OPTIONAL"), false, strconv.ParseBool)
 
 	// OTLPEndpoint is the standard OTEL_EXPORTER_OTLP_ENDPOINT. When set, traces and logs export
 	// over OTLP/HTTP, which the OTEL_EXPORTER_OTLP_* variables configure. When empty, they go to
