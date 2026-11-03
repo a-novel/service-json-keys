@@ -64,7 +64,7 @@ var AppPresetDefault = App{
 		Audience: env.ServiceTokenAudience,
 		Callers:  env.ServiceTokenCallers,
 	},
-	ServiceTokenIssuerOptional: env.ServiceTokenIssuerOptional,
+	ServiceIssuerOptional: env.ServiceIssuerOptional,
 
 	Otel:       OtelPresetDefault,
 	Logger:     lo.Ternary[logging.Log](!exportsOTLP, LoggerDev, LoggerProd),

@@ -421,7 +421,7 @@ jobs:
             -e POSTGRES_DATABASE="${POSTGRES_DATABASE}"
             -e POSTGRES_TLS_ENABLED="${POSTGRES_TLS_ENABLED}"
             -e APP_MASTER_KEY="${APP_MASTER_KEY}"
-            -e SERVICE_TOKEN_ISSUER_OPTIONAL=true
+            -e SERVICE_ISSUER_OPTIONAL=true
 
   build-standalone-grpc:
     runs-on: ubuntu-latest

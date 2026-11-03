@@ -1,6 +1,6 @@
 // Command grpc runs the private gRPC server of the JSON Keys service, which other services call
 // to sign tokens and read keys. It admits only the callers its service tokens allow, and refuses to
-// start without a token issuer unless SERVICE_TOKEN_ISSUER_OPTIONAL opts a local stack out. Signing
+// start without a token issuer unless SERVICE_ISSUER_OPTIONAL opts a local stack out. Signing
 // decrypts private keys, so the server refuses to start without APP_MASTER_KEY.
 //
 // cmd/rest serves the public keys over REST.
@@ -8,6 +8,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -17,6 +18,7 @@ import (
 	"time"
 
 	"github.com/samber/lo"
+	"google.golang.org/grpc"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
 
@@ -94,15 +96,7 @@ func main() {
 	// SERVER
 	// =================================================================================================================
 
-	ctxInterceptor := func(rpCtx context.Context) context.Context {
-		return lib.TransferMasterKeyContext(ctx, postgres.TransferContext(ctx, rpCtx))
-	}
-
-	serviceToken := lo.Must(handlers.GrpcServiceToken(
-		cfg.ServiceToken, cfg.ServiceTokenIssuerOptional, httpf.NewPoolClient(httpf.PoolOptions{}),
-	))
-
-	server := grpcf.NewServer(ctx, cfg.Otel, cfg.GrpcLogger, cfg.App.DowntimeStart, ctxInterceptor, serviceToken...)
+	server := lo.Must(newServer(ctx, cfg))
 
 	healthcheck := grpcf.RegisterEchoServers(server)
 	healthcheck.SetServingStatus("", healthpb.HealthCheckResponse_SERVING)
@@ -126,6 +120,24 @@ func main() {
 	log.Println("Starting gRPC server on :" + strconv.Itoa(cfg.Grpc.Port))
 
 	lo.Must0(grpcf.ListenAndServe(ctx, cfg.Grpc, server))
+}
+
+// newServer builds the gRPC server. Each call carries the master key and the database of ctx, and
+// passes the service-token gate first. The gate refuses an empty issuer unless cfg opts a local stack
+// out, so the server never starts open by mistake.
+func newServer(ctx context.Context, cfg config.App) (*grpc.Server, error) {
+	serviceToken, err := handlers.GrpcServiceToken(
+		cfg.ServiceToken, cfg.ServiceIssuerOptional, httpf.NewPoolClient(httpf.PoolOptions{}),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("service token gate: %w", err)
+	}
+
+	ctxInterceptor := func(rpCtx context.Context) context.Context {
+		return lib.TransferMasterKeyContext(ctx, postgres.TransferContext(ctx, rpCtx))
+	}
+
+	return grpcf.NewServer(ctx, cfg.Otel, cfg.GrpcLogger, cfg.App.DowntimeStart, ctxInterceptor, serviceToken...), nil
 }
 
 func closeDatabase(database io.Closer) {
