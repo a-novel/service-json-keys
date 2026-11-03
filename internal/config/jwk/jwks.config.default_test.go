@@ -81,7 +81,7 @@ func TestJwkToken(t *testing.T) {
 			name:  "Success/Auth",
 			usage: "auth",
 			expect: jwk.JwkToken{
-				TTL:      time.Hour,
+				TTL:      15 * time.Minute,
 				Issuer:   "anovel-authentication",
 				Audience: "anovel-client",
 				Subject:  "user-access",
