@@ -32,11 +32,11 @@ type App struct {
 	// Rest holds the REST server configuration.
 	Rest httpf.ServerConfig `json:"rest" yaml:"rest"`
 	// ServiceToken names the service tokens the gRPC server accepts. Without an issuer, the server
-	// refuses to start unless ServiceTokenIssuerOptional is set.
+	// refuses to start unless ServiceIssuerOptional is set.
 	ServiceToken servicetoken.Config `json:"serviceToken" yaml:"serviceToken"`
-	// ServiceTokenIssuerOptional lets the gRPC server start without a service-token issuer, and then
+	// ServiceIssuerOptional lets the gRPC server start without a service-token issuer, and then
 	// take every call. Only a local or test stack sets it.
-	ServiceTokenIssuerOptional bool `json:"serviceTokenIssuerOptional" yaml:"serviceTokenIssuerOptional"`
+	ServiceIssuerOptional bool `json:"serviceIssuerOptional" yaml:"serviceIssuerOptional"`
 
 	// Otel configures the OpenTelemetry exporter for traces and metrics.
 	Otel otel.Config `json:"otel" yaml:"otel"`
