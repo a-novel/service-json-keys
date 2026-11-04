@@ -55,14 +55,17 @@ func rotateKeys() error {
 }
 
 // run rotates the keys under the job's span. The span records every failure, a failure to load the
-// master key or to reach the database included.
+// master key or to reach the database included, and names it in error.type as a job's root span must.
 func run(ctx context.Context, cfg config.JobRotateKeys, start time.Time) error {
 	ctx, span := otel.Tracer().Start(ctx, "job.RotateKeys")
 	defer span.End()
 
 	err := rotate(ctx, cfg, start)
 	if err != nil {
-		return otel.ReportError(span, err)
+		err = otel.ReportError(span, err)
+		span.SetAttributes(otel.ErrorType(err))
+
+		return err
 	}
 
 	return nil
