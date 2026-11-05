@@ -220,7 +220,7 @@ importers:
         version: 2.7.0(@grafana/faro-web-sdk@2.13.0)(@grafana/faro-web-tracing@2.13.0(supports-color@7.2.0))(zod@4.6.7)
       '@a-novel-kit/nodelib-config':
         specifier: ^2.0.0
-        version: 2.7.0(b8878e34b334a2fb8cd00a09f2ba42e4)
+        version: 2.7.0(71e6015521cde832c5521f591be99fe3)
       '@a-novel-kit/nodelib-test':
         specifier: ^2.0.0
         version: 2.7.0(@a-novel-kit/nodelib-browser@2.7.0(@grafana/faro-web-sdk@2.13.0)(@grafana/faro-web-tracing@2.13.0(supports-color@7.2.0))(zod@4.6.7))(jsdom@30.1.3)(playwright@1.64.1)
@@ -229,7 +229,7 @@ importers:
         version: 10.0.1(eslint@10.14.0(jiti@2.7.0)(supports-color@7.2.0))
       '@redocly/cli':
         specifier: ^2.20.4
-        version: 2.72.1
+        version: 2.73.0
       '@trivago/prettier-plugin-sort-imports':
         specifier: ^6.0.2
         version: 6.0.2(prettier-plugin-svelte@4.1.1(prettier@3.9.10)(svelte@5.57.3(@typescript-eslint/types@8.72.1)))(prettier@3.9.10)(supports-color@7.2.0)(svelte@5.57.3(@typescript-eslint/types@8.72.1))
@@ -253,7 +253,7 @@ importers:
         version: 10.6.5(eslint@10.14.0(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@6.0.3)
       eslint-plugin-svelte:
         specifier: ^3.19.0
-        version: 3.23.1(eslint@10.14.0(jiti@2.7.0)(supports-color@7.2.0))(svelte@5.57.3(@typescript-eslint/types@8.72.1))
+        version: 3.24.0(eslint@10.14.0(jiti@2.7.0)(supports-color@7.2.0))(svelte@5.57.3(@typescript-eslint/types@8.72.1))
       globals:
         specifier: ^17.0.0
         version: 17.14.0
@@ -1242,8 +1242,8 @@ packages:
   '@polka/url@1.0.0-next.29':
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
 
-  '@redocly/cli@2.72.1':
-    resolution: {integrity: sha512-eARHR2ZsqIlrnV4mcKA+CK3ptV0u2d74xOhNQMlrmixMEbV4RfrnAdwNyIcGhO+3A6B3YzzG6nj5kZRKKCiGLw==}
+  '@redocly/cli@2.73.0':
+    resolution: {integrity: sha512-ujoeS+01JhFZuTkRqENl0J2Cr/4kXDVt5l2BC3Id3kzSGhsVS8AUsItWmkF+tMue5naQDcNU03XfV/gcMtttRQ==}
     engines: {node: '>=22.12.0 || >=20.19.0 <21.0.0', npm: '>=10'}
     hasBin: true
 
@@ -2127,8 +2127,8 @@ packages:
     peerDependencies:
       eslint: '>=8'
 
-  eslint-plugin-svelte@3.23.1:
-    resolution: {integrity: sha512-+w86Jlx4IRUuuvtqD6j4njql+akx+81JnpvbN5de3AV5iq2SexvST/Jr51CiTlKeY0i+vhoKjPO/ywFKIP75sA==}
+  eslint-plugin-svelte@3.24.0:
+    resolution: {integrity: sha512-nppLmSSkWFs4JmPfcXJTFXsGILlYQhVSbJiP803kyMF0d9VxEJ5UIF5QjdbVx0U4bV6g8qkuvZUqkhsusrOzXA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
       eslint: ^8.57.1 || ^9.0.0 || ^10.0.0
@@ -2327,8 +2327,8 @@ packages:
       i18next-cli: ^1.51.6
       svelte: ^5.55.7
 
-  i18next-cli@1.82.1:
-    resolution: {integrity: sha512-aX9NFlpcymarghdQNWq/6bv876BQqP/vYQlyWBITxEYdjhUoF29QRAJnlwXBMjpK7LpOph3vQYQSabKltl9i7w==}
+  i18next-cli@1.82.4:
+    resolution: {integrity: sha512-6etrx4jpQFE2fHadWDoYealI5mTiOsMBYDFpv10PIIvZRQ+rw2F/ObRKc5lrBh8Kbssj3EtUNCeVch9MuBfoVg==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -2816,8 +2816,8 @@ packages:
     resolution: {integrity: sha512-80WNmd9DA0tmZrw9qQa62GPPWfuXJknrmVmLcxvq4uZBdYqb1wYoKTmnlGUchvVWe0XiLupYkBoXVOxz3C8DYQ==}
     engines: {node: '>=0.12'}
 
-  react-i18next@17.1.11:
-    resolution: {integrity: sha512-nQqkvaD+N4kSrM0bosDc7yW2IvaC3chHPhZb0FoRXX6Buf1JzfOLLLs2u7SfXcnAE3nKAIn0Kvu68lQGObPlyA==}
+  react-i18next@17.1.12:
+    resolution: {integrity: sha512-Gf8riCKF/EmqQ8I1g0N5pJOLvJCkAXGAEkzOuRNHc/sBGL3dfE3WZ7+sDLrUo/kw/xdug3g48jo7M+s/SKf0HQ==}
     peerDependencies:
       i18next: '>= 26.2.0'
       react: '>= 16.8.0'
@@ -2954,8 +2954,8 @@ packages:
     resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}
     engines: {node: '>=8'}
 
-  svelte-eslint-parser@1.10.0:
-    resolution: {integrity: sha512-1bNtsoGwEx/J1qNz1xa5dSt/Ue5+C7+WpV92cCPZDbF6dx/YXHKzC9yTP25vFvAK40yd/mHXi1WACZO7FGf0Bw==}
+  svelte-eslint-parser@1.10.1:
+    resolution: {integrity: sha512-owYBhrNRp/m+hDaQCH0S683kc0TMFy2bB+qvsMQQZRsjSFD9xp/3FYgI8FZoOKA3xk62gwkUj1HpVek0p6WgNw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0, pnpm: 10.34.6}
     peerDependencies:
       svelte: '>=5.51.5'
@@ -3363,7 +3363,7 @@ snapshots:
       '@grafana/faro-web-tracing': 2.13.0(supports-color@7.2.0)
       zod: 4.6.7
 
-  '@a-novel-kit/nodelib-config@2.7.0(b8878e34b334a2fb8cd00a09f2ba42e4)':
+  '@a-novel-kit/nodelib-config@2.7.0(71e6015521cde832c5521f591be99fe3)':
     dependencies:
       '@eslint/compat': 2.1.1(eslint@10.14.0(jiti@2.7.0)(supports-color@7.2.0))
       '@eslint/config-helpers': 0.7.0
@@ -3377,11 +3377,11 @@ snapshots:
       eslint: 10.14.0(jiti@2.7.0)(supports-color@7.2.0)
       eslint-config-prettier: 10.1.8(eslint@10.14.0(jiti@2.7.0)(supports-color@7.2.0))
       eslint-plugin-storybook: 10.6.5(eslint@10.14.0(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@6.0.3)
-      eslint-plugin-svelte: 3.23.1(eslint@10.14.0(jiti@2.7.0)(supports-color@7.2.0))(svelte@5.57.3(@typescript-eslint/types@8.72.1))
+      eslint-plugin-svelte: 3.24.0(eslint@10.14.0(jiti@2.7.0)(supports-color@7.2.0))(svelte@5.57.3(@typescript-eslint/types@8.72.1))
       estree-walker: 3.0.3
       globals: 17.14.0
-      i18next-cli: 1.82.1(@types/node@26.6.6)(react@19.3.1)(typescript@6.0.3)
-      i18next-cli-plugin-svelte: 2.5.0(estree-walker@3.0.3)(i18next-cli@1.82.1(@types/node@26.6.6)(react@19.3.1)(typescript@6.0.3))(svelte@5.57.3(@typescript-eslint/types@8.72.1))
+      i18next-cli: 1.82.4(@types/node@26.6.6)(react@19.3.1)(typescript@6.0.3)
+      i18next-cli-plugin-svelte: 2.5.0(estree-walker@3.0.3)(i18next-cli@1.82.4(@types/node@26.6.6)(react@19.3.1)(typescript@6.0.3))(svelte@5.57.3(@typescript-eslint/types@8.72.1))
       playwright: 1.64.1
       prettier: 3.9.10
       prettier-plugin-css-order: 2.2.0(postcss@8.5.32)(prettier@3.9.10)
@@ -4091,7 +4091,7 @@ snapshots:
 
   '@polka/url@1.0.0-next.29': {}
 
-  '@redocly/cli@2.72.1': {}
+  '@redocly/cli@2.73.0': {}
 
   '@rolldown/binding-android-arm-eabi@1.2.16':
     optional: true
@@ -4892,7 +4892,7 @@ snapshots:
       - supports-color
       - typescript
 
-  eslint-plugin-svelte@3.23.1(eslint@10.14.0(jiti@2.7.0)(supports-color@7.2.0))(svelte@5.57.3(@typescript-eslint/types@8.72.1)):
+  eslint-plugin-svelte@3.24.0(eslint@10.14.0(jiti@2.7.0)(supports-color@7.2.0))(svelte@5.57.3(@typescript-eslint/types@8.72.1)):
     dependencies:
       '@eslint-community/eslint-utils': 4.10.1(eslint@10.14.0(jiti@2.7.0)(supports-color@7.2.0))
       '@jridgewell/sourcemap-codec': 1.6.0
@@ -4904,7 +4904,7 @@ snapshots:
       postcss-load-config: 3.1.4(postcss@8.5.32)
       postcss-safe-parser: 7.1.0(postcss@8.5.32)
       semver: 7.8.6
-      svelte-eslint-parser: 1.10.0(svelte@5.57.3(@typescript-eslint/types@8.72.1))
+      svelte-eslint-parser: 1.10.1(svelte@5.57.3(@typescript-eslint/types@8.72.1))
     optionalDependencies:
       svelte: 5.57.3(@typescript-eslint/types@8.72.1)
     transitivePeerDependencies:
@@ -5105,14 +5105,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  i18next-cli-plugin-svelte@2.5.0(estree-walker@3.0.3)(i18next-cli@1.82.1(@types/node@26.6.6)(react@19.3.1)(typescript@6.0.3))(svelte@5.57.3(@typescript-eslint/types@8.72.1)):
+  i18next-cli-plugin-svelte@2.5.0(estree-walker@3.0.3)(i18next-cli@1.82.4(@types/node@26.6.6)(react@19.3.1)(typescript@6.0.3))(svelte@5.57.3(@typescript-eslint/types@8.72.1)):
     dependencies:
       estree-walker: 3.0.3
-      i18next-cli: 1.82.1(@types/node@26.6.6)(react@19.3.1)(typescript@6.0.3)
+      i18next-cli: 1.82.4(@types/node@26.6.6)(react@19.3.1)(typescript@6.0.3)
       recast: 0.23.21
       svelte: 5.57.3(@typescript-eslint/types@8.72.1)
 
-  i18next-cli@1.82.1(@types/node@26.6.6)(react@19.3.1)(typescript@6.0.3):
+  i18next-cli@1.82.4(@types/node@26.6.6)(react@19.3.1)(typescript@6.0.3):
     dependencies:
       '@croct/json5-parser': 0.2.2
       '@formatjs/icu-messageformat-parser': 3.5.22
@@ -5132,7 +5132,7 @@ snapshots:
       messageformat: 4.1.0
       minimatch: 11.0.4
       nano-spawn: 2.1.0
-      react-i18next: 17.1.11(i18next@26.7.1(typescript@6.0.3))(react@19.3.1)(typescript@6.0.3)
+      react-i18next: 17.1.12(i18next@26.7.1(typescript@6.0.3))(react@19.3.1)(typescript@6.0.3)
       yaml: 2.9.1
       yocto-spinner: 1.2.2
     transitivePeerDependencies:
@@ -5609,7 +5609,7 @@ snapshots:
       discontinuous-range: 1.0.0
       ret: 0.1.15
 
-  react-i18next@17.1.11(i18next@26.7.1(typescript@6.0.3))(react@19.3.1)(typescript@6.0.3):
+  react-i18next@17.1.12(i18next@26.7.1(typescript@6.0.3))(react@19.3.1)(typescript@6.0.3):
     dependencies:
       '@babel/runtime': 7.29.10
       html-parse-stringify: 4.0.1
@@ -5786,7 +5786,7 @@ snapshots:
     dependencies:
       has-flag: 4.0.0
 
-  svelte-eslint-parser@1.10.0(svelte@5.57.3(@typescript-eslint/types@8.72.1)):
+  svelte-eslint-parser@1.10.1(svelte@5.57.3(@typescript-eslint/types@8.72.1)):
     dependencies:
       eslint-scope: 8.4.0
       eslint-visitor-keys: 4.2.1
