@@ -20,7 +20,7 @@ info:
     To sign tokens, use the internal gRPC API.
   version: v2.15.7
   license:
-    name: AGPL-3.0
+    name: RPL-1.5
     url: "https://raw.githubusercontent.com/a-novel/service-json-keys/refs/heads/master/LICENSE"
 
 tags:
