@@ -42,7 +42,7 @@ Pin every image to the same tag, the [latest release](https://github.com/a-novel
 ```yaml
 services:
   postgres-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/database:v2.15.7
+    image: ghcr.io/a-novel/service-json-keys/database:v2.15.8
     networks: [api]
     environment:
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
@@ -60,7 +60,7 @@ services:
       retries: 10
 
   migrations-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/jobs/migrations:v2.15.7
+    image: ghcr.io/a-novel/service-json-keys/jobs/migrations:v2.15.8
     depends_on:
       postgres-json-keys: { condition: service_healthy }
     environment:
@@ -73,7 +73,7 @@ services:
     networks: [api]
 
   service-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/grpc:v2.15.7 # or .../rest for the public REST API
+    image: ghcr.io/a-novel/service-json-keys/grpc:v2.15.8 # or .../rest for the public REST API
     ports: ["${GRPC_PORT}:8080"] # the container always listens on 8080; map ${REST_PORT} for the rest image
     depends_on:
       postgres-json-keys: { condition: service_healthy }
@@ -307,7 +307,7 @@ The **standalone** images run a throwaway instance without the development toolc
 ```yaml
 services:
   postgres-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/database:v2.15.7
+    image: ghcr.io/a-novel/service-json-keys/database:v2.15.8
     networks: [api]
     environment:
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
@@ -323,7 +323,7 @@ services:
       retries: 10
 
   service-json-keys:
-    image: ghcr.io/a-novel/service-json-keys/standalone-grpc:v2.15.7 # or standalone-rest
+    image: ghcr.io/a-novel/service-json-keys/standalone-grpc:v2.15.8 # or standalone-rest
     ports: ["${GRPC_PORT}:8080"] # map ${REST_PORT} for the standalone-rest image
     depends_on:
       postgres-json-keys: { condition: service_healthy }
