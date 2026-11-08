@@ -3,7 +3,7 @@ module github.com/a-novel/service-json-keys/v2
 go 1.27.3
 
 require (
-	github.com/a-novel-kit/golib v0.63.0
+	github.com/a-novel-kit/golib v0.64.0
 	github.com/a-novel-kit/jwt/v2 v2.6.1
 	github.com/go-chi/chi/v5 v5.5.0
 	github.com/goccy/go-yaml v1.19.2
@@ -34,15 +34,15 @@ require (
 	github.com/clipperhouse/displaywidth v0.11.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/felixge/httpsnoop v1.1.0 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.15 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.16 // indirect
 	github.com/go-chi/cors v1.2.2 // indirect
 	github.com/go-chi/httprate v0.16.1 // indirect
 	github.com/go-chi/httprate-redis v0.7.0 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/go-playground/locales v0.14.1 // indirect
-	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.30.5 // indirect
+	github.com/go-playground/locales v0.14.2 // indirect
+	github.com/go-playground/universal-translator v0.18.2 // indirect
+	github.com/go-playground/validator/v10 v10.30.6 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.4 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.31.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
@@ -80,6 +80,6 @@ require (
 	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20261012220534-4341edf3f941 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20261026165753-2ffab32bce7e // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20261104224025-d1e00e9f33ab // indirect
 	mellium.im/sasl v0.3.2 // indirect
 )
