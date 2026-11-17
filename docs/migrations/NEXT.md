@@ -18,6 +18,8 @@ Its `fetch` and `fetchVoid` take a `RestInit`, a `RequestInit` that also accepts
 
 ## Notes
 
+The client's type declarations now name their relative imports with `.js`. In v2.16.0 they did not, so a TypeScript consumer on `moduleResolution: "nodenext"` (or `"node16"`) saw no export from the package; this release fixes it, and bundler resolution was never affected.
+
 The REST ping opens no span, and the health check names its Postgres probe's span `rest.Health(client:postgres)` instead of `rest.Health(reportPostgres)`. Update a trace query or dashboard that filters on the old names.
 
 No database migration or configuration change is required.
