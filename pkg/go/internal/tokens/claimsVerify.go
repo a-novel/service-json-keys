@@ -30,11 +30,11 @@ type ClaimsVerify[Out any] struct {
 	usages map[string]claimsVerifyUsage
 }
 
-// claimsVerifyUsage holds the recipients [ClaimsVerify] verifies the tokens of one usage with.
-// Both check the usage's target, and recipient also checks the token's expiry.
+// claimsVerifyUsage holds the recipients [ClaimsVerify] verifies the tokens of one usage with. Both
+// check the usage's target; only strict also checks the token's expiry.
 type claimsVerifyUsage struct {
-	recipient        *jwt.Recipient
-	expiredRecipient *jwt.Recipient
+	strict         *jwt.Recipient
+	ignoringExpiry *jwt.Recipient
 }
 
 // NewClaimsVerify creates a ClaimsVerify service. Recipients provide the per-usage verification
@@ -56,8 +56,8 @@ func NewClaimsVerify[Out any](
 		expiry := jwp.NewClaimsCheckTimestamp(keyConfig.Token.Leeway, true)
 
 		usages[usage] = claimsVerifyUsage{
-			recipient:        newClaimsRecipient(plugins, target, expiry),
-			expiredRecipient: newClaimsRecipient(plugins, target),
+			strict:         newClaimsRecipient(plugins, target, expiry),
+			ignoringExpiry: newClaimsRecipient(plugins, target),
 		}
 	}
 
@@ -76,7 +76,7 @@ func (service *ClaimsVerify[Out]) Exec(ctx context.Context, request *ClaimsVerif
 		return nil, otel.ReportError(span, fmt.Errorf("%w: %s", jwkconfig.ErrConfigNotFound, request.Usage))
 	}
 
-	recipient := lo.Ternary(request.IgnoreExpired, verifier.expiredRecipient, verifier.recipient)
+	recipient := lo.Ternary(request.IgnoreExpired, verifier.ignoringExpiry, verifier.strict)
 
 	var claims Out
 
