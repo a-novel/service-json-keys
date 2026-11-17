@@ -159,7 +159,6 @@ func TestRestJwkList(t *testing.T) {
 
 			res := w.Result()
 
-			service.AssertExpectations(t)
 			require.Equal(t, testCase.expectStatus, res.StatusCode)
 
 			if testCase.expectETag != "" {

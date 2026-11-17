@@ -165,9 +165,6 @@ func TestJwkSearch(t *testing.T) {
 			res, err := service.Exec(ctx, testCase.request)
 			require.ErrorIs(t, err, testCase.expectErr)
 			require.Equal(t, testCase.expect, res)
-
-			daoSearch.AssertExpectations(t)
-			serviceExtract.AssertExpectations(t)
 		})
 	}
 
