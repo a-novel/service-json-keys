@@ -222,10 +222,9 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 
 	"github.com/a-novel-kit/golib/grpcf"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 
 	servicejsonkeys "github.com/a-novel/service-json-keys/v2/pkg/go"
 )
@@ -237,13 +236,14 @@ type MyClaims struct {
 func main() {
 	ctx := context.Background()
 
-	// In production, pass the options of golib's grpcf.ServiceTokenCredentialsProvider when the
-	// server verifies service tokens. Otherwise use TLS or mTLS credentials: transport security
-	// alone then protects private-key operations.
-	client, err := servicejsonkeys.NewClient(
-		"service-json-keys:8080",
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	// LoadClientConfig reads SERVICE_JSON_KEYS_HOST, _PORT, _TLS and _TOKEN_PATH. In production, the
+	// token path names the caller's projected service token, which the server requires. Without it,
+	// the client dials a local standalone image in plaintext.
+	target := grpcf.LoadClientConfig(
+		os.Getenv, "SERVICE_JSON_KEYS", grpcf.ClientConfig{Host: "service-json-keys", Port: 8080},
 	)
+
+	client, err := servicejsonkeys.NewClient(target.Address(), target.DialOptions()...)
 	if err != nil {
 		log.Fatal(err)
 	}

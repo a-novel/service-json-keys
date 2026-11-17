@@ -1,18 +1,6 @@
-import { decodeHttpResponse, handleHttpResponse } from "@a-novel-kit/nodelib-browser/http";
+import { type HealthDependency, RestClient } from "@a-novel-kit/nodelib-browser/http";
 
-import type { ZodType } from "zod";
-
-// Fallback decoder used when no schema is supplied: parses the JSON body as-is,
-// trusting it to match T.
-async function decodeRawHttpResponse<T>(response: Response): Promise<T> {
-  return await response.json();
-}
-
-/** Status of a single health-check dependency reported by the `/v2/healthcheck` endpoint. */
-export type HealthDependency = {
-  /** Whether the dependency is reachable. */
-  status: "up" | "down";
-};
+export type { HealthDependency } from "@a-novel-kit/nodelib-browser/http";
 
 /**
  * HTTP client for the JSON Keys REST API.
@@ -21,49 +9,10 @@ export type HealthDependency = {
  * JSON Web Key endpoints so that any client can fetch public keys for local token
  * verification. Signing and private key operations live on the private gRPC API.
  */
-export class JsonKeysApi {
-  private readonly _baseUrl: string;
-  private readonly _fetch: typeof fetch;
-
-  /**
-   * @param baseUrl - The server's base URL.
-   * @param fetcher - Sends every request. A server-side caller wraps `fetch` to give each request a
-   *   deadline.
-   */
-  constructor(baseUrl: string, fetcher: typeof fetch = (input, init) => fetch(input, init)) {
-    this._baseUrl = baseUrl;
-    this._fetch = fetcher;
-  }
-
-  /**
-   * Sends a request to the given path and discards the response body.
-   * Throws if the server returns a non-2xx status.
-   */
-  async fetchVoid(input: string, init?: RequestInit): Promise<void> {
-    await this.send(input, init).then(handleHttpResponse);
-  }
-
-  /**
-   * Sends a request to the given path and deserializes the JSON response body as `T`,
-   * validating it against the schema when one is given.
-   * Throws if the server returns a non-2xx status, the body is not valid JSON, or the
-   * body does not satisfy the schema.
-   */
-  async fetch<T>(input: string, validator?: ZodType<T>, init?: RequestInit): Promise<T> {
-    return await this.send(input, init)
-      .then(handleHttpResponse)
-      .then(validator ? decodeHttpResponse(validator) : decodeRawHttpResponse<T>);
-  }
-
-  private async send(input: string, init?: RequestInit): Promise<Response> {
-    // Called unbound: browsers reject a native fetch invoked as another object's method.
-    const fetcher = this._fetch;
-    return await fetcher(`${this._baseUrl}${input}`, init);
-  }
-
+export class JsonKeysApi extends RestClient {
   /** Checks that the server is reachable. Throws on any non-2xx response. */
   async ping(): Promise<void> {
-    await this.fetchVoid("/v2/ping", { method: "GET" });
+    await this.fetchVoid("/v2/ping");
   }
 
   /**
@@ -71,6 +20,6 @@ export class JsonKeysApi {
    * Throws on HTTP 503 when a dependency probe fails, or on another non-2xx response.
    */
   async health(): Promise<Record<string, HealthDependency>> {
-    return await this.fetch("/v2/healthcheck", undefined, { method: "GET" });
+    return await this.fetch("/v2/healthcheck");
   }
 }

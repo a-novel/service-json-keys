@@ -14,7 +14,7 @@ import (
 
 	"github.com/a-novel-kit/jwt/v2/jwa"
 
-	"github.com/a-novel/service-json-keys/v2/internal/config"
+	"github.com/a-novel/service-json-keys/v2/internal/config/configtest"
 	"github.com/a-novel/service-json-keys/v2/internal/core"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
 	handlersmocks "github.com/a-novel/service-json-keys/v2/internal/handlers/mocks"
@@ -137,7 +137,7 @@ func TestRestJwkGet(t *testing.T) {
 				request.Header.Set("If-None-Match", testCase.ifNoneMatch)
 			}
 
-			handler := handlers.NewRestJwkGet(service, config.LoggerDev)
+			handler := handlers.NewRestJwkGet(service, configtest.Logger)
 			w := httptest.NewRecorder()
 
 			handler.ServeHTTP(w, request)

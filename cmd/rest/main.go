@@ -7,7 +7,6 @@ package main
 
 import (
 	"context"
-	"io"
 	"log"
 	"os"
 	"os/signal"
@@ -24,7 +23,6 @@ import (
 	"github.com/a-novel-kit/golib/postgres"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
-	"github.com/a-novel/service-json-keys/v2/internal/config/env"
 	"github.com/a-novel/service-json-keys/v2/internal/core"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
@@ -41,16 +39,10 @@ func main() {
 	lo.Must0(otel.Init(cfg.Otel))
 	defer cfg.Otel.Flush()
 
-	if env.OTLPEndpoint == "" {
-		log.SetFlags(log.Flags() &^ (log.Ldate | log.Ltime))
-	}
-
 	// A server started during a planned downtime refuses work, so it leaves the database alone.
 	if !downtime.Started(cfg.App.DowntimeStart, time.Now()) {
 		ctx = lo.Must(postgres.NewContext(ctx, cfg.Postgres))
-
-		database := lo.Must(cfg.Postgres.DB(ctx))
-		defer closeDatabase(database)
+		defer cfg.Postgres.Close()
 	}
 
 	// =================================================================================================================
@@ -73,8 +65,9 @@ func main() {
 	// HANDLERS
 	// =================================================================================================================
 
-	handlerPing := handlers.NewRestPing()
-	handlerHealth := handlers.NewRestHealth()
+	handlerHealth := httpf.Health(map[string]func(context.Context) error{
+		"client:postgres": postgres.Health,
+	})
 	handlerJwkList := handlers.NewRestJwkList(serviceJwkSearch, cfg.Logger)
 	handlerJwkGet := handlers.NewRestJwkGet(serviceJwkSelect, cfg.Logger)
 
@@ -82,11 +75,11 @@ func main() {
 	// ROUTER
 	// =================================================================================================================
 
-	router := httpf.NewRouter(cfg.Rest, cfg.Otel, cfg.RestLogger, cfg.App.DowntimeStart)
+	router := httpf.NewMux(cfg.Rest, cfg.RestLogger, cfg.App.DowntimeStart)
 
 	router.Route("/v2", func(api chi.Router) {
-		api.Get("/ping", handlerPing.ServeHTTP)
-		api.Get("/healthcheck", handlerHealth.ServeHTTP)
+		api.Get("/ping", httpf.Ping)
+		api.Get("/healthcheck", handlerHealth)
 		api.Get("/jwks", handlerJwkList.ServeHTTP)
 		api.Get("/jwk", handlerJwkGet.ServeHTTP)
 	})
@@ -98,11 +91,4 @@ func main() {
 	log.Println("Starting REST server on :" + strconv.Itoa(cfg.Rest.Port))
 
 	lo.Must0(httpf.ListenAndServe(ctx, cfg.Rest, router))
-}
-
-func closeDatabase(database io.Closer) {
-	err := database.Close()
-	if err != nil {
-		log.Println("Close Postgres: " + err.Error())
-	}
 }

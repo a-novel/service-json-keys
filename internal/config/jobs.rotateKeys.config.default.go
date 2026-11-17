@@ -14,6 +14,6 @@ var JobRotateKeysPresetDefault = JobRotateKeys{
 	},
 	Jwk: jwkconfig.PresetDefault,
 
-	Otel:     OtelJobPresetDefault,
+	Otel:     env.JobTelemetry.Otel,
 	Postgres: PostgresPresetDefault,
 }

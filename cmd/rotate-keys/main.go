@@ -15,6 +15,7 @@ import (
 	"github.com/a-novel-kit/golib/downtime"
 	"github.com/a-novel-kit/golib/otel"
 	"github.com/a-novel-kit/golib/postgres"
+	"github.com/a-novel-kit/golib/worker"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
 	"github.com/a-novel/service-json-keys/v2/internal/core"
@@ -44,6 +45,7 @@ func rotateKeys() error {
 
 	lo.Must0(otel.Init(cfg.Otel))
 	defer cfg.Otel.Flush()
+	defer cfg.Postgres.Close()
 
 	if downtime.Started(cfg.App.DowntimeStart, start) {
 		log.Println("planned downtime in progress: no rotation")
@@ -51,24 +53,9 @@ func rotateKeys() error {
 		return nil
 	}
 
-	return run(context.Background(), cfg, start)
-}
-
-// run rotates the keys under the job's span. The span records every failure, a failure to load the
-// master key or to reach the database included, and names it in error.type as a job's root span must.
-func run(ctx context.Context, cfg config.JobRotateKeys, start time.Time) error {
-	ctx, span := otel.Tracer().Start(ctx, "job.RotateKeys")
-	defer span.End()
-
-	err := rotate(ctx, cfg, start)
-	if err != nil {
-		err = otel.ReportError(span, err)
-		span.SetAttributes(otel.ErrorType(err))
-
-		return err
-	}
-
-	return nil
+	return worker.Run(context.Background(), "job.RotateKeys", func(ctx context.Context) error {
+		return rotate(ctx, cfg, start)
+	})
 }
 
 // rotate connects to the database, then rotates the keys of each configured usage as one unit of
