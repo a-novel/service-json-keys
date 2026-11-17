@@ -1,6 +1,6 @@
 # Upgrading to NEXT
 
-The Go module no longer ships the `pkg/go/mocks` package. No repository imports it: a consumer mocks the narrow interface it owns.
+The Go module no longer ships the `pkg/go/mocks` package. No repository in the a-novel or a-novel-kit organizations imports it: a consumer mocks the narrow interface it owns.
 
 ## Do I need to act?
 
