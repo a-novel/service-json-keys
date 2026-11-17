@@ -9,7 +9,7 @@ import (
 
 	"github.com/a-novel-kit/golib/transaction/transactiontest"
 
-	"github.com/a-novel/service-json-keys/v2/internal/config"
+	"github.com/a-novel/service-json-keys/v2/internal/config/jwkconfig"
 	"github.com/a-novel/service-json-keys/v2/internal/core"
 )
 
@@ -83,7 +83,7 @@ func TestJwkRotateAll(t *testing.T) {
 			t.Parallel()
 
 			generator := &recordingGenerator{failAfter: testCase.failAfter}
-			keys := map[string]*config.Jwk{"auth": {}, "refresh": {}}
+			keys := map[string]*jwkconfig.Usage{"auth": {}, "refresh": {}}
 
 			service := core.NewJwkRotateAll(generator, testCase.transactor, keys)
 

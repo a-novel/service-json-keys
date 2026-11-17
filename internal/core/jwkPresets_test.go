@@ -12,8 +12,8 @@ import (
 	"github.com/a-novel-kit/jwt/v2/jwa"
 	"github.com/a-novel-kit/jwt/v2/jwk"
 
-	"github.com/a-novel/service-json-keys/v2/internal/config"
 	"github.com/a-novel/service-json-keys/v2/internal/config/configtest"
+	"github.com/a-novel/service-json-keys/v2/internal/config/jwkconfig"
 	"github.com/a-novel/service-json-keys/v2/internal/core"
 	coremocks "github.com/a-novel/service-json-keys/v2/internal/core/mocks"
 )
@@ -24,7 +24,7 @@ func TestJwkProducers(t *testing.T) {
 	testCases := []struct {
 		name string
 
-		keys map[string]*config.Jwk
+		keys map[string]*jwkconfig.Usage
 
 		expectLen int
 		expectErr error
@@ -38,7 +38,7 @@ func TestJwkProducers(t *testing.T) {
 		{
 			name: "Error/UnknownAlgorithm",
 
-			keys: map[string]*config.Jwk{
+			keys: map[string]*jwkconfig.Usage{
 				"test-usage": {Alg: jwa.Alg("unknown-alg")},
 			},
 
@@ -72,7 +72,7 @@ func TestJwkProducers(t *testing.T) {
 		privateKey, _, err := jwk.GenerateED25519()
 		require.NoError(t, err)
 
-		keys := configtest.TestKeys(jwa.Ed25519, config.JwkKey{Cache: time.Millisecond, StaleIfError: time.Hour})
+		keys := configtest.TestKeys(jwa.Ed25519, jwkconfig.Key{Cache: time.Millisecond, StaleIfError: time.Hour})
 
 		// The first fetch fills the cache and the refetch fails, as during an outage.
 		privateSource := coremocks.NewMockJwkPrivateSource(t)
@@ -112,7 +112,7 @@ func TestJwkProducers(t *testing.T) {
 		privateKey, _, err := jwk.GenerateED25519()
 		require.NoError(t, err)
 
-		keys := configtest.TestKeys(jwa.Ed25519, config.JwkKey{Cache: time.Millisecond, StaleWhileRevalidate: time.Hour})
+		keys := configtest.TestKeys(jwa.Ed25519, jwkconfig.Key{Cache: time.Millisecond, StaleWhileRevalidate: time.Hour})
 
 		// The refetch blocks until the test releases it. Signing must not wait on it.
 		fetching := make(chan struct{})

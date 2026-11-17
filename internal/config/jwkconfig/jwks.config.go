@@ -1,4 +1,4 @@
-package jwk
+package jwkconfig
 
 import (
 	"errors"
@@ -11,8 +11,8 @@ import (
 // ErrConfigNotFound is returned when no JWK configuration is registered for a given key usage.
 var ErrConfigNotFound = errors.New("no config found for the requested usage")
 
-// JwkKey holds the lifetime and caching parameters for a JSON Web Key.
-type JwkKey struct {
+// Key holds the lifetime and caching parameters for a JSON Web Key.
+type Key struct {
 	// TTL configures how long a key version remains available after creation.
 	//
 	// A key signs for up to Rotation + Cache. The TTL should exceed that by the longest time a
@@ -42,8 +42,8 @@ type JwkKey struct {
 	UnknownKeyIDInterval time.Duration `json:"unknownKeyIDInterval" yaml:"unknownKeyIDInterval"`
 }
 
-// JwkToken holds the claims parameters applied to every JWT signed with a given key.
-type JwkToken struct {
+// Token holds the claims parameters applied to every JWT signed with a given key.
+type Token struct {
 	// TTL configures how long a new token remains valid.
 	TTL time.Duration `json:"ttl" yaml:"ttl"`
 	// Issuer is the token issuer embedded in the "iss" claim.
@@ -58,7 +58,7 @@ type JwkToken struct {
 
 // Target returns the issuer, audience and subject a usage stamps on its tokens. Signing and
 // verification both read it, so a token verifies against the target it was signed with.
-func (token JwkToken) Target() jwt.TargetConfig {
+func (token Token) Target() jwt.TargetConfig {
 	return jwt.TargetConfig{
 		Issuer:   token.Issuer,
 		Audience: jwa.Audience{token.Audience},
@@ -66,12 +66,12 @@ func (token JwkToken) Target() jwt.TargetConfig {
 	}
 }
 
-// Jwk holds the full configuration for a single key usage.
-type Jwk struct {
+// Usage holds the full configuration for a single key usage.
+type Usage struct {
 	// Alg is the signing algorithm for keys under this usage.
 	Alg jwa.Alg `json:"alg" yaml:"alg"`
 	// Key holds the lifetime and caching parameters for the JSON Web Key.
-	Key JwkKey `json:"key" yaml:"key"`
+	Key Key `json:"key" yaml:"key"`
 	// Token holds the claims parameters applied to every JWT signed with this key.
-	Token JwkToken `json:"token" yaml:"token"`
+	Token Token `json:"token" yaml:"token"`
 }

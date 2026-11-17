@@ -30,6 +30,7 @@ import (
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
 	"github.com/a-novel/service-json-keys/v2/internal/config/env"
+	"github.com/a-novel/service-json-keys/v2/internal/config/jwkconfig"
 	"github.com/a-novel/service-json-keys/v2/internal/core"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 	"github.com/a-novel/service-json-keys/v2/internal/handlers"
@@ -80,8 +81,8 @@ func main() {
 	// The signing chain: a cached private-key source feeds the per-usage producer plugins, so
 	// ClaimsSign signs tokens without hitting the database on every request.
 	serviceExportLocal := core.NewJwkExportLocal(serviceJwkSearch)
-	serviceJwkProducer := lo.Must(core.NewJwkProducers(serviceExportLocal, config.JwkPresetDefault))
-	serviceClaimsSign := core.NewClaimsSign(serviceJwkProducer, config.JwkPresetDefault)
+	serviceJwkProducer := lo.Must(core.NewJwkProducers(serviceExportLocal, jwkconfig.PresetDefault))
+	serviceClaimsSign := core.NewClaimsSign(serviceJwkProducer, jwkconfig.PresetDefault)
 
 	// =================================================================================================================
 	// HANDLERS

@@ -86,7 +86,7 @@ A cached key outlives its revocation. The gRPC server signs with it, and verifie
 
 ### Key configuration
 
-Each top-level key of [`internal/config/jwk/jwks.config.yaml`](./internal/config/jwk/jwks.config.yaml) is a usage. [`jwk.Jwk`](./internal/config/jwk/jwks.config.go) documents every field. A usage signs with Ed25519 (or its legacy label EdDSA), ES256/384/512, RS256/384/512, PS256/384/512 or ML-DSA-44/65/87.
+Each top-level key of [`internal/config/jwkconfig/jwks.config.yaml`](./internal/config/jwkconfig/jwks.config.yaml) is a usage. [`jwkconfig.Usage`](./internal/config/jwkconfig/jwks.config.go) documents every field. A usage signs with Ed25519 (or its legacy label EdDSA), ES256/384/512, RS256/384/512, PS256/384/512 or ML-DSA-44/65/87.
 
 To add a usage, add it to that file. The Go client embeds the same file, so consumers get the usage by upgrading to a client release that has it. Add a `KeyUsage` constant to [`pkg/go/claims.go`](./pkg/go/claims.go) when consumers need to name it.
 

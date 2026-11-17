@@ -11,7 +11,7 @@ import (
 	"github.com/a-novel-kit/jwt/v2"
 	"github.com/a-novel-kit/jwt/v2/jwa"
 
-	jwkconfig "github.com/a-novel/service-json-keys/v2/internal/config/jwk"
+	"github.com/a-novel/service-json-keys/v2/internal/config/jwkconfig"
 )
 
 // ClaimsSignRequest holds the parameters for a [ClaimsSign.Exec] call.
@@ -19,7 +19,7 @@ type ClaimsSignRequest struct {
 	// Claims is the caller's payload, any JSON-serializable value. The service adds the standard JWT
 	// claims before signing.
 	Claims any
-	// Usage identifies the key and token parameters to use for signing. See [jwkconfig.Jwk].
+	// Usage identifies the key and token parameters to use for signing. See [jwkconfig.Usage].
 	Usage string
 }
 
@@ -27,14 +27,14 @@ type ClaimsSignRequest struct {
 // parameters are determined by the requested usage.
 type ClaimsSign struct {
 	producers  map[string][]jwt.ProducerPlugin
-	keysConfig map[string]*jwkconfig.Jwk
+	keysConfig map[string]*jwkconfig.Usage
 }
 
 // NewClaimsSign creates a ClaimsSign service. Producers provide the per-usage signing plugins
 // (see [NewJwkProducers]); keysConfig provides the token parameters for each usage.
 func NewClaimsSign(
 	producers map[string][]jwt.ProducerPlugin,
-	keysConfig map[string]*jwkconfig.Jwk,
+	keysConfig map[string]*jwkconfig.Usage,
 ) *ClaimsSign {
 	return &ClaimsSign{producers: producers, keysConfig: keysConfig}
 }

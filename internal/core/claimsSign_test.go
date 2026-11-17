@@ -7,8 +7,8 @@ import (
 
 	"github.com/a-novel-kit/jwt/v2/jwa"
 
-	"github.com/a-novel/service-json-keys/v2/internal/config"
 	"github.com/a-novel/service-json-keys/v2/internal/config/configtest"
+	"github.com/a-novel/service-json-keys/v2/internal/config/jwkconfig"
 	"github.com/a-novel/service-json-keys/v2/internal/core"
 )
 
@@ -19,7 +19,7 @@ func TestClaimsSign(t *testing.T) {
 		Foo string `json:"foo"`
 	}
 
-	testConfig := configtest.TestKeys(jwa.Ed25519, config.JwkKey{})
+	testConfig := configtest.TestKeys(jwa.Ed25519, jwkconfig.Key{})
 
 	testCases := []struct {
 		name string
@@ -27,7 +27,7 @@ func TestClaimsSign(t *testing.T) {
 		request *core.ClaimsSignRequest
 
 		producers  core.JwkProducers
-		keysConfig map[string]*config.Jwk
+		keysConfig map[string]*jwkconfig.Usage
 
 		expectErr error
 	}{
