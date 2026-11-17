@@ -91,8 +91,18 @@ func TestClaimsVerify(t *testing.T) {
 			expectErr: jwp.ErrInvalidClaims,
 		},
 		{
-			// Ignoring the expiry never lifts the issuer, audience and subject check.
+			// Every authenticated request verifies through the strict recipient, which checks the target.
 			name: "Error/ForeignIssuer",
+
+			request: &tokens.ClaimsVerifyRequest{Token: signClaims(t, privateKey.JWK, foreign), Usage: "test-usage"},
+
+			recipients: recipients,
+
+			expectErr: jwp.ErrInvalidClaims,
+		},
+		{
+			// Ignoring the expiry never lifts the issuer, audience and subject check.
+			name: "Error/ForeignIssuerIgnoreExpired",
 
 			request: &tokens.ClaimsVerifyRequest{
 				Token: signClaims(t, privateKey.JWK, foreign), Usage: "test-usage", IgnoreExpired: true,
