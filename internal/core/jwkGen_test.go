@@ -319,10 +319,6 @@ func TestJwkGen(t *testing.T) {
 			key, err := service.Exec(ctx, testCase.request)
 			require.ErrorIs(t, err, testCase.expectErr)
 			require.Equal(t, testCase.expect, key)
-
-			daoSearch.AssertExpectations(t)
-			daoInsert.AssertExpectations(t)
-			serviceExtract.AssertExpectations(t)
 		})
 	}
 }

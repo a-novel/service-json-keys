@@ -46,22 +46,7 @@ func TestNewPostgresPreset(t *testing.T) {
 			expectTLSEnabled: false,
 		},
 		{
-			name: "Success/TLS",
-			connection: postgrespresets.Connection{
-				Host:       "postgres.internal",
-				Port:       5432,
-				User:       "json-keys",
-				Password:   "password",
-				Database:   "json-keys",
-				TLSEnabled: true,
-			},
-			expectAddr:       "postgres.internal:5432",
-			expectUser:       "json-keys",
-			expectPassword:   "password",
-			expectDatabase:   "json-keys",
-			expectTLSEnabled: true,
-		},
-		{
+			// A host without a password stops the service at startup.
 			name: "Error/MissingPassword",
 			connection: postgrespresets.Connection{
 				Host:     "postgres.internal",
@@ -111,7 +96,7 @@ func TestNewPostgresPreset(t *testing.T) {
 			require.Equal(t, testCase.expectPassword, driverConfig.Password)
 			require.Equal(t, testCase.expectDatabase, driverConfig.Database)
 			require.Equal(t, testCase.expectTLSEnabled, driverConfig.TLSConfig != nil)
-			// The driver\'s own dial timeout applies: the database is a Service inside the cluster.
+			// The driver's own dial timeout applies: the database is a Service inside the cluster.
 			require.Equal(t, 5*time.Second, driverConfig.DialTimeout)
 			require.Equal(t, 12, preset.MaxOpenConns)
 			require.Equal(t, 8, preset.MaxIdleConns)

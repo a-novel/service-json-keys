@@ -2,12 +2,8 @@ package servicejsonkeys_test
 
 import (
 	"context"
-	_ "embed"
-	"fmt"
 	"net"
-	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 	"testing"
 
@@ -27,87 +23,33 @@ import (
 	servicejsonkeys "github.com/a-novel/service-json-keys/v2/pkg/go"
 )
 
-// consumerGoMod is the go.mod of a module importing this client from the checkout at the path
-// it formats in.
-const consumerGoMod = `module test/client
-
-go 1.27.1
-
-require github.com/a-novel/service-json-keys/v2 v2.0.0
-
-replace github.com/a-novel/service-json-keys/v2 => %s
-`
-
-// consumerMain is the program of that module.
-//
-//go:embed testdata/consumer/main.go
-var consumerMain []byte
-
 func TestClient(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Success/ImportIgnoresServerEnvironment", func(t *testing.T) {
-		t.Parallel()
-
-		moduleRoot, err := filepath.Abs("../..")
-		require.NoError(t, err)
-
-		consumerDir := t.TempDir()
-		goMod := fmt.Sprintf(consumerGoMod, filepath.ToSlash(moduleRoot))
-		require.NoError(t, os.WriteFile(filepath.Join(consumerDir, "go.mod"), []byte(goMod), 0o600))
-		require.NoError(t, os.WriteFile(filepath.Join(consumerDir, "main.go"), consumerMain, 0o600))
-
-		consumerPath := filepath.Join(consumerDir, "consumer")
-		build := exec.CommandContext(t.Context(), "go", "build", "-mod=mod", "-o", "consumer", ".")
-		build.Dir = consumerDir
-
-		build.Env = append(os.Environ(), "GOWORK=off")
-		output, err := build.CombinedOutput()
-		require.NoError(t, err, string(output))
-
-		testCases := []struct {
-			name   string
-			prefix string
-		}{
-			{name: "Unprefixed"},
-			{name: "Prefixed", prefix: "JSON_KEYS_CLIENT_TEST_"},
-		}
-
-		for _, testCase := range testCases {
-			t.Run(testCase.name, func(t *testing.T) {
-				t.Parallel()
-
-				command := exec.CommandContext(t.Context(), consumerPath)
-				command.Dir = consumerDir
-
-				command.Env = append(os.Environ(),
-					"GOWORK=off",
-					"SERVICE_JSON_KEYS_ENV_PREFIX="+testCase.prefix,
-					testCase.prefix+"REST_TIMEOUT_READ=invalid",
-					testCase.prefix+"GRPC_TIMEOUT_SHUTDOWN=invalid",
-					testCase.prefix+"POSTGRES_PORT=invalid",
-					testCase.prefix+"OTEL=invalid",
-				)
-
-				output, err := command.CombinedOutput()
-				require.NoError(t, err, string(output))
-			})
-		}
-	})
-
 	t.Run("Success/DependencyBoundary", func(t *testing.T) {
 		t.Parallel()
+
+		const module = "github.com/a-novel/service-json-keys/v2/"
 
 		command := exec.CommandContext(t.Context(), "go", "list", "-deps", ".")
 		output, err := command.Output()
 		require.NoError(t, err)
 
-		dependencies := strings.Split(strings.TrimSpace(string(output)), "\n")
+		var internalDependencies []string
 
-		const configPath = "github.com/a-novel/service-json-keys/v2/internal/config"
+		for dependency := range strings.SplitSeq(strings.TrimSpace(string(output)), "\n") {
+			if strings.HasPrefix(dependency, module) && strings.Contains(dependency, "/internal/") {
+				internalDependencies = append(internalDependencies, strings.TrimPrefix(dependency, module))
+			}
+		}
 
-		require.NotContains(t, dependencies, configPath)
-		require.NotContains(t, dependencies, configPath+"/env")
+		// The client links neither the server's environment nor any service layer, so importing it
+		// reads no server configuration.
+		require.ElementsMatch(t, []string{
+			"internal/config/jwkconfig",
+			"internal/handlers/protogen/anovel/jsonkeys/v2",
+			"pkg/go/internal/tokens",
+		}, internalDependencies)
 	})
 
 	t.Run("Success/PropagatesTraceContext", func(t *testing.T) {

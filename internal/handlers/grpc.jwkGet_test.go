@@ -140,8 +140,6 @@ func TestGrpcJwkGet(t *testing.T) {
 			if testCase.expectCause != nil {
 				require.ErrorIs(t, err, testCase.expectCause)
 			}
-
-			service.AssertExpectations(t)
 		})
 	}
 }

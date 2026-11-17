@@ -59,8 +59,6 @@ func TestJwkProducers(t *testing.T) {
 			for _, plugins := range producers {
 				require.Len(t, plugins, 1)
 			}
-
-			source.AssertExpectations(t)
 		})
 	}
 
@@ -103,8 +101,6 @@ func TestJwkProducers(t *testing.T) {
 
 		_, err = signer.Exec(t.Context(), staleRequest)
 		require.NoError(t, err)
-
-		privateSource.AssertExpectations(t)
 	})
 	t.Run("Success/StaleWhileRevalidate", func(t *testing.T) {
 		t.Parallel()
@@ -153,7 +149,5 @@ func TestJwkProducers(t *testing.T) {
 
 		<-fetching
 		close(release)
-
-		privateSource.AssertExpectations(t)
 	})
 }

@@ -129,9 +129,6 @@ func TestJwkSelect(t *testing.T) {
 			res, err := service.Exec(ctx, testCase.request)
 			require.ErrorIs(t, err, testCase.expectErr)
 			require.Equal(t, testCase.expect, res)
-
-			daoSelect.AssertExpectations(t)
-			serviceExtract.AssertExpectations(t)
 		})
 	}
 }

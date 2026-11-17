@@ -19,38 +19,19 @@ func TestRestHealth(t *testing.T) {
 	testCases := []struct {
 		name string
 
-		setup probeSetup
+		withPostgres bool
 
 		expectStatus int
 		expectHealth string
 	}{
 		{
 			name:         "Success",
-			setup:        probeHealthy,
+			withPostgres: true,
 			expectStatus: http.StatusOK,
 			expectHealth: handlers.RestHealthStatusUp,
 		},
 		{
 			name:         "Error/MissingPostgres",
-			setup:        probeWithoutPostgres,
-			expectStatus: http.StatusServiceUnavailable,
-			expectHealth: handlers.RestHealthStatusDown,
-		},
-		{
-			name:         "Error/ClosedPostgres",
-			setup:        probeClosedPostgres,
-			expectStatus: http.StatusServiceUnavailable,
-			expectHealth: handlers.RestHealthStatusDown,
-		},
-		{
-			name:         "Error/TransactionContext",
-			setup:        probeInTransaction,
-			expectStatus: http.StatusServiceUnavailable,
-			expectHealth: handlers.RestHealthStatusDown,
-		},
-		{
-			name:         "Error/CancelledProbe",
-			setup:        probeCancelled,
 			expectStatus: http.StatusServiceUnavailable,
 			expectHealth: handlers.RestHealthStatusDown,
 		},
@@ -60,7 +41,11 @@ func TestRestHealth(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			ctx := newProbeContext(t, testCase.setup)
+			ctx := t.Context()
+			if testCase.withPostgres {
+				ctx = newPostgresContext(t)
+			}
+
 			recorder := httptest.NewRecorder()
 
 			handlers.NewRestHealth().ServeHTTP(

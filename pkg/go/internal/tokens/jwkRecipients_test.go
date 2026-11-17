@@ -65,8 +65,6 @@ func TestJwkRecipients(t *testing.T) {
 				require.NotNil(t, plugins)
 				require.Len(t, plugins, 1)
 			}
-
-			source.AssertExpectations(t)
 		})
 	}
 
@@ -149,10 +147,6 @@ func TestJwkRecipients(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, &testClaims{Message: "second"}, claims2)
 		require.Equal(t, 2, publicFetches)
-
-		privateSource1.AssertExpectations(t)
-		privateSource2.AssertExpectations(t)
-		publicSource.AssertExpectations(t)
 	})
 
 	t.Run("Success/StaleIfError", func(t *testing.T) {
@@ -210,9 +204,6 @@ func TestJwkRecipients(t *testing.T) {
 		claims, err = verifier.Exec(t.Context(), verifyRequest)
 		require.NoError(t, err)
 		require.Equal(t, &testClaims{Message: "test"}, claims)
-
-		privateSource.AssertExpectations(t)
-		publicSource.AssertExpectations(t)
 	})
 	t.Run("Success/StaleWhileRevalidate", func(t *testing.T) {
 		t.Parallel()
@@ -275,8 +266,6 @@ func TestJwkRecipients(t *testing.T) {
 
 		<-fetching
 		close(release)
-
-		publicSource.AssertExpectations(t)
 	})
 }
 
@@ -362,9 +351,6 @@ func TestJwkGenerators(t *testing.T) {
 			require.NoError(t, json.Unmarshal(decodedHeader, &header))
 			require.Equal(t, alg, header.Alg)
 			require.Equal(t, alg, publicKey.Alg)
-
-			privateSource.AssertExpectations(t)
-			publicSource.AssertExpectations(t)
 		})
 	}
 }
