@@ -137,7 +137,7 @@ func TestRestJwkGet(t *testing.T) {
 				request.Header.Set("If-None-Match", testCase.ifNoneMatch)
 			}
 
-			handler := handlers.NewRestJwkGet(service, config.LoggerDev)
+			handler := handlers.NewRestJwkGet(service, config.AppPresetDefault.Logger)
 			w := httptest.NewRecorder()
 
 			handler.ServeHTTP(w, request)

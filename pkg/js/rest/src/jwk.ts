@@ -1,7 +1,5 @@
 import type { JsonKeysApi } from "./api";
 
-import { HTTP_HEADERS } from "@a-novel-kit/nodelib-browser/http";
-
 import { z } from "zod";
 
 /** Parses a {@link JwkKeyOp}. */
@@ -58,10 +56,7 @@ export async function jwkList(api: JsonKeysApi, usage?: string): Promise<Jwk[]> 
   const params = new URLSearchParams();
   if (usage) params.set("usage", usage);
   const query = params.toString();
-  return await api.fetch(`/v2/jwks${query ? `?${query}` : ""}`, z.array(JwkSchema), {
-    method: "GET",
-    headers: HTTP_HEADERS.JSON,
-  });
+  return await api.fetch(`/v2/jwks${query ? `?${query}` : ""}`, z.array(JwkSchema), { method: "GET" });
 }
 
 /**
@@ -75,5 +70,5 @@ export async function jwkList(api: JsonKeysApi, usage?: string): Promise<Jwk[]> 
  */
 export async function jwkGet(api: JsonKeysApi, id: string): Promise<Jwk> {
   const params = new URLSearchParams({ id });
-  return await api.fetch(`/v2/jwk?${params.toString()}`, JwkSchema, { method: "GET", headers: HTTP_HEADERS.JSON });
+  return await api.fetch(`/v2/jwk?${params.toString()}`, JwkSchema, { method: "GET" });
 }
