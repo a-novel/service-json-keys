@@ -1,4 +1,4 @@
-import type { JsonKeysApi } from "./api";
+import type { JsonKeysApi } from "./api.js";
 
 import { z } from "zod";
 
