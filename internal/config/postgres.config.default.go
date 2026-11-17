@@ -7,7 +7,8 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/config/env"
 )
 
-// PostgresPresetDefault is the PostgreSQL connection of the servers and the rotation job.
+// PostgresPresetDefault is the PostgreSQL connection of the servers and the rotation job. It panics
+// when the connection names a host without a password.
 var PostgresPresetDefault = lo.Must(env.Postgres.Preset())
 
 // migrationsSessionParams bounds how long a migration waits for a lock. After three seconds the
