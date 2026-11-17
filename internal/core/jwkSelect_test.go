@@ -7,24 +7,16 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/samber/lo"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-
-	"github.com/a-novel-kit/jwt/v2/jwa"
 
 	"github.com/a-novel/service-json-keys/v2/internal/core"
 	coremocks "github.com/a-novel/service-json-keys/v2/internal/core/mocks"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
-	"github.com/a-novel/service-json-keys/v2/internal/lib"
-	"github.com/a-novel/service-json-keys/v2/internal/lib/libtest"
 )
 
 func TestJwkSelect(t *testing.T) {
 	t.Parallel()
-
-	ctx, err := lib.NewMasterKeyContext(t.Context(), libtest.MasterKey)
-	require.NoError(t, err)
 
 	errFoo := errors.New("foo")
 
@@ -41,18 +33,16 @@ func TestJwkSelect(t *testing.T) {
 	storedKey := &dao.Jwk{
 		ID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
 		PrivateKey: "cHJpdmF0ZS1rZXktMg",
-		PublicKey:  lo.ToPtr("cHVibGljLWtleS0y"),
+		PublicKey:  new("cHVibGljLWtleS0y"),
 		Usage:      "test-usage",
 		CreatedAt:  time.Now().Add(-time.Hour),
 		ExpiresAt:  time.Now().Add(time.Hour),
 	}
 	extractedKey := &core.Jwk{
-		JWKCommon: jwa.JWKCommon{
-			KTY: "test-kty",
-			Use: "test-use",
-			Alg: "test-alg",
-			KID: storedKey.ID.String(),
-		},
+		KTY:     "test-kty",
+		Use:     "test-use",
+		Alg:     "test-alg",
+		KID:     storedKey.ID.String(),
 		Payload: json.RawMessage(`{"message":"hello world"}`),
 	}
 	request := &core.JwkSelectRequest{ID: storedKey.ID}
@@ -90,7 +80,7 @@ func TestJwkSelect(t *testing.T) {
 			name:    "Error/NotFound",
 			request: request,
 
-			daoSelectMock: &daoSelectMock{err: dao.ErrJwkSelectNotFound},
+			daoSelectMock: &daoSelectMock{err: dao.ErrJwkNotFound},
 
 			expectErr: core.ErrJwkNotFound,
 		},
@@ -126,7 +116,7 @@ func TestJwkSelect(t *testing.T) {
 
 			service := core.NewJwkSelect(daoSelect, serviceExtract)
 
-			res, err := service.Exec(ctx, testCase.request)
+			res, err := service.Exec(t.Context(), testCase.request)
 			require.ErrorIs(t, err, testCase.expectErr)
 			require.Equal(t, testCase.expect, res)
 		})

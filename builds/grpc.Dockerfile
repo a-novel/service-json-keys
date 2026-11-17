@@ -16,12 +16,8 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
     GOBIN=/usr/local/bin go install github.com/fullstorydev/grpcurl/cmd/grpcurl@v1.9.3
 
-COPY ./cmd/grpc ./cmd/grpc
-COPY ./internal/handlers ./internal/handlers
-COPY ./internal/dao ./internal/dao
-COPY ./internal/lib ./internal/lib
-COPY ./internal/core ./internal/core
-COPY ./internal/config ./internal/config
+COPY ./cmd ./cmd
+COPY ./internal ./internal
 
 # -ldflags="-s -w" strips the symbol table and DWARF debug info, shrinking the binary.
 # -trimpath removes local filesystem paths for reproducible builds.

@@ -50,7 +50,7 @@ func TestJwkProducers(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			source := coremocks.NewMockJwkPrivateSource(t)
+			source := coremocks.NewMockJwkProducersServiceSearch(t)
 
 			producers, err := core.NewJwkProducers(source, testCase.keys)
 			require.ErrorIs(t, err, testCase.expectErr)
@@ -73,13 +73,13 @@ func TestJwkProducers(t *testing.T) {
 		keys := configtest.TestKeys(jwa.Ed25519, jwkconfig.Key{Cache: time.Millisecond, StaleIfError: time.Hour})
 
 		// The first fetch fills the cache and the refetch fails, as during an outage.
-		privateSource := coremocks.NewMockJwkPrivateSource(t)
+		privateSource := coremocks.NewMockJwkProducersServiceSearch(t)
 		privateSource.EXPECT().
-			SearchKeys(mock.Anything, "test-usage").
+			Exec(mock.Anything, &core.JwkSearchRequest{Usage: "test-usage", Private: true}).
 			Return([]*jwa.JWK{privateKey.JWK}, nil).
 			Once()
 		privateSource.EXPECT().
-			SearchKeys(mock.Anything, "test-usage").
+			Exec(mock.Anything, &core.JwkSearchRequest{Usage: "test-usage", Private: true}).
 			Return(nil, errFoo).
 			Once()
 
@@ -114,14 +114,14 @@ func TestJwkProducers(t *testing.T) {
 		fetching := make(chan struct{})
 		release := make(chan struct{})
 
-		privateSource := coremocks.NewMockJwkPrivateSource(t)
+		privateSource := coremocks.NewMockJwkProducersServiceSearch(t)
 		privateSource.EXPECT().
-			SearchKeys(mock.Anything, "test-usage").
+			Exec(mock.Anything, &core.JwkSearchRequest{Usage: "test-usage", Private: true}).
 			Return([]*jwa.JWK{privateKey.JWK}, nil).
 			Once()
 		privateSource.EXPECT().
-			SearchKeys(mock.Anything, "test-usage").
-			RunAndReturn(func(_ context.Context, _ string) ([]*jwa.JWK, error) {
+			Exec(mock.Anything, &core.JwkSearchRequest{Usage: "test-usage", Private: true}).
+			RunAndReturn(func(_ context.Context, _ *core.JwkSearchRequest) ([]*core.Jwk, error) {
 				close(fetching)
 				<-release
 

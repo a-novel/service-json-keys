@@ -52,19 +52,23 @@ type JwkGen struct {
 	daoInsert      JwkGenDaoInsert
 	serviceExtract JwkGenServiceExtract
 	keysConfig     map[string]*jwkconfig.Usage
+	masterKey      *[lib.MasterKeyLength]byte
 }
 
+// NewJwkGen creates a JwkGen service. The masterKey encrypts each private key it generates.
 func NewJwkGen(
 	daoSearch JwkGenDaoSearch,
 	daoInsert JwkGenDaoInsert,
 	serviceExtract JwkGenServiceExtract,
 	keysConfig map[string]*jwkconfig.Usage,
+	masterKey *[lib.MasterKeyLength]byte,
 ) *JwkGen {
 	return &JwkGen{
 		daoSearch:      daoSearch,
 		daoInsert:      daoInsert,
 		serviceExtract: serviceExtract,
 		keysConfig:     keysConfig,
+		masterKey:      masterKey,
 	}
 }
 
@@ -126,7 +130,7 @@ func (service *JwkGen) generate(ctx context.Context, usage string, keyConfig *jw
 	}
 
 	// Encrypt the private key with the master key, so a database dump does not expose it.
-	privateKeyEncrypted, err := lib.EncryptMasterKey(ctx, generatedKey.PrivateKey)
+	privateKeyEncrypted, err := lib.EncryptMasterKey(service.masterKey, generatedKey.PrivateKey)
 	if err != nil {
 		return nil, otel.ReportError(span, fmt.Errorf("encrypt private key: %w", err))
 	}
@@ -137,15 +141,9 @@ func (service *JwkGen) generate(ctx context.Context, usage string, keyConfig *jw
 		return nil, otel.ReportError(span, fmt.Errorf("parse KID: %w", err))
 	}
 
-	var publicKeyEncoded *string
-
-	if generatedKey.PublicKey != nil {
-		publicKeySerialized, err := json.Marshal(generatedKey.PublicKey)
-		if err != nil {
-			return nil, otel.ReportError(span, fmt.Errorf("serialize public key: %w", err))
-		}
-
-		publicKeyEncoded = new(base64.RawURLEncoding.EncodeToString(publicKeySerialized))
+	publicKeySerialized, err := json.Marshal(generatedKey.PublicKey)
+	if err != nil {
+		return nil, otel.ReportError(span, fmt.Errorf("serialize public key: %w", err))
 	}
 
 	now := time.Now()
@@ -153,7 +151,7 @@ func (service *JwkGen) generate(ctx context.Context, usage string, keyConfig *jw
 	daoRequest := &dao.JwkInsertRequest{
 		ID:         kid,
 		PrivateKey: base64.RawURLEncoding.EncodeToString(privateKeyEncrypted),
-		PublicKey:  publicKeyEncoded,
+		PublicKey:  new(base64.RawURLEncoding.EncodeToString(publicKeySerialized)),
 		Usage:      usage,
 		Now:        now,
 		Expiration: now.Add(keyConfig.Key.TTL),

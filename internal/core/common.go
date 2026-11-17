@@ -11,7 +11,7 @@ import (
 var ErrConfigNotFound = jwkconfig.ErrConfigNotFound
 
 // ErrJwkNotFound is returned when no active key matches the requested ID.
-var ErrJwkNotFound = dao.ErrJwkSelectNotFound
+var ErrJwkNotFound = dao.ErrJwkNotFound
 
 // ErrReservedClaim is returned when the caller's claims name a registered JWT parameter. The
 // service stamps those from the usage config, so the request is malformed.

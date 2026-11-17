@@ -50,13 +50,11 @@ func TestGrpcJwkList(t *testing.T) {
 			serviceMock: &serviceMock{
 				resp: []*core.Jwk{
 					{
-						JWKCommon: jwa.JWKCommon{
-							KTY:    "test-kty",
-							Use:    "test-use",
-							KeyOps: jwa.KeyOps{jwa.KeyOpSign, jwa.KeyOpVerify},
-							Alg:    "test-alg",
-							KID:    "00000000-0000-0000-0000-000000000001",
-						},
+						KTY:     "test-kty",
+						Use:     "test-use",
+						KeyOps:  jwa.KeyOps{jwa.KeyOpSign, jwa.KeyOpVerify},
+						Alg:     "test-alg",
+						KID:     "00000000-0000-0000-0000-000000000001",
 						Payload: json.RawMessage(`{"message":"hello world"}`),
 					},
 				},

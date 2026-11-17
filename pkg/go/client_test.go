@@ -19,7 +19,7 @@ import (
 	"github.com/a-novel-kit/golib/grpcf"
 	golibproto "github.com/a-novel-kit/golib/grpcf/proto/gen"
 
-	"github.com/a-novel/service-json-keys/v2/internal/config/env"
+	"github.com/a-novel/service-json-keys/v2/internal/config/configtest"
 	servicejsonkeys "github.com/a-novel/service-json-keys/v2/pkg/go"
 )
 
@@ -106,7 +106,7 @@ func TestClient(t *testing.T) {
 		t.Parallel()
 
 		client, err := servicejsonkeys.NewClient(
-			env.GrpcURL,
+			configtest.GrpcURL,
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 		)
 		require.NoError(t, err)

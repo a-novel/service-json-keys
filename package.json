@@ -14,8 +14,8 @@
     "pkg/js/test/rest"
   ],
   "scripts": {
-    "build": "pnpm build:rest && pnpm types:rest && pnpm types:rest-test",
-    "build:rest": "rm -rf ./pkg/js/rest/dist && vite build --outDir ./pkg/js/rest/dist -c pkg/js/rest/vite.config.ts",
+    "build": "pnpm build:rest",
+    "build:rest": "vite build -c pkg/js/rest/vite.config.ts && tsc -p pkg/js/rest/tsconfig.build.json",
     "format": "pnpm format:go && pnpm format:proto && pnpm format:js",
     "format:go": "go mod tidy && go tool -modfile=golangci-lint.mod golangci-lint run ./... --fix",
     "format:js": "prettier --write . --config prettier.config.ts",
@@ -33,21 +33,20 @@
     "lint:stylecheck": "prettier --check . --config prettier.config.ts",
     "lint:typecheck": "pnpm lint:typecheck:base && pnpm lint:typecheck:rest && pnpm lint:typecheck:test:rest",
     "lint:typecheck:base": "tsc --noEmit",
-    "lint:typecheck:rest": "pnpm tsc --p ./pkg/js/rest/tsconfig.json --noEmit",
-    "lint:typecheck:test:rest": "pnpm tsc --p ./pkg/js/test/rest/tsconfig.json --noEmit",
+    "lint:typecheck:rest": "tsc -p pkg/js/rest/tsconfig.json --noEmit",
+    "lint:typecheck:test:rest": "tsc -p pkg/js/test/rest/tsconfig.json --noEmit",
     "prepublish:doc": "pnpm prepublish:doc:readme && pnpm prepublish:doc:openapi",
     "prepublish:doc:openapi": "a-novel publish stamp 'version: ' openapi.yaml",
     "prepublish:doc:readme": "a-novel publish stamp 'a-novel/service-json-keys/[a-z0-9/-]+:' README.md",
     "sync": "pnpm build && pnpm i",
     "test": "vitest run -c vitest.config.ts",
-    "test:ci": "pnpm build && pnpm i && pnpm test",
-    "types:rest": "tsc -p pkg/js/rest/tsconfig.build.json",
-    "types:rest-test": "tsc --p ./pkg/js/test/rest/tsconfig.json --noEmit"
+    "test:ci": "pnpm build && pnpm i && pnpm test"
   },
   "devDependencies": {
     "@a-novel-kit/nodelib-browser": "^2.0.0",
     "@a-novel-kit/nodelib-config": "^2.0.0",
     "@a-novel-kit/nodelib-test": "^2.0.0",
+    "@a-novel/service-json-keys-rest": "workspace:*",
     "@eslint/js": "^10.0.1",
     "@redocly/cli": "^2.20.4",
     "@trivago/prettier-plugin-sort-imports": "^6.0.2",

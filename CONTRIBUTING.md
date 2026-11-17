@@ -64,7 +64,7 @@ grpcurl -plaintext \
 
 The service stores each private key encrypted with the **master key**. [`internal/lib/masterKeyCrypt.go`](./internal/lib/masterKeyCrypt.go) uses [NaCl secretbox](https://nacl.cr.yp.to/secretbox.html): XSalsa20-Poly1305 authenticated encryption, with a random 24-byte nonce prepended to each ciphertext.
 
-`APP_MASTER_KEY` holds the master key as a hex-encoded 32-byte secret. `lib.NewMasterKeyContext` parses it into the context, and `lib.MasterKeyContext` reads it back whenever a private key is encrypted or decrypted.
+`APP_MASTER_KEY` holds the master key as a hex-encoded 32-byte secret. `lib.ParseMasterKey` parses it once at startup, and each command hands the key to the core operations that encrypt or decrypt a private key.
 
 > **Changing `APP_MASTER_KEY` leaves every stored private key unreadable.** Signing reads all the active keys of a usage, so it fails until every key encrypted under the old value leaves the active view.
 

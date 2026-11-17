@@ -74,7 +74,7 @@ func run(ctx context.Context, cfg config.JobRotateKeys, start time.Time) error {
 // rotate connects to the database, then rotates the keys of each configured usage as one unit of
 // work.
 func rotate(ctx context.Context, cfg config.JobRotateKeys, start time.Time) error {
-	ctx, err := lib.NewMasterKeyContext(ctx, cfg.App.MasterKey)
+	masterKey, err := lib.ParseMasterKey(cfg.App.MasterKey)
 	if err != nil {
 		return fmt.Errorf("load master key: %w", err)
 	}
@@ -88,8 +88,8 @@ func rotate(ctx context.Context, cfg config.JobRotateKeys, start time.Time) erro
 	daoJwkSearch := dao.NewPgJwkSearch()
 	daoJwkInsert := dao.NewPgJwkInsert()
 
-	serviceJwkExtract := core.NewJwkExtract()
-	serviceJwkGen := core.NewJwkGen(daoJwkSearch, daoJwkInsert, serviceJwkExtract, cfg.Jwk)
+	serviceJwkExtract := core.NewJwkExtract(masterKey)
+	serviceJwkGen := core.NewJwkGen(daoJwkSearch, daoJwkInsert, serviceJwkExtract, cfg.Jwk, masterKey)
 	serviceJwkRotateAll := core.NewJwkRotateAll(serviceJwkGen, postgres.NewTransactor(nil), cfg.Jwk)
 
 	// --- Rotate keys for each usage, as one unit of work ---

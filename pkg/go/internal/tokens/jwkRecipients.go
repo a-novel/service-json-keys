@@ -43,7 +43,7 @@ func NewJwkRecipients(
 			UnknownKeyIDInterval:  keyConfig.Key.UnknownKeyIDInterval,
 		})
 
-		recipient, err := newJwkVerifier(keySource, usage, keyConfig.Alg)
+		recipient, err := newJwkVerifier(keySource, keyConfig.Alg)
 		if err != nil {
 			return nil, err
 		}
@@ -54,26 +54,20 @@ func NewJwkRecipients(
 	return output, nil
 }
 
-// newJwkVerifier returns the plugin that verifies the tokens of usage with the keys of keySource.
-func newJwkVerifier(keySource *jwk.Source, usage string, alg jwa.Alg) (jwt.RecipientPlugin, error) {
+// newJwkVerifier returns the plugin that verifies tokens of alg with the keys of keySource.
+func newJwkVerifier(keySource *jwk.Source, alg jwa.Alg) (jwt.RecipientPlugin, error) {
+	if preset, ok := jwkconfig.JwsPresetsEcdsa[alg]; ok {
+		return jws.NewSourcedECDSAVerifier(keySource, preset), nil
+	}
+
+	if preset, ok := jwkconfig.JwsPresetsRsa[alg]; ok {
+		return jws.NewSourcedRSAVerifier(keySource, preset), nil
+	}
+
 	switch alg {
 	// The Ed25519 verifier accepts tokens and keys under either label.
 	case jwa.Ed25519, jwa.EdDSA: //nolint:staticcheck // A configured legacy label is honored.
 		return jws.NewSourcedED25519Verifier(keySource), nil
-	case jwa.ES256, jwa.ES384, jwa.ES512:
-		ecdsaPreset, ok := jwkconfig.JwsPresetsEcdsa[alg]
-		if !ok {
-			return nil, fmt.Errorf("%w (ecdsa) for usage: %s", jwkconfig.ErrJwkPresetUnknown, usage)
-		}
-
-		return jws.NewSourcedECDSAVerifier(keySource, ecdsaPreset), nil
-	case jwa.RS256, jwa.RS384, jwa.RS512, jwa.PS256, jwa.PS384, jwa.PS512:
-		rsaPreset, ok := jwkconfig.JwsPresetsRsa[alg]
-		if !ok {
-			return nil, fmt.Errorf("%w (rsa) for usage: %s", jwkconfig.ErrJwkPresetUnknown, usage)
-		}
-
-		return jws.NewSourcedRSAVerifier(keySource, rsaPreset), nil
 	case jwa.MLDSA44, jwa.MLDSA65, jwa.MLDSA87:
 		return jws.NewSourcedMLDSAVerifier(keySource), nil
 	default:

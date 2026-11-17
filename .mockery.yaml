@@ -11,12 +11,6 @@ packages:
       pkgname: handlersmocks
       dir: internal/handlers/mocks
       filename: mocks.go
-  github.com/a-novel/service-json-keys/v2/pkg/go:
-    config:
-      all: true
-      pkgname: pkgmocks
-      dir: pkg/go/mocks
-      filename: mocks.go
   github.com/a-novel/service-json-keys/v2/pkg/go/internal/tokens:
     config:
       all: true

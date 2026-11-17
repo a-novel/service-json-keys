@@ -53,7 +53,7 @@ func main() {
 		log.SetFlags(log.Flags() &^ (log.Ldate | log.Ltime))
 	}
 
-	ctx = lo.Must(lib.NewMasterKeyContext(ctx, cfg.App.MasterKey))
+	masterKey := lo.Must(lib.ParseMasterKey(cfg.App.MasterKey))
 
 	// A server started during a planned downtime refuses work, so it leaves the database alone.
 	if !downtime.Started(cfg.App.DowntimeStart, time.Now()) {
@@ -74,14 +74,13 @@ func main() {
 	// SERVICES
 	// =================================================================================================================
 
-	serviceJwkExtract := core.NewJwkExtract()
+	serviceJwkExtract := core.NewJwkExtract(masterKey)
 	serviceJwkSearch := core.NewJwkSearch(daoJwkSearch, serviceJwkExtract)
 	serviceJwkSelect := core.NewJwkSelect(daoJwkSelect, serviceJwkExtract)
 
 	// The signing chain: a cached private-key source feeds the per-usage producer plugins, so
 	// ClaimsSign signs tokens without hitting the database on every request.
-	serviceExportLocal := core.NewJwkExportLocal(serviceJwkSearch)
-	serviceJwkProducer := lo.Must(core.NewJwkProducers(serviceExportLocal, jwkconfig.PresetDefault))
+	serviceJwkProducer := lo.Must(core.NewJwkProducers(serviceJwkSearch, jwkconfig.PresetDefault))
 	serviceClaimsSign := core.NewClaimsSign(serviceJwkProducer, jwkconfig.PresetDefault)
 
 	// =================================================================================================================
@@ -123,8 +122,8 @@ func main() {
 	lo.Must0(grpcf.ListenAndServe(ctx, cfg.Grpc, server))
 }
 
-// newServer builds the gRPC server. Each call carries the master key and the database of ctx, and
-// passes the service-token gate first. The gate refuses an empty issuer unless cfg opts a local stack
+// newServer builds the gRPC server. Each call carries the database of ctx, and passes the
+// service-token gate first. The gate refuses an empty issuer unless cfg opts a local stack
 // out, so the server never starts open by mistake.
 func newServer(ctx context.Context, cfg config.App) (*grpc.Server, error) {
 	serviceToken, err := handlers.GrpcServiceToken(
@@ -135,7 +134,7 @@ func newServer(ctx context.Context, cfg config.App) (*grpc.Server, error) {
 	}
 
 	ctxInterceptor := func(rpCtx context.Context) context.Context {
-		return lib.TransferMasterKeyContext(ctx, postgres.TransferContext(ctx, rpCtx))
+		return postgres.TransferContext(ctx, rpCtx)
 	}
 
 	return grpcf.NewServer(ctx, cfg.Otel, cfg.GrpcLogger, cfg.App.DowntimeStart, ctxInterceptor, serviceToken...), nil

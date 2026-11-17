@@ -27,7 +27,7 @@ Other services sign tokens and read keys through the private gRPC API. The gRPC 
 
 The service runs as published OCI images plus a PostgreSQL database. All state lives in the database, so each server scales to any number of replicas behind a load balancer.
 
-Deploy the images with any container orchestrator. The composition below shows which images to run, how they wire together, and the environment they expect.
+Deploy the images with any container orchestrator. The composition below shows which images to run, how they wire together, and the environment they expect. Every image reads the `POSTGRES_*` variables, and the `grpc` image refuses to start without `APP_MASTER_KEY` and `SERVICE_TOKEN_ISSUER`.
 
 | Image                               | Role                                                                             |
 | ----------------------------------- | -------------------------------------------------------------------------------- |
@@ -86,6 +86,9 @@ services:
       POSTGRES_DATABASE: "${POSTGRES_DATABASE}"
       POSTGRES_TLS_ENABLED: "false"
       APP_MASTER_KEY: "<your-master-key-here>"
+      SERVICE_TOKEN_ISSUER: "${SERVICE_TOKEN_ISSUER}"
+      SERVICE_TOKEN_AUDIENCE: "${SERVICE_TOKEN_AUDIENCE}"
+      SERVICE_TOKEN_CALLERS: "${SERVICE_TOKEN_CALLERS}"
     networks: [api]
 
 networks:
@@ -95,7 +98,7 @@ volumes:
   json-keys-postgres-data:
 ```
 
-To serve REST as well, add a service with the `rest` image, the same database and no `APP_MASTER_KEY`.
+To serve REST as well, add a service with the `rest` image, the same database, and neither `APP_MASTER_KEY` nor the `SERVICE_TOKEN_*` variables.
 
 Schedule the `jobs/rotatekeys` image, and run it once before the servers take traffic. Keys expire after their TTL and only this job replaces them, so signing stops without it.
 
@@ -117,20 +120,25 @@ published service images for recovery.
 
 ### Configuration
 
-| Name                   | Description                                                                                                                                                                                                                              | Images                                                                   |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `POSTGRES_HOST`        | PostgreSQL hostname or IP address. **Required.**                                                                                                                                                                                         | all                                                                      |
-| `POSTGRES_PORT`        | PostgreSQL port. Defaults to `5432`.                                                                                                                                                                                                     | all                                                                      |
-| `POSTGRES_USER`        | PostgreSQL login role. **Required.**                                                                                                                                                                                                     | all                                                                      |
-| `POSTGRES_PASSWORD`    | PostgreSQL login password. **Required; inject it as a secret.**                                                                                                                                                                          | all                                                                      |
-| `POSTGRES_DATABASE`    | PostgreSQL database name. **Required.**                                                                                                                                                                                                  | all                                                                      |
-| `POSTGRES_TLS_ENABLED` | Encrypt the PostgreSQL connection. Defaults to `true`; disable only when another trusted boundary protects the database link.                                                                                                            | all                                                                      |
-| `APP_MASTER_KEY`       | Hex-encoded 32-byte key that encrypts private keys at rest. **Required** by every image that signs or rotates keys. Changing it leaves every stored private key unreadable: see [CONTRIBUTING](./CONTRIBUTING.md#master-key-encryption). | `grpc`<br/>`standalone-grpc`<br/>`standalone-rest`<br/>`jobs/rotatekeys` |
+| Name                     | Description                                                                                                                                                                                                                                                                                                                                                                                        | Images                                                                   |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `POSTGRES_HOST`          | PostgreSQL hostname or IP address. **Required.**                                                                                                                                                                                                                                                                                                                                                   | all                                                                      |
+| `POSTGRES_PORT`          | PostgreSQL port. Defaults to `5432`.                                                                                                                                                                                                                                                                                                                                                               | all                                                                      |
+| `POSTGRES_USER`          | PostgreSQL login role. **Required.**                                                                                                                                                                                                                                                                                                                                                               | all                                                                      |
+| `POSTGRES_PASSWORD`      | PostgreSQL login password. **Required; inject it as a secret.**                                                                                                                                                                                                                                                                                                                                    | all                                                                      |
+| `POSTGRES_DATABASE`      | PostgreSQL database name. **Required.**                                                                                                                                                                                                                                                                                                                                                            | all                                                                      |
+| `POSTGRES_TLS_ENABLED`   | Encrypt the PostgreSQL connection. Defaults to `true`; disable only when another trusted boundary protects the database link.                                                                                                                                                                                                                                                                      | all                                                                      |
+| `APP_MASTER_KEY`         | Hex-encoded 32-byte key that encrypts private keys at rest. **Required** by every image that signs or rotates keys. Changing it leaves every stored private key unreadable: see [CONTRIBUTING](./CONTRIBUTING.md#master-key-encryption).                                                                                                                                                           | `grpc`<br/>`standalone-grpc`<br/>`standalone-rest`<br/>`jobs/rotatekeys` |
+| `SERVICE_TOKEN_ISSUER`   | Issuer of the service tokens the server accepts, such as a GKE cluster's `https://container.googleapis.com/v1/projects/<project>/locations/<location>/clusters/<cluster>`. The server reads its keys through its OpenID discovery document, so it needs egress to its host. **Required** for `grpc`, which refuses to start without it; `standalone-grpc` opts out with `SERVICE_ISSUER_OPTIONAL`. | `grpc`<br/>`standalone-grpc`                                             |
+| `SERVICE_TOKEN_AUDIENCE` | Audience the server answers to. Each caller's projected token names it. **Required** for `grpc`.                                                                                                                                                                                                                                                                                                   | `grpc`<br/>`standalone-grpc`                                             |
+| `SERVICE_TOKEN_CALLERS`  | Service accounts allowed to call, comma-separated, each as `system:serviceaccount:<namespace>:<name>`. In production, Authentication's API and the JSON Keys smoke check. **Required** for `grpc`.                                                                                                                                                                                                 | `grpc`<br/>`standalone-grpc`                                             |
 
 The `rest` image never decrypts a private key, so deploy it without the master key or any right to read it. It still reads the shared key table with database credentials, so it gives no database isolation.
 
+The `grpc` server refuses a call unless its `X-Service-Authorization` header carries a token from an allowed caller. The gRPC health service stays open for probes.
+
 <details>
-<summary>Optional configuration (server tuning, service tokens, OpenTelemetry)</summary>
+<summary>Optional configuration (server tuning, OpenTelemetry)</summary>
 
 gRPC tuning (images `grpc`, `standalone-grpc`):
 
@@ -163,14 +171,11 @@ REST tuning (images `rest`, `standalone-rest`):
 | `REST_CORS_ALLOW_CREDENTIALS` | CORS allow-credentials flag.                                                                                                 | `false`         |
 | `REST_CORS_MAX_AGE`           | CORS max-age, in seconds.                                                                                                    | `3600`          |
 
-Service tokens (images `grpc`, `standalone-grpc`). The server refuses a call unless its `X-Service-Authorization` header carries a token from an allowed caller, and refuses to start without `SERVICE_TOKEN_ISSUER`. The gRPC health service stays open for probes:
+Service-token opt-out (images `grpc`, `standalone-grpc`):
 
-| Name                      | Description                                                                                                                                                                                                                                                                 | Default |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| `SERVICE_TOKEN_ISSUER`    | Issuer of the service tokens the server accepts, such as a GKE cluster's `https://container.googleapis.com/v1/projects/<project>/locations/<location>/clusters/<cluster>`. The server reads its keys through its OpenID discovery document, so it needs egress to its host. |         |
-| `SERVICE_TOKEN_AUDIENCE`  | Audience the server answers to. Each caller's projected token names it.                                                                                                                                                                                                     |         |
-| `SERVICE_TOKEN_CALLERS`   | Service accounts allowed to call, comma-separated, each as `system:serviceaccount:<namespace>:<name>`. In production, Authentication's API and the JSON Keys smoke check.                                                                                                   |         |
-| `SERVICE_ISSUER_OPTIONAL` | Start without `SERVICE_TOKEN_ISSUER`, and then take every call. For a local or test stack only: the `standalone-grpc` image sets it, and an issuer keeps the check on.                                                                                                      | `false` |
+| Name                      | Description                                                                                                                                                            | Default |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| `SERVICE_ISSUER_OPTIONAL` | Start without `SERVICE_TOKEN_ISSUER`, and then take every call. For a local or test stack only: the `standalone-grpc` image sets it, and an issuer keeps the check on. | `false` |
 
 Database connection pool (server images). Each process holds its own pool, so the database's `max_connections`, 100 by default, must cover every replica and the migration job.
 
