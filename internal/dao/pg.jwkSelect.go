@@ -16,9 +16,6 @@ import (
 //go:embed pg.jwkSelect.sql
 var jwkSelectQuery string
 
-// ErrJwkSelectNotFound is returned when no active key matches the requested ID.
-var ErrJwkSelectNotFound = errors.New("jwk not found")
-
 // JwkSelectRequest holds the parameters for a [PgJwkSelect.Exec] call.
 type JwkSelectRequest struct {
 	// ID is the key to retrieve; it corresponds to the "kid" field in the JWT header.
@@ -45,7 +42,7 @@ func (dao *PgJwkSelect) Exec(ctx context.Context, request *JwkSelectRequest) (*J
 
 	err = db.NewRaw(jwkSelectQuery, request.ID).Scan(ctx, &entity)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, otel.ReportError(span, ErrJwkSelectNotFound)
+		err = errors.Join(err, ErrJwkNotFound)
 	}
 
 	if err != nil {

@@ -32,13 +32,11 @@ func (api *jwkExportGrpc) SearchKeys(ctx context.Context, usage string) ([]*jwa.
 // jwkFromProto converts a protobuf key into its jwt form.
 func jwkFromProto(key *jsonkeysv2.Jwk) *jwa.JWK {
 	return &jwa.JWK{
-		JWKCommon: jwa.JWKCommon{
-			KTY:    jwa.KTY(key.GetKty()),
-			Use:    jwa.Use(key.GetUse()),
-			KeyOps: lo.Map(key.GetKeyOps(), func(op string, _ int) jwa.KeyOp { return jwa.KeyOp(op) }),
-			Alg:    jwa.Alg(key.GetAlg()),
-			KID:    key.GetKid(),
-		},
+		KTY:     jwa.KTY(key.GetKty()),
+		Use:     jwa.Use(key.GetUse()),
+		KeyOps:  lo.Map(key.GetKeyOps(), func(op string, _ int) jwa.KeyOp { return jwa.KeyOp(op) }),
+		Alg:     jwa.Alg(key.GetAlg()),
+		KID:     key.GetKid(),
 		Payload: key.GetPayload(),
 	}
 }

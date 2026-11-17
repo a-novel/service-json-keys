@@ -64,7 +64,8 @@ func main() {
 	// SERVICES
 	// =================================================================================================================
 
-	serviceJwkExtract := core.NewJwkExtract()
+	// The REST server holds no master key, so it reads public keys only.
+	serviceJwkExtract := core.NewJwkExtract(nil)
 	serviceJwkSearch := core.NewJwkSearch(daoJwkSearch, serviceJwkExtract)
 	serviceJwkSelect := core.NewJwkSelect(daoJwkSelect, serviceJwkExtract)
 

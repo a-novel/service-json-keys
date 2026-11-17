@@ -34,14 +34,18 @@ type JwkExtractRequest struct {
 }
 
 // A JwkExtract decodes the raw keys returned from the DAO layer.
-type JwkExtract struct{}
+type JwkExtract struct {
+	masterKey *[lib.MasterKeyLength]byte
+}
 
-func NewJwkExtract() *JwkExtract {
-	return &JwkExtract{}
+// NewJwkExtract creates a JwkExtract service. The masterKey decrypts private key material: without
+// one, a request for private material fails with [lib.ErrInvalidMasterKey].
+func NewJwkExtract(masterKey *[lib.MasterKeyLength]byte) *JwkExtract {
+	return &JwkExtract{masterKey: masterKey}
 }
 
 func (service *JwkExtract) Exec(ctx context.Context, request *JwkExtractRequest) (*Jwk, error) {
-	ctx, span := otel.Tracer().Start(ctx, "core.JwkExtract")
+	_, span := otel.Tracer().Start(ctx, "core.JwkExtract")
 	defer span.End()
 
 	span.SetAttributes(
@@ -69,7 +73,7 @@ func (service *JwkExtract) Exec(ctx context.Context, request *JwkExtractRequest)
 
 	if request.Private {
 		// Private key material is encrypted at rest.
-		err = lib.DecryptMasterKey(ctx, decoded, &deserialized)
+		err = lib.DecryptMasterKey(service.masterKey, decoded, &deserialized)
 	} else {
 		err = json.Unmarshal(decoded, &deserialized)
 	}

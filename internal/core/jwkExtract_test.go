@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/samber/lo"
 	"github.com/stretchr/testify/require"
 
 	"github.com/a-novel-kit/jwt/v2/jwa"
@@ -19,17 +18,12 @@ import (
 func TestJwkExtract(t *testing.T) {
 	t.Parallel()
 
-	ctx, err := lib.NewMasterKeyContext(t.Context(), libtest.MasterKey)
-	require.NoError(t, err)
-
 	privateJwk := &jwa.JWK{
-		JWKCommon: jwa.JWKCommon{
-			KTY:    "test-kty",
-			Use:    "test-use",
-			KeyOps: []jwa.KeyOp{"test-key-ops"},
-			Alg:    "test-alg",
-			KID:    "00000000-0000-0000-0000-000000000001",
-		},
+		KTY:     "test-kty",
+		Use:     "test-use",
+		KeyOps:  []jwa.KeyOp{"test-key-ops"},
+		Alg:     "test-alg",
+		KID:     "00000000-0000-0000-0000-000000000001",
 		Payload: []byte(`{"value":"private-key-1"}`),
 	}
 	publicJwk := &jwa.JWK{JWKCommon: privateJwk.JWKCommon, Payload: []byte(`{"value":"public-key-1"}`)}
@@ -37,12 +31,12 @@ func TestJwkExtract(t *testing.T) {
 	// A symmetric key is stored with only private material.
 	symmetricKey := &dao.Jwk{
 		ID:         uuid.MustParse("00000000-0000-0000-0000-000000000001"),
-		PrivateKey: mustEncryptBase64Value(ctx, t, privateJwk),
+		PrivateKey: mustEncryptBase64Value(t, privateJwk),
 	}
 	asymmetricKey := &dao.Jwk{
 		ID:         symmetricKey.ID,
 		PrivateKey: symmetricKey.PrivateKey,
-		PublicKey:  lo.ToPtr(mustSerializeBase64Value(t, publicJwk)),
+		PublicKey:  new(mustSerializeBase64Value(t, publicJwk)),
 	}
 
 	testCases := []struct {
@@ -78,31 +72,26 @@ func TestJwkExtract(t *testing.T) {
 		},
 	}
 
-	contextCases := []struct {
+	masterKeyCases := []struct {
 		name      string
-		masterKey bool
+		masterKey *[lib.MasterKeyLength]byte
 	}{
 		{name: "WithoutMasterKey"},
-		{name: "WithMasterKey", masterKey: true},
+		{name: "WithMasterKey", masterKey: libtest.MasterKey},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			for _, contextCase := range contextCases {
-				t.Run(contextCase.name, func(t *testing.T) {
+			for _, masterKeyCase := range masterKeyCases {
+				t.Run(masterKeyCase.name, func(t *testing.T) {
 					t.Parallel()
 
-					testCtx := t.Context()
-					if contextCase.masterKey {
-						testCtx = lo.Must(lib.NewMasterKeyContext(testCtx, libtest.MasterKey))
-					}
+					service := core.NewJwkExtract(masterKeyCase.masterKey)
 
-					service := core.NewJwkExtract()
-
-					result, err := service.Exec(testCtx, testCase.request)
-					if testCase.request.Private && !contextCase.masterKey {
+					result, err := service.Exec(t.Context(), testCase.request)
+					if testCase.request.Private && masterKeyCase.masterKey == nil {
 						require.ErrorIs(t, err, lib.ErrInvalidMasterKey)
 						require.Nil(t, result)
 

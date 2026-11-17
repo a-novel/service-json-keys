@@ -1,6 +1,7 @@
 package env
 
 import (
+	"cmp"
 	"net/http"
 	"os"
 	"strconv"
@@ -61,15 +62,12 @@ var (
 	PostgresMaxIdleConns = config.LoadEnv(getEnv("POSTGRES_MAX_IDLE_CONNS"), PostgresMaxIdleConnsDefault, strconv.Atoi)
 
 	// AppName is the application name, as it appears in logs and tracing.
-	AppName = config.LoadEnv(getEnv("APP_NAME"), AppNameDefault, config.StringParser)
+	AppName = cmp.Or(getEnv("APP_NAME"), AppNameDefault)
 	// AppMasterKey is the hex-encoded 32-byte secret that encrypts private JSON Web Keys in the
 	// database.
 	AppMasterKey = getEnv("APP_MASTER_KEY")
 	// Otel enables OpenTelemetry tracing.
 	Otel = config.LoadEnv(getEnv("OTEL"), false, strconv.ParseBool)
-
-	// GrpcURL is the address of the gRPC service, in the form <host>:<port>.
-	GrpcURL = getEnv("GRPC_URL")
 
 	// Grpc configures the gRPC server from the GRPC_* variables.
 	Grpc = grpcf.LoadServerConfig(getEnv, grpcDefaults())

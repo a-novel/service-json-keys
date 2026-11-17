@@ -1,20 +1,20 @@
 package core_test
 
 import (
-	"context"
 	"encoding/base64"
 	"encoding/json"
 	"testing"
 
 	"github.com/a-novel/service-json-keys/v2/internal/lib"
+	"github.com/a-novel/service-json-keys/v2/internal/lib/libtest"
 )
 
-// mustEncryptBase64Value encrypts data with the master key held by ctx, in the form private keys
-// are stored.
-func mustEncryptBase64Value(ctx context.Context, t *testing.T, data any) string {
+// mustEncryptBase64Value encrypts data with the test master key, in the form private keys are
+// stored.
+func mustEncryptBase64Value(t *testing.T, data any) string {
 	t.Helper()
 
-	res, err := lib.EncryptMasterKey(ctx, data)
+	res, err := lib.EncryptMasterKey(libtest.MasterKey, data)
 	if err != nil {
 		panic(err)
 	}

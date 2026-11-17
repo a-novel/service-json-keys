@@ -80,18 +80,18 @@ func TestJwkRecipients(t *testing.T) {
 
 		keys := configtest.TestKeys(jwa.Ed25519, jwkconfig.Key{Cache: time.Hour, UnknownKeyIDInterval: time.Millisecond})
 
-		privateSource1 := coremocks.NewMockJwkPrivateSource(t)
+		privateSource1 := coremocks.NewMockJwkProducersServiceSearch(t)
 		privateSource1.EXPECT().
-			SearchKeys(mock.Anything, "test-usage").
+			Exec(mock.Anything, &core.JwkSearchRequest{Usage: "test-usage", Private: true}).
 			Return([]*jwa.JWK{key1Private.JWK}, nil).
 			Once()
 
 		producers1, err := core.NewJwkProducers(privateSource1, keys)
 		require.NoError(t, err)
 
-		privateSource2 := coremocks.NewMockJwkPrivateSource(t)
+		privateSource2 := coremocks.NewMockJwkProducersServiceSearch(t)
 		privateSource2.EXPECT().
-			SearchKeys(mock.Anything, "test-usage").
+			Exec(mock.Anything, &core.JwkSearchRequest{Usage: "test-usage", Private: true}).
 			Return([]*jwa.JWK{key2Private.JWK}, nil).
 			Once()
 
@@ -161,9 +161,9 @@ func TestJwkRecipients(t *testing.T) {
 
 		// The signer reads its key once for the header and once for the signature. The millisecond
 		// cache can expire between the two reads on a loaded runner, which refetches the key.
-		privateSource := coremocks.NewMockJwkPrivateSource(t)
+		privateSource := coremocks.NewMockJwkProducersServiceSearch(t)
 		privateSource.EXPECT().
-			SearchKeys(mock.Anything, "test-usage").
+			Exec(mock.Anything, &core.JwkSearchRequest{Usage: "test-usage", Private: true}).
 			Return([]*jwa.JWK{privateKey.JWK}, nil)
 
 		producers, err := core.NewJwkProducers(privateSource, keys)
@@ -213,9 +213,9 @@ func TestJwkRecipients(t *testing.T) {
 
 		keys := configtest.TestKeys(jwa.Ed25519, jwkconfig.Key{Cache: time.Millisecond, StaleWhileRevalidate: time.Hour})
 
-		privateSource := coremocks.NewMockJwkPrivateSource(t)
+		privateSource := coremocks.NewMockJwkProducersServiceSearch(t)
 		privateSource.EXPECT().
-			SearchKeys(mock.Anything, "test-usage").
+			Exec(mock.Anything, &core.JwkSearchRequest{Usage: "test-usage", Private: true}).
 			Return([]*jwa.JWK{privateKey.JWK}, nil)
 
 		producers, err := core.NewJwkProducers(privateSource, keys)
@@ -306,9 +306,9 @@ func TestJwkGenerators(t *testing.T) {
 
 			keys := configtest.TestKeys(alg, jwkconfig.Key{Cache: 30 * time.Minute})
 
-			privateSource := coremocks.NewMockJwkPrivateSource(t)
+			privateSource := coremocks.NewMockJwkProducersServiceSearch(t)
 			privateSource.EXPECT().
-				SearchKeys(mock.Anything, "test-usage").
+				Exec(mock.Anything, &core.JwkSearchRequest{Usage: "test-usage", Private: true}).
 				Return([]*jwa.JWK{privateKey}, nil).
 				Once()
 

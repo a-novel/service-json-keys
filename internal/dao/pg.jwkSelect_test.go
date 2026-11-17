@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/samber/lo"
 	"github.com/stretchr/testify/require"
 
 	"github.com/a-novel-kit/golib/postgres"
@@ -44,7 +43,7 @@ func TestPgJwkSelect(t *testing.T) {
 				{
 					ID:         uuid.MustParse("00000000-0000-0000-0000-000000000001"),
 					PrivateKey: "cHJpdmF0ZS1rZXktMQ",
-					PublicKey:  lo.ToPtr("cHVibGljLWtleS0x"),
+					PublicKey:  new("cHVibGljLWtleS0x"),
 					Usage:      "test-usage",
 					CreatedAt:  hourAgo,
 					ExpiresAt:  hourLater,
@@ -52,7 +51,7 @@ func TestPgJwkSelect(t *testing.T) {
 				{
 					ID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
 					PrivateKey: "cHJpdmF0ZS1rZXktMg",
-					PublicKey:  lo.ToPtr("cHVibGljLWtleS0y"),
+					PublicKey:  new("cHVibGljLWtleS0y"),
 					Usage:      "test-usage",
 					CreatedAt:  hourAgo,
 					ExpiresAt:  hourLater,
@@ -62,7 +61,7 @@ func TestPgJwkSelect(t *testing.T) {
 			expect: &dao.Jwk{
 				ID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
 				PrivateKey: "cHJpdmF0ZS1rZXktMg",
-				PublicKey:  lo.ToPtr("cHVibGljLWtleS0y"),
+				PublicKey:  new("cHVibGljLWtleS0y"),
 				Usage:      "test-usage",
 				CreatedAt:  hourAgo,
 				ExpiresAt:  hourLater,
@@ -79,14 +78,14 @@ func TestPgJwkSelect(t *testing.T) {
 				{
 					ID:         uuid.MustParse("00000000-0000-0000-0000-000000000001"),
 					PrivateKey: "cHJpdmF0ZS1rZXktMQ",
-					PublicKey:  lo.ToPtr("cHVibGljLWtleS0x"),
+					PublicKey:  new("cHVibGljLWtleS0x"),
 					Usage:      "test-usage",
 					CreatedAt:  hourAgo,
 					ExpiresAt:  hourLater,
 				},
 			},
 
-			expectErr: dao.ErrJwkSelectNotFound,
+			expectErr: dao.ErrJwkNotFound,
 		},
 		{
 			name: "Error/Expired",
@@ -99,7 +98,7 @@ func TestPgJwkSelect(t *testing.T) {
 				{
 					ID:         uuid.MustParse("00000000-0000-0000-0000-000000000001"),
 					PrivateKey: "cHJpdmF0ZS1rZXktMQ",
-					PublicKey:  lo.ToPtr("cHVibGljLWtleS0x"),
+					PublicKey:  new("cHVibGljLWtleS0x"),
 					Usage:      "test-usage",
 					CreatedAt:  hourAgo,
 					ExpiresAt:  hourLater,
@@ -107,14 +106,14 @@ func TestPgJwkSelect(t *testing.T) {
 				{
 					ID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
 					PrivateKey: "cHJpdmF0ZS1rZXktMg",
-					PublicKey:  lo.ToPtr("cHVibGljLWtleS0y"),
+					PublicKey:  new("cHVibGljLWtleS0y"),
 					Usage:      "test-usage",
 					CreatedAt:  hourAgo,
 					ExpiresAt:  hourAgo,
 				},
 			},
 
-			expectErr: dao.ErrJwkSelectNotFound,
+			expectErr: dao.ErrJwkNotFound,
 		},
 		{
 			name: "Error/Revoked",
@@ -127,16 +126,16 @@ func TestPgJwkSelect(t *testing.T) {
 				{
 					ID:             uuid.MustParse("00000000-0000-0000-0000-000000000001"),
 					PrivateKey:     "cHJpdmF0ZS1rZXktMQ",
-					PublicKey:      lo.ToPtr("cHVibGljLWtleS0x"),
+					PublicKey:      new("cHVibGljLWtleS0x"),
 					Usage:          "test-usage",
 					CreatedAt:      hourAgo,
 					ExpiresAt:      hourLater,
-					DeletedAt:      lo.ToPtr(hourAgo),
-					DeletedComment: lo.ToPtr("compromised"),
+					DeletedAt:      new(hourAgo),
+					DeletedComment: new("compromised"),
 				},
 			},
 
-			expectErr: dao.ErrJwkSelectNotFound,
+			expectErr: dao.ErrJwkNotFound,
 		},
 	}
 

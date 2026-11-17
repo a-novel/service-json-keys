@@ -9,14 +9,14 @@ import (
 
 	"github.com/a-novel-kit/golib/grpcf"
 
-	"github.com/a-novel/service-json-keys/v2/internal/config/env"
+	"github.com/a-novel/service-json-keys/v2/internal/config/configtest"
 	"github.com/a-novel/service-json-keys/v2/pkg/go"
 )
 
 func TestClaimsVerifier(t *testing.T) {
 	t.Parallel()
 
-	client, err := servicejsonkeys.NewClient(env.GrpcURL, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	client, err := servicejsonkeys.NewClient(configtest.GrpcURL, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	require.NoError(t, err)
 
 	defer client.Close()

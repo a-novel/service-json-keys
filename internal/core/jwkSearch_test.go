@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/samber/lo"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
@@ -16,15 +15,10 @@ import (
 	"github.com/a-novel/service-json-keys/v2/internal/core"
 	coremocks "github.com/a-novel/service-json-keys/v2/internal/core/mocks"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
-	"github.com/a-novel/service-json-keys/v2/internal/lib"
-	"github.com/a-novel/service-json-keys/v2/internal/lib/libtest"
 )
 
 func TestJwkSearch(t *testing.T) {
 	t.Parallel()
-
-	ctx, err := lib.NewMasterKeyContext(t.Context(), libtest.MasterKey)
-	require.NoError(t, err)
 
 	errFoo := errors.New("foo")
 
@@ -42,7 +36,7 @@ func TestJwkSearch(t *testing.T) {
 		{
 			ID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
 			PrivateKey: "cHJpdmF0ZS1rZXktMg",
-			PublicKey:  lo.ToPtr("cHVibGljLWtleS0y"),
+			PublicKey:  new("cHVibGljLWtleS0y"),
 			Usage:      "test-usage",
 			CreatedAt:  time.Now().Add(-time.Hour),
 			ExpiresAt:  time.Now().Add(time.Hour),
@@ -50,7 +44,7 @@ func TestJwkSearch(t *testing.T) {
 		{
 			ID:         uuid.MustParse("00000000-0000-0000-0000-000000000001"),
 			PrivateKey: "cHJpdmF0ZS1rZXktMQ",
-			PublicKey:  lo.ToPtr("cHVibGljLWtleS0x"),
+			PublicKey:  new("cHVibGljLWtleS0x"),
 			Usage:      "test-usage",
 			CreatedAt:  time.Now().Add(-time.Hour),
 			ExpiresAt:  time.Now().Add(time.Hour),
@@ -58,21 +52,17 @@ func TestJwkSearch(t *testing.T) {
 	}
 	extractedKeys := []*core.Jwk{
 		{
-			JWKCommon: jwa.JWKCommon{
-				KTY: "test-kty",
-				Use: "test-use",
-				Alg: "test-alg",
-				KID: storedKeys[0].ID.String(),
-			},
+			KTY:     "test-kty",
+			Use:     "test-use",
+			Alg:     "test-alg",
+			KID:     storedKeys[0].ID.String(),
 			Payload: json.RawMessage(`{"message":"hello world"}`),
 		},
 		{
-			JWKCommon: jwa.JWKCommon{
-				KTY: "test-kty",
-				Use: "test-use",
-				Alg: "test-alg",
-				KID: storedKeys[1].ID.String(),
-			},
+			KTY:     "test-kty",
+			Use:     "test-use",
+			Alg:     "test-alg",
+			KID:     storedKeys[1].ID.String(),
 			Payload: json.RawMessage(`{"message":"hello world"}`),
 		},
 	}
@@ -162,7 +152,7 @@ func TestJwkSearch(t *testing.T) {
 
 			service := core.NewJwkSearch(daoSearch, serviceExtract)
 
-			res, err := service.Exec(ctx, testCase.request)
+			res, err := service.Exec(t.Context(), testCase.request)
 			require.ErrorIs(t, err, testCase.expectErr)
 			require.Equal(t, testCase.expect, res)
 		})
@@ -174,22 +164,22 @@ func TestJwkSearch(t *testing.T) {
 		t.Parallel()
 
 		symmetricJwk := &jwa.JWK{
-			JWKCommon: jwa.JWKCommon{KTY: "oct", Alg: "HS256", KID: "00000000-0000-0000-0000-000000000001"},
-			Payload:   []byte(`{"k":"secret-octets"}`),
+			KTY: "oct", Alg: "HS256", KID: "00000000-0000-0000-0000-000000000001",
+			Payload: []byte(`{"k":"secret-octets"}`),
 		}
 		symmetric := &dao.Jwk{
 			ID:    uuid.MustParse("00000000-0000-0000-0000-000000000001"),
 			Usage: "auth",
 			// No public key: the shape a symmetric algorithm is stored in.
-			PrivateKey: mustEncryptBase64Value(ctx, t, symmetricJwk),
+			PrivateKey: mustEncryptBase64Value(t, symmetricJwk),
 		}
 
 		daoSearch := coremocks.NewMockJwkSearchDao(t)
 		daoSearch.EXPECT().Exec(mock.Anything, mock.Anything).Return([]*dao.Jwk{symmetric}, nil)
 
-		service := core.NewJwkSearch(daoSearch, core.NewJwkExtract())
+		service := core.NewJwkSearch(daoSearch, core.NewJwkExtract(nil))
 
-		keys, err := service.Exec(ctx, &core.JwkSearchRequest{Usage: "auth"})
+		keys, err := service.Exec(t.Context(), &core.JwkSearchRequest{Usage: "auth"})
 		require.ErrorIs(t, err, core.ErrJwkExtractNoPublicKey)
 		require.Nil(t, keys)
 	})

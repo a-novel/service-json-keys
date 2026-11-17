@@ -1,7 +1,6 @@
 package core_test
 
 import (
-	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -10,7 +9,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/samber/lo"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
@@ -26,8 +24,8 @@ import (
 )
 
 // checkGeneratedPrivateKey checks that key is a base64 ciphertext of a JSON Web Key under the
-// master key held by ctx.
-func checkGeneratedPrivateKey(ctx context.Context, key string) error {
+// test master key.
+func checkGeneratedPrivateKey(key string) error {
 	decoded, err := base64.RawURLEncoding.DecodeString(key)
 	if err != nil {
 		return fmt.Errorf("decode base64: %w", err)
@@ -35,7 +33,7 @@ func checkGeneratedPrivateKey(ctx context.Context, key string) error {
 
 	var decrypted jwa.JWK
 
-	err = lib.DecryptMasterKey(ctx, decoded, &decrypted)
+	err = lib.DecryptMasterKey(libtest.MasterKey, decoded, &decrypted)
 	if err != nil {
 		return fmt.Errorf("decrypt key: %w", err)
 	}
@@ -62,7 +60,7 @@ func checkGeneratedPublicKey(key string) error {
 
 // checkJwkInsertRequest reports whether request stores a well-formed generated key, failing the
 // test on the first defect it finds.
-func checkJwkInsertRequest(ctx context.Context, t *testing.T, request *dao.JwkInsertRequest) bool {
+func checkJwkInsertRequest(t *testing.T, request *dao.JwkInsertRequest) bool {
 	t.Helper()
 
 	if request == nil {
@@ -77,7 +75,7 @@ func checkJwkInsertRequest(ctx context.Context, t *testing.T, request *dao.JwkIn
 		return false
 	}
 
-	err := checkGeneratedPrivateKey(ctx, request.PrivateKey)
+	err := checkGeneratedPrivateKey(request.PrivateKey)
 	if err != nil {
 		t.Errorf("checking private key: %s", err)
 
@@ -111,21 +109,16 @@ func checkJwkInsertRequest(ctx context.Context, t *testing.T, request *dao.JwkIn
 // jwkGenExtracted is the key the extraction mock returns for a stored key of alg and kid.
 func jwkGenExtracted(alg jwa.Alg, kid string) *core.Jwk {
 	return &core.Jwk{
-		JWKCommon: jwa.JWKCommon{
-			KTY: "test-kty",
-			Use: "test-use",
-			Alg: alg,
-			KID: kid,
-		},
+		KTY:     "test-kty",
+		Use:     "test-use",
+		Alg:     alg,
+		KID:     kid,
 		Payload: json.RawMessage(`{"message":"hello world"}`),
 	}
 }
 
 func TestJwkGen(t *testing.T) {
 	t.Parallel()
-
-	ctx, err := lib.NewMasterKeyContext(t.Context(), libtest.MasterKey)
-	require.NoError(t, err)
 
 	errFoo := errors.New("foo")
 
@@ -163,7 +156,7 @@ func TestJwkGen(t *testing.T) {
 	staleKey := &dao.Jwk{
 		ID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
 		PrivateKey: "cHJpdmF0ZS1rZXktMQ",
-		PublicKey:  lo.ToPtr("cHVibGljLWtleS0x"),
+		PublicKey:  new("cHVibGljLWtleS0x"),
 		Usage:      "test-usage",
 		CreatedAt:  time.Now().Add(-13 * time.Hour),
 		ExpiresAt:  time.Now().Add(time.Hour),
@@ -179,7 +172,7 @@ func TestJwkGen(t *testing.T) {
 	insertedKey := &dao.Jwk{
 		ID:         uuid.MustParse("00000000-0000-0000-0000-000000000001"),
 		PrivateKey: "cHJpdmF0ZS1rZXktMQ",
-		PublicKey:  lo.ToPtr("cHVibGljLWtleS0x"),
+		PublicKey:  new("cHVibGljLWtleS0x"),
 		Usage:      "test-usage",
 		CreatedAt:  time.Now(),
 		ExpiresAt:  time.Now().Add(24 * time.Hour),
@@ -286,7 +279,7 @@ func TestJwkGen(t *testing.T) {
 			if testCase.daoInsertMock != nil {
 				daoInsert.EXPECT().
 					Exec(mock.Anything, mock.MatchedBy(func(request *dao.JwkInsertRequest) bool {
-						return checkJwkInsertRequest(ctx, t, request)
+						return checkJwkInsertRequest(t, request)
 					})).
 					Return(testCase.daoInsertMock.resp, testCase.daoInsertMock.err)
 			}
@@ -314,9 +307,10 @@ func TestJwkGen(t *testing.T) {
 				daoInsert,
 				serviceExtract,
 				testCase.keys,
+				libtest.MasterKey,
 			)
 
-			key, err := service.Exec(ctx, testCase.request)
+			key, err := service.Exec(t.Context(), testCase.request)
 			require.ErrorIs(t, err, testCase.expectErr)
 			require.Equal(t, testCase.expect, key)
 		})

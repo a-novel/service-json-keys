@@ -18,10 +18,6 @@ var jwkSearchQuery string
 // safeguard against misconfiguration or unexpected key accumulation.
 const KeysMaxBatchSize = 100
 
-// ErrJwkSearchTooManyResults is logged when a search hits the [KeysMaxBatchSize] limit, which
-// signals a likely misconfiguration. The search still returns its results.
-var ErrJwkSearchTooManyResults = fmt.Errorf("the query returned %d or more results", KeysMaxBatchSize)
-
 // JwkSearchRequest holds the parameters for a [PgJwkSearch.Exec] call.
 type JwkSearchRequest struct {
 	// Usage is the key usage to filter by. See [Jwk.Usage].
@@ -59,9 +55,10 @@ func (dao *PgJwkSearch) Exec(ctx context.Context, request *JwkSearchRequest) ([]
 
 	// Hitting the cap signals a misconfiguration; log it and return what was found.
 	if len(entities) >= KeysMaxBatchSize {
-		err = fmt.Errorf("%w: %d keys found for usage %s", ErrJwkSearchTooManyResults, len(entities), request.Usage)
-
-		otel.Logger().ErrorContext(ctx, err.Error())
+		otel.Logger().ErrorContext(ctx, fmt.Sprintf(
+			"the query returned %d or more results: %d keys found for usage %s",
+			KeysMaxBatchSize, len(entities), request.Usage,
+		))
 	}
 
 	return entities, nil

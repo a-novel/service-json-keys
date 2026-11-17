@@ -9,12 +9,8 @@ COPY go.mod go.sum ./
 RUN --mount=type=cache,target=/go/pkg/mod \
     go mod download
 
-COPY ./cmd/rest ./cmd/rest
-COPY ./internal/handlers ./internal/handlers
-COPY ./internal/dao ./internal/dao
-COPY ./internal/lib ./internal/lib
-COPY ./internal/core ./internal/core
-COPY ./internal/config ./internal/config
+COPY ./cmd ./cmd
+COPY ./internal ./internal
 
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \

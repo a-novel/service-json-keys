@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/samber/lo"
 	"github.com/stretchr/testify/require"
 
 	"github.com/a-novel-kit/golib/postgres/postgrestest"
@@ -30,7 +29,7 @@ func TestPgJwkInsert(t *testing.T) {
 			request: &dao.JwkInsertRequest{
 				ID:         uuid.MustParse("00000000-0000-0000-0000-000000000001"),
 				PrivateKey: "cHJpdmF0ZS1rZXktMQ",
-				PublicKey:  lo.ToPtr("cHVibGljLWtleS0x"),
+				PublicKey:  new("cHVibGljLWtleS0x"),
 				Usage:      "test-usage",
 				Now:        time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 				Expiration: time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC),
