@@ -16,8 +16,8 @@ import (
 
 	"github.com/a-novel-kit/jwt/v2/jwa"
 
-	"github.com/a-novel/service-json-keys/v2/internal/config"
 	"github.com/a-novel/service-json-keys/v2/internal/config/configtest"
+	"github.com/a-novel/service-json-keys/v2/internal/config/jwkconfig"
 	"github.com/a-novel/service-json-keys/v2/internal/core"
 	coremocks "github.com/a-novel/service-json-keys/v2/internal/core/mocks"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
@@ -152,14 +152,14 @@ func TestJwkGen(t *testing.T) {
 		daoSearchMock      *daoSearchMock
 		daoInsertMock      *daoInsertMock
 		serviceExtractMock *serviceExtractMock
-		keys               map[string]*config.Jwk
+		keys               map[string]*jwkconfig.Usage
 
 		expect    *core.Jwk
 		expectErr error
 	}
 
 	// The rotation interval is 12 hours: the stale key is past it, the recent key within it.
-	rotation := config.JwkKey{TTL: 24 * time.Hour, Rotation: 12 * time.Hour, Cache: 6 * time.Hour}
+	rotation := jwkconfig.Key{TTL: 24 * time.Hour, Rotation: 12 * time.Hour, Cache: 6 * time.Hour}
 	staleKey := &dao.Jwk{
 		ID:         uuid.MustParse("00000000-0000-0000-0000-000000000002"),
 		PrivateKey: "cHJpdmF0ZS1rZXktMQ",
@@ -246,7 +246,7 @@ func TestJwkGen(t *testing.T) {
 			name: "Error/ConfigNotFound",
 
 			request: &core.JwkGenRequest{Usage: "test-usage"},
-			keys:    map[string]*config.Jwk{},
+			keys:    map[string]*jwkconfig.Usage{},
 
 			expectErr: core.ErrConfigNotFound,
 		},

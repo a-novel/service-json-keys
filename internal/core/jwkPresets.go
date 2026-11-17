@@ -9,7 +9,7 @@ import (
 	"github.com/a-novel-kit/jwt/v2/jwk"
 	"github.com/a-novel-kit/jwt/v2/jws"
 
-	jwkconfig "github.com/a-novel/service-json-keys/v2/internal/config/jwk"
+	"github.com/a-novel/service-json-keys/v2/internal/config/jwkconfig"
 )
 
 var (
@@ -135,7 +135,7 @@ type JwkProducers map[string][]jwt.ProducerPlugin
 // NewJwkProducers builds cached signing plugins from private keys for every configured usage.
 func NewJwkProducers(
 	source JwkPrivateSource,
-	keys map[string]*jwkconfig.Jwk,
+	keys map[string]*jwkconfig.Usage,
 ) (JwkProducers, error) {
 	output := make(JwkProducers)
 

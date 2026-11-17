@@ -14,7 +14,7 @@ import (
 
 	"github.com/a-novel-kit/golib/otel"
 
-	jwkconfig "github.com/a-novel/service-json-keys/v2/internal/config/jwk"
+	"github.com/a-novel/service-json-keys/v2/internal/config/jwkconfig"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 	"github.com/a-novel/service-json-keys/v2/internal/lib"
 )
@@ -51,14 +51,14 @@ type JwkGen struct {
 	daoSearch      JwkGenDaoSearch
 	daoInsert      JwkGenDaoInsert
 	serviceExtract JwkGenServiceExtract
-	keysConfig     map[string]*jwkconfig.Jwk
+	keysConfig     map[string]*jwkconfig.Usage
 }
 
 func NewJwkGen(
 	daoSearch JwkGenDaoSearch,
 	daoInsert JwkGenDaoInsert,
 	serviceExtract JwkGenServiceExtract,
-	keysConfig map[string]*jwkconfig.Jwk,
+	keysConfig map[string]*jwkconfig.Usage,
 ) *JwkGen {
 	return &JwkGen{
 		daoSearch:      daoSearch,
@@ -111,7 +111,7 @@ func (service *JwkGen) Exec(ctx context.Context, request *JwkGenRequest) (*Jwk, 
 }
 
 // generate creates a key for usage and stores it as the usage's newest key.
-func (service *JwkGen) generate(ctx context.Context, usage string, keyConfig *jwkconfig.Jwk) (*dao.Jwk, error) {
+func (service *JwkGen) generate(ctx context.Context, usage string, keyConfig *jwkconfig.Usage) (*dao.Jwk, error) {
 	ctx, span := otel.Tracer().Start(ctx, "core.JwkGen(generate)")
 	defer span.End()
 

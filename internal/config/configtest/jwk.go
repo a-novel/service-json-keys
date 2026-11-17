@@ -5,7 +5,7 @@ import (
 
 	"github.com/a-novel-kit/jwt/v2/jwa"
 
-	"github.com/a-novel/service-json-keys/v2/internal/config"
+	"github.com/a-novel/service-json-keys/v2/internal/config/jwkconfig"
 )
 
 const (
@@ -35,12 +35,12 @@ var SupportedAlgorithms = []jwa.Alg{
 
 // TestKeys configures test-usage to sign with alg, under the key lifetimes of key and a fixed token
 // target.
-func TestKeys(alg jwa.Alg, key config.JwkKey) map[string]*config.Jwk {
-	return map[string]*config.Jwk{
+func TestKeys(alg jwa.Alg, key jwkconfig.Key) map[string]*jwkconfig.Usage {
+	return map[string]*jwkconfig.Usage{
 		"test-usage": {
 			Alg: alg,
 			Key: key,
-			Token: config.JwkToken{
+			Token: jwkconfig.Token{
 				TTL:      testTokenTTL,
 				Issuer:   "test-issuer",
 				Audience: "test-audience",
@@ -52,10 +52,10 @@ func TestKeys(alg jwa.Alg, key config.JwkKey) map[string]*config.Jwk {
 }
 
 // SupportedAlgorithmKeys configures one usage per supported algorithm, named after it.
-func SupportedAlgorithmKeys() map[string]*config.Jwk {
-	keys := make(map[string]*config.Jwk, len(SupportedAlgorithms))
+func SupportedAlgorithmKeys() map[string]*jwkconfig.Usage {
+	keys := make(map[string]*jwkconfig.Usage, len(SupportedAlgorithms))
 	for _, alg := range SupportedAlgorithms {
-		keys[string(alg)] = &config.Jwk{Alg: alg}
+		keys[string(alg)] = &jwkconfig.Usage{Alg: alg}
 	}
 
 	return keys

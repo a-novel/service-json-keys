@@ -7,9 +7,8 @@ import (
 
 	"github.com/a-novel-kit/jwt/v2/jwa"
 
-	"github.com/a-novel/service-json-keys/v2/internal/config"
 	"github.com/a-novel/service-json-keys/v2/internal/config/configtest"
-	jwkconfig "github.com/a-novel/service-json-keys/v2/internal/config/jwk"
+	"github.com/a-novel/service-json-keys/v2/internal/config/jwkconfig"
 	"github.com/a-novel/service-json-keys/v2/pkg/go/internal/tokens"
 )
 
@@ -20,7 +19,7 @@ func TestClaimsVerify(t *testing.T) {
 		Foo string `json:"foo"`
 	}
 
-	testConfig := configtest.TestKeys(jwa.Ed25519, config.JwkKey{})
+	testConfig := configtest.TestKeys(jwa.Ed25519, jwkconfig.Key{})
 
 	testCases := []struct {
 		name string
@@ -28,7 +27,7 @@ func TestClaimsVerify(t *testing.T) {
 		request *tokens.ClaimsVerifyRequest
 
 		recipients tokens.JwkRecipients
-		keysConfig map[string]*config.Jwk
+		keysConfig map[string]*jwkconfig.Usage
 
 		expectErr error
 	}{

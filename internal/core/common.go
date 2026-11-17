@@ -3,7 +3,7 @@ package core
 import (
 	"errors"
 
-	jwkconfig "github.com/a-novel/service-json-keys/v2/internal/config/jwk"
+	"github.com/a-novel/service-json-keys/v2/internal/config/jwkconfig"
 	"github.com/a-novel/service-json-keys/v2/internal/dao"
 )
 

@@ -9,7 +9,7 @@ import (
 	"github.com/a-novel-kit/jwt/v2/jwk"
 	"github.com/a-novel-kit/jwt/v2/jws"
 
-	jwkconfig "github.com/a-novel/service-json-keys/v2/internal/config/jwk"
+	"github.com/a-novel/service-json-keys/v2/internal/config/jwkconfig"
 )
 
 // JwkPublicSource provides the public JWKs used by [NewJwkRecipients].
@@ -25,7 +25,7 @@ type JwkRecipients map[string][]jwt.RecipientPlugin
 // NewJwkRecipients builds cached verification plugins from public keys for every configured usage.
 func NewJwkRecipients(
 	source JwkPublicSource,
-	keys map[string]*jwkconfig.Jwk,
+	keys map[string]*jwkconfig.Usage,
 ) (JwkRecipients, error) {
 	output := make(JwkRecipients)
 

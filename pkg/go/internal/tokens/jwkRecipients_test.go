@@ -15,9 +15,8 @@ import (
 	"github.com/a-novel-kit/jwt/v2/jwa"
 	"github.com/a-novel-kit/jwt/v2/jwk"
 
-	"github.com/a-novel/service-json-keys/v2/internal/config"
 	"github.com/a-novel/service-json-keys/v2/internal/config/configtest"
-	jwkconfig "github.com/a-novel/service-json-keys/v2/internal/config/jwk"
+	"github.com/a-novel/service-json-keys/v2/internal/config/jwkconfig"
 	"github.com/a-novel/service-json-keys/v2/internal/core"
 	coremocks "github.com/a-novel/service-json-keys/v2/internal/core/mocks"
 	"github.com/a-novel/service-json-keys/v2/pkg/go/internal/tokens"
@@ -30,7 +29,7 @@ func TestJwkRecipients(t *testing.T) {
 	testCases := []struct {
 		name string
 
-		keys map[string]*config.Jwk
+		keys map[string]*jwkconfig.Usage
 
 		expectLen int
 		expectErr error
@@ -44,7 +43,7 @@ func TestJwkRecipients(t *testing.T) {
 		{
 			name: "Error/UnknownAlgorithm",
 
-			keys: map[string]*config.Jwk{
+			keys: map[string]*jwkconfig.Usage{
 				"test-usage": {Alg: jwa.Alg("unknown-alg")},
 			},
 
@@ -81,7 +80,7 @@ func TestJwkRecipients(t *testing.T) {
 		require.NoError(t, err)
 		require.NotEqual(t, key1Public.KID, key2Public.KID)
 
-		keys := configtest.TestKeys(jwa.Ed25519, config.JwkKey{Cache: time.Hour, UnknownKeyIDInterval: time.Millisecond})
+		keys := configtest.TestKeys(jwa.Ed25519, jwkconfig.Key{Cache: time.Hour, UnknownKeyIDInterval: time.Millisecond})
 
 		privateSource1 := coremocks.NewMockJwkPrivateSource(t)
 		privateSource1.EXPECT().
@@ -164,7 +163,7 @@ func TestJwkRecipients(t *testing.T) {
 		privateKey, publicKey, err := jwk.GenerateED25519()
 		require.NoError(t, err)
 
-		keys := configtest.TestKeys(jwa.Ed25519, config.JwkKey{Cache: time.Millisecond, StaleIfError: time.Hour})
+		keys := configtest.TestKeys(jwa.Ed25519, jwkconfig.Key{Cache: time.Millisecond, StaleIfError: time.Hour})
 
 		// The signer reads its key once for the header and once for the signature. The millisecond
 		// cache can expire between the two reads on a loaded runner, which refetches the key.
@@ -221,7 +220,7 @@ func TestJwkRecipients(t *testing.T) {
 		privateKey, publicKey, err := jwk.GenerateED25519()
 		require.NoError(t, err)
 
-		keys := configtest.TestKeys(jwa.Ed25519, config.JwkKey{Cache: time.Millisecond, StaleWhileRevalidate: time.Hour})
+		keys := configtest.TestKeys(jwa.Ed25519, jwkconfig.Key{Cache: time.Millisecond, StaleWhileRevalidate: time.Hour})
 
 		privateSource := coremocks.NewMockJwkPrivateSource(t)
 		privateSource.EXPECT().
@@ -316,7 +315,7 @@ func TestJwkGenerators(t *testing.T) {
 			require.Equal(t, generatedKey.PrivateKID, privateKey.KID)
 			require.Equal(t, generatedKey.PublicKID, publicKey.KID)
 
-			keys := configtest.TestKeys(alg, config.JwkKey{Cache: 30 * time.Minute})
+			keys := configtest.TestKeys(alg, jwkconfig.Key{Cache: 30 * time.Minute})
 
 			privateSource := coremocks.NewMockJwkPrivateSource(t)
 			privateSource.EXPECT().

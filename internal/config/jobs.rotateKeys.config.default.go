@@ -1,6 +1,9 @@
 package config
 
-import "github.com/a-novel/service-json-keys/v2/internal/config/env"
+import (
+	"github.com/a-novel/service-json-keys/v2/internal/config/env"
+	"github.com/a-novel/service-json-keys/v2/internal/config/jwkconfig"
+)
 
 // JobRotateKeysPresetDefault is the default [JobRotateKeys] configuration populated from environment variables.
 var JobRotateKeysPresetDefault = JobRotateKeys{
@@ -9,7 +12,7 @@ var JobRotateKeysPresetDefault = JobRotateKeys{
 		MasterKey:     env.AppMasterKey,
 		DowntimeStart: env.DowntimeStart,
 	},
-	Jwk: JwkPresetDefault,
+	Jwk: jwkconfig.PresetDefault,
 
 	Otel:     OtelJobPresetDefault,
 	Postgres: PostgresPresetDefault,

@@ -10,7 +10,7 @@ import (
 	"github.com/a-novel-kit/jwt/v2"
 	"github.com/a-novel-kit/jwt/v2/jwp"
 
-	jwkconfig "github.com/a-novel/service-json-keys/v2/internal/config/jwk"
+	"github.com/a-novel/service-json-keys/v2/internal/config/jwkconfig"
 )
 
 // ClaimsVerifyRequest holds the parameters for a [ClaimsVerify.Exec] call.
@@ -27,14 +27,14 @@ type ClaimsVerifyRequest struct {
 // all token claims against the configuration registered for the given usage.
 type ClaimsVerify[Out any] struct {
 	recipients map[string][]jwt.RecipientPlugin
-	keysConfig map[string]*jwkconfig.Jwk
+	keysConfig map[string]*jwkconfig.Usage
 }
 
 // NewClaimsVerify creates a ClaimsVerify service. Recipients provide the per-usage verification
 // plugins (see [NewJwkRecipients]); keysConfig provides the token parameters for each usage.
 func NewClaimsVerify[Out any](
 	recipients map[string][]jwt.RecipientPlugin,
-	keysConfig map[string]*jwkconfig.Jwk,
+	keysConfig map[string]*jwkconfig.Usage,
 ) *ClaimsVerify[Out] {
 	return &ClaimsVerify[Out]{recipients: recipients, keysConfig: keysConfig}
 }

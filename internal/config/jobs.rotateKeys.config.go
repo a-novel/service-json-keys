@@ -3,6 +3,8 @@ package config
 import (
 	"github.com/a-novel-kit/golib/otel"
 	"github.com/a-novel-kit/golib/postgres"
+
+	"github.com/a-novel/service-json-keys/v2/internal/config/jwkconfig"
 )
 
 // JobRotateKeys is the configuration for the key-rotation background job.
@@ -10,7 +12,7 @@ type JobRotateKeys struct {
 	// App holds the core application identity and secrets.
 	App Main `json:"app" yaml:"app"`
 	// Jwk holds the signing key configuration for each registered usage, keyed by usage name.
-	Jwk map[string]*Jwk `json:"jwk" yaml:"jwk"`
+	Jwk map[string]*jwkconfig.Usage `json:"jwk" yaml:"jwk"`
 
 	// Otel configures the OpenTelemetry exporter for traces and metrics.
 	Otel otel.Config `json:"otel" yaml:"otel"`

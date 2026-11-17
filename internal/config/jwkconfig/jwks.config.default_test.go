@@ -1,4 +1,4 @@
-package jwk_test
+package jwkconfig_test
 
 import (
 	"testing"
@@ -6,10 +6,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/a-novel/service-json-keys/v2/internal/config/jwk"
+	"github.com/a-novel/service-json-keys/v2/internal/config/jwkconfig"
 )
 
-func TestJwkKey(t *testing.T) {
+func TestKey(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -20,13 +20,13 @@ func TestJwkKey(t *testing.T) {
 		// signature: the access token's signature is re-verified until its refresh token expires.
 		verifiedFor string
 
-		expect jwk.JwkKey
+		expect jwkconfig.Key
 	}{
 		{
 			name:        "Success/Auth",
 			usage:       "auth",
 			verifiedFor: "auth-refresh",
-			expect: jwk.JwkKey{
+			expect: jwkconfig.Key{
 				TTL:                  194 * time.Hour,
 				Rotation:             24 * time.Hour,
 				Cache:                30 * time.Minute,
@@ -38,7 +38,7 @@ func TestJwkKey(t *testing.T) {
 			name:        "Success/AuthRefresh",
 			usage:       "auth-refresh",
 			verifiedFor: "auth-refresh",
-			expect: jwk.JwkKey{
+			expect: jwkconfig.Key{
 				TTL:                  720 * time.Hour,
 				Rotation:             168 * time.Hour,
 				Cache:                30 * time.Minute,
@@ -52,12 +52,12 @@ func TestJwkKey(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			usage, ok := jwk.PresetDefault[testCase.usage]
+			usage, ok := jwkconfig.PresetDefault[testCase.usage]
 			require.True(t, ok)
 			require.Equal(t, testCase.expect, usage.Key)
 
 			// A key signs until the next rotation reaches every producer cache.
-			verified, ok := jwk.PresetDefault[testCase.verifiedFor]
+			verified, ok := jwkconfig.PresetDefault[testCase.verifiedFor]
 			require.True(t, ok)
 			require.GreaterOrEqual(t,
 				usage.Key.TTL,
@@ -67,7 +67,7 @@ func TestJwkKey(t *testing.T) {
 	}
 }
 
-func TestJwkToken(t *testing.T) {
+func TestToken(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -75,12 +75,12 @@ func TestJwkToken(t *testing.T) {
 
 		usage string
 
-		expect jwk.JwkToken
+		expect jwkconfig.Token
 	}{
 		{
 			name:  "Success/Auth",
 			usage: "auth",
-			expect: jwk.JwkToken{
+			expect: jwkconfig.Token{
 				TTL:      15 * time.Minute,
 				Issuer:   "anovel-authentication",
 				Audience: "anovel-client",
@@ -91,7 +91,7 @@ func TestJwkToken(t *testing.T) {
 		{
 			name:  "Success/AuthRefresh",
 			usage: "auth-refresh",
-			expect: jwk.JwkToken{
+			expect: jwkconfig.Token{
 				TTL:      168 * time.Hour,
 				Issuer:   "anovel-authentication",
 				Audience: "anovel-client",
@@ -105,7 +105,7 @@ func TestJwkToken(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			usage, ok := jwk.PresetDefault[testCase.usage]
+			usage, ok := jwkconfig.PresetDefault[testCase.usage]
 			require.True(t, ok)
 			require.Equal(t, testCase.expect, usage.Token)
 		})

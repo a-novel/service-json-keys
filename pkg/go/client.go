@@ -9,7 +9,7 @@ import (
 
 	golibproto "github.com/a-novel-kit/golib/grpcf/proto/gen"
 
-	jwkconfig "github.com/a-novel/service-json-keys/v2/internal/config/jwk"
+	"github.com/a-novel/service-json-keys/v2/internal/config/jwkconfig"
 	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/internal/handlers/protogen/anovel/jsonkeys/v2"
 )
 
@@ -34,7 +34,7 @@ type (
 
 	// JwkConfig holds the configuration of one key usage: its signing algorithm, and the key and
 	// token parameters of every JWT signed under it. [Client.Keys] maps each usage name to one.
-	JwkConfig = jwkconfig.Jwk
+	JwkConfig = jwkconfig.Usage
 )
 
 // BaseClient is the minimal gRPC interface for the JSON Keys service. It exposes every RPC

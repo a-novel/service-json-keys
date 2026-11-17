@@ -1,4 +1,4 @@
-package jwk
+package jwkconfig
 
 import (
 	_ "embed"
@@ -13,4 +13,4 @@ var defaultJWKSConfigFile []byte
 
 // PresetDefault is the default JWK configuration for all registered usages,
 // loaded from the bundled YAML file.
-var PresetDefault = config.MustUnmarshal[map[string]*Jwk](yaml.Unmarshal, defaultJWKSConfigFile)
+var PresetDefault = config.MustUnmarshal[map[string]*Usage](yaml.Unmarshal, defaultJWKSConfigFile)
