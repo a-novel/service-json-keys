@@ -45,6 +45,7 @@ func rotateKeys() error {
 
 	lo.Must0(otel.Init(cfg.Otel))
 	defer cfg.Otel.Flush()
+	defer cfg.Postgres.Close()
 
 	if downtime.Started(cfg.App.DowntimeStart, start) {
 		log.Println("planned downtime in progress: no rotation")

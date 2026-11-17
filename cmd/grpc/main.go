@@ -87,7 +87,11 @@ func newServer(ctx context.Context, cfg config.App, masterKey *[32]byte) (*grpc.
 
 	// The signing chain: a cached private-key source feeds the per-usage producer plugins, so
 	// ClaimsSign signs tokens without hitting the database on every request.
-	serviceJwkProducer := lo.Must(core.NewJwkProducers(serviceJwkSearch, jwkconfig.PresetDefault))
+	serviceJwkProducer, err := core.NewJwkProducers(serviceJwkSearch, jwkconfig.PresetDefault)
+	if err != nil {
+		return nil, fmt.Errorf("jwk producers: %w", err)
+	}
+
 	serviceClaimsSign := core.NewClaimsSign(serviceJwkProducer, jwkconfig.PresetDefault)
 
 	// =================================================================================================================
