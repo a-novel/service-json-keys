@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"testing"
 
@@ -9,11 +10,14 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
+	healthpb "google.golang.org/grpc/health/grpc_health_v1"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
 
 	golibproto "github.com/a-novel-kit/golib/grpcf/proto/gen"
 	"github.com/a-novel-kit/golib/servicetoken"
+	"github.com/a-novel-kit/golib/servicetoken/servicetokentest"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
 	"github.com/a-novel/service-json-keys/v2/internal/lib/libtest"
@@ -22,34 +26,58 @@ import (
 func TestNewServer(t *testing.T) {
 	t.Parallel()
 
-	// The gate refuses a call without a token before it fetches any key, so the issuer never answers.
-	gate := servicetoken.Config{
-		Issuer:   "https://issuer.test",
-		Audience: "service-json-keys",
-		Callers:  []string{"system:serviceaccount:agora:caller"},
-	}
+	const (
+		audience = "service-json-keys"
+		caller   = "system:serviceaccount:agora:caller"
+	)
+
+	issuer := servicetokentest.NewIssuer(t)
+	gate := servicetoken.Config{Issuer: issuer.URL, Audience: audience, Callers: []string{caller}}
 
 	testCases := []struct {
 		name string
 
 		serviceToken servicetoken.Config
-		stream       bool
+		call         func(ctx context.Context, conn *grpc.ClientConn) error
+		token        string
 
 		expectStatus codes.Code
 		expectErr    error
 	}{
 		{
-			// A local stack opts out, and the server takes every call.
-			name: "Success/IssuerOptional",
+			// A caller's token passes the gate.
+			name: "Success",
 
-			serviceToken: servicetoken.Config{IssuerOptional: true},
+			serviceToken: gate,
+			call:         unaryEcho,
+			token:        issuer.Sign(t, issuer.Claims(caller, audience)),
 
 			expectStatus: codes.OK,
 		},
 		{
+			// The kubelet's probe reaches the health service without a token.
+			name: "Success/Health",
+
+			serviceToken: gate,
+			call:         checkHealth,
+
+			expectStatus: codes.OK,
+		},
+		{
+			// A local stack opts out, and the server takes every call.
+			name: "Success/IssuerOptional",
+
+			serviceToken: servicetoken.Config{IssuerOptional: true},
+			call:         unaryEcho,
+
+			expectStatus: codes.OK,
+		},
+		{
+			// The echo service carries no auth of its own, so the refusal can only come from the gate.
 			name: "Error/Unauthenticated",
 
 			serviceToken: gate,
+			call:         unaryEcho,
 
 			expectStatus: codes.Unauthenticated,
 		},
@@ -58,7 +86,7 @@ func TestNewServer(t *testing.T) {
 			name: "Error/UnauthenticatedStream",
 
 			serviceToken: gate,
-			stream:       true,
+			call:         streamEcho,
 
 			expectStatus: codes.Unauthenticated,
 		},
@@ -84,7 +112,12 @@ func TestNewServer(t *testing.T) {
 				return
 			}
 
-			err = call(t.Context(), serve(t, server), testCase.stream)
+			ctx := t.Context()
+			if testCase.token != "" {
+				ctx = metadata.AppendToOutgoingContext(ctx, servicetoken.Header, testCase.token)
+			}
+
+			err = testCase.call(ctx, serve(t, server))
 			require.Equal(t, testCase.expectStatus, status.Code(err), "got %v", err)
 		})
 	}
@@ -117,24 +150,39 @@ func serve(t *testing.T, server *grpc.Server) *grpc.ClientConn {
 	return conn
 }
 
-// call calls golib's echo service on conn, which the gate guards as it guards the service's own: a
-// unary call, or a server stream when stream is set. The echo reads no database, so the test needs
-// none.
-func call(ctx context.Context, conn *grpc.ClientConn, stream bool) error {
-	client := golibproto.NewEchoServiceClient(conn)
+// unaryEcho calls golib's echo service through a unary call. The gate guards it as it guards the
+// service's own, and it reads no database, so the test needs none.
+func unaryEcho(ctx context.Context, conn *grpc.ClientConn) error {
+	_, err := golibproto.NewEchoServiceClient(conn).UnaryEcho(ctx, &golibproto.UnaryEchoRequest{})
 
-	if !stream {
-		_, err := client.UnaryEcho(ctx, &golibproto.UnaryEchoRequest{})
+	return err
+}
 
-		return err
-	}
-
-	echoStream, err := client.ServerStreamingEcho(ctx, &golibproto.ServerStreamingEchoRequest{})
+// streamEcho calls golib's echo service through a server stream, and reads its first message.
+func streamEcho(ctx context.Context, conn *grpc.ClientConn) error {
+	stream, err := golibproto.NewEchoServiceClient(conn).ServerStreamingEcho(
+		ctx, &golibproto.ServerStreamingEchoRequest{},
+	)
 	if err != nil {
 		return err
 	}
 
-	_, err = echoStream.Recv()
+	_, err = stream.Recv()
 
 	return err
+}
+
+// checkHealth asks the health service for the server's status, as the kubelet's probe does. A status
+// other than SERVING fails without a gRPC code.
+func checkHealth(ctx context.Context, conn *grpc.ClientConn) error {
+	res, err := healthpb.NewHealthClient(conn).Check(ctx, &healthpb.HealthCheckRequest{})
+	if err != nil {
+		return err
+	}
+
+	if res.GetStatus() != healthpb.HealthCheckResponse_SERVING {
+		return fmt.Errorf("health status %s", res.GetStatus())
+	}
+
+	return nil
 }
