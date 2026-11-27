@@ -51,6 +51,13 @@ var (
 	// variables. Without an issuer, the server refuses to start unless SERVICE_ISSUER_OPTIONAL is set.
 	ServiceToken = servicetoken.LoadConfig(getEnv)
 
+	// APIKeys holds the system API keys of each purpose, from the API_KEYS_* variable named for it:
+	// one or more Ed25519 public keys in PEM, the active one first. A public key is no secret, so the
+	// variable is a plain value.
+	APIKeys = map[string]string{
+		"publish-narrative-engine-plugin": getEnv("API_KEYS_PUBLISH_NARRATIVE_ENGINE_PLUGIN"),
+	}
+
 	// DowntimeStart is when a planned downtime of this service starts, in RFC 3339. From then
 	// until it is removed, the service refuses work. Nil when none is planned.
 	DowntimeStart = config.LoadEnv(getEnv("DOWNTIME_START"), nil, downtime.ParseStart)

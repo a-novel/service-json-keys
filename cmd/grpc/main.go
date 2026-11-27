@@ -1,7 +1,7 @@
 // Command grpc runs the private gRPC server of the JSON Keys service, which other services call
-// to sign tokens and read keys. It admits only the callers its service tokens allow, and refuses to
-// start without a token issuer unless SERVICE_ISSUER_OPTIONAL opts a local stack out. Signing
-// decrypts private keys, so the server refuses to start without APP_MASTER_KEY.
+// to sign tokens and read keys, API keys included. It admits only the callers its service tokens
+// allow, and refuses to start without a token issuer unless SERVICE_ISSUER_OPTIONAL opts a local
+// stack out. Signing decrypts private keys, so the server refuses to start without APP_MASTER_KEY.
 //
 // cmd/rest serves the public keys over REST.
 package main
@@ -94,6 +94,11 @@ func newServer(ctx context.Context, cfg config.App, masterKey *[32]byte) (*grpc.
 
 	serviceClaimsSign := core.NewClaimsSign(serviceJwkProducer, jwkconfig.PresetDefault)
 
+	serviceAPIKeySelect, err := core.NewAPIKeySelect(cfg.APIKeys)
+	if err != nil {
+		return nil, fmt.Errorf("api key select: %w", err)
+	}
+
 	// =================================================================================================================
 	// HANDLERS
 	// =================================================================================================================
@@ -102,6 +107,7 @@ func newServer(ctx context.Context, cfg config.App, masterKey *[32]byte) (*grpc.
 	handlerClaimsSign := handlers.NewGrpcClaimsSign(serviceClaimsSign)
 	handlerJwkGet := handlers.NewGrpcJwkGet(serviceJwkSelect)
 	handlerJwkList := handlers.NewGrpcJwkList(serviceJwkSearch)
+	handlerAPIKeyGet := handlers.NewGrpcAPIKeyGet(serviceAPIKeySelect)
 
 	// =================================================================================================================
 	// SERVER
@@ -115,6 +121,7 @@ func newServer(ctx context.Context, cfg config.App, masterKey *[32]byte) (*grpc.
 	jsonkeysv2.RegisterClaimsSignServiceServer(server, handlerClaimsSign)
 	jsonkeysv2.RegisterJwkGetServiceServer(server, handlerJwkGet)
 	jsonkeysv2.RegisterJwkListServiceServer(server, handlerJwkList)
+	jsonkeysv2.RegisterAPIKeyGetServiceServer(server, handlerAPIKeyGet)
 
 	reflection.Register(server)
 

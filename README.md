@@ -177,6 +177,12 @@ Service-token opt-out (images `grpc`, `standalone-grpc`):
 | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | `SERVICE_ISSUER_OPTIONAL` | Start without `SERVICE_TOKEN_ISSUER`, and then take every call. For a local or test stack only: the `standalone-grpc` image sets it, and an issuer keeps the check on. | `false` |
 
+System API keys (images `grpc`, `rest`, `standalone-grpc`, `standalone-rest`). Give both servers the same value:
+
+| Name                                       | Description                                                                                                                                                                                                                                                                                                                       | Default |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| `API_KEYS_PUBLISH_NARRATIVE_ENGINE_PLUGIN` | The system API keys that publish a Narrative Engine plugin: one or more Ed25519 public keys in PEM, the active one first. Every other key is deactivated: it authenticates no request, and what it signed still verifies. A public key is no secret, so set a plain value. A server refuses to start when it holds anything else. |         |
+
 Database connection pool (server images). Each process holds its own pool, so the database's `max_connections`, 100 by default, must cover every replica and the migration job.
 
 | Name                      | Description                               | Default |
