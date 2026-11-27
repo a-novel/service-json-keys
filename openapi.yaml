@@ -37,7 +37,9 @@ tags:
   - name: jwk
     description: Endpoints for retrieving public JSON Web Keys used to verify signed tokens.
   - name: apiKey
-    description: Endpoints for retrieving API keys, the public keys that verify what their holder signed.
+    description: |
+      Endpoints for retrieving the public key of an API key, a key pair made for one purpose, to
+      verify what its holder signed.
 
 paths:
   /v2/ping:
@@ -412,7 +414,9 @@ components:
 
     apiKey:
       type: object
-      description: "An API key: a public key made for one purpose, with its states."
+      description: |
+        An API key as the service serves it: the public key of a key pair made for one purpose,
+        with its states.
       required: [id, purpose, key, deactivated, leaked]
       additionalProperties: false
       properties:
@@ -431,7 +435,10 @@ components:
             verifies.
         leaked:
           type: boolean
-          description: Whether the private key leaked, so nothing the key signed is trusted.
+          description: |
+            Whether the private key leaked, so nothing the key signed is trusted. Set only on a
+            deactivated key. A system API key that leaked leaves the settings instead, and reads as
+            not found.
 
     apiKeyJwk:
       type: object

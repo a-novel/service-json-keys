@@ -13,16 +13,20 @@ export const ApiKeySchema = z.object({
   key: JwkSchema,
   /** Whether the key no longer authenticates a request. What the key signed before still verifies. */
   deactivated: z.boolean(),
-  /** Whether the private key leaked, so nothing the key signed is trusted. */
+  /**
+   * Whether the private key leaked, so nothing the key signed is trusted. Set only on a deactivated
+   * key. A system API key that leaked leaves the settings instead, and reads as not found.
+   */
   leaked: z.boolean(),
 });
 
 /**
- * An API key as returned by the JSON Keys service: a public key made for one purpose, with its
- * states.
+ * An API key as returned by the JSON Keys service: the public key of a key pair made for one
+ * purpose, with its states.
  *
  * The holder of the private key signs tokens with it. Match the `id` of an API key against the
- * `kid` header of a token to pick the key that verifies it.
+ * `kid` header of a token to pick the key that verifies it. Before verifying, refuse a key made
+ * for another `purpose` or one that `leaked`: nodelib's `verifyProof` sees neither.
  */
 export type ApiKey = z.infer<typeof ApiKeySchema>;
 
