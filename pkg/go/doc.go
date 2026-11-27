@@ -31,4 +31,18 @@
 //	    Usage:       servicejsonkeys.KeyUsageAuth,
 //	    AccessToken: tokenString, // compact JWT string
 //	})
+//
+// # API keys
+//
+// An API key is an Ed25519 key pair made for one purpose, whose private half its owner alone holds.
+// The service serves the public half by ID, and [NewAPIKeyVerifier] verifies what a key signed: a
+// request token, which authenticates one request, and a proof, which stays with the entry the
+// request creates. [NewAPIKeyGate] guards a route with the request token:
+//
+//	verifier, err := servicejsonkeys.NewAPIKeyVerifier(c, servicejsonkeys.APIKeyPurposePublishNarrativeEnginePlugin)
+//	if err != nil { ... }
+//	gate := servicejsonkeys.NewAPIKeyGate(verifier, servicejsonkeys.APIKeyGateConfig{}, logger)
+//	router.With(gate).Post("/v1/plugin/version", handler)
+//
+// Package servicejsonkeystest makes API keys for the tests of a consumer.
 package servicejsonkeys

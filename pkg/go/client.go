@@ -26,6 +26,10 @@ type (
 	JwkGetRequest = jsonkeysv2.JwkGetRequest
 	// JwkGetResponse holds the public key [BaseClient.JwkGet] found.
 	JwkGetResponse = jsonkeysv2.JwkGetResponse
+	// APIKeyGetRequest names the ID of the API key [BaseClient.APIKeyGet] looks up.
+	APIKeyGetRequest = jsonkeysv2.APIKeyGetRequest
+	// APIKeyGetResponse holds the API key [BaseClient.APIKeyGet] found.
+	APIKeyGetResponse = jsonkeysv2.APIKeyGetResponse
 	// ClaimsSignRequest carries the claims [BaseClient.ClaimsSign] signs and the usage that
 	// selects the key.
 	ClaimsSignRequest = jsonkeysv2.ClaimsSignRequest
@@ -56,6 +60,9 @@ type BaseClient interface {
 	JwkGet(ctx context.Context, req *JwkGetRequest, opts ...grpc.CallOption) (*JwkGetResponse, error)
 	// JwkList returns the active public keys for a given usage.
 	JwkList(ctx context.Context, req *JwkListRequest, opts ...grpc.CallOption) (*JwkListResponse, error)
+	// APIKeyGet retrieves an API key by its ID: its purpose, its public key and its states.
+	// An ID the service holds no key for fails with NotFound.
+	APIKeyGet(ctx context.Context, req *APIKeyGetRequest, opts ...grpc.CallOption) (*APIKeyGetResponse, error)
 	// ClaimsSign asks the service to sign claims and returns a compact JWT.
 	// The request payload must be a protobuf Any wrapping the claims to embed.
 	// A usage the service has no configuration for fails with InvalidArgument.
@@ -85,6 +92,7 @@ type client struct {
 	jsonkeysv2.StatusServiceClient
 	jsonkeysv2.JwkGetServiceClient
 	jsonkeysv2.JwkListServiceClient
+	jsonkeysv2.APIKeyGetServiceClient
 	jsonkeysv2.ClaimsSignServiceClient
 
 	keys map[string]*JwkConfig
@@ -119,6 +127,7 @@ func NewClient(addr string, opts ...grpc.DialOption) (Client, error) {
 		StatusServiceClient:     jsonkeysv2.NewStatusServiceClient(conn),
 		JwkGetServiceClient:     jsonkeysv2.NewJwkGetServiceClient(conn),
 		JwkListServiceClient:    jsonkeysv2.NewJwkListServiceClient(conn),
+		APIKeyGetServiceClient:  jsonkeysv2.NewAPIKeyGetServiceClient(conn),
 		ClaimsSignServiceClient: jsonkeysv2.NewClaimsSignServiceClient(conn),
 		keys:                    jwkconfig.PresetDefault,
 		conn:                    conn,

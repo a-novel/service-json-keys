@@ -12,8 +12,10 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
 
 	"github.com/a-novel-kit/golib/grpcf"
@@ -131,5 +133,15 @@ func TestClient(t *testing.T) {
 		})
 		require.NoError(t, err)
 		require.Equal(t, key.GetJwk(), keys.GetKeys()[0])
+
+		apiKey, err := client.APIKeyGet(t.Context(), &servicejsonkeys.APIKeyGetRequest{Id: configtest.APIKeyID})
+		require.NoError(t, err)
+		require.Equal(t, configtest.APIKeyID, apiKey.GetApiKey().GetId())
+		require.Equal(t, configtest.APIKeyID, apiKey.GetApiKey().GetJwk().GetKid())
+		require.Equal(t, servicejsonkeys.APIKeyPurposePublishNarrativeEnginePlugin, apiKey.GetApiKey().GetPurpose())
+		require.False(t, apiKey.GetApiKey().GetDeactivated())
+
+		_, err = client.APIKeyGet(t.Context(), &servicejsonkeys.APIKeyGetRequest{Id: "unknown"})
+		require.Equal(t, codes.NotFound, status.Code(err))
 	})
 }

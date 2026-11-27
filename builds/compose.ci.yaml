@@ -26,6 +26,11 @@ services:
       POSTGRES_DATABASE: postgres
       POSTGRES_TLS_ENABLED: "false"
       APP_MASTER_KEY: "fec0681a2f57242211c559ca347721766f8a3acd8ed2e63b36b3768051c702ca"
+      # A public key whose private half was discarded: the tests read it, and nothing signs for it.
+      API_KEYS_PUBLISH_NARRATIVE_ENGINE_PLUGIN: |
+        -----BEGIN PUBLIC KEY-----
+        MCowBQYDK2VwAyEAyDdgB7zQkxfw3kuEhj9JLm4+44Ovy4RlqvptZFJBprg=
+        -----END PUBLIC KEY-----
 
   standalone-rest:
     image: "${STANDALONE_REST_IMAGE:?STANDALONE_REST_IMAGE is required}"
