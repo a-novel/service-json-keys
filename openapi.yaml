@@ -26,7 +26,7 @@ info:
     purpose and the states of the API key, to verify what the key signed.
 
     A system API key is an API key of the platform itself.
-  version: v2.17.0
+  version: v2.18.0
   license:
     name: RPL-1.5
     url: "https://raw.githubusercontent.com/a-novel/service-json-keys/refs/heads/master/LICENSE"
