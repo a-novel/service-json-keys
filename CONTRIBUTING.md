@@ -45,7 +45,7 @@ curl "http://localhost:${REST_PORT}/v2/jwk?id=${KEY_ID}"
 grpcurl -plaintext -d "{\"id\":\"${KEY_ID}\"}" "localhost:${GRPC_PORT}" anovel.jsonkeys.v2.JwkGetService/JwkGet
 ```
 
-Read an API key by its ID, the `kid` of a token it signed. The local stack holds none until `API_KEYS_PUBLISH_NARRATIVE_ENGINE_PLUGIN` names one:
+Read an API key by its ID, the `kid` of a token it signed. The local stack holds none, so both calls answer not found. To try one, add `API_KEYS_PUBLISH_NARRATIVE_ENGINE_PLUGIN` to the `environment` of both servers in [`builds/podman-compose.yaml`](./builds/podman-compose.yaml), without committing it:
 
 ```bash
 API_KEY_ID="paste-a-kid-from-a-token"

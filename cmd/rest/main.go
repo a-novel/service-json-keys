@@ -1,6 +1,6 @@
 // Command rest runs the public REST server of the JSON Keys service. It serves the public keys,
-// API keys included, unauthenticated, so any client can verify tokens locally. It reads the database but never
-// the master key.
+// API keys included, unauthenticated, so any client can verify tokens locally. It reads the
+// database but never the master key.
 //
 // cmd/grpc serves the private API, token signing included.
 package main
