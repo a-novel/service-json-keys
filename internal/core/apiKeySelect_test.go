@@ -107,6 +107,23 @@ func TestNewAPIKeySelect(t *testing.T) {
 			expectErr: core.ErrInvalidAPIKeys,
 		},
 		{
+			name:     "Error/TextBeforeKey",
+			settings: map[string]string{purpose: "# rotated on 2026-11-27\n" + mustPublicKeyPEM(t, activeKey)},
+
+			expectErr: core.ErrInvalidAPIKeys,
+		},
+		{
+			// The new key lost its last line, as a truncated paste does. The key meant to retire must
+			// not take its place.
+			name: "Error/MalformedActiveKey",
+			settings: map[string]string{
+				purpose: strings.TrimSuffix(mustPublicKeyPEM(t, activeKey), "-----END PUBLIC KEY-----\n") +
+					"\n" + mustPublicKeyPEM(t, retiredKey),
+			},
+
+			expectErr: core.ErrInvalidAPIKeys,
+		},
+		{
 			name:     "Error/PrivateKey",
 			settings: map[string]string{purpose: mustPrivateKeyPEM(t, privateKey)},
 
@@ -154,7 +171,9 @@ func TestNewAPIKeySelect(t *testing.T) {
 				// A setting may hold a private key by mistake, so the error quotes none of its lines.
 				for _, setting := range testCase.settings {
 					for line := range strings.Lines(setting) {
-						require.NotContains(t, err.Error(), strings.TrimSpace(line))
+						if line = strings.TrimSpace(line); line != "" {
+							require.NotContains(t, err.Error(), line)
+						}
 					}
 				}
 

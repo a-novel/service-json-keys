@@ -22,6 +22,9 @@ import (
 // pemPublicKey is the type of the PEM block that holds a public key (RFC 7468 §13).
 const pemPublicKey = "PUBLIC KEY"
 
+// pemBegin opens the first line of every PEM block (RFC 7468 §2).
+var pemBegin = []byte("-----BEGIN ")
+
 // APIKeySelectRequest holds the parameters for an [APIKeySelect.Exec] call.
 type APIKeySelectRequest struct {
 	// ID is the API key to retrieve; it corresponds to the "kid" header of a token the key signed.
@@ -56,8 +59,10 @@ func NewAPIKeySelect(settings map[string]string) (*APIKeySelect, error) {
 				return nil, fmt.Errorf("%s: %w: key %d: %w", purpose, ErrInvalidAPIKeys, position+1, err)
 			}
 
-			if _, found := keys[key.ID]; found {
-				return nil, fmt.Errorf("%s: %w: key %d is listed twice", purpose, ErrInvalidAPIKeys, position+1)
+			if other, found := keys[key.ID]; found {
+				return nil, fmt.Errorf(
+					"%s: %w: key %d is already a key of %s", purpose, ErrInvalidAPIKeys, position+1, other.Purpose,
+				)
 			}
 
 			keys[key.ID] = key
@@ -91,10 +96,13 @@ func parsePublicKeys(setting string) ([]ed25519.PublicKey, error) {
 	rest := bytes.TrimSpace([]byte(setting))
 
 	for len(rest) > 0 {
-		var block *pem.Block
+		// pem.Decode skips any text before a block, a malformed block included, so the block must open
+		// the rest and be the only one read.
+		block, next := pem.Decode(rest)
+		read := rest[:len(rest)-len(next)]
+		rest = next
 
-		block, rest = pem.Decode(rest)
-		if block == nil {
+		if block == nil || !bytes.HasPrefix(read, pemBegin) || bytes.Count(read, pemBegin) > 1 {
 			return nil, fmt.Errorf("%w: key %d: not a PEM block", ErrInvalidAPIKeys, len(keys)+1)
 		}
 
