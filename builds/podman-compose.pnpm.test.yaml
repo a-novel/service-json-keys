@@ -38,6 +38,11 @@ services:
       POSTGRES_DATABASE: "${POSTGRES_DB}"
       POSTGRES_TLS_ENABLED: false
       APP_MASTER_KEY: "${APP_MASTER_KEY}"
+      # A public key whose private half was discarded: the tests read it, and nothing signs for it.
+      API_KEYS_PUBLISH_NARRATIVE_ENGINE_PLUGIN: |
+        -----BEGIN PUBLIC KEY-----
+        MCowBQYDK2VwAyEAyDdgB7zQkxfw3kuEhj9JLm4+44Ovy4RlqvptZFJBprg=
+        -----END PUBLIC KEY-----
       # The suite lists keys several times within a second from one address.
       REST_RATE_LIMITS_ENABLED: false
     networks:

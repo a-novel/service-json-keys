@@ -18,6 +18,14 @@ info:
     verify signatures but cannot sign new tokens. This is safe to expose to external consumers.
 
     To sign tokens, use the internal gRPC API.
+
+    ## API keys
+
+    An API key is a key pair made for one purpose. Its holder signs tokens with the private key,
+    and the service holds the public key alone. Any recipient reads the public key here, with the
+    purpose and the states of the API key, to verify what the key signed.
+
+    A system API key is an API key of the platform itself.
   version: v2.17.0
   license:
     name: RPL-1.5
@@ -28,6 +36,10 @@ tags:
     description: Endpoints for checking server and dependency health.
   - name: jwk
     description: Endpoints for retrieving public JSON Web Keys used to verify signed tokens.
+  - name: apiKey
+    description: |
+      Endpoints for retrieving the public key of an API key, a key pair made for one purpose, to
+      verify what its holder signed.
 
 paths:
   /v2/ping:
@@ -123,6 +135,38 @@ paths:
         default:
           $ref: "#/components/responses/internalError"
 
+  /v2/api-key:
+    get:
+      operationId: apiKeyGet
+      summary: Get an API key by ID.
+      description: |
+        Returns a single API key by its ID: the public key, with the purpose and the states of the
+        API key. The answer never names the owner of the key.
+
+        A missing ID answers 404, as an unknown one does. A key removed from the settings of the
+        service reads as not found.
+
+        A cache may store the key, and revalidates it on every use with `If-None-Match`, so a
+        client learns a change of state on its next read.
+      tags: [apiKey]
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/apiKeyID"
+        - $ref: "#/components/parameters/ifNoneMatch"
+      responses:
+        "200":
+          $ref: "#/components/responses/apiKeyGet"
+        "304":
+          $ref: "#/components/responses/notModified"
+        "404":
+          $ref: "#/components/responses/notFound"
+        "429":
+          $ref: "#/components/responses/tooManyRequests"
+        "503":
+          $ref: "#/components/responses/plannedDowntime"
+        default:
+          $ref: "#/components/responses/internalError"
+
 components:
   responses:
     pong:
@@ -203,6 +247,33 @@ components:
                 alg: Ed25519
                 kid: "44de7cd7-aff1-e6c4-4204-74e8341d792c"
                 x: "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo"
+
+    apiKeyGet:
+      description: A single API key.
+      headers:
+        ETag:
+          $ref: "#/components/headers/etag"
+        Cache-Control:
+          $ref: "#/components/headers/cacheControl"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/apiKey"
+          examples:
+            active:
+              value:
+                id: "SkBLVT62kklQKTWOoMCMzugx--jKjyHKB2fKHZFBV-k"
+                purpose: publish-narrative-engine-plugin
+                key:
+                  kty: OKP
+                  use: sig
+                  key_ops: [verify]
+                  alg: Ed25519
+                  kid: "SkBLVT62kklQKTWOoMCMzugx--jKjyHKB2fKHZFBV-k"
+                  crv: Ed25519
+                  x: "yDdgB7zQkxfw3kuEhj9JLm4-44Ovy4RlqvptZFJBprg"
+                deactivated: false
+                leaked: false
 
     notModified:
       description: |
@@ -341,6 +412,81 @@ components:
       examples:
         - "44de7cd7-aff1-e6c4-4204-74e8341d792c"
 
+    apiKey:
+      type: object
+      description: |
+        An API key as the service serves it: the public key of a key pair made for one purpose,
+        with its states.
+      required: [id, purpose, key, deactivated, leaked]
+      additionalProperties: false
+      properties:
+        id:
+          $ref: "#/components/schemas/apiKeyID"
+        purpose:
+          type: string
+          description: The one thing the key may do.
+          examples: [publish-narrative-engine-plugin]
+        key:
+          $ref: "#/components/schemas/apiKeyJwk"
+        deactivated:
+          type: boolean
+          description: |
+            Whether the key no longer authenticates a request. What the key signed before still
+            verifies.
+        leaked:
+          type: boolean
+          description: |
+            Whether the private key leaked, so nothing the key signed is trusted. Set only on a
+            deactivated key. A system API key that leaked leaves the settings instead, and reads as
+            not found.
+
+    apiKeyJwk:
+      type: object
+      description: |
+        The public key of an API key, as a JSON Web Key (JWK). The key is composed of standard JWK
+        fields plus algorithm-specific public key material. A system API key is an Ed25519 key.
+      required: [kty, use, key_ops, alg, kid]
+      examples:
+        - {
+            "kty": "OKP",
+            "use": "sig",
+            "key_ops": ["verify"],
+            "alg": "Ed25519",
+            "kid": "SkBLVT62kklQKTWOoMCMzugx--jKjyHKB2fKHZFBV-k",
+            "crv": "Ed25519",
+            "x": "yDdgB7zQkxfw3kuEhj9JLm4-44Ovy4RlqvptZFJBprg",
+          }
+      properties:
+        kty:
+          type: string
+          description: The cryptographic algorithm family used with the key.
+          examples: [OKP]
+        use:
+          type: string
+          description: The intended use of the public key.
+          examples: [sig]
+        key_ops:
+          type: array
+          description: The operations for which the key is intended to be used.
+          items:
+            type: string
+            enum: [sign, verify, encrypt, decrypt, wrapKey, unwrapKey, deriveKey, deriveBits]
+        alg:
+          type: string
+          description: The algorithm intended for use with the key.
+          examples: [Ed25519]
+        kid:
+          $ref: "#/components/schemas/apiKeyID"
+      additionalProperties: true
+
+    apiKeyID:
+      type: string
+      description: |
+        The ID of an API key. A token the key signed carries it in its `kid` header. The ID of a
+        system API key is the JWK thumbprint of its public key (RFC 7638).
+      examples:
+        - "SkBLVT62kklQKTWOoMCMzugx--jKjyHKB2fKHZFBV-k"
+
   headers:
     etag:
       description: |
@@ -376,6 +522,14 @@ components:
       required: true
       schema:
         $ref: "#/components/schemas/jwkID"
+
+    apiKeyID:
+      name: id
+      in: query
+      description: The ID of the API key to retrieve.
+      required: true
+      schema:
+        $ref: "#/components/schemas/apiKeyID"
 
     usage:
       name: usage
