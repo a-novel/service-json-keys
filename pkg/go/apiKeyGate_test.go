@@ -75,6 +75,15 @@ func TestNewAPIKeyGate(t *testing.T) {
 			expectKey:    key.ID,
 		},
 		{
+			// RFC 6750 §2.1: one or more spaces separate the scheme from the token.
+			name: "Success/SchemeSpaces",
+
+			authorization: "Bearer  " + strings.TrimPrefix(valid, "Bearer "),
+
+			expectStatus: http.StatusOK,
+			expectKey:    key.ID,
+		},
+		{
 			// A local stack whose callers hold no key lets them in, unauthenticated.
 			name: "Success/TokenOptional",
 
@@ -193,8 +202,13 @@ func TestNewAPIKeyGate(t *testing.T) {
 				request.Body = io.NopCloser(iotest.ErrReader(errors.New("foo")))
 			}
 
+			handed := request.Body
+
 			gate := servicejsonkeys.NewAPIKeyGate(verifier, testCase.config, configtest.Logger)
 			gate(next).ServeHTTP(recorder, request)
+
+			// A handler reads the body of the request it is handed, and changes nothing of that request.
+			require.Equal(t, handed, request.Body)
 
 			require.Equal(t, testCase.expectStatus, recorder.Code)
 			require.Equal(t, testCase.expectKey, recorder.Header().Get(keyHeader))

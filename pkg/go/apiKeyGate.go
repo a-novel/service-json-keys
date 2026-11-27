@@ -66,6 +66,9 @@ func NewAPIKeyGate(
 				return
 			}
 
+			// RFC 6750 §2.1: one or more spaces separate the scheme from the token.
+			token = strings.TrimLeft(token, " ")
+
 			request, err := verifier.VerifyRequestToken(r.Context(), &VerifyRequestTokenRequest{Token: token, Body: r.Body})
 			if err != nil {
 				refuseAPIKey(w, r, logger, err)
@@ -73,9 +76,11 @@ func NewAPIKeyGate(
 				return
 			}
 
+			// A handler changes nothing of the request it is handed, so the body goes on a copy.
+			r = r.WithContext(context.WithValue(r.Context(), apiKeyContextKey{}, request.KeyID))
 			r.Body = io.NopCloser(bytes.NewReader(request.Body))
 
-			next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), apiKeyContextKey{}, request.KeyID)))
+			next.ServeHTTP(w, r)
 		})
 	}
 }
