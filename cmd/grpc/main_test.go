@@ -20,8 +20,16 @@ import (
 	"github.com/a-novel-kit/golib/servicetoken/servicetokentest"
 
 	"github.com/a-novel/service-json-keys/v2/internal/config"
+	"github.com/a-novel/service-json-keys/v2/internal/core"
+	jsonkeysv2 "github.com/a-novel/service-json-keys/v2/internal/handlers/protogen/anovel/jsonkeys/v2"
 	"github.com/a-novel/service-json-keys/v2/internal/lib/libtest"
 )
+
+// apiKeyPEM is the public key of RFC 8037 appendix A.2, as a setting of system API keys holds it.
+const apiKeyPEM = `-----BEGIN PUBLIC KEY-----
+MCowBQYDK2VwAyEA11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo=
+-----END PUBLIC KEY-----
+`
 
 func TestNewServer(t *testing.T) {
 	t.Parallel()
@@ -38,6 +46,7 @@ func TestNewServer(t *testing.T) {
 		name string
 
 		serviceToken servicetoken.Config
+		apiKeys      map[string]string
 		call         func(ctx context.Context, conn *grpc.ClientConn) error
 		token        string
 
@@ -96,6 +105,25 @@ func TestNewServer(t *testing.T) {
 
 			expectErr: servicetoken.ErrIssuerRequired,
 		},
+		{
+			// The server serves the system API keys of its settings.
+			name: "Success/APIKey",
+
+			serviceToken: servicetoken.Config{IssuerOptional: true},
+			apiKeys:      map[string]string{"test-purpose": apiKeyPEM},
+			call:         apiKeyGet,
+
+			expectStatus: codes.OK,
+		},
+		{
+			// A setting that holds anything but public keys stops the server at startup.
+			name: "Error/InvalidAPIKeys",
+
+			serviceToken: servicetoken.Config{IssuerOptional: true},
+			apiKeys:      map[string]string{"test-purpose": "not a key"},
+
+			expectErr: core.ErrInvalidAPIKeys,
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -104,6 +132,7 @@ func TestNewServer(t *testing.T) {
 
 			cfg := config.AppPresetDefault
 			cfg.ServiceToken = testCase.serviceToken
+			cfg.APIKeys = testCase.apiKeys
 
 			server, err := newServer(t.Context(), cfg, libtest.MasterKey)
 			require.ErrorIs(t, err, testCase.expectErr)
@@ -148,6 +177,15 @@ func serve(t *testing.T, server *grpc.Server) *grpc.ClientConn {
 	t.Cleanup(func() { _ = conn.Close() })
 
 	return conn
+}
+
+// apiKeyGet reads the key of [apiKeyPEM] by its ID, the thumbprint RFC 8037 appendix A.3 gives.
+func apiKeyGet(ctx context.Context, conn *grpc.ClientConn) error {
+	_, err := jsonkeysv2.NewAPIKeyGetServiceClient(conn).APIKeyGet(ctx, &jsonkeysv2.APIKeyGetRequest{
+		Id: "kPrK_qmxVWaYVA9wwBF6Iuo3vVzz7TxHCTwXBygrS4k",
+	})
+
+	return err
 }
 
 // unaryEcho calls golib's echo service through a unary call. The gate guards it as it guards the

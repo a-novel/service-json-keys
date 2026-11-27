@@ -34,6 +34,9 @@ type App struct {
 	// ServiceToken names the service tokens the gRPC server accepts. Without an issuer, the server
 	// refuses to start unless its IssuerOptional is set, which only a local or test stack does.
 	ServiceToken servicetoken.Config
+	// APIKeys holds the system API keys of each purpose, under its name: one or more Ed25519 public
+	// keys in PEM, the active one first. Both servers serve them, and a purpose may hold none.
+	APIKeys map[string]string
 
 	// Otel configures the OpenTelemetry exporter for traces and metrics.
 	Otel otel.Config

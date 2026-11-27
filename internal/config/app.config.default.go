@@ -16,6 +16,7 @@ var AppPresetDefault = App{
 	Grpc:         env.Grpc,
 	Rest:         env.Rest,
 	ServiceToken: env.ServiceToken,
+	APIKeys:      env.APIKeys,
 
 	Otel:       env.Telemetry.Otel,
 	Logger:     env.Telemetry.Logger,
