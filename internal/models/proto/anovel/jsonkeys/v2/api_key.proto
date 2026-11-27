@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package anovel.jsonkeys.v2;
+
+import "anovel/jsonkeys/v2/jwk.proto";
+
+// APIKey is an API key as the service serves it: a public key made for one purpose, with its
+// states. It never names the owner of the key.
+message APIKey {
+  // ID of the key. A token the key signed names it in its "kid" header.
+  string id = 1;
+  // The one thing the key may do, such as "publish-narrative-engine-plugin".
+  string purpose = 2;
+  // The public key, whose "kid" is the ID of the API key.
+  Jwk jwk = 3;
+  // Whether the key no longer authenticates a request. What it signed before still verifies.
+  bool deactivated = 4;
+  // Whether the private key leaked. Nothing a leaked key signed is trusted.
+  bool leaked = 5;
+}
