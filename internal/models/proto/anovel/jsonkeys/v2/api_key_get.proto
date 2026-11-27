@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package anovel.jsonkeys.v2;
+
+import "anovel/jsonkeys/v2/api_key.proto";
+
+// APIKeyGetService returns an API key by its ID.
+// A recipient reads the key to verify a request token or a proof the key signed.
+service APIKeyGetService {
+  // Returns the API key matching the provided ID.
+  // Returns NOT_FOUND if the service holds no key with that ID.
+  rpc APIKeyGet(APIKeyGetRequest) returns (APIKeyGetResponse);
+}
+
+// APIKeyGetRequest identifies the API key to retrieve by its ID.
+message APIKeyGetRequest {
+  // ID of the API key to retrieve. Corresponds to the "kid" header of a token the key signed.
+  string id = 1;
+}
+
+// APIKeyGetResponse contains the API key matching the requested ID.
+message APIKeyGetResponse {
+  // The requested API key.
+  APIKey api_key = 1;
+}
